@@ -1,0 +1,7 @@
+house_name,Martin Example House
+wind_speed_min,40
+wind_speed_max,140
+wind_speed_steps,10
+N,10000
+SCEN_DI_DISABLE_TYPE,Wall collapse
+terrain_cat,2

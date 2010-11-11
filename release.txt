@@ -1,0 +1,26 @@
+Release Notes 
+VAWS Version 1.1.5
+
+Overview:
+
+This release was targeted at fixing remaining bugs and adding final
+functionality to the WindSIM tool.
+
+Changes:
+
+- Renamed WindSIM to VAWS.
+- Fixed minor bugs in GUI operations.
+- Updated user manual to include more technical aspects.
+- Wall collapse refinement: now driven by more granular 'wallcollapse' connections.
+- Water ingress costing is now working (it was effectively zero).
+- Fragility curves now being fit and coefficients output to file.
+- Improvements to distrubution and collapse logic - more data driven.
+- Fixes to patches data.
+- Improvements to costing logic - more data driven.
+- Improved batch mode.
+- Wall cladding modelling enhancements.
+- Updated debris display and added optional stretch factor.
+- Change damage distribution to occur as a seperate step after damage step.
+- General user interface enhancements and additions.
+- Splash screen added.
+- Scenario enhancements: water ingress enabled and connection group enabled settings.

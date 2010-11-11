@@ -1,0 +1,21 @@
+N,2
+house_name,Group 4 House
+region_name,Capital_city
+wind_speed_min,20.000000
+wind_speed_max,80.000000
+wind_speed_steps,40
+terrain_cat,2
+wind_fixed_dir,N
+regional_shielding_factor,1.000000
+building_spacing,20.000000
+debris_radius,100.000000
+debris_angle,45.000000
+flighttime_mean,2.000000
+flighttime_stddev,0.800000
+SCEN_DMG_PLOT_VULN,True
+SCEN_DMG_DISTRIBUTE,True
+SCEN_DEBRIS_STAGGERED_SOURCES,False
+SCEN_DIFF_SHIELDING,False
+SCEN_DEBRIS,True
+SCEN_DMG_PLOT_FRAGILITY,True
+SCEN_SEED_RANDOM,False
