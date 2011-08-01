@@ -4,7 +4,7 @@
 echo Running baseline tests...
 
 export RUN_DATE=`date`
-export SIM_VER=`version.sh`
+export SIM_VER=`./version.sh`
 echo $RUN_DATE
 echo $SIM_VER
 

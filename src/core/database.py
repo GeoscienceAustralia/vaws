@@ -4,31 +4,13 @@
 from sqlalchemy import create_engine, Table, Integer, String, Float, Column, MetaData, ForeignKey
 from sqlalchemy.sql import select, and_
 from sqlalchemy.orm import sessionmaker
-from sqlalchemy.orm.attributes import ClassManager, instrumentation_registry
 
 # ---------------------------------------------------------------------------------------------
 verbose = False
 db = None
 
-## -------------------------------------------------------------
-class ReadonlyClassManager(ClassManager):
-    def __init__(self, class_):
-        ClassManager.__init__(self, class_)
-        self.readonly_version = getattr(class_, 'readonly_type', None)
-        if self.readonly_version:
-            instrumentation_registry._dict_finders[self.readonly_version] = self.dict_getter()
-            instrumentation_registry._state_finders[self.readonly_version] = self.state_getter()
-
-    def new_instance(self, state=None):
-        if self.readonly_version:
-            instance = self.readonly_version.__new__(self.readonly_version)
-            self.setup_instance(instance, state)
-            return instance
-        return ClassManager.new_instance(self, state)
-
 from sqlalchemy.ext.declarative import declarative_base
 Base = declarative_base()
-#Base.__sa_instrumentation_manager__ = ReadonlyClassManager
 
 ## -------------------------------------------------------------
 from sqlalchemy.interfaces import PoolListener

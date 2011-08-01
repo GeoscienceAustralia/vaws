@@ -1,6 +1,6 @@
 #!/usr/bin/bash
 #
-export SIM_VER=`version.sh`
+export SIM_VER=`./version.sh`
 echo Building NSIS installer
 rm -f *.exe
 makensis setup.nsi

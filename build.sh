@@ -1,6 +1,6 @@
 #!/usr/bin/bash
 #
-export SIM_VER=`version.sh`
+export SIM_VER=`./version.sh`
 
 cd src/core
 ./build_ext.sh

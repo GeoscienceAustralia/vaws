@@ -183,6 +183,9 @@ if __name__ == '__main__':
      
     class MyTestCase(unittest.TestCase):
             
+	def test_breaks(self):
+		self.assertEquals(12, 134)
+
         def test_zonegrid(self):
             loc = 'N12'
             gridCol, gridRow = getGridFromZoneLoc(loc)
