@@ -95,7 +95,9 @@ src/core/export.py -text
 src/core/ext-setup.py -text
 src/core/gendebrissrc.py -text
 src/core/gsl/README.txt -text
+src/core/gsl/bin/libgsl.def -text
 src/core/gsl/bin/libgsl.dll -text
+src/core/gsl/bin/libgslcblas.def -text
 src/core/gsl/bin/libgslcblas.dll -text
 src/core/gsl/include/gsl/config.h -text
 src/core/gsl/include/gsl/gsl_blas.h -text
