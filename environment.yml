@@ -1,0 +1,10 @@
+name: windtunnel
+dependencies:
+- matplotlib=1.5.1=np110py26_0
+- numpy=1.6.2=py26_0
+- pip=7.1.2=py26_0
+- python=2.6.6=0
+- qt=4.8.7=1
+- scipy=0.16.1=np110py27_0
+- pip:
+
