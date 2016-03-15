@@ -17,7 +17,7 @@ cd core
 python damage.py -i ../../data/ -m ../test/${SIM_VER}/model.db
 
 echo Running regression...
-python damage.py -s ../test/baseline_regress.sce -r ../test/${SIM_VER}/regress.csv -m ../test/${SIM_VER}/model.db
+python damage.py -s ../test/baseline_regress.sce -o ../test/${SIM_VER}/regress.csv -m ../test/${SIM_VER}/model.db
 
 echo Running normal to baseline sim output...
 python damage.py -s ../test/baseline_full.sce -o ../test/${SIM_VER} -m ../test/${SIM_VER}/model.db
