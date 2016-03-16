@@ -67,8 +67,7 @@ def solve_for_observations(obs_arr, x_arr, coeff_guess, verbose):
         coeff_final, cov_x, infodict, msg, ier = leastsq(objective_func, 
                                                          coeff_guess, 
                                                          args=(obs_arr, x_arr, verbose), 
-                                                         full_output=True, 
-                                                         warning=True)
+                                                         full_output=True)
         if verbose:
             print "number of iterations: ", infodict['nfev']
             print "msg: ", msg

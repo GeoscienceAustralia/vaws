@@ -19,7 +19,8 @@ class ForeignKeysListener(PoolListener):
         db_cursor = dbapi_con.execute('pragma foreign_keys=ON')
         db_cursor = dbapi_con.execute('pragma foreign_keys')
         for row in db_cursor:
-            print row
+            pass
+            #print 'row: ', row
     
 
 ## -------------------------------------------------------------
