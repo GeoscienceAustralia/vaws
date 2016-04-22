@@ -1,5 +1,4 @@
 
-*.db
 *.so
 *.pyc
 src/test/
