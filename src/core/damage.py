@@ -838,20 +838,61 @@ def simulate(s, options):
 
 # --------------------------------------------------------------
 def main():
-    USAGE = '%prog -s <scenario_file> [-m <model database file>] [-o <output_folder>]'
+    USAGE = ('%prog -s <scenario_file> [-m <model database file>] '
+             '[-o <output_folder>]')
     parser = OptionParser(usage=USAGE, version=VERSION_DESC)
-    parser.add_option("-s", "--scenario", dest="scenario_filename", help="read scenario description from FILE", metavar="FILE")
-    parser.add_option("-m", "--model", dest="model_database", help="Use Model Database from FILE", metavar="FILE", default="../model.db")
-    parser.add_option("-o", "--output", dest="output_folder", help="folder name to store simulation results", metavar="FOLDER")
-    parser.add_option("-v", "--verbose", action="store_true", dest="verbose", default=False, help="show verbose simulator output")
-    parser.add_option("-i", "--import", dest="data_folder", help="data folder to import into model.db", metavar="FOLDER")
-    parser.add_option("--plot_vuln", action="store_true", dest="plot_vuln", default=False, help="show vulnerability plot")
-    parser.add_option("--plot_frag", action="store_true", dest="plot_frag", default=False, help="show fragility plot")
+    parser.add_option("-s", "--scenario",
+                      dest="scenario_filename",
+                      help="read scenario description from FILE",
+                      metavar="FILE")
+    parser.add_option("-m", "--model",
+                      dest="model_database",
+                      help="Use Model Database from FILE",
+                      metavar="FILE")
+    parser.add_option("-o", "--output",
+                      dest="output_folder",
+                      help="folder name to store simulation results",
+                      metavar="FOLDER")
+    parser.add_option("-v", "--verbose",
+                      action="store_true",
+                      dest="verbose",
+                      default=False,
+                      help="show verbose simulator output")
+    parser.add_option("-i", "--import",
+                      dest="data_folder",
+                      help="data folder to import into model.db",
+                      metavar="FOLDER")
+    parser.add_option("--plot_vuln",
+                      action="store_true",
+                      dest="plot_vuln",
+                      default=False,
+                      help="show vulnerability plot")
+    parser.add_option("--plot_frag",
+                      action="store_true",
+                      dest="plot_frag",
+                      default=False,
+                      help="show fragility plot")
 
-    s = None
     (options, args) = parser.parse_args()
 
-    database.configure('../model.db')
+    path_, _ = os.path.split(sys.argv[0])
+
+    if options.model_database is None:
+        model_db = os.path.abspath(os.path.join(path_, '../model.db'))
+    else:
+        model_db = os.path.abspath(os.path.join(os.getcwd(),
+                                                options.model_database))
+    print 'model db is loaded from: %s' % model_db
+    database.configure(model_db)
+
+    if options.output_folder is None:
+        options.output_folder = os.path.abspath(os.path.join(path_,
+                                                             './outputs'))
+    else:
+        options.output_folder = os.path.abspath(os.path.join(
+            os.getcwd(), options.output_folder))
+    print 'output directory: %s' % options.output_folder
+
     if options.verbose:
         logger.configure(logger.LOGGING_CONSOLE)
     else:
@@ -865,15 +906,12 @@ def main():
 
     if options.scenario_filename:
         s = scenario.loadFromCSV(options.scenario_filename)
+        simulate(s, options)
+        database.db.close()
     else:
         print '\nERROR: Must provide as scenario file to run simulator...\n'
         parser.print_help()
 
-    if s:
-        simulate(s, options)
-        database.db.close()
-
 # --------------------------------------------------------------
 if __name__ == '__main__':
-    sys.path.append(os.path.abspath('../'))
     main()
