@@ -1,18 +1,21 @@
-'''
+"""
     Setup logging - avoid simple print statements that can't be turned off
-'''
+"""
 import logging as pylog
 
 LOGGING_NONE = 0
 LOGGING_CONSOLE = 1
 LOGGING_REGRESS = 2
-        
-class NoCriticalFilter(pylog.Filter): # we hijack critical for our custom "regress" level
+
+
+# we hijack critical for our custom "regress" level
+class NoCriticalFilter(pylog.Filter):
     def filter(self, record):
         if record.levelno >= pylog.CRITICAL:
             return 0
         return 1
-        
+
+
 class ConsoleLogger(object):
     def __init__(self, modName, level, filename):
         self.logger = pylog.getLogger(modName)
