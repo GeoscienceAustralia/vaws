@@ -11,7 +11,7 @@ z = (3.0, 5.0, 7.0, 10.0, 12.0, 15.0, 17.0, 20.0, 25.0, 30.0)
 
 cached_tcats = {}
 
-# --------------------------------------------------------------
+
 def populate_terrain_cache():
     cached_tcats.clear()
     for tc in ['2', '2.5', '3', '5']:
@@ -25,12 +25,12 @@ def populate_terrain_cache():
             cached_profiles.append(cached_mzcats)
         cached_tcats[tc] = cached_profiles
             
-# --------------------------------------------------------------
+
 def calculateMZCAT(tc, p, h):
     m = cached_tcats[tc][p-1]
     return numpy.interp(h, z, m)
     
-# -------------------------------------------------------------- unit tests
+# unit tests
 if __name__ == '__main__':    
     import unittest
    

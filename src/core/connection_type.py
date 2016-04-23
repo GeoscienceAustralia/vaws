@@ -10,7 +10,7 @@ from sqlalchemy.orm import relation, backref
 import database
 import stats
 
-## -------------------------------------------------------------
+#-
 class ConnectionTypeGroup(database.Base):    
     __tablename__           = 'connection_type_groups'
     id                      = Column(Integer, primary_key=True)
@@ -34,7 +34,7 @@ class ConnectionTypeGroup(database.Base):
             damaged_perc += ct.perc_damaged()
         return damaged_perc                 
   
-## -------------------------------------------------------------
+#-
 class ConnectionType(database.Base): 
     __tablename__       = 'connection_types'
     id                  = Column(Integer, primary_key=True)
@@ -98,7 +98,7 @@ class ConnectionType(database.Base):
         else:
             return numpy.random.lognormal(self.deadload_mean, self.deadload_std_dev)
 #
-## -------------------------------------------------------------- unit tests
+# unit tests
 #if __name__ == '__main__':
 #    import unittest
 #    import damage

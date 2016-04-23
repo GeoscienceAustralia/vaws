@@ -79,20 +79,20 @@ class ConsoleLogger(object):
     def is_regress(self):
         return self.level == LOGGING_REGRESS
 
-# ---------------------------------------------------------------------------------------------
+
 verbose = False
 logger = None
 
-# ---------------------------------------------------------------------------------------------
+
 def log():
     return logger
 
-# ---------------------------------------------------------------------------------------------
+
 def configure(level, filename=None):
     global logger
     logger = ConsoleLogger('windsim', level, filename)
     
-# -------------------------------------------------------------- unit tests
+# unit tests
 if __name__ == '__main__':
     import unittest
     

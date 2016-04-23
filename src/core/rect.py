@@ -11,7 +11,7 @@ from matplotlib.path import Path
 from matplotlib.patches import PathPatch
 import matplotlib.pyplot as plt
     
-## -----------------------------------------------------------------------------
+
 class Point:
     def __init__(self, x=0.0, y=0.0, col='b', shape='s', size=20, alpha=1.0):
         self.x = x
@@ -87,7 +87,7 @@ class Point:
         result.slide(p.x, p.y)
         return result
 
-## --------------------------------------------------------------------------
+
 class Rect:
     def __init__(self, length, width, rotation=0, extension=0):
         self.rotation = rotation
@@ -171,7 +171,7 @@ class Rect:
     def __str__( self ):
         return "<Rect (%s,%s,%s,%s)>" % (self.points[0], self.points[1], self.points[2], self.points[3]) 
         
-# -------------------------------------------------------------- unit tests
+# unit tests
 if __name__ == '__main__':
     import unittest
     

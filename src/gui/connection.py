@@ -1,10 +1,9 @@
-# -------------------------------------------------------------------------
 from connection_ui import Ui_Dialog
 import mixins 
 from PyQt4.QtCore import *
 from PyQt4.QtGui import *
 from core import damage, house, scenario
-# -------------------------------------------------------------------------
+
 class ConnectionViewer(QDialog, Ui_Dialog, mixins.PersistSizePosMixin):
     def __init__(self, model_conn, model_patches, house_results, parent=None):
         super(ConnectionViewer, self).__init__(parent)
@@ -73,15 +72,12 @@ class ConnectionViewer(QDialog, Ui_Dialog, mixins.PersistSizePosMixin):
         self.setSizeGripEnabled(True)
         self.setWindowTitle('Connection Viewer (%s)' % (model_conn.connection_name))        
 
-    # -------------------------------------------------------------------------  
-    def accept(self): 
+    def accept(self):
         QDialog.accept(self)
         
-    # -------------------------------------------------------------------------  
     def reject(self):
         QDialog.reject(self)
         
-# -------------------------------------------------------------------------        
 if __name__ == '__main__':
     import sys
     from core import database

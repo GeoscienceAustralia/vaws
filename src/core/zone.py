@@ -14,14 +14,14 @@ import math
 from sqlalchemy import create_engine, Table, Integer, String, Float, Column, MetaData, ForeignKey
 import database
 
-# -------------------------------------------------- hackerama to get scipy seeded
+# ---------------------- hackerama to get scipy seeded
 def seed_scipy(seed=42):
     myrs = numpy.random.RandomState(seed)
     def mysample(size=1):
         return myrs.uniform(size=size)
     numpy.random.sample = mysample
 
-# -------------------------------------------------------------
+
 def getZoneLocFromGrid(gridCol, gridRow): 
     """
     Create a string location (eg 'A10') from zero based grid refs (col=0, row=11)
@@ -30,7 +30,7 @@ def getZoneLocFromGrid(gridCol, gridRow):
     locY = str(gridRow+1)
     return locX + locY
 
-# -------------------------------------------------------------
+
 def getGridFromZoneLoc(loc):
     """
     Extract 0 based grid refs from string location (eg 'A10' to 0, 11)
@@ -44,7 +44,7 @@ def getGridFromZoneLoc(loc):
         
 dirs = ['S', 'SW', 'W', 'NW', 'N', 'NE', 'E', 'SE']
 
-## -------------------------------------------------------------
+#-
 class Zone(database.Base):
     __tablename__       = 'zones'
     id                  = Column(Integer, primary_key=True)
@@ -106,15 +106,15 @@ class Zone(database.Base):
     def __repr__(self):
         return "('%s', '%f', '%f')" % (self.zone_name, self.zone_area, self.cpi_alpha)
        
-# ------------------------------------------------------------    
+
 def calc_A(cpe_k):
     return (1.0 / cpe_k) * (1.0 - scipy.special.gamma(1.0 + cpe_k))
 
-# ------------------------------------------------------------    
+
 def calc_B(cpe_k):
     return numpy.power( numpy.power(1.0/cpe_k, 2) * (scipy.special.gamma(1.0 + 2*cpe_k) - numpy.power(scipy.special.gamma(1.0 + cpe_k), 2)), 0.5 )
 
-# ------------------------------------------------------------    
+
 def calc_a_u(mean, cpe_V, A, B):
     if mean >= 0:
         a = (mean * cpe_V) / B
@@ -125,7 +125,7 @@ def calc_a_u(mean, cpe_V, A, B):
         u = mean - a * A 
     return a, u
         
-# ------------------------------------------------------------    
+
 def sample_gev(mean, A, B, cpe_V, cpe_k):
     a, u = calc_a_u(mean, cpe_V, A, B)
     if mean >= 0:
@@ -133,7 +133,7 @@ def sample_gev(mean, A, B, cpe_V, cpe_k):
     else:
         return float(-scipy.stats.genextreme.rvs(cpe_k, loc=u, scale=a, size=1))
     
-# ------------------------------------------------------------        
+
 def sample_zone_pressures(zones, wind_dir_index, cpe_V, cpe_k, cpe_struct_V):
     '''
     Sample external Zone Pressures for sheeting, structure and eaves Cpe, 
@@ -148,7 +148,7 @@ def sample_zone_pressures(zones, wind_dir_index, cpe_V, cpe_k, cpe_struct_V):
         z.sampled_cpe_struct = sample_gev(z.getCpeStructMeanForDir(wind_dir_index), A, B, cpe_struct_V, cpe_k)
         z.sampled_cpe_eaves = sample_gev(z.getCpeEavesMeanForDir(wind_dir_index), A, B, cpe_struct_V, cpe_k)
     
-# ------------------------------------------------------------    
+
 def calc_zone_pressures(zones, wind_dir_index, cpi, qz, Ms, building_spacing, diff_shielding):
     '''
     Determine wind pressure loads on each zone (to be distributed onto connections)
@@ -177,7 +177,7 @@ def calc_zone_pressures(zones, wind_dir_index, cpi, qz, Ms, building_spacing, di
         # calculate zone structure pressure
         z.result_pz_struct = qz * (z.sampled_cpe_struct - (z.cpi_alpha * cpi) - z.sampled_cpe_eaves) * diff_shielding 
    
-# -------------------------------------------------------------- unit tests
+# unit tests
 if __name__ == '__main__':
     import unittest
      

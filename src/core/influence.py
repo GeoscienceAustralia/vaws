@@ -2,7 +2,7 @@ from sqlalchemy import create_engine, Table, Integer, String, Float, Column, Met
 from sqlalchemy.orm import relation, backref
 import database
 
-## -------------------------------------------------------------
+#-
 class Influence(database.Base):
     __tablename__       = 'influences'
     connection_id       = Column(Integer, ForeignKey('connections.id'), primary_key=True)

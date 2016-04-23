@@ -1,4 +1,3 @@
-# -------------------------------------------------------------------------
 from house_ui import Ui_Dialog
 import mixins 
 from core import scenario
@@ -6,7 +5,7 @@ from core import scenario
 from PyQt4.QtCore import *
 from PyQt4.QtGui import *
 
-# -------------------------------------------------------------------------
+
 class HouseViewer(QDialog, Ui_Dialog, mixins.PersistSizePosMixin):
     def __init__(self, house, parent=None):
         super(HouseViewer, self).__init__(parent)
@@ -46,7 +45,6 @@ class HouseViewer(QDialog, Ui_Dialog, mixins.PersistSizePosMixin):
         QDialog.reject(self)
         
         
-# -------------------------------------------------------------------------        
 if __name__ == '__main__':
     import sys
     from core import database

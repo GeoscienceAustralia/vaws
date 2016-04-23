@@ -6,7 +6,7 @@
 import math
 import numpy
 
-# --------------------------------------------------------------
+
 def genGrid(radius, angle, spacing, restrict_yord=False):
     srcs = []   
     xord = spacing
@@ -26,7 +26,7 @@ def genGrid(radius, angle, spacing, restrict_yord=False):
         xord += spacing
     return srcs
 
-# --------------------------------------------------------------
+
 def genStaggered(radius, angle, spacing, restrict_yord=False):
     srcs = []   
     xord = spacing
@@ -53,7 +53,7 @@ def genStaggered(radius, angle, spacing, restrict_yord=False):
         xord += spacing
     return srcs
     
-# -------------------------------------------------------------- unit tests
+# unit tests
 if __name__ == '__main__':    
     import unittest
     

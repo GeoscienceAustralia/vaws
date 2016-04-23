@@ -1,4 +1,4 @@
--------------------------------------------> methodology: high level overview
+---------------> methodology: high level overview
 
 1. Open "workshop.csv" scenario file and edit:
 	(select house)
@@ -54,7 +54,7 @@ MODEL: House --> Zone
 foreach zone:
 	zone_pz = qz * (zone.coeff[wind_dir] + Cpi)
 
--------------------------------------------> current pseudo code
+---------------> current pseudo code
 for i in scenario.num_iters:
 	sample_house_and_wind_params():
 	for next windspeed in range from scenario min, max, numsteps:
@@ -63,7 +63,7 @@ for i in scenario.num_iters:
 		calculate_connection_loads()
 		calculate_damage_ratio_and_store()
 
--------------------------------------------> cpi module
+---------------> cpi module
 	if not "internally pressurized":
 		check_pressurized_failure()			
 				

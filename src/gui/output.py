@@ -5,14 +5,13 @@ from matplotlib import cm, mpl
 from core import version, zone, house
 mplDict = None
         
-# ------------------------------------------------------------
+
 def hookupWidget(mpldict):
     global mplDict
     mplDict = mpldict
     mplDict['vulnerability'].axes.hold(True)
     mplDict['fragility'].axes.hold(True)
 
-# -------------------------------------------------------------
 class PlotFlyoverCallback(object):
     def __init__(self, axes, data, statusbar, num_cols, num_rows):
         self.axes = axes
@@ -32,8 +31,7 @@ class PlotFlyoverCallback(object):
             return
         locStr = 'Average damage @ %.3f m/sec for Zone %s' % (self.data[row,col], zone.getZoneLocFromGrid(col, row))
         self.statusbar.showMessage(locStr)
-        
-# -------------------------------------------------------------
+
 class PlotClickCallback(object):
     def __init__(self, figure, axes, plotKey, owner, aHouse, walldir=None):
         self.figure = figure
@@ -87,7 +85,7 @@ class PlotClickCallback(object):
                     self.owner.onSelectConnection(c.connection_name)
                     break
             
-# ------------------------------------------------------------
+
 def plot_wall_damage_show(plotKey, 
                           wall_south_V, 
                           wall_north_V,
@@ -195,7 +193,7 @@ def plot_wall_damage_show(plotKey,
     
     fig.canvas.draw()    
     
-# ------------------------------------------------------------
+
 def plot_damage_show(plotKey, v_damaged_at, numCols, numRows, v_min, v_max):    
     xticks = range(0, numCols)
     xticklabels = []
@@ -236,23 +234,23 @@ def plot_damage_show(plotKey, v_damaged_at, numCols, numRows, v_min, v_max):
     fig.canvas.mpl_connect('button_press_event', PlotClickCallback(fig, axPlot, plotKey, mplDict['owner'], mplDict['house']))
     fig.canvas.draw()    
 
-# ------------------------------------------------------------
+
 def plot_wind_event_damage(v, di):
     mplDict['vulnerability'].axes.scatter(v, di, s=8, marker='+', label='_nolegend_')
 
-# ------------------------------------------------------------
+
 def plot_wind_event_mean(v, di):
     mplDict['vulnerability'].axes.scatter(v, di, s=20, c='r', marker='o', label="Means")
 
-# ------------------------------------------------------------
+
 def plot_fitted_curve(v, di, label="Fitted Curve", alpha=1.0, col='b'):
     mplDict['vulnerability'].axes.plot(v, di, label=label, alpha=alpha, c=col)
 
-# ------------------------------------------------------------
+
 def plot_model_curve(v, di, label="Model Curve"):
     mplDict['vulnerability'].axes.plot(v, di, label=label)
 
-# ------------------------------------------------------------
+
 def plot_wind_event_show(num_iters, Vmin, Vmax, output_folder):
     mplDict['vulnerability'].axes.set_title('Vulnerability Curve (n = %d)' % (num_iters))
     mplDict['vulnerability'].axes.set_xlabel('Impact Wind speed (m/s)')
@@ -261,11 +259,11 @@ def plot_wind_event_show(num_iters, Vmin, Vmax, output_folder):
     mplDict['vulnerability'].axes.set_ylim((0.0, 1.1))
     mplDict['vulnerability'].axes.figure.canvas.draw()
     
-# ------------------------------------------------------------
+
 def plot_fragility_curve(v, fl, label, alpha=1.0, col='b'):
     mplDict['fragility'].axes.plot(v, fl, label=label, c=col, alpha=alpha)
 
-# ------------------------------------------------------------
+
 def plot_fragility_show(num_iters, Vmin, Vmax, output_folder):
     mplDict['fragility'].axes.set_title('Fragility Curve (n = %d)' % num_iters)
     mplDict['fragility'].axes.set_xlabel('Impact Wind speed (m/s)')
@@ -277,7 +275,7 @@ def plot_fragility_show(num_iters, Vmin, Vmax, output_folder):
         ltxt.set_fontsize('small')
     mplDict['fragility'].axes.figure.canvas.draw()
 
-# ------------------------------------------------------------
+
 def format_coord(x, y):
     col = int(x+0.5)
     row = int(y+0.5)

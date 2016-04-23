@@ -11,30 +11,30 @@ from matplotlib.pyplot import *
 MEDIAN = 0
 BETA = 1
 
-# --------------------------------------------------------------
+
 def model_func(coeff_arr, x_arr):
     median = coeff_arr[MEDIAN]
     beta = coeff_arr[BETA]
     sqrt2 = math.sqrt(2.0)
     return 0.5 + 0.5 * scipy.special.erf((np.log(x_arr) - np.log(median)) / (beta * sqrt2))   
 
-# --------------------------------------------------------------
+
 def objective_func(coeff_arr, obs_arr, x_arr, verbose):
     diff = obs_arr - model_func(coeff_arr, x_arr)
     return diff
 
-# --------------------------------------------------------------
+
 def plot_func(coeff_arr, x_arr):
     plot(x_arr, model_func(coeff_arr, x_arr))
 
-# -----------------------------------------------------------------
+
 def plot_func_on(widget, coeff_arr, x_arr, col):    
     widget.axes.plot(x_arr, model_func(coeff_arr, x_arr), c=col, linewidth=3)
     widget.axes.figure.canvas.draw()
     widget.axes.set_xlim((0.0, 2.0))
     widget.axes.set_ylim((0.0, 1.0))
     
-# --------------------------------------------------------------
+
 def generate_observations(coeff_arr, x_arr, max_perc_err=0):
     yarr = model_func(coeff_arr, x_arr)
     if max_perc_err > 0:
@@ -42,22 +42,22 @@ def generate_observations(coeff_arr, x_arr, max_perc_err=0):
         yarr += 0.2 * error_perc_arr
     return yarr
 
-# --------------------------------------------------------------
+
 def generate_bad_observations_zero(x_arr, max_perc_err):
     return x_arr * 0.0
 
-# --------------------------------------------------------------
+
 def generate_bad_observations_ramp(x_arr, max_perc_err):
     obs_arr = np.ones(len(x_arr))
     for i in range(0, 10):
         obs_arr[i] = 0
     return obs_arr
 
-# --------------------------------------------------------------
+
 def generate_guess(x_arr, obs_arr):
     return [30.0, 0.5]
 
-# --------------------------------------------------------------  
+
 def solve_for_observations(obs_arr, x_arr, coeff_guess, verbose):
     coeff_final = None
     sum_squared = 0
@@ -86,7 +86,7 @@ def solve_for_observations(obs_arr, x_arr, coeff_guess, verbose):
             
     return coeff_final, sum_squared
 
-# --------------------------------------------------------------
+
 def fit_curve(x_arr, obs_arr, verbose=False):
     guess_arr = generate_guess(x_arr, obs_arr)
     coeff_arr, ss =  solve_for_observations(obs_arr, x_arr, guess_arr, verbose)
@@ -94,7 +94,7 @@ def fit_curve(x_arr, obs_arr, verbose=False):
         print 'Curve Solution: MEDIAN: %f, BETA: %f\n\n' % (coeff_arr[MEDIAN], coeff_arr[BETA])
     return coeff_arr, ss
     
-# --------------------------------------------------------------
+
 if __name__ == '__main__':
     USAGE = '%prog'
     parser = OptionParser(usage=USAGE, version="0.1")

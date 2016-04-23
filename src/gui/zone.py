@@ -1,11 +1,10 @@
-# -------------------------------------------------------------------------
 from zone_ui import Ui_Dialog
 import mixins 
 from PyQt4.QtCore import *
 from PyQt4.QtGui import *
 from core import scenario, house, zone
 
-# -------------------------------------------------------------------------
+
 class ZoneBrowser(QDialog, Ui_Dialog, mixins.PersistSizePosMixin):
     def __init__(self, zone_name, plot_key, model_house, house_results, parent=None):
         super(ZoneBrowser, self).__init__(parent)
@@ -37,7 +36,6 @@ class ZoneBrowser(QDialog, Ui_Dialog, mixins.PersistSizePosMixin):
     
         self.updateZoneInfo(zone_name)
         
-    # -------------------------------------------------------------------------  
     def plot_pdf(self, checked):
         col = self.ui.table.currentColumn()
         row = self.ui.table.currentRow()
@@ -46,7 +44,6 @@ class ZoneBrowser(QDialog, Ui_Dialog, mixins.PersistSizePosMixin):
         mean = float(self.ui.table.item(row, col).text())
         self.plot_cdf(self.ui.pdf_plot, mean, True if col == 2 else False)
         
-    # -------------------------------------------------------------------------  
     def plot_cdf(self, plot_widget, cpe_mean, use_struct):
         A = zone.calc_A(self.model_house.cpe_k)
         B = zone.calc_B(self.model_house.cpe_k)
@@ -62,7 +59,6 @@ class ZoneBrowser(QDialog, Ui_Dialog, mixins.PersistSizePosMixin):
         plot_widget.axes.set_title('Sample Hist (mean=%.3f, n=%d)' % (cpe_mean, 10000))
         plot_widget.axes.figure.canvas.draw()
         
-    # -------------------------------------------------------------------------  
     def updateZoneInfo(self, zone_name):
         self.model_zone = house.zoneByLocationMap[unicode(zone_name)]
         self.ui.area.setText('%.3f' % self.model_zone.zone_area)
@@ -87,7 +83,6 @@ class ZoneBrowser(QDialog, Ui_Dialog, mixins.PersistSizePosMixin):
         self.ui.table.blockSignals(False)
         self.ui.table.selectColumn(1)
         
-    # -------------------------------------------------------------------------  
     def updateFilter(self, filter):
         expanded_items = []
         for tli in range(self.ui.connections.topLevelItemCount()):
@@ -102,7 +97,6 @@ class ZoneBrowser(QDialog, Ui_Dialog, mixins.PersistSizePosMixin):
             item = self.ui.connections.topLevelItem(tli)
             item.setExpanded(True)
         
-    # -------------------------------------------------------------------------  
     def updateConnectionsList(self, filter):
         filter = unicode(filter)
         mixins.setupTable(self.ui.zones, self.house_results)
@@ -146,8 +140,7 @@ class ZoneBrowser(QDialog, Ui_Dialog, mixins.PersistSizePosMixin):
         header_view = self.ui.connections.header()
         header_view.resizeSection(0, 350)
         
-    # -------------------------------------------------------------------------  
-    def accept(self): 
+    def accept(self):
         self.model_zone.zone_area = float(unicode(self.ui.area.text()))
         self.model_zone.cpi_alpha = float(unicode(self.ui.cpi_alpha.text()))
        
@@ -166,12 +159,10 @@ class ZoneBrowser(QDialog, Ui_Dialog, mixins.PersistSizePosMixin):
         
         QDialog.accept(self)
         
-    # -------------------------------------------------------------------------  
     def reject(self):
         QDialog.reject(self)
         
         
-# -------------------------------------------------------------------------        
 if __name__ == '__main__':
     import sys
     from core import database

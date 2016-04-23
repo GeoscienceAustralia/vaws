@@ -6,7 +6,7 @@ import math
 from sqlalchemy import create_engine, Table, Integer, String, Float, Column, MetaData, ForeignKey
 import database
 
-## -------------------------------------------------------------
+#-
 class WaterIngressCosting(database.Base):
     __tablename__ = 'water_costs'
     id          = Column(Integer, primary_key=True)
@@ -29,7 +29,7 @@ class WaterIngressCosting(database.Base):
                                                                                self.coeff3)
 cached_water_costs = {}
 
-# --------------------------------------------------------------
+
 # note: house specific: needs to be rebuilt when house changes.
 #
 def populate_water_costs(hid):
@@ -40,7 +40,7 @@ def populate_water_costs(hid):
         wiarr = database.db.session.query(WaterIngressCosting).filter_by(house_id = hid).filter_by(name = dname).order_by(WaterIngressCosting.wi).all()
         cached_water_costs[dname] = wiarr
     
-# --------------------------------------------------------------
+
 def get_watercost_for_damage_at_wi(damage_name, water_ingress):
     wiarr = cached_water_costs[damage_name]
     last_valid_row = wiarr[0]
@@ -49,7 +49,7 @@ def get_watercost_for_damage_at_wi(damage_name, water_ingress):
             last_valid_row = wi
     return last_valid_row
             
-# -------------------------------------------------------------
+
 def get_curve_coeffs_for(di):
     vl = 0.0
     vu = 0.0
@@ -67,13 +67,13 @@ def get_curve_coeffs_for(di):
         vu = 20.0
     return (vl+vu) / 2.0, (vu-vl) / 6.0
 
-# -------------------------------------------------------------
+
 def get_wi_for_di(di, V):
     m, s = get_curve_coeffs_for(di)
     cdf_val = scipy.stats.norm.cdf(V, loc=m, scale=s)
     return cdf_val
 
-# -------------------------------------------------------------
+
 def get_costing_for_envelope_damage_at_v(di, wind_speed, water_groups, out_file=None):
     water_ratio = get_wi_for_di(di, wind_speed)
     water_ingress_perc = water_ratio * 100.0
@@ -96,7 +96,7 @@ def get_costing_for_envelope_damage_at_v(di, wind_speed, water_groups, out_file=
 
     return water_ingress_cost
  
-# -------------------------------------------------------------- unit tests
+# unit tests
 if __name__ == '__main__':
     import unittest
     database.configure()

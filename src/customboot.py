@@ -1,7 +1,6 @@
 import sys, traceback
 from PyQt4.QtGui import QMessageBox
 
-# -----------------------------------------------------------------------------   
 def dlgexcept(exctype, value, tb):
     msg = 'A fatal error has occured: \n\n'
     for entry in traceback.format_exception(type, value, tb):
@@ -9,7 +8,6 @@ def dlgexcept(exctype, value, tb):
     QMessageBox.critical(None, "VAWS Program Error", unicode(msg))
     print "VAWS Program Error: %s" % msg
 
-# -----------------------------------------------------------------------------   
 def debugexcept(type, value, tb):
     if hasattr(sys, 'ps1') or not (sys.stderr.isatty() and sys.stdin.isatty()) or type == SyntaxError:
         sys.__excepthook__(type, value, tb)

@@ -1,11 +1,10 @@
-# -------------------------------------------------------------------------
 from connection_type_ui import Ui_Dialog
 import mixins 
 from core import stats
 from PyQt4.QtCore import *
 from PyQt4.QtGui import *
 
-# -------------------------------------------------------------------------
+
 class ConnectionTypeEditor(QDialog, Ui_Dialog, mixins.PersistSizePosMixin):
     def __init__(self, conntype, house, parent=None):
         super(ConnectionTypeEditor, self).__init__(parent)
@@ -93,7 +92,6 @@ class ConnectionTypeEditor(QDialog, Ui_Dialog, mixins.PersistSizePosMixin):
         QDialog.reject(self)
         
         
-# -------------------------------------------------------------------------        
 if __name__ == '__main__':
     import sys
     from core import scenario, database

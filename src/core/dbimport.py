@@ -11,14 +11,14 @@ import debris
 import csvarray
 import house
 
-# -------------------------------------------------------------------
+
 def import_house(arg, dirname, names):
     if dirname.find('.svn') == -1:
         if 'house_data.csv' in names:
             print 'Importing House from folder: %s' % dirname
             house.importDataFromPath(dirname)
             
-# --------------------------------------------------------------
+
 def loadTerrainProfileFromCSV(fileBase, tcat):
     fileName = fileBase + tcat + '.csv'
     x = csvarray.readArrayFromCSV(fileName, "i4,f4,f4,f4,f4,f4,f4,f4,f4,f4,f4")
@@ -31,7 +31,7 @@ def loadTerrainProfileFromCSV(fileBase, tcat):
             db.session.execute(ins) 
     db.session.commit()
     
-# --------------------------------------------------------------
+
 def loadTerrainProfilesFrom(path):
     base = path + 'mzcat_terrain_'
     loadTerrainProfileFromCSV(base, '2')
@@ -39,7 +39,7 @@ def loadTerrainProfilesFrom(path):
     loadTerrainProfileFromCSV(base, '3')
     loadTerrainProfileFromCSV(base, '5')
     
-# --------------------------------------------------------------
+
 def loadDebrisTypes(fileName):
     x = csvarray.readArrayFromCSV(fileName, "S50,f4")
     db = database.db
@@ -48,7 +48,7 @@ def loadDebrisTypes(fileName):
         db.session.execute(ins)
     db.session.commit()
     
-# --------------------------------------------------------------
+
 def loadDebrisRegions(fileName):
     x = csvarray.readArrayFromCSV(fileName, "S50,f4,f4,f4,f4,f4,f4,f4,f4,f4,f4,f4,f4,f4,f4,f4,f4,f4")
     for row in x:
@@ -75,7 +75,7 @@ def loadDebrisRegions(fileName):
         database.db.session.add(tmp)
     database.db.session.commit()
     
-# -------------------------------------------------------------------
+
 def import_model(base_path, model_database, verbose=False):
     date_run = datetime.datetime.now()
     print 'Current Path: %s' % (os.getcwd())
@@ -101,7 +101,7 @@ def import_model(base_path, model_database, verbose=False):
     print 'Database has been imported in: %s' % (datetime.datetime.now() - date_run)
         
  
-# -------------------------------------------------------------- unit tests
+# unit tests
 if __name__ == '__main__':
     def debugexcept(type, value, tb):
         if hasattr(sys, 'ps1') or not (sys.stderr.isatty() and sys.stdin.isatty()) or type == SyntaxError:

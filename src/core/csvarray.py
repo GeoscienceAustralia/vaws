@@ -1,7 +1,7 @@
 
 import numpy
 
-# ------------------------------------------------------------
+
 def readArrayFromCSV(filename, dtype_string, separator=',', skiprows=1, numharvest=-1):
     """ Read a file with an arbitrary number of columns.
         The type of data in each column is arbitrary

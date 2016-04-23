@@ -14,7 +14,7 @@ class Scenario(object):
     # --- lookup table mapping (0-7) to wind direction desc    
     dirs = ['S', 'SW', 'W', 'NW', 'N', 'NE', 'E', 'SE', 'Random']
     
-    # --------------------------------------------------------------
+
     def __init__(self, ni, wsmin, wsmax, wsnumsteps, tcat):
         self.house = None
         self.region = None
@@ -54,7 +54,7 @@ class Scenario(object):
                       'SCEN_WATERINGRESS' : True,
                       'SCEN_VULN_FITLOG' : False}
     
-    # --------------------------------------------------------------
+
     def __eq__(self, other):
         if isinstance(other, Scenario):
             return self.num_iters == other.num_iters\
@@ -80,42 +80,42 @@ class Scenario(object):
                 and self.flags == other.flags
         return NotImplemented
     
-    # --------------------------------------------------------------
+
     def __ne__(self, other):
         result = self.__eq__(other)
         if result is NotImplemented:
             return result
         return not result
     
-    # --------------------------------------------------------------
+
     def updateModel(self):
         for ctg in self.house.conn_type_groups:
             ctg.enabled = True if ctg.distribution_order >= 0 else False
             if ctg.enabled:
                 ctg.enabled = self.getOptCTGEnabled(ctg.group_name)
         
-    # --------------------------------------------------------------
+
     def getOptCTGEnabled(self, ctg_name):
         key_name = 'ctg_%s' % ctg_name
         return self.flags.get(key_name, True)
       
-    # --------------------------------------------------------------
+
     def setOptCTGEnabled(self, ctg_name, opt):
         key_name = 'ctg_%s' % ctg_name
         self.flags[key_name] = opt
         
-    # --------------------------------------------------------------
+
     def setWindDirection(self, windDirStr):
         if windDirStr in Scenario.dirs:
             self.wind_dir_index = Scenario.dirs.index(windDirStr)
     
-    # --------------------------------------------------------------
+
     def getConstructionLevel(self, name):
         for level in self.construction_levels:
             if level[0] == name:
                 return level[1], level[2], level[3]
             
-    # --------------------------------------------------------------
+
     def setConstructionLevel(self, name, prob, mf, cf):
         for level in self.construction_levels:
             if level[0] == name:
@@ -124,7 +124,7 @@ class Scenario(object):
                 level[3] = cf
                 break
     
-    # --------------------------------------------------------------
+
     def sampleConstructionLevel(self):
         d100 = random_integers(0, 100)
         cumprob = 0.0
@@ -134,44 +134,44 @@ class Scenario(object):
                 break
         return clevel[0], clevel[2], clevel[3]
             
-    # --------------------------------------------------------------
+
     def getWindDirIndex(self):
         if self.wind_dir_index == 8:
             return random_integers(0,7)
         else:
             return self.wind_dir_index
         
-    # --------------------------------------------------------------
+
     def setRegionalShielding(self, rsf):
         if rsf > 0:
             self.regional_shielding_factor = rsf
         
-    # --------------------------------------------------------------
+
     def setBuildingSpacing(self, bs):
         if bs > 0:
             self.building_spacing = bs
         
-    # --------------------------------------------------------------
+
     def setDebrisRadius(self, v):
         self.debris_radius = v
         
-    # --------------------------------------------------------------
+
     def setDebrisAngle(self, v):
         self.debris_angle = v
         
-    # --------------------------------------------------------------
+
     def setRegionName(self, regionName):
         self.region = debris.qryDebrisRegionByName(regionName)
         
-    # --------------------------------------------------------------
+
     def setHouseName(self, house_name):
         self.house = house.queryHouseWithName(house_name)
         
-    # --------------------------------------------------------------
+
     def getHouseHeight(self):
         return self.house.height
     
-    # --------------------------------------------------------------
+
     def getOpt_SampleSeed(self): return self.flags['SCEN_SEED_RANDOM']
     def setOpt_SampleSeed(self, b=True): self.flags['SCEN_SEED_RANDOM'] = b
     def getOpt_DmgDistribute(self): return self.flags['SCEN_DMG_DISTRIBUTE']
@@ -193,7 +193,7 @@ class Scenario(object):
     def getOpt_VulnFitLog(self): return self.flags['SCEN_VULN_FITLOG']
     def setOpt_VulnFitLog(self, b=True): self.flags['SCEN_VULN_FITLOG'] = b
     
-    # --------------------------------------------------------------
+
     def storeToCSV(self, fileName):
         try:
             f = open(fileName, 'w')
@@ -234,7 +234,7 @@ class Scenario(object):
         except Exception, e:
             print 'import_model(): %s' % e
     
-# --------------------------------------------------------------
+
 def loadFromCSV(fileName): 
     # read them all in as strings into a simple dict
     args = {}
@@ -342,7 +342,7 @@ def loadFromCSV(fileName):
     s.updateModel()        
     return s
 
-# --------------------------------------------------------------
+
 if __name__ == '__main__': 
     import unittest
     

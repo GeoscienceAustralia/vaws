@@ -4,17 +4,17 @@
 import numpy
 from scipy.optimize.minpack import leastsq
  
-# --------------------------------------------------------------
+
 def single_exponential_given_V(A, x_arr):
     return ( 1 - numpy.exp( -numpy.exp( (numpy.log(x_arr) - A[0]) / A[1] ) ) )
 
-# --------------------------------------------------------------
+
 def objective(A, x_arr, obs_arr):
     y = single_exponential_given_V(A, x_arr)
     diff = obs_arr - y
     return diff
 
-# --------------------------------------------------------------
+
 def generate_observations(coeff_arr, x_arr, max_perc_err=0):
     yarr = single_exponential_given_V(coeff_arr, x_arr)
     if max_perc_err > 0:
@@ -22,7 +22,7 @@ def generate_observations(coeff_arr, x_arr, max_perc_err=0):
         yarr += 0.2 * error_perc_arr
     return yarr
 
-# --------------------------------------------------------------
+
 def calc_alpha_beta(ws1, di1, ws2, di2):
     a = numpy.log(ws1/ws2)
     if di1 == 1.0: di1 = 0.99   # for the call to log
@@ -34,7 +34,7 @@ def calc_alpha_beta(ws1, di1, ws2, di2):
     beta = numpy.log( ws1 / numpy.power(b, alpha) ) 
     return alpha, beta
     
-# --------------------------------------------------------------
+
 def generate_guess(wind_speeds, damage_indexes):
     i = numpy.searchsorted(damage_indexes, 0.01, side='right')
     if i == damage_indexes.size:
@@ -64,7 +64,7 @@ def generate_guess(wind_speeds, damage_indexes):
     a2, b2 = calc_alpha_beta(ws2, di2, ws0, di0)
     return (a1+a2)/2, (b1+b2)/2
 
-# --------------------------------------------------------------  
+
 def fit_curve(x_arr, obs_arr, verbose=False):
     guess_alpha, guess_beta = generate_guess(x_arr, obs_arr)
     guess_x0 = [guess_beta, guess_alpha]            

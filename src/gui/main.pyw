@@ -15,7 +15,6 @@ from mixins import PersistSizePosMixin, setupTable, finiTable
 
 myapp = None
     
-# -----------------------------------------------------------------------------   
 def scenarioDICallback(V, di, percLoops):
     myapp.statusProgressBar.setValue(percLoops)
     QApplication.processEvents()
@@ -25,7 +24,6 @@ def scenarioDICallback(V, di, percLoops):
     else:
         return True
         
-# -----------------------------------------------------------------------------   
 class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
     def __init__(self, splash_img=None, splash_time_secs=0, parent=None):
         super(MyForm, self).__init__(parent)
@@ -873,7 +871,6 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
                     fig.canvas.draw()
                     plt.show()    
         
-# -----------------------------------------------------------------------------            
 def run_gui(dbpath='../model.db'):
     logger.configure(logger.LOGGING_NONE)
     database.configure(dbpath)

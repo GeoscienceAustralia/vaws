@@ -9,6 +9,5 @@ import sys
 if not hasattr(sys, "frozen"):
 	import customboot
 	
-# -----------------------------------------------------------------------------   
 if __name__ == '__main__':
 	gui.main.run_gui('model.db')

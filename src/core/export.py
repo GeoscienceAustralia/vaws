@@ -4,7 +4,7 @@ Created on 17/08/2009
 @author: u13684
 '''
 
-# -----------------------------------------
+# -------------
 def export_model():
     print 'Exporting Wind Vulnerability Model Data From Stage...'
 
