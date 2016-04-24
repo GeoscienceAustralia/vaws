@@ -1,14 +1,15 @@
-'''
+"""
     Import Module - import all our CSV data into a fresh database
         - should only run as part of 'packaging' process.
         - harvest house types found within subfolders
-'''
+"""
 import os.path
 import sys
 import datetime
+import pandas as pd
+
 import database
 import debris
-import csvarray
 import house
 
 
@@ -20,15 +21,16 @@ def import_house(arg, dirname, names):
             
 
 def loadTerrainProfileFromCSV(fileBase, tcat):
-    fileName = fileBase + tcat + '.csv'
-    x = csvarray.readArrayFromCSV(fileName, "i4,f4,f4,f4,f4,f4,f4,f4,f4,f4,f4")
     db = database.db
-    for row in x:
-        z = int(row[0])
-        for profile in range(1, 11):
-            m = row[profile]         
-            ins = db.terrain_table.insert().values(tcat=tcat, profile=profile, z=z, m=m)
-            db.session.execute(ins) 
+    fileName = fileBase + tcat + '.csv'
+    x = pd.read_csv(fileName, skiprows=1, header=None)
+    for _, row in x.iterrows():
+        for i, value in enumerate(row[1:], 1):
+            ins = db.terrain_table.insert().values(tcat=tcat,
+                                                   profile=i,
+                                                   z=row[0],
+                                                   m=value)
+            db.session.execute(ins)
     db.session.commit()
     
 
@@ -41,37 +43,38 @@ def loadTerrainProfilesFrom(path):
     
 
 def loadDebrisTypes(fileName):
-    x = csvarray.readArrayFromCSV(fileName, "S50,f4")
     db = database.db
-    for row in x:
+    x = pd.read_csv(fileName)
+    for _, row in x.iterrows():
         ins = db.debris_types_table.insert().values(name=row[0], cdav=row[1])
         db.session.execute(ins)
     db.session.commit()
     
 
 def loadDebrisRegions(fileName):
-    x = csvarray.readArrayFromCSV(fileName, "S50,f4,f4,f4,f4,f4,f4,f4,f4,f4,f4,f4,f4,f4,f4,f4,f4,f4")
-    for row in x:
-        
-        tmp = debris.DebrisRegion(name=row[0], 
+    x = pd.read_csv(fileName)
+
+    for _, row in x.iterrows():
+
+        tmp = debris.DebrisRegion(name=row[0],
                                   cr=row[1],
                                   cmm=row[2],
                                   cmc=row[3],
                                   cfm=row[4],
                                   cfc=row[5],
-                                  rr=row[6], 
+                                  rr=row[6],
                                   rmm=row[7],
                                   rmc=row[8],
                                   rfm=row[9],
                                   rfc=row[10],
-                                  pr=row[11], 
+                                  pr=row[11],
                                   pmm=row[12],
                                   pmc=row[13],
-                                  pfm=row[14], 
-                                  pfc=row[15], 
-                                  alpha=row[16], 
+                                  pfm=row[14],
+                                  pfc=row[15],
+                                  alpha=row[16],
                                   beta=row[17])
-        
+
         database.db.session.add(tmp)
     database.db.session.commit()
     
@@ -115,7 +118,3 @@ if __name__ == '__main__':
     sys.excepthook = debugexcept
     
     import_model('../../data/', '../model.db')
-
-
-
-

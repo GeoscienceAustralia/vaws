@@ -8,7 +8,6 @@
 """
 import house
 import database
-import csvarray
 import pandas as pd
 import debris
 from numpy.random import random_integers
@@ -361,7 +360,6 @@ def loadFromCSV(fileName):
 if __name__ == '__main__': 
     import unittest
     import os
-    import copy
 
     database.configure()
 

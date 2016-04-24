@@ -5,13 +5,14 @@
 """
 from sqlalchemy import Integer, String, Float, Column, ForeignKey
 from sqlalchemy.orm import relation
+import pandas as pd
+
 import database
 import connection_type
 import connection
 import zone
 import influence
 import damage_costing
-import csvarray
 import wateringress
 
 zoneByLocationMap = {}
@@ -176,10 +177,10 @@ class House(database.Base):
 
 
 def loadStructurePatchesFromCSV(fileName, house):
-    ''' 
-    Load structural influence patches CSV - 
+    """
+    Load structural influence patches CSV -
     format is: damaged_conn, target_conn, zone, infl, zone, infl,....
-    '''
+    """
     db = database.db
     lineCount = 0
     for line in open(fileName, 'r'):
@@ -275,8 +276,8 @@ def queryHouseWithName(hn):
 
 
 def loadFromCSV(fileName):
-    x = csvarray.readArrayFromCSV(fileName, "S50,f4,f4,f4,f4,f4,f4,f4,i4,i4")
-    for row in x:
+    x = pd.read_csv(fileName)
+    for _, row in x.iterrows():
         tmp = House(house_name=row[0],
                     replace_cost=row[1],
                     height=row[2],
@@ -293,26 +294,23 @@ def loadFromCSV(fileName):
 
 
 def loadConnectionTypeGroupsFromCSV(fileName, house):
-    x = csvarray.readArrayFromCSV(fileName, "S50,i4,S50,S50,f4,i4,i4,i4")
-    for row in x:
+    x = pd.read_csv(fileName)
+    for _, row in x.iterrows():
         tmp = connection_type.ConnectionTypeGroup(group_name=row[0],
-                                                  distribution_order=int(
-                                                      row[1]),
+                                                  distribution_order=row[1],
                                                   distribution_direction=row[2],
                                                   trigger_collapse_at=row[4],
-                                                  patch_distribution=int(
-                                                      row[5]),
-                                                  set_zone_to_zero=int(row[6]),
-                                                  water_ingress_order=int(
-                                                      row[7]))
+                                                  patch_distribution=row[5],
+                                                  set_zone_to_zero=row[6],
+                                                  water_ingress_order=row[7])
         tmp.costing = house.getCostingByName(row[3])
         house.conn_type_groups.append(tmp)
     database.db.session.commit()
 
 
 def loadConnectionTypesFromCSV(fileName, house):
-    x = csvarray.readArrayFromCSV(fileName, "S50,f4,f4,f4,f4,S50,f4")
-    for row in x:
+    x = pd.read_csv(fileName)
+    for _, row in x.iterrows():
         tmp = connection_type.ConnectionType(row[0], row[6], row[1], row[2],
                                              row[3], row[4])
         tmp.group = house.getConnTypeGroupByName(row[5])
@@ -321,8 +319,8 @@ def loadConnectionTypesFromCSV(fileName, house):
 
 
 def loadConnectionsFromCSV(fileName, house):
-    x = csvarray.readArrayFromCSV(fileName, "S50,S50,S50,i4")
-    for row in x:
+    x = pd.read_csv(fileName)
+    for _, row in x.iterrows():
         tmp = connection.Connection(connection_name=row[0], edge=int(row[3]))
         tmp.ctype = house.getConnTypeByName(row[1])
         tmp.zone_id = house.getZoneByName(row[2]).id
@@ -331,19 +329,18 @@ def loadConnectionsFromCSV(fileName, house):
 
 
 def loadDamageCostingsFromCSV(fileName, house):
-    x = csvarray.readArrayFromCSV(fileName,
-                                  "S50,f4,f4,i4,f4,f4,f4,f4,i4,f4,f4,f4")
-    for row in x:
+    x = pd.read_csv(fileName)
+    for _, row in x.iterrows():
         tmp = damage_costing.DamageCosting(costing_name=row[0],
                                            area=row[1],
-                                           envelope_factor_formula_type=int(
-                                               row[3]),
+                                           envelope_factor_formula_type=
+                                               row[3],
                                            envelope_repair_rate=row[2],
                                            env_coeff_1=row[4],
                                            env_coeff_2=row[5],
                                            env_coeff_3=row[6],
-                                           internal_factor_formula_type=int(
-                                               row[8]),
+                                           internal_factor_formula_type=
+                                               row[8],
                                            internal_repair_rate=row[7],
                                            int_coeff_1=row[9],
                                            int_coeff_2=row[10],
@@ -353,8 +350,8 @@ def loadDamageCostingsFromCSV(fileName, house):
 
 
 def loadDamageFactoringsFromCSV(fileName, house):
-    x = csvarray.readArrayFromCSV(fileName, "S50,S50")
-    for row in x:
+    x = pd.read_csv(fileName)
+    for _, row in x.iterrows():
         parent_id = 0
         factor_id = 0
         for ctg in house.conn_type_groups:
@@ -375,8 +372,8 @@ def loadDamageFactoringsFromCSV(fileName, house):
 
 
 def loadWaterCostingsFromCSV(fileName, house):
-    x = csvarray.readArrayFromCSV(fileName, "S50,f4,f4,i4,f4,f4,f4")
-    for row in x:
+    x = pd.read_csv(fileName)
+    for _, row in x.iterrows():
         tmp = wateringress.WaterIngressCosting(name=row[0],
                                                wi=row[1],
                                                base_cost=row[2],
@@ -389,16 +386,9 @@ def loadWaterCostingsFromCSV(fileName, house):
     database.db.session.commit()
 
 
-
 def loadZoneFromCSV(fileName, house):
-    format = "S50,f4,\
-f4,f4,f4,f4,f4,f4,f4,f4,\
-f4,f4,f4,f4,f4,f4,f4,f4,\
-f4,f4,f4,f4,f4,f4,f4,f4,\
-i4,i4,i4,i4,i4,i4,i4,i4,\
-f4,i4"
-    x = csvarray.readArrayFromCSV(fileName, format)
-    for row in x:
+    x = pd.read_csv(fileName)
+    for _, row in x.iterrows():
         tmp = zone.Zone(zone_name=row[0],
                         zone_area=row[1],
                         coeff_N=row[6],
@@ -439,7 +429,6 @@ f4,i4"
     database.db.session.commit()
 
 
-
 def loadConnectionInfluencesFromCSV(fileName, house):
     # input: connection_name, zone1_name, zone1_infl, (.....)
     lineCount = 0
@@ -467,41 +456,37 @@ def loadConnectionInfluencesFromCSV(fileName, house):
     database.db.session.commit()
 
 
-
 def loadWallsFromCSV(fileName, house):
-    x = csvarray.readArrayFromCSV(fileName, "i4,f4")
-    for row in x:
-        tmp = Wall(direction=int(row[0]), area=row[1])
+    x = pd.read_csv(fileName)
+    for _, row in x.iterrows():
+        tmp = Wall(direction=row[0], area=row[1])
         house.walls.append(tmp)
     database.db.session.commit()
 
 
-
 def loadCoverageTypesFromCSV(fileName, house):
-    x = csvarray.readArrayFromCSV(fileName, "S50,f4,f4")
-    for row in x:
+    x = pd.read_csv(fileName)
+    for _, row in x.iterrows():
         tmp = CoverageType(name=row[0], failure_momentum_mean=row[1],
                            failure_momentum_stddev=row[2])
         house.cov_types.append(tmp)
     database.db.session.commit()
 
 
-
 def loadCoveragesFromCSV(fileName, house):
-    x = csvarray.readArrayFromCSV(fileName, "S50,i4,f4,S50")
-    for row in x:
+    x = pd.read_csv(fileName)
+    for _, row in x.iterrows():
         tmp = Coverage(description=row[0], area=row[2])
         for covt in house.cov_types:
             if covt.name == row[3]:
                 tmp.type = covt
                 break
         for wall in house.walls:
-            if wall.direction == int(row[1]):
+            if wall.direction == row[1]:
                 tmp.wall_id = wall.id
                 wall.coverages.append(tmp)
                 break
     database.db.session.commit()
-
 
 
 def importDataFromPath(path):
@@ -539,6 +524,7 @@ def importDataFromPath(path):
 if __name__ == '__main__':
     import unittest
 
+    database.configure()
 
     class MyTestCase(unittest.TestCase):
         def test_constr(self):
