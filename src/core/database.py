@@ -23,17 +23,17 @@ class ForeignKeysListener(PoolListener):
             # print 'row: ', row
 
 
-def configure(model_db=None, verbose=False):
+def configure(model_db=None, verbose=False, flag_make=False):
 
     if not model_db:
         path_, _ = os.path.split(os.path.abspath(__file__))
         model_db = os.path.abspath(os.path.join(path_, '../model.db'))
 
-    if not os.path.exists(model_db):
+    if not (flag_make or os.path.exists(model_db)):
         msg = 'Error: database file {} not found'.format(model_db)
         sys.exit(msg)
 
-    print 'model db is loaded from: {}'.format(model_db)
+    print 'model db is loaded from or created to : {}'.format(model_db)
 
     global db
     db = DatabaseManager(model_db, verbose)

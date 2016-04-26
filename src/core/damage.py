@@ -998,8 +998,6 @@ def main():
     else:
         model_db = os.path.abspath(os.path.join(os.getcwd(),
                                                 options.model_database))
-    database.configure(model_db)
-
     if options.output_folder is None:
         options.output_folder = os.path.abspath(os.path.join(path_,
                                                              './outputs'))
@@ -1016,11 +1014,14 @@ def main():
     if options.data_folder:
         print ('Importing database from folder: {} '
                'to: {}').format(options.data_folder, options.model_database)
+
+        database.configure(model_db, flag_make=True)
         dbimport.import_model(options.data_folder, options.model_database)
         database.db.close()
         return
 
     if options.scenario_filename:
+        database.configure(model_db)
         s = scenario.loadFromCSV(options.scenario_filename)
         simulate(s, options)
         database.db.close()

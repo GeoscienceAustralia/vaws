@@ -8,48 +8,78 @@ import os
 import filecmp
 import pandas as pd
 
-from core.damage import WindDamageSimulator
 import core.database as database
-import core.scenario as scenario
+import core.dbimport as dbimport
 
 
 class options(object):
 
     def __init__(self):
-        self.output_folder = None
+        self.model_database = None
+        self.data_folder = None
 
 
-class TestWindDamageSimulator(unittest.TestCase):
+class TestDBimport(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
 
-        path = '/'.join(__file__.split('/')[:-1])
-        cls.path_reference = os.path.join(path, 'test/output')
-        cls.path_output = os.path.join(path, 'output')
+        cls.path = '/'.join(__file__.split('/')[:-1])
 
-        # model_db = os.path.join(path_, './core/output/model.db')
-        # model_db = os.path.join(path_, '../data/model.db')
-        model_db = os.path.join(path, 'model.db')
-        database.configure(model_db)
+        cls.ref_model = os.path.join(cls.path, 'test/model.db')
+        cls.out_model = os.path.join(cls.path, 'core/output/model.db')
 
-        scenario1 = scenario.loadFromCSV(os.path.join(path,
+        cls.path_output = os.path.join(cls.path, 'core/output')
+        cls.path_reference = os.path.join(cls.path, 'test/output')
+
+        option = options()
+        option.model_database = cls.out_model
+        option.data_folder = os.path.join(cls.path, '../data')
+
+        database.configure(option.model_database, flag_make=True)
+        dbimport.import_model(option.data_folder, option.model_database)
+        # database.db.close()
+
+    @classmethod
+    def tearDown(cls):
+        database.db.close()
+
+    def test_consistency_model_db(self):
+
+        try:
+            self.assertTrue(filecmp.cmp(self.ref_model,
+                                        self.out_model))
+        except AssertionError:
+            print('{} and {} are different'.format(self.ref_model,
+                                                   self.out_model))
+
+'''
+class TestDamagge(unittest.TestCase):
+
+    @classmethod
+    def setUpClass(cls):
+
+        cls.path = '/'.join(__file__.split('/')[:-1])
+        cls.out_model = os.path.join(cls.path, './core/output/model.db')
+
+        cls.path_output = os.path.join(cls.path, './core/output')
+        cls.path_reference = os.path.join(cls.path, './test/output')
+
+        # running with created database
+        database.configure(cls.out_model)
+        scenario1 = scenario.loadFromCSV(os.path.join(cls.path,
                                                       'scenarios/carl1.csv'))
         scenario1.flags['SCEN_SEED_RANDOM'] = True
 
         option = options()
         option.output_folder = cls.path_output
 
-        cls.mySim = WindDamageSimulator(option, None, None)
-        cls.mySim.set_scenario(scenario1)
-        cls.mySim.simulator_mainloop()
+        mySim = WindDamageSimulator(option, None, None)
+        mySim.set_scenario(scenario1)
+        mySim.simulator_mainloop()
 
-    @classmethod
-    def tearDownClass(cls):
+    def tearDown(self):
         database.db.close()
-
-        # delete test/output
-        # os.path.join(path_, 'test/output')
 
     def check_file_consistency(self, file1, file2, **kwargs):
 
@@ -99,6 +129,7 @@ class TestWindDamageSimulator(unittest.TestCase):
         file1 = os.path.join(self.path_reference, filename)
         file2 = os.path.join(self.path_output, filename)
         self.check_file_consistency(file1, file2)
+'''
 
 if __name__ == '__main__':
     unittest.main()

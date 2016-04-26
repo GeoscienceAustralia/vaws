@@ -25,14 +25,14 @@ class Connection(database.Base):
                              backref=backref('located_conns'))
     zones = relation(influence.Influence)
 
-    def __init__(self):
-        self.result_strength = 0.0
-        self.result_deadload = 0.0
-        self.result_failure_v_raw = 0.0
-        self.result_damaged = False
-        self.result_damaged_report = {}
-        self.result_damage_distributed = False
-        self.result_failure_v = None
+    # def __init__(self):
+    #     self.result_strength = 0.0
+    #     self.result_deadload = 0.0
+    #     self.result_failure_v_raw = 0.0
+    #     self.result_damaged = False
+    #     self.result_damaged_report = {}
+    #     self.result_damage_distributed = False
+    #     self.result_failure_v = None
 
     def __str__(self):
         return '(%s @ %s)' % (self.connection_name, self.location_zone)
