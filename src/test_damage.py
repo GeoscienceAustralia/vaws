@@ -52,8 +52,10 @@ class TestWindDamageSimulator(unittest.TestCase):
             file1 = os.path.join(self.path_reference, item)
             file2 = os.path.join(self.path_output, item)
 
-            self.assertTrue(filecmp.cmp(file1, file2))
-
+            try:
+                self.assertTrue(filecmp.cmp(file1, file2))
+            except AssertionError:
+                print('{}:{}'.format(file1, file2))
 
 if __name__ == '__main__':
     unittest.main()
