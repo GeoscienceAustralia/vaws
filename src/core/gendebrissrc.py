@@ -1,10 +1,10 @@
-'''
+"""
     Generate Debris Sources module
-        - given radius (max debris distance), angle (of debris cone), building spacing and method (grid or staggered)
+        - given radius (max debris distance), angle (of debris cone),
+        building spacing and method (grid or staggered)
         - output array of (x,y) sources (ie houses)
-'''
+"""
 import math
-import numpy
 
 
 def genGrid(radius, angle, spacing, restrict_yord=False):
@@ -13,10 +13,11 @@ def genGrid(radius, angle, spacing, restrict_yord=False):
     yord = 0
     yordlim = radius/6.0
     while xord <= radius:
-        srcs.append((xord,yord))
+        srcs.append((xord, yord))
         yordmax = xord * math.tan(math.radians(angle)/2.0)
         if restrict_yord:
-            yordmax = yordlim if yordlim <= yordmax else yordmax
+            yordmax = min(yordmax, yordlim)
+
         while yord < yordmax:
             yord = yord + spacing
             if yord <= yordmax:
@@ -35,7 +36,8 @@ def genStaggered(radius, angle, spacing, restrict_yord=False):
     while xord <= radius:
         yordmax = xord * math.tan(math.radians(angle)/2.0)
         if restrict_yord:
-            yordmax = yordlim if yordlim <= yordmax else yordmax
+            yordmax = min(yordlim, yordmax)
+
         if int(xord/spacing) % 2 == 1:
             srcs.append((xord,yord))
             yord = yord + spacing
@@ -56,6 +58,7 @@ def genStaggered(radius, angle, spacing, restrict_yord=False):
 # unit tests
 if __name__ == '__main__':    
     import unittest
+    import numpy as np
     
     class SourceGeneratorTestCase(unittest.TestCase):
         def test_grid(self):
@@ -67,7 +70,7 @@ if __name__ == '__main__':
         def test_plot(self):
             from matplotlib.pyplot import show, scatter
             sources = genStaggered(100.0, 45.0, 20.0, True)
-            a = numpy.array(sources)
+            a = np.array(sources)
             scatter(a[:,0], a[:,1], s=50)
             show()
             

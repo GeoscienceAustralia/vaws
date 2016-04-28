@@ -29,6 +29,10 @@ static int not_doublevector(PyArrayObject *vec)  {
 }
 
 static double lognormal(double m, double stddev) {
+/*
+m: mean of x
+stddev: std of x
+*/
 	return gsl_ran_lognormal(g_rng,
 			log(m) - 0.5 * log(1.0 + (stddev*stddev)/(m*m)),
 			sqrt(log((stddev*stddev)/(m*m) + 1)) );

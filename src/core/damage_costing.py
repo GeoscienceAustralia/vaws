@@ -4,8 +4,6 @@
         - imported from house
         - referenced by damage module to cost damages
 """
-import math
-import numpy as np
 from sqlalchemy import Integer, String, Float, Column, ForeignKey
 from sqlalchemy.orm import relation
 import database

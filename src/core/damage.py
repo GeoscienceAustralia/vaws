@@ -125,7 +125,7 @@ class WindDamageSimulator(object):
         else:
             output = __import__('core.output').output
 
-        terrain.populate_terrain_cache()
+        terrain.populate_wind_profile_by_terrain()
         self.clear_loop_results()
 
     @staticmethod

@@ -10,6 +10,7 @@ Debris Module - adapted from JDH Consulting and Martin's work
     - handle collisions (impact)
 """
 import numpy as np
+import math
 from sqlalchemy import String, Float, Column
 
 import gendebrissrc
@@ -199,12 +200,14 @@ class DebrisManager(object):
         self.result_breached = False
         self.result_items = []
 
-        A = [self.region.beta, self.region.alpha]
+        # A = [self.region.beta, self.region.alpha]
 
-        mean_prev = curve.single_exponential_given_V(A,
-                                                     wind_speed -
-                                                     self.wind_step)
-        mean_now = curve.single_exponential_given_V(A, wind_speed)
+        mean_prev = curve.single_exponential_given_V(self.region.beta,
+                                                     self.region.alpha,
+                                                     wind_speed - self.wind_step)
+        mean_now = curve.single_exponential_given_V(self.region.beta,
+                                                    self.region.alpha,
+                                                    wind_speed)
         mean_delta = mean_now - mean_prev
 
         # determine how many items each source will have
@@ -307,12 +310,14 @@ class DebrisManager(object):
         for wall in self.front_facing_walls:
             for cov in wall.coverages:
                 q = cov.area
+
                 Ed = engine.lognormal(cov.type.failure_momentum_mean,
                                       cov.type.failure_momentum_stddev)
+
                 Cum_Ed = engine.percentileofscore(self.result_scores.tolist(),
                                                   Ed)
                 if cov.description == 'window':
-                    Pd = 1.0 - np.exp(-Nv * (q / A) * (1.0 - Cum_Ed))
+                    Pd = 1.0 - math.exp(-Nv * (q / A) * (1.0 - Cum_Ed))
                     dice = np.random.random()
                     if dice <= Pd:
                         cov.result_intact = False
