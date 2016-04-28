@@ -27,6 +27,7 @@ class Scenario(object):
         self.terrain_category = tcat
 
         # FIXME HARDCODED
+        # name, prob, mean, cov
         self.construction_levels = [['low', 0.33, 0.9, 0.58],
                                     ['medium', 0.33, 1.0, 0.58],
                                     ['high', 0.33, 1.1, 0.58]]

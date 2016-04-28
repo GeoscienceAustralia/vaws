@@ -484,7 +484,7 @@ class WindDamageSimulator(object):
                                   self.s.wind_speed_num_steps)
 
         for wind_speed in self.speeds:
-            WindDamageSimulator.result_buckets[wind_speed] = \
+            type(self).result_buckets[wind_speed] = \
                 [0., [], [], 0, [], [], [], []]
 
         # setup connections and groups
@@ -519,6 +519,8 @@ class WindDamageSimulator(object):
         # SIMULATE HOUSES
         house_results = []
         keep_looping = True
+
+        # iteration over samples
         for house_number in range(self.s.num_iters):
             self.house_number = house_number
             if not keep_looping:
@@ -536,6 +538,7 @@ class WindDamageSimulator(object):
             for conn_type in self.s.house.conn_types:
                 self.dmg_map[conn_type.connection_type] = 99999
 
+            # iteration over wind speed list
             for wind_speed in self.speeds:
 
                 # simulate sampled house
@@ -543,20 +546,20 @@ class WindDamageSimulator(object):
                 self.run_simulation(wind_speed)
 
                 # collect results
-                WindDamageSimulator.result_buckets[wind_speed][WindDamageSimulator.FLD_WI_AT].append(self.water_ingress_cost)
-                WindDamageSimulator.result_buckets[wind_speed][WindDamageSimulator.FLD_DIARRAY].append(self.di)
+                type(self).result_buckets[wind_speed][type(self).FLD_WI_AT].append(self.water_ingress_cost)
+                type(self).result_buckets[wind_speed][type(self).FLD_DIARRAY].append(self.di)
                 if bDebris:
-                    WindDamageSimulator.result_buckets[wind_speed][WindDamageSimulator.FLD_DEBRIS_AT].append(self.debrisManager.result_dmgperc)
-                    WindDamageSimulator.result_buckets[wind_speed][WindDamageSimulator.FLD_DEBRIS_NV_AT].append(self.debrisManager.result_nv)
-                    WindDamageSimulator.result_buckets[wind_speed][WindDamageSimulator.FLD_DEBRIS_NUM_AT].append(self.debrisManager.result_num_items)
+                    type(self).result_buckets[wind_speed][type(self).FLD_DEBRIS_AT].append(self.debrisManager.result_dmgperc)
+                    type(self).result_buckets[wind_speed][type(self).FLD_DEBRIS_NV_AT].append(self.debrisManager.result_nv)
+                    type(self).result_buckets[wind_speed][type(self).FLD_DEBRIS_NUM_AT].append(self.debrisManager.result_num_items)
                 else:
-                    WindDamageSimulator.result_buckets[wind_speed][WindDamageSimulator.FLD_DEBRIS_AT].append(0.0)
-                    WindDamageSimulator.result_buckets[wind_speed][WindDamageSimulator.FLD_DEBRIS_NV_AT].append(0)
-                    WindDamageSimulator.result_buckets[wind_speed][WindDamageSimulator.FLD_DEBRIS_NUM_AT].append(0)
+                    type(self).result_buckets[wind_speed][type(self).FLD_DEBRIS_AT].append(0.0)
+                    type(self).result_buckets[wind_speed][type(self).FLD_DEBRIS_NV_AT].append(0)
+                    type(self).result_buckets[wind_speed][type(self).FLD_DEBRIS_NUM_AT].append(0)
 
                 # for all houses, count the number that were pressurized at this wind_speed   
                 if self.cpi != 0:
-                    WindDamageSimulator.result_buckets[wind_speed][WindDamageSimulator.FLD_PRESSURIZED_COUNT] += 1
+                    type(self).result_buckets[wind_speed][type(self).FLD_PRESSURIZED_COUNT] += 1
 
                 # interact with GUI listener
                 if self.diCallback:
@@ -597,21 +600,21 @@ class WindDamageSimulator(object):
             for wind_speed in self.speeds:
 
                 # write debris output file
-                debrisarray = np.array(WindDamageSimulator.result_buckets[wind_speed][WindDamageSimulator.FLD_DEBRIS_AT])
-                perc = WindDamageSimulator.result_buckets[wind_speed][WindDamageSimulator.FLD_PRESSURIZED_COUNT]/float(self.s.num_iters) * 100.0
+                debrisarray = np.array(type(self).result_buckets[wind_speed][type(self).FLD_DEBRIS_AT])
+                perc = type(self).result_buckets[wind_speed][type(self).FLD_PRESSURIZED_COUNT]/float(self.s.num_iters) * 100.0
                 self.file_debris.write('%.3f,%.3f,%.3f\n' % (wind_speed,
                                                              perc,
                                                              np.mean(debrisarray) * 100.0))
 
                 # calculate and store DI mean
-                diarray = np.array(WindDamageSimulator.result_buckets[wind_speed][WindDamageSimulator.FLD_DIARRAY])
-                WindDamageSimulator.result_buckets[wind_speed][WindDamageSimulator.FLD_MEAN] = np.mean(diarray)
+                diarray = np.array(type(self).result_buckets[wind_speed][type(self).FLD_DIARRAY])
+                type(self).result_buckets[wind_speed][type(self).FLD_MEAN] = np.mean(diarray)
 
                 # calculate fragilities
-                for thr in WindDamageSimulator.fragility_thresholds:
+                for thr in type(self).fragility_thresholds:
                     filter_ = diarray > thr[1]
                     p = (float(diarray[filter_].size)) / (float(diarray.size))
-                    WindDamageSimulator.result_buckets[wind_speed][WindDamageSimulator.FLD_FRAGILITIES].append(p)
+                    type(self).result_buckets[wind_speed][type(self).FLD_FRAGILITIES].append(p)
 
         # produce damage map report
         self.file_dmg.write('Number of Damaged Houses\n')
@@ -669,32 +672,32 @@ class WindDamageSimulator(object):
     def get_windresults_perc_houses_breached(self):
         breaches = []
         for wind_speed in self.speeds:
-            perc = WindDamageSimulator.result_buckets[wind_speed][WindDamageSimulator.FLD_PRESSURIZED_COUNT]/float(self.s.num_iters) * 100.0
+            perc = type(self).result_buckets[wind_speed][type(self).FLD_PRESSURIZED_COUNT]/float(self.s.num_iters) * 100.0
             breaches.append(perc)
         return self.speeds, breaches
 
     def get_windresults_samples_perc_debris_damage(self):
         samples = {}
         for wind_speed in self.speeds:
-            samples[wind_speed] = WindDamageSimulator.result_buckets[wind_speed][WindDamageSimulator.FLD_DEBRIS_AT]
+            samples[wind_speed] = type(self).result_buckets[wind_speed][type(self).FLD_DEBRIS_AT]
         return self.speeds, samples
 
     def get_windresults_samples_nv(self):
         samples = {}
         for wind_speed in self.speeds:
-            samples[wind_speed] = WindDamageSimulator.result_buckets[wind_speed][WindDamageSimulator.FLD_DEBRIS_NV_AT]
+            samples[wind_speed] = type(self).result_buckets[wind_speed][type(self).FLD_DEBRIS_NV_AT]
         return self.speeds, samples
 
     def get_windresults_samples_num_items(self):
         samples = {}
         for wind_speed in self.speeds:
-            samples[wind_speed] = WindDamageSimulator.result_buckets[wind_speed][WindDamageSimulator.FLD_DEBRIS_NUM_AT]
+            samples[wind_speed] = type(self).result_buckets[wind_speed][type(self).FLD_DEBRIS_NUM_AT]
         return self.speeds, samples
 
     def get_windresults_samples_perc_water_ingress(self):
         samples = {}
         for wind_speed in self.speeds:
-            samples[wind_speed] = WindDamageSimulator.result_buckets[wind_speed][WindDamageSimulator.FLD_WI_AT]
+            samples[wind_speed] = type(self).result_buckets[wind_speed][type(self).FLD_WI_AT]
         return self.speeds, samples
 
     def plot_connection_damage(self, vRed, vBlue):
@@ -784,12 +787,12 @@ class WindDamageSimulator(object):
     def fit_fragility_curves(self):
         # unpack the fragility means into seperate arrays for fit/plot.
         self.frag_levels = []
-        for thr in WindDamageSimulator.fragility_thresholds:
+        for thr in type(self).fragility_thresholds:
             self.frag_levels.append(np.zeros(len(self.speeds)))
         for i, wind_speed in enumerate(self.speeds):
             for frag_ind in range(len(self.frag_levels)):
                 self.frag_levels[frag_ind][i] = \
-                    WindDamageSimulator.result_buckets[wind_speed][WindDamageSimulator.FLD_FRAGILITIES][frag_ind]
+                    type(self).result_buckets[wind_speed][type(self).FLD_FRAGILITIES][frag_ind]
 
         # fit curves and store results
         coeff_arr = []
@@ -802,16 +805,16 @@ class WindDamageSimulator(object):
                 if frag_ind > 0:
                     self.file_frag.write(',')
 
-                label = '%s(%.2f)' % (WindDamageSimulator.fragility_thresholds[frag_ind][0],
-                                    WindDamageSimulator.fragility_thresholds[frag_ind][1])
+                label = '%s(%.2f)' % (type(self).fragility_thresholds[frag_ind][0],
+                                    type(self).fragility_thresholds[frag_ind][1])
                 self.file_frag.write('%f,%f' % (coeff_arr[0], coeff_arr[1]))
-                WindDamageSimulator.fragility_thresholds[frag_ind][3] = \
+                type(self).fragility_thresholds[frag_ind][3] = \
                     CurvePlot(coeff_arr,
                               'lognormal',
                               self.s.wind_speed_min,
                               self.s.wind_speed_max,
                               label,
-                              WindDamageSimulator.fragility_thresholds[frag_ind][2])
+                              type(self).fragility_thresholds[frag_ind][2])
             except Exception, e:
                 print 'fit_fragility_curves failed to fit: coeff_arr: %s' % coeff_arr
                 print e
@@ -824,8 +827,8 @@ class WindDamageSimulator(object):
                                         self.frag_levels[frag_ind],
                                         '_nolegend_',
                                         0.3,
-                                        WindDamageSimulator.fragility_thresholds[frag_ind][2])
-            plot_obj = WindDamageSimulator.fragility_thresholds[frag_ind][3]
+                                        type(self).fragility_thresholds[frag_ind][2])
+            plot_obj = type(self).fragility_thresholds[frag_ind][3]
             if plot_obj:
                 plot_obj.plot_frag()
 
@@ -840,7 +843,7 @@ class WindDamageSimulator(object):
         ss = 0
         for i, wind_speed in enumerate(self.speeds):
             self.wind_speeds[i] = wind_speed
-            self.di_means[i] = WindDamageSimulator.result_buckets[wind_speed][WindDamageSimulator.FLD_MEAN]
+            self.di_means[i] = type(self).result_buckets[wind_speed][type(self).FLD_MEAN]
 
         if self.s.getOpt_VulnFitLog():
             self.A_final, self.ss = curve_log.fit_curve(self.wind_speeds,
@@ -856,7 +859,7 @@ class WindDamageSimulator(object):
         # plot means
         if self.s.num_iters <= 100:
             for wind_speed in self.speeds:
-                damage_indexes = WindDamageSimulator.result_buckets[wind_speed][WindDamageSimulator.FLD_DIARRAY]
+                damage_indexes = type(self).result_buckets[wind_speed][type(self).FLD_DIARRAY]
                 output.plot_wind_event_damage([wind_speed]*len(damage_indexes),
                                               damage_indexes)
         output.plot_wind_event_mean(self.wind_speeds, self.di_means)
