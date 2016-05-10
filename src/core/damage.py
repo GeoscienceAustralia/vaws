@@ -160,7 +160,7 @@ class WindDamageSimulator(object):
         self.fragilities = []
 
     def set_wind_direction(self):
-        self.wind_orientation = self.s.getWindDirIndex()
+        self.wind_orientation = self.s.get_wind_dir_index()
         if self.debrisManager:
             self.debrisManager.set_wind_direction_index(self.wind_orientation)
 
@@ -168,7 +168,7 @@ class WindDamageSimulator(object):
         self.profile = np.random.random_integers(1, 10)
         self.mzcat = terrain.calculateMZCAT(self.s.terrain_category,
                                             self.profile,
-                                            self.s.getHouseHeight())
+                                            self.s.house.height)
 
     def calculate_qz(self, wind_speed):
         if self.s.regional_shielding_factor <= 0.85:
@@ -182,7 +182,7 @@ class WindDamageSimulator(object):
             self.qz = 0.6 * 1.0e-3 * (wind_speed * self.mzcat)**2
 
     def check_pressurized_failure(self, v):
-        if self.s.getOpt_Debris():
+        if self.s.flags['debris']:
             self.debrisManager.run(v)
             if self.cpi == 0 and self.debrisManager.get_breached():
                 self.cpi = 0.7
@@ -200,10 +200,11 @@ class WindDamageSimulator(object):
         self.construction_level = 'na'
         mean_factor = 1.0
         cov_factor = 1.0
-        if self.s.getOpt_ConstructionLevels():
+        if self.s.flags['construction_levels']:
             self.construction_level, mean_factor, cov_factor = \
                 self.s.sampleConstructionLevel()
 
+        # print('{}'.format(self.construction_level))
         connection.assign_connection_strengths(self.s.house.connections,
                                                mean_factor,
                                                cov_factor)
@@ -278,7 +279,7 @@ class WindDamageSimulator(object):
             self.di = 1.0
         else:
             self.water_ingress_cost = 0
-            if self.s.getOpt_WaterIngress():
+            if self.s.flags['water_ingress']:
                 self.water_ingress_cost = \
                     wateringress.get_costing_for_envelope_damage_at_v(
                         self.di,
@@ -413,7 +414,7 @@ class WindDamageSimulator(object):
                                  self.qz,
                                  self.Ms,
                                  self.s.building_spacing,
-                                 self.s.getOpt_DiffShielding())
+                                 self.s.flags['diff_shielding'])
 
         self.file_damage.write('%d,%.3f,%s' % (self.house_number+1,
                                                wind_speed,
@@ -426,7 +427,7 @@ class WindDamageSimulator(object):
                                              self.dmg_map,
                                              inflZonesByConn,
                                              connByTypeMap)
-        if self.s.getOpt_DmgDistribute():
+        if self.s.flags['dmg_distribute']:
             for ctg in self.s.house.conn_type_groups:
                 self.redistribute_damage(ctg)
         self.file_damage.write('\n')
@@ -473,7 +474,7 @@ class WindDamageSimulator(object):
         self.file_damage.write(header)
 
         # optionally seed random numbers
-        if self.s.getOpt_SampleSeed():
+        if self.s.flags['random_seed']:
             np.random.seed(42)
             zone.seed_scipy(42)
             engine.seed(42)
@@ -493,22 +494,22 @@ class WindDamageSimulator(object):
 
         # optionally create the debris manager and
         # make sure a wind orientation is set
-        bDebris = self.s.getOpt_Debris()
-        if bDebris:
+        bDebris = self.s.flags['debris']
+        if self.s.flags['debris']:
             self.debrisManager = debris.DebrisManager(
                 self.s.house,
                 self.s.region,
                 self.s.wind_speed_min,
                 self.s.wind_speed_max,
                 self.s.wind_speed_num_steps,
-                self.s.getOpt_DebrisStaggeredSources(),
+                self.s.flags['debris_staggered_sources'],
                 self.s.debris_radius,
                 self.s.debris_angle,
                 self.s.debris_extension,
                 self.s.building_spacing,
                 self.s.source_items,
-                self.s.flighttime_mean,
-                self.s.flighttime_stddev)
+                self.s.flight_time_mean,
+                self.s.flight_time_stddev)
         self.set_wind_direction()
 
         # gui bookkeeping
@@ -548,7 +549,7 @@ class WindDamageSimulator(object):
                 # collect results
                 type(self).result_buckets[wind_speed][type(self).FLD_WI_AT].append(self.water_ingress_cost)
                 type(self).result_buckets[wind_speed][type(self).FLD_DIARRAY].append(self.di)
-                if bDebris:
+                if self.s.flags['debris']:
                     type(self).result_buckets[wind_speed][type(self).FLD_DEBRIS_AT].append(self.debrisManager.result_dmgperc)
                     type(self).result_buckets[wind_speed][type(self).FLD_DEBRIS_NV_AT].append(self.debrisManager.result_nv)
                     type(self).result_buckets[wind_speed][type(self).FLD_DEBRIS_NUM_AT].append(self.debrisManager.result_num_items)
@@ -845,7 +846,7 @@ class WindDamageSimulator(object):
             self.wind_speeds[i] = wind_speed
             self.di_means[i] = type(self).result_buckets[wind_speed][type(self).FLD_MEAN]
 
-        if self.s.getOpt_VulnFitLog():
+        if self.s.flags['vul_fig_log']:
             self.A_final, self.ss = curve_log.fit_curve(self.wind_speeds,
                                                         self.di_means)
         else:
@@ -865,7 +866,7 @@ class WindDamageSimulator(object):
         output.plot_wind_event_mean(self.wind_speeds, self.di_means)
 
         # plot fitted curve (with previous dimmed red)
-        if self.s.getOpt_VulnFitLog():
+        if self.s.flags['vul_fit_log']:
             fn_form = 'lognormal'
         else:
             fn_form = 'original'
@@ -887,9 +888,9 @@ class WindDamageSimulator(object):
             self.mplDict['fragility'].axes.figure.canvas.draw()
             self.mplDict['vulnerability'].axes.cla()
             self.mplDict['vulnerability'].axes.figure.canvas.draw()
-        if self.s.getOpt_DmgPlotFragility():
+        if self.s.flags['dmg_plot_fragility']:
             self.plot_fragility(output_folder)
-        if self.s.getOpt_DmgPlotVuln():
+        if self.s.flags['dmg_plot_vul']:
             self.plot_vulnerability(output_folder)
             output.plot_wind_event_show(self.s.num_iters,
                                         self.s.wind_speed_min,

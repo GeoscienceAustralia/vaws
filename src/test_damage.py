@@ -34,8 +34,8 @@ class TestWindDamageSimulator(unittest.TestCase):
         database.configure(model_db)
 
         scenario1 = scenario.loadFromCSV(os.path.join(path,
-                                                      'scenarios/carl1.csv'))
-        scenario1.flags['SCEN_SEED_RANDOM'] = True
+                                                      'scenarios/carl1.cfg'))
+        scenario1.flags['seed_random'] = True
 
         option = options()
         option.output_folder = cls.path_output
