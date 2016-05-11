@@ -131,11 +131,8 @@ class WindDamageSimulator(object):
     @staticmethod
     def set_fragility_thresholds(thresholds):
         # thresholds is a dict in form {'slight': 0.0}
-        for thresh_key in thresholds:
-            for tup in WindDamageSimulator.fragility_thresholds:
-                if tup[0] == thresh_key:
-                    tup[1] = thresholds[thresh_key]
-                    break
+        for tup in WindDamageSimulator.fragility_thresholds:
+            tup[1] = thresholds[tup[0]]
 
     def set_scenario(self, s):
         """
@@ -803,6 +800,11 @@ class WindDamageSimulator(object):
                 coeff_arr, ss = curve_log.fit_curve(self.speeds,
                                                     self.frag_levels[frag_ind],
                                                     False)
+            except Exception, e:
+                print 'fit_fragility_curves failed to fit: coeff_arr: %s' % coeff_arr
+                print e
+            else:
+
                 if frag_ind > 0:
                     self.file_frag.write(',')
 
@@ -816,9 +818,7 @@ class WindDamageSimulator(object):
                               self.s.wind_speed_max,
                               label,
                               type(self).fragility_thresholds[frag_ind][2])
-            except Exception, e:
-                print 'fit_fragility_curves failed to fit: coeff_arr: %s' % coeff_arr
-                print e
+
 
         self.file_frag.write('\n')
 

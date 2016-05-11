@@ -2,6 +2,7 @@
 import sys
 import os
 import numpy as np
+import pandas as pd
 import datetime
 from optparse import OptionParser
 from version import VERSION_DESC
@@ -20,9 +21,6 @@ import wateringress
 import engine
 from house import zoneByLocationMap, connByZoneTypeMap, ctgMap, \
     connByTypeGroupMap, inflZonesByConn, connByTypeMap, connByIDMap, zoneByIDMap
-
-
-
 
 
 class CurvePlot(object):
@@ -61,24 +59,31 @@ class WindDamageSimulator(object):
     # subarrays are indexed by house(iteration)
 
     """
-    FLD_MEAN = 0
-    FLD_DIARRAY = 1
-    FLD_FRAGILITIES = 2
-    FLD_PRESSURIZED_COUNT = 3
-    FLD_DEBRIS_AT = 4
-    FLD_WI_AT = 5
-    FLD_DEBRIS_NV_AT = 6
-    FLD_DEBRIS_NUM_AT = 7
-    result_buckets = {}
+    # FLD_MEAN = 0
+    # FLD_DIARRAY = 1
+    # FLD_FRAGILITIES = 2
+    # FLD_PRESSURIZED_COUNT = 3
+    # FLD_DEBRIS_AT = 4
+    # FLD_WI_AT = 5
+    # FLD_DEBRIS_NV_AT = 6
+    # FLD_DEBRIS_NUM_AT = 7
+    result_buckets = pd.DataFrame(None, columns=['mean',
+                                                 'fragility',
+                                                 'damage_index',
+                                                 'pressurized_count',
+                                                 'debris',
+                                                 'water_ingress',
+                                                 'debris_nv',
+                                                 'debris_num'])
 
     # record: fragility level name, level, plot color, CurvePlot
-    fragility_thresholds = [['slight', 0.0, 'b', None],
-                            ['medium', 0.0, 'g', None],
-                            ['severe', 0.0, 'y', None],
-                            ['complete', 0.0, 'r', None]]
+    # fragility_thresholds = [['slight', 0.0, 'b', None],
+    #                         ['medium', 0.0, 'g', None],
+    #                         ['severe', 0.0, 'y', None],
+    #                         ['complete', 0.0, 'r', None]]
 
     def __init__(self, options, diCallback=None, mplDict=None):
-        self.s = None
+        self.cfg = None
         self.debrisManager = None
         self.A_final = None
         self.diCallback = diCallback
@@ -88,6 +93,9 @@ class WindDamageSimulator(object):
         self.mplDict = mplDict
         self.prevCurvePlot = None
         self.options = options
+
+        self.key_items = ['damage_index', 'pressurized_count', 'debris',
+                          'water_ingress', 'debris_nv', 'debris_num']
 
         # Undefined and later added
         self.result_wall_collapse = None
@@ -131,14 +139,11 @@ class WindDamageSimulator(object):
         terrain.populate_wind_profile_by_terrain()
         self.clear_loop_results()
 
-    @staticmethod
-    def set_fragility_thresholds(thresholds):
-        # thresholds is a dict in form {'slight': 0.0}
-        for thresh_key in thresholds:
-            for tup in WindDamageSimulator.fragility_thresholds:
-                if tup[0] == thresh_key:
-                    tup[1] = thresholds[thresh_key]
-                    break
+    # @staticmethod
+    # def set_fragility_thresholds(thresholds):
+    #     # thresholds is a dict in form {'slight': 0.0}
+    #     for tup in WindDamageSimulator.fragility_thresholds:
+    #         tup[1] = thresholds[tup[0]]
 
     def set_scenario(self, cfg):
         """
@@ -153,7 +158,7 @@ class WindDamageSimulator(object):
         self.cols = [chr(x) for x in range(ord('A'), ord('A') +
                                            self.cfg.house.roof_columns)]
         self.rows = range(1, self.cfg.house.roof_rows + 1)
-        self.set_fragility_thresholds(cfg.fragility_thresholds)
+        # self.set_fragility_thresholds(cfg.fragility_thresholds)
         self.cfg.house.clear_sim_results()
 
     def clear_loop_results(self):
@@ -487,9 +492,9 @@ class WindDamageSimulator(object):
                                   self.cfg.wind_speed_max,
                                   self.cfg.wind_speed_num_steps)
 
-        for wind_speed in self.speeds:
-            type(self).result_buckets[wind_speed] = \
-                [0., [], [], 0, [], [], [], []]
+        # for wind_speed in self.speeds:
+        #     type(self).result_buckets[wind_speed] = \
+        #         [0., [], [], 0, [], [], [], []]
 
         # setup connections and groups
         self.cfg.house.clear_sim_results()
@@ -526,6 +531,11 @@ class WindDamageSimulator(object):
 
         # iteration over samples
         for house_number in range(self.cfg.num_iters):
+
+            for item in self.key_items:
+                type(self).result_buckets.loc[house_number, item] = np.zeros(
+                    shape=self.cfg.num_iters)
+
             self.house_number = house_number
             if not keep_looping:
                 break
@@ -543,14 +553,14 @@ class WindDamageSimulator(object):
                 self.dmg_map[conn_type.connection_type] = 99999
 
             # iteration over wind speed list
-            for wind_speed in self.speeds:
+            for idx_wind_speed, wind_speed in enumerate(self.speeds):
 
                 # simulate sampled house
                 self.clear_loop_results()
                 self.run_simulation(wind_speed)
 
                 # collect results
-                type(self).result_buckets[wind_speed][type(self).FLD_WI_AT].append(self.water_ingress_cost)
+                type(self).result_buckets.loc[idx_wind_speed, 'water_ingress'][house_number] = self.water_ingress_cost
                 type(self).result_buckets[wind_speed][type(self).FLD_DIARRAY].append(self.di)
                 if self.cfg.flags['debris']:
                     type(self).result_buckets[wind_speed][type(self).FLD_DEBRIS_AT].append(self.debrisManager.result_dmgperc)
@@ -615,9 +625,9 @@ class WindDamageSimulator(object):
                 type(self).result_buckets[wind_speed][type(self).FLD_MEAN] = np.mean(diarray)
 
                 # calculate fragilities
-                for thr in type(self).fragility_thresholds:
-                    filter_ = diarray > thr[1]
-                    p = (float(diarray[filter_].size)) / (float(diarray.size))
+                for thr in self.cfg.fragility_thresholds.itervalues():
+                    filter_ = diarray > thr
+                    p = float(diarray[filter_].size) / float(diarray.size)
                     type(self).result_buckets[wind_speed][type(self).FLD_FRAGILITIES].append(p)
 
         # produce damage map report
@@ -789,62 +799,63 @@ class WindDamageSimulator(object):
     # the final output of this program in batch... they are all that matters.
     #
     def fit_fragility_curves(self):
+
         # unpack the fragility means into seperate arrays for fit/plot.
         self.frag_levels = []
-        for thr in type(self).fragility_thresholds:
+        coeff_arr = []
+        for frag_ind, (state, threshold) in enumerate(
+                self.cfg.fragility_thresholds.iteritems()):
+
             self.frag_levels.append(np.zeros(len(self.speeds)))
-        for i, wind_speed in enumerate(self.speeds):
-            for frag_ind in range(len(self.frag_levels)):
+            for i, wind_speed in enumerate(self.speeds):
                 self.frag_levels[frag_ind][i] = \
                     type(self).result_buckets[wind_speed][type(self).FLD_FRAGILITIES][frag_ind]
 
-        # fit curves and store results
-        coeff_arr = []
-        ss = 0
-        for frag_ind in range(len(self.frag_levels)):
             try:
                 coeff_arr, ss = curve_log.fit_curve(self.speeds,
                                                     self.frag_levels[frag_ind],
                                                     False)
+            except Exception:
+                msg = 'fit_fragility_curves failed: {}'.format(coeff_arr)
+                print(msg)
+
+            else:
                 if frag_ind > 0:
                     self.file_frag.write(',')
 
-                label = '%s(%.2f)' % (type(self).fragility_thresholds[frag_ind][0],
-                                    type(self).fragility_thresholds[frag_ind][1])
-                self.file_frag.write('%f,%f' % (coeff_arr[0], coeff_arr[1]))
-                type(self).fragility_thresholds[frag_ind][3] = \
-                    CurvePlot(coeff_arr,
-                              'lognormal',
-                              self.cfg.wind_speed_min,
-                              self.cfg.wind_speed_max,
-                              label,
-                              type(self).fragility_thresholds[frag_ind][2])
-            except Exception, e:
-                print 'fit_fragility_curves failed to fit: coeff_arr: %s' % coeff_arr
-                print e
+                self.file_frag.write('{:f},{:f}'.format(coeff_arr[0],
+                                                        coeff_arr[1]))
+                label = '{}({:.2f})'.format(state, threshold)
+                print(label)
+                # type(self).fragility_thresholds[frag_ind][3] = \
+                #     CurvePlot(coeff_arr,
+                #               'lognormal',
+                #               self.s.wind_speed_min,
+                #               self.s.wind_speed_max,
+                #               label,
+                #               type(self).fragility_thresholds[frag_ind][2])
 
         self.file_frag.write('\n')
 
-    def plot_fragility(self, output_folder):
-        for frag_ind in range(len(self.frag_levels)):
-            output.plot_fragility_curve(self.speeds,
-                                        self.frag_levels[frag_ind],
-                                        '_nolegend_',
-                                        0.3,
-                                        type(self).fragility_thresholds[frag_ind][2])
-            plot_obj = type(self).fragility_thresholds[frag_ind][3]
-            if plot_obj:
-                plot_obj.plot_frag()
-
-        output.plot_fragility_show(self.cfg.num_iters,
-                                   self.cfg.wind_speed_min,
-                                   self.cfg.wind_speed_max, output_folder)
+    # def plot_fragility(self, output_folder):
+    #     for frag_ind in range(len(self.frag_levels)):
+    #         output.plot_fragility_curve(self.speeds,
+    #                                     self.frag_levels[frag_ind],
+    #                                     '_nolegend_',
+    #                                     0.3,
+    #                                     type(self).fragility_thresholds[frag_ind][2])
+    #         plot_obj = type(self).fragility_thresholds[frag_ind][3]
+    #         if plot_obj:
+    #             plot_obj.plot_frag()
+    #
+    #     output.plot_fragility_show(self.cfg.num_iters,
+    #                                self.cfg.wind_speed_min,
+    #                                self.cfg.wind_speed_max, output_folder)
 
     def fit_vuln_curve(self):
         self.wind_speeds = np.zeros(len(self.speeds))
         self.di_means = np.zeros(len(self.speeds))
 
-        ss = 0
         for i, wind_speed in enumerate(self.speeds):
             self.wind_speeds[i] = wind_speed
             self.di_means[i] = type(self).result_buckets[wind_speed][type(self).FLD_MEAN]
@@ -878,7 +889,7 @@ class WindDamageSimulator(object):
                        fn_form,
                        self.cfg.wind_speed_min,
                        self.cfg.wind_speed_max,
-                       "Fitted Curve")
+                       label)
 
         cp.plot_vuln()
         if self.prevCurvePlot:
@@ -946,7 +957,7 @@ def simulate(cfg, options):
     else:
         arg = None
     mySim = WindDamageSimulator(options, arg, None)
-    mySim.set_scenario(s)
+    mySim.set_scenario(cfg)
     runTime, hr = mySim.simulator_mainloop(options.verbose)
     if runTime:
         if options.plot_frag:
@@ -1029,8 +1040,8 @@ def main():
 
     if options.scenario_filename:
         database.configure(model_db)
-        s = scenario.loadFromCSV(options.scenario_filename)
-        simulate(s, options)
+        cfg = scenario.loadFromCSV(options.scenario_filename)
+        simulate(cfg, options)
         database.db.close()
     else:
         print '\nERROR: Must provide as scenario file to run simulator...\n'

@@ -43,6 +43,8 @@ class TestWindDamageSimulator(unittest.TestCase):
         cls.mySim = WindDamageSimulator(option, None, None)
         cls.mySim.set_scenario(scenario1)
         cls.mySim.simulator_mainloop()
+        key = cls.mySim.result_buckets.keys()[0]
+        print('{}:{}'.format(key, cls.mySim.result_buckets[key]))
 
     @classmethod
     def tearDownClass(cls):

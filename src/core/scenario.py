@@ -10,6 +10,7 @@ import os
 import sys
 import ConfigParser
 import numpy as np
+from collections import OrderedDict
 
 import house
 import database
@@ -31,7 +32,7 @@ class Scenario(object):
         self._house = None
         self._region = None
         self._construction_levels = dict()
-        self._fragility_thresholds = dict()
+        self._fragility_thresholds = OrderedDict()
 
         self._source_items = None
         self._regional_shielding_factor = None
@@ -176,7 +177,7 @@ class Scenario(object):
 
     @fragility_thresholds.setter
     def fragility_thresholds(self, value):
-        assert isinstance(value, dict)
+        assert isinstance(value, OrderedDict)
         self._fragility_thresholds = value
 
     @property
@@ -378,12 +379,12 @@ def loadFromCSV(cfg_file):
     if cfg.has_section(key):
         states = [x.strip() for x in cfg.get(key, 'states').split(',')]
         thresholds = [float(x) for x in cfg.get(key, 'thresholds').split(',')]
-        s.fragility_thresholds = dict(zip(states, thresholds))
+        s.fragility_thresholds = OrderedDict(zip(states, thresholds))
     else:
-        s.fragility_thresholds = {'slight': 0.15,
-                                  'medium': 0.45,
-                                  'severe': 0.6,
-                                  'complete': 0.9}
+        s.fragility_thresholds = OrderedDict({'slight': 0.15,
+                                              'medium': 0.45,
+                                              'severe': 0.6,
+                                              'complete': 0.9})
         print('default fragility thresholds is used')
 
     key = 'debris'

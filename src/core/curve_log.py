@@ -89,7 +89,7 @@ def solve_for_observations(obs_arr, x_arr, coeff_guess, verbose):
 
 def fit_curve(x_arr, obs_arr, verbose=False):
     guess_arr = generate_guess(x_arr, obs_arr)
-    coeff_arr, ss =  solve_for_observations(obs_arr, x_arr, guess_arr, verbose)
+    coeff_arr, ss = solve_for_observations(obs_arr, x_arr, guess_arr, verbose)
     if verbose:
         print 'Curve Solution: MEDIAN: %f, BETA: %f\n\n' % (coeff_arr[MEDIAN], coeff_arr[BETA])
     return coeff_arr, ss
