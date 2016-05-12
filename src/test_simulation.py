@@ -8,7 +8,7 @@ import os
 import filecmp
 import pandas as pd
 
-from core.simulation import WindDamageSimulator
+from core.simulation import HouseDamage
 import core.database as database
 import core.scenario as scenario
 
@@ -33,18 +33,17 @@ class TestWindDamageSimulator(unittest.TestCase):
         model_db = os.path.join(path, 'model.db')
         database.configure(model_db)
 
-        scenario1 = scenario.loadFromCSV(os.path.join(path,
+        cfg = scenario.loadFromCSV(os.path.join(path,
                                                       'scenarios/carl1.cfg'))
-        scenario1.flags['seed_random'] = True
+        cfg.flags['seed_random'] = True
 
         option = options()
         option.output_folder = cls.path_output
 
-        cls.mySim = WindDamageSimulator(option, None, None)
-        cls.mySim.set_scenario(scenario1)
+        cls.mySim = HouseDamage(cfg, option)
         cls.mySim.simulator_mainloop()
-        key = cls.mySim.result_buckets.keys()[0]
-        print('{}:{}'.format(key, cls.mySim.result_buckets[key]))
+        # key = cls.mySim.result_buckets.keys()[0]
+        # print('{}:{}'.format(key, cls.mySim.result_buckets[key]))
 
     @classmethod
     def tearDownClass(cls):

@@ -40,8 +40,8 @@ class TestWindDamageSimulator(unittest.TestCase):
         option = options()
         option.output_folder = cls.path_output
 
-        cls.mySim = WindDamageSimulator(option, None, None)
-        cls.mySim.set_scenario(scenario1)
+        cls.mySim = WindDamageSimulator(scenario1, option, None, None)
+        #cls.mySim.set_scenario(scenario1)
         cls.mySim.simulator_mainloop()
 
     @classmethod
