@@ -8,7 +8,7 @@ import os
 import filecmp
 import pandas as pd
 
-from core.simulation import HouseDamage
+from core.simulation import HouseDamage, simulate_wind_damage_to_house
 import core.database as database
 import core.scenario as scenario
 
@@ -33,13 +33,14 @@ class TestWindDamageSimulator(unittest.TestCase):
         model_db = os.path.join(path, 'model.db')
         database.configure(model_db)
 
-        cfg = scenario.loadFromCSV(os.path.join(path,
-                                                      'scenarios/carl1.cfg'))
+        cfg = scenario.loadFromCSV(os.path.join(path, 'scenarios/carl1.cfg'))
         cfg.flags['seed_random'] = True
 
         option = options()
         option.output_folder = cls.path_output
 
+        simulate_wind_damage_to_house(cfg, option)
+        # print('{}'.format(cfg.file_damage))
         cls.mySim = HouseDamage(cfg, option)
         cls.mySim.simulator_mainloop()
         # key = cls.mySim.result_buckets.keys()[0]

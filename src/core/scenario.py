@@ -11,11 +11,11 @@ import sys
 import ConfigParser
 import numpy as np
 import pandas as pd
-from collections import OrderedDict
 
 import house
 import database
 import debris
+import terrain
 
 
 class Scenario(object):
@@ -44,6 +44,24 @@ class Scenario(object):
         self._debris_extension = None
         self._flight_time_mean = None
         self._flight_time_stddev = None
+
+        self._file_cpis = None
+        self._file_debris = None
+        self._file_frag = None
+        self._file_water = None
+        self._file_damage = None
+        self._file_dmg = None
+
+        self._wind_profile = None
+
+        self._rows = None
+        self._cols = None
+
+        self._result_buckets = None
+
+        self._speeds = None
+
+        self._debris_manager = None
 
         # self.red_V = 40.0
         # self.blue_V = 80.0
@@ -94,6 +112,61 @@ class Scenario(object):
             return np.random.random_integers(0, 7)
         else:
             return self.wind_dir_index
+
+    @property
+    def debris_manager(self):
+        return self._debris_manager
+
+    @debris_manager.setter
+    def debris_manager(self, value):
+        self._debris_manager = value
+
+    @property
+    def speeds(self):
+        return self._speeds
+
+    @speeds.setter
+    def speeds(self, value):
+        assert isinstance(value, np.ndarray)
+        self._speeds = value
+
+    @property
+    def wind_profile(self):
+        return self._wind_profile
+
+    @wind_profile.setter
+    def wind_profile(self, value):
+        assert isinstance(value, dict)
+        self._wind_profile = value
+
+    @property
+    def result_buckets(self):
+        return self._result_buckets
+
+    @result_buckets.setter
+    def result_buckets(self, value):
+        assert isinstance(value, dict)
+        self._result_buckets = value
+
+
+
+    @property
+    def rows(self):
+        return self._rows
+
+    @rows.setter
+    def rows(self, value):
+        assert isinstance(value, list)
+        self._rows = value
+
+    @property
+    def cols(self):
+        return self._cols
+
+    @cols.setter
+    def cols(self, value):
+        assert isinstance(value, list)
+        self._cols = value
 
     @property
     def regional_shielding_factor(self):
@@ -217,6 +290,73 @@ class Scenario(object):
         except ValueError:
             print('8(i.e., Random) is set for wind_dir_index by default')
             self._wind_dir_index = 8
+
+    @property
+    def file_cpis(self):
+        return self._file_cpis
+
+    @file_cpis.setter
+    def file_cpis(self, file_name):
+        self._file_cpis = open(file_name, 'w')
+        self._file_cpis.write('Simulated House #, Cpi Changed At\n')
+
+    @property
+    def file_debris(self):
+        return self._file_debris
+
+    @file_debris.setter
+    def file_debris(self, file_name):
+        self._file_debris = open(file_name, 'w')
+        header = ('Wind Speed(m/s),% Houses Internally Pressurized,'
+                  '% Debris Damage Mean\n')
+        self._file_debris.write(header)
+
+    @property
+    def file_damage(self):
+        return self._file_damage
+
+    @file_damage.setter
+    def file_damage(self, file_name):
+        self._file_damage = open(file_name, 'w')
+        header = 'Simulated House #,Wind Speed(m/s),Wind Direction,'
+        list_ = []
+        for ctg in self.house.conn_type_groups:
+            if ctg.enabled:
+                for ct in ctg.conn_types:
+                    list_.append(ct.connection_type)
+        header += ','.join(list_)
+        header += '\n'
+        self._file_damage.write(header)
+
+    @property
+    def file_dmg(self):
+        return self._file_dmg
+
+    @file_dmg.setter
+    def file_dmg(self, file_name):
+        self._file_dmg = open(file_name, 'w')
+
+    @property
+    def file_water(self):
+        return self._file_water
+
+    @file_water.setter
+    def file_water(self, file_name):
+        self._file_water = open(file_name, 'w')
+        header_ = ('V,Envelope DI,Water Damage,Damage Scenario,'
+                   'Water Damage Cost,WaterCosting\n')
+        self._file_water.write(header_)
+
+    @property
+    def file_frag(self):
+        return self._file_frag
+
+    @file_frag.setter
+    def file_frag(self, file_name):
+        self._file_frag = open(file_name, 'w')
+        header = ('Slight Median,Slight Beta,Medium Median,Median Beta,'
+                   'Severe Median,Severe Beta,Complete Median,Complete Beta\n')
+        self._file_frag.write(header)
 
     def setOpt_SampleSeed(self, b=True):
         self.flags['random_seed'] = b
@@ -400,6 +540,9 @@ def loadFromCSV(cfg_file):
         s.debris_extension = conf.getfloat(key, 'debris_extension')
         s.flight_time_mean = conf.getfloat(key, 'flight_time_mean')
         s.flight_time_stddev = conf.getfloat(key, 'flight_time_stddev')
+
+    s.wind_profile = terrain.populate_wind_profile_by_terrain()
+
 
     # if 'red_V' in args:
     #     s.red_V = float(args['red_V'])

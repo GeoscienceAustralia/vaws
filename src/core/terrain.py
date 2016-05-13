@@ -10,10 +10,10 @@ import pandas as pd
 terrain_cats = ['2', '2.5', '3', '5']
 heights = [3.0, 5.0, 7.0, 10.0, 12.0, 15.0, 17.0, 20.0, 25.0, 30.0]
 
-wind_profile = dict()
-
 
 def populate_wind_profile_by_terrain():
+
+    wind_profile = dict()
 
     path = '/'.join(__file__.split('/')[:-1])
     for terrain_cat in terrain_cats:
@@ -22,8 +22,10 @@ def populate_wind_profile_by_terrain():
         wind_profile[terrain_cat] = pd.read_csv(file_, skiprows=1, header=None,
                                                 index_col=0).to_dict('list')
 
+    return wind_profile
 
-def calculateMZCAT(terrain_cat, profile_idx, height):
+
+def calculateMZCAT(wind_profile, terrain_cat, profile_idx, height):
     """
 
     Args:
@@ -34,6 +36,7 @@ def calculateMZCAT(terrain_cat, profile_idx, height):
     Returns:
 
     """
+    assert isinstance(wind_profile, dict)
     return np.interp(height, heights,
                      wind_profile[terrain_cat][profile_idx])
 
@@ -44,18 +47,22 @@ if __name__ == '__main__':
 
     class TerrainTestCase(unittest.TestCase):
         def setUp(self):
-            populate_wind_profile_by_terrain()
+            self.wind_profile = populate_wind_profile_by_terrain()
 
         def test_basic(self):
-            self.assertAlmostEqual(calculateMZCAT('2', 1, 5), 0.995)
-            self.assertAlmostEqual(calculateMZCAT('2.5', 1, 5), 0.915)
-            self.assertAlmostEqual(calculateMZCAT('3', 1, 5), 0.936)
-            self.assertAlmostEqual(calculateMZCAT('5', 1, 5), 0.887)
+            self.assertAlmostEqual(
+                calculateMZCAT(self.wind_profile, '2', 1, 5), 0.995)
+            self.assertAlmostEqual(
+                calculateMZCAT(self.wind_profile, '2.5', 1, 5), 0.915)
+            self.assertAlmostEqual(
+                calculateMZCAT(self.wind_profile, '3', 1, 5), 0.936)
+            self.assertAlmostEqual(
+                calculateMZCAT(self.wind_profile, '5', 1, 5), 0.887)
 
         def test_calc(self):
             num = 50000
             for i in xrange(num):
-                mz = calculateMZCAT('2', 3, 4.3)
+                mz = calculateMZCAT(self.wind_profile, '2', 3, 4.3)
             print '\n', mz
 
         def test_plot(self):
@@ -65,7 +72,8 @@ if __name__ == '__main__':
                     zcats = []
                     heights = np.linspace(0.5, 30.0, 100)
                     for h in heights:
-                        zcats.append(calculateMZCAT(terrain_cat, p, h))
+                        zcats.append(calculateMZCAT(self.wind_profile,
+                                                    terrain_cat, p, h))
                     plt.plot(zcats, heights)
                 plt.axis([0, 1.4, 0, 35.0])
                 plt.show()
