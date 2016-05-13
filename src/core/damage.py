@@ -251,7 +251,7 @@ class WindDamageSimulator(object):
 
         # optionally create the debris manager and
         # make sure a wind orientation is set
-        bDebris = self.cfg.flags['debris']
+        # bDebris = self.cfg.flags['debris']
         if self.cfg.flags['debris']:
             self.debrisManager = debris.DebrisManager(
                 self.cfg.house,

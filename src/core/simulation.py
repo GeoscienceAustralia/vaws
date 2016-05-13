@@ -3,7 +3,7 @@ import sys
 import os
 import pandas as pd
 import numpy as np
-import datetime
+import time
 from optparse import OptionParser
 from version import VERSION_DESC
 
@@ -63,9 +63,10 @@ def simulate_wind_damage_to_house(cfg, options):
     cfg.file_water = os.path.join(options.output_folder, 'wateringress.csv')
 
     cfg.cols = [chr(x) for x in range(ord('A'), ord('A') +
-                                       cfg.house.roof_columns)]
+                                      cfg.house.roof_columns)]
     cfg.rows = range(1, cfg.house.roof_rows + 1)
 
+    # need to move to HouseDamage class
     cfg.result_buckets = dict()
     for item in ['mean', 'pressurized_count']:
         cfg.result_buckets[item] = pd.Series(
@@ -93,11 +94,39 @@ def simulate_wind_damage_to_house(cfg, options):
                              cfg.wind_speed_num_steps)
 
     # simulator main_loop
+    # should be class level
     cfg.house.clear_sim_results()
     calculate_connection_group_areas(cfg)
 
+    # should be class level
+    if cfg.flags['debris']:
+        cfg.debris_manager = debris.DebrisManager(
+            cfg.house,
+            cfg.region,
+            cfg.wind_speed_min,
+            cfg.wind_speed_max,
+            cfg.wind_speed_num_steps,
+            cfg.flags['debris_staggered_sources'],
+            cfg.debris_radius,
+            cfg.debris_angle,
+            cfg.debris_extension,
+            cfg.building_spacing,
+            cfg.source_items,
+            cfg.flight_time_mean,
+            cfg.flight_time_stddev)
+
+    # dump = dict()
+    # for id_sim in range(cfg.no_sims):
+    #     dump[id_sim] = HouseDamage()
+    #     dump[id_sim].function()
 
 
+# move to class level
+def set_wind_direction(cfg):
+    wind_dir_index = cfg.get_wind_dir_index()
+    if cfg.debris_manager:
+        cfg.debris_manager.set_wind_direction_index(wind_dir_index)
+    return wind_dir_index
 
 
 def calculate_connection_group_areas(cfg):
@@ -105,6 +134,8 @@ def calculate_connection_group_areas(cfg):
         ctg.result_area = 0.0
     for c in cfg.house.connections:
         c.ctype.group.result_area += c.ctype.costing_area
+
+
 
 
 
@@ -135,7 +166,7 @@ class HouseDamage(object):
         self.cfg = cfg
         self.options = options
 
-        self.debrisManager = None
+        # self.debrisManager = None
         self.A_final = None
         self.diCallback = diCallback
         self.wind_orientation = 0
@@ -200,7 +231,7 @@ class HouseDamage(object):
 
     def simulator_mainloop(self):
 
-        date_run = datetime.datetime.now()
+        tic = time.time()
 
         # for wind_speed in self.speeds:
         #     self.result_buckets[wind_speed] = [0., [], [], 0, [], [], [], []]
@@ -213,22 +244,22 @@ class HouseDamage(object):
         # make sure a wind orientation is set
 
         # bDebris = self.cfg.flags['debris']
-        if self.cfg.flags['debris']:
-            self.debrisManager = debris.DebrisManager(
-                self.cfg.house,
-                self.cfg.region,
-                self.cfg.wind_speed_min,
-                self.cfg.wind_speed_max,
-                self.cfg.wind_speed_num_steps,
-                self.cfg.flags['debris_staggered_sources'],
-                self.cfg.debris_radius,
-                self.cfg.debris_angle,
-                self.cfg.debris_extension,
-                self.cfg.building_spacing,
-                self.cfg.source_items,
-                self.cfg.flight_time_mean,
-                self.cfg.flight_time_stddev)
-        self.set_wind_direction()
+        # if self.cfg.flags['debris']:
+        #     self.debrisManager = debris.DebrisManager(
+        #         self.cfg.house,
+        #         self.cfg.region,
+        #         self.cfg.wind_speed_min,
+        #         self.cfg.wind_speed_max,
+        #         self.cfg.wind_speed_num_steps,
+        #         self.cfg.flags['debris_staggered_sources'],
+        #         self.cfg.debris_radius,
+        #         self.cfg.debris_angle,
+        #         self.cfg.debris_extension,
+        #         self.cfg.building_spacing,
+        #         self.cfg.source_items,
+        #         self.cfg.flight_time_mean,
+        #         self.cfg.flight_time_stddev)
+        self.wind_orientation = set_wind_direction(self.cfg)
 
         # gui bookkeeping
         if self.diCallback:
@@ -247,7 +278,7 @@ class HouseDamage(object):
 
             # sample new house and wind direction (if random)
             if self.cfg.wind_dir_index == 8:
-                self.set_wind_direction()
+                self.wind_orientation = set_wind_direction(self.cfg)
 
             self.sample_house_and_wind_params()
 
@@ -272,24 +303,24 @@ class HouseDamage(object):
 
                 if self.cfg.flags['debris']:
                     self.cfg.result_buckets['debris'].loc[id_speed, id_sim] = \
-                        self.debrisManager.result_dmgperc
+                        self.cfg.debris_manager.result_dmgperc
                     self.cfg.result_buckets['debris_nv'].loc[id_speed, id_sim] = \
-                        self.debrisManager.result_nv
+                        self.cfg.debris_manager.result_nv
                     self.cfg.result_buckets['debris_num'].loc[id_speed, id_sim] = \
-                        self.debrisManager.result_num_items
+                        self.cfg.debris_manager.result_num_items
 
                 # for all houses, count the number that were pressurized at
                 # this wind_speed
                 if self.cpi != 0:
                     self.cfg.result_buckets['pressurized_count'].loc[id_speed] += 1
 
-                # interact with GUI listener
-                if self.diCallback:
-                    currentLoop += 1
-                    percLoops = (float(currentLoop) / float(totalLoops)) * 100.0
-                    keep_looping = self.diCallback(wind_speed, self.di, percLoops)
-                    if not keep_looping:
-                        break
+                # # interact with GUI listener
+                # if self.diCallback:
+                #     currentLoop += 1
+                #     percLoops = (float(currentLoop) / float(totalLoops)) * 100.0
+                #     keep_looping = self.diCallback(wind_speed, self.di, percLoops)
+                #     if not keep_looping:
+                #         break
 
             # collect results to be used by the GUI client
             zone_results = {}
@@ -380,12 +411,12 @@ class HouseDamage(object):
         self.cfg.file_damage.close()
         self.cfg.file_dmg.close()
         self.cfg.file_water.close()
-        self.debrisManager = None
+        #self.debrisManager = None
 
         if keep_looping:
             self.fit_fragility_curves()
             self.cfg.file_frag.close()
-            runTime = (datetime.datetime.now() - date_run)
+            runTime = time.time() - tic
             return runTime, house_results
         else:
             self.cfg.file_frag.close()
@@ -429,10 +460,10 @@ class HouseDamage(object):
         self.di = 0.0
         self.fragilities = []
 
-    def set_wind_direction(self):
-        self.wind_orientation = self.cfg.get_wind_dir_index()
-        if self.debrisManager:
-            self.debrisManager.set_wind_direction_index(self.wind_orientation)
+    # def set_wind_direction(self):
+    #     self.wind_orientation = self.cfg.get_wind_dir_index()
+    #     if self.cfg.debris_manager:
+    #         self.cfg.debris_manager.set_wind_direction_index(self.wind_orientation)
 
     def set_wind_profile(self):
         self.profile = np.random.random_integers(1, 10)
@@ -454,8 +485,8 @@ class HouseDamage(object):
 
     def check_pressurized_failure(self, v):
         if self.cfg.flags['debris']:
-            self.debrisManager.run(v)
-            if self.cpi == 0 and self.debrisManager.get_breached():
+            self.cfg.debris_manager.run(v)
+            if self.cpi == 0 and self.cfg.debris_manager.get_breached():
                 self.cpi = 0.7
                 self.cpiAt = v
                 self.cfg.file_cpis.write('%d,%.3f\n' % (self.id_sim + 1, v))
@@ -511,11 +542,11 @@ class HouseDamage(object):
         for ctg in self.cfg.house.conn_type_groups:
             ctg.result_percent_damaged = 0.0
             if ctg.group_name == 'debris':
-                if not self.debrisManager:
+                if not self.cfg.debris_manager:
                     ctg.result_percent_damaged = 0
                 else:
                     ctg.result_percent_damaged = \
-                        self.debrisManager.result_dmgperc
+                        self.cfg.debris_manager.result_dmgperc
             else:
                 for ct in ctg.conn_types:
                     for c in ct.connections_of_type:
