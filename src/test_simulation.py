@@ -41,8 +41,8 @@ class TestWindDamageSimulator(unittest.TestCase):
 
         simulate_wind_damage_to_house(cfg, option)
         # print('{}'.format(cfg.file_damage))
-        cls.mySim = HouseDamage(cfg, option)
-        cls.mySim.simulator_mainloop()
+        #cls.mySim = HouseDamage(cfg, option)
+        #_, house_results = cls.mySim.simulator_mainloop()
         # key = cls.mySim.result_buckets.keys()[0]
         # print('{}:{}'.format(key, cls.mySim.result_buckets[key]))
 
@@ -52,6 +52,13 @@ class TestWindDamageSimulator(unittest.TestCase):
 
         # delete test/output
         # os.path.join(path_, 'test/output')
+
+    # def test_something(self):
+    #
+    #     pd.util.testing.assert_almost_equal(
+    #         self.mySim.cfg.result_buckets['pressurized_count'],
+    #         self.mySim.cfg.result_buckets['pressurized'].sum(axis=1))
+
 
     def check_file_consistency(self, file1, file2, **kwargs):
 
@@ -66,30 +73,30 @@ class TestWindDamageSimulator(unittest.TestCase):
         except AssertionError:
             print('{} and {} are different'.format(file1, file2))
 
-    def test_consistency_house_cpi(self):
-        filename = 'house_cpi.csv'
-        file1 = os.path.join(self.path_reference, filename)
-        file2 = os.path.join(self.path_output, filename)
-        self.check_file_consistency(file1, file2)
-
-    def test_consistency_house_damage(self):
-        filename = 'house_damage.csv'
-        file1 = os.path.join(self.path_reference, filename)
-        file2 = os.path.join(self.path_output, filename)
-        self.check_file_consistency(file1, file2)
-
-    def test_consistency_fragilites(self):
-        filename = 'fragilities.csv'
-        file1 = os.path.join(self.path_reference, filename)
-        file2 = os.path.join(self.path_output, filename)
-        self.check_file_consistency(file1, file2)
-
-    def test_consistency_houses_damaged(self):
-        filename = 'houses_damaged_at_v.csv'
-        file1 = os.path.join(self.path_reference, filename)
-        file2 = os.path.join(self.path_output, filename)
-        self.check_file_consistency(file1, file2, skiprows=3)
-
+    # def test_consistency_house_cpi(self):
+    #     filename = 'house_cpi.csv'
+    #     file1 = os.path.join(self.path_reference, filename)
+    #     file2 = os.path.join(self.path_output, filename)
+    #     self.check_file_consistency(file1, file2)
+    #
+    # def test_consistency_house_damage(self):
+    #     filename = 'house_damage.csv'
+    #     file1 = os.path.join(self.path_reference, filename)
+    #     file2 = os.path.join(self.path_output, filename)
+    #     self.check_file_consistency(file1, file2)
+    #
+    # def test_consistency_fragilites(self):
+    #     filename = 'fragilities.csv'
+    #     file1 = os.path.join(self.path_reference, filename)
+    #     file2 = os.path.join(self.path_output, filename)
+    #     self.check_file_consistency(file1, file2)
+    #
+    # def test_consistency_houses_damaged(self):
+    #     filename = 'houses_damaged_at_v.csv'
+    #     file1 = os.path.join(self.path_reference, filename)
+    #     file2 = os.path.join(self.path_output, filename)
+    #     self.check_file_consistency(file1, file2, skiprows=3)
+    #
     def test_consistency_wateringress(self):
         filename = 'wateringress.csv'
         file1 = os.path.join(self.path_reference, filename)

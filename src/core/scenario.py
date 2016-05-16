@@ -310,6 +310,8 @@ class Scenario(object):
         header = ('Wind Speed(m/s),% Houses Internally Pressurized,'
                   '% Debris Damage Mean\n')
         self._file_debris.write(header)
+        self._file_debris.close()
+        self._file_debris = open(file_name, 'a')
 
     @property
     def file_damage(self):
