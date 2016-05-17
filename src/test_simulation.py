@@ -97,11 +97,11 @@ class TestWindDamageSimulator(unittest.TestCase):
     #     file2 = os.path.join(self.path_output, filename)
     #     self.check_file_consistency(file1, file2, skiprows=3)
     #
-    def test_consistency_wateringress(self):
-        filename = 'wateringress.csv'
-        file1 = os.path.join(self.path_reference, filename)
-        file2 = os.path.join(self.path_output, filename)
-        self.check_file_consistency(file1, file2)
+    # def test_consistency_wateringress(self):
+    #     filename = 'wateringress.csv'
+    #     file1 = os.path.join(self.path_reference, filename)
+    #     file2 = os.path.join(self.path_output, filename)
+    #     self.check_file_consistency(file1, file2)
 
     def test_consistency_wind_debris(self):
         filename = 'wind_debris.csv'

@@ -12,9 +12,7 @@ import ConfigParser
 import numpy as np
 import pandas as pd
 
-import house
-import database
-import debris
+# import database
 import terrain
 
 
@@ -30,8 +28,8 @@ class Scenario(object):
         self.wind_speed_num_steps = wind_steps
         self.terrain_category = terrain_cat
 
-        self._house = None
-        self._region = None
+        self._house_name = None
+        self._region_name = None
         self._construction_levels = dict()
         self._fragility_thresholds = None
 
@@ -54,14 +52,7 @@ class Scenario(object):
 
         self._wind_profile = None
 
-        self._rows = None
-        self._cols = None
-
-        self._result_buckets = None
-
         self._speeds = None
-
-        self._debris_manager = None
 
         # self.red_V = 40.0
         # self.blue_V = 80.0
@@ -74,29 +65,31 @@ class Scenario(object):
     def __ne__(self, other):
         return not self.__eq__(other)
 
-    def updateModel(self):
-        for ctg in self.house.conn_type_groups:
-            if ctg.distribution_order >= 0:
-                ctg_name = 'ctg_{}'.format(ctg.group_name)
-                ctg.enabled = self.flags.get(ctg_name, True)
-            else:
-                ctg.enabled = False
+    # def updateModel(self):
+    #     for ctg in self.house.conn_type_groups:
+    #         if ctg.distribution_order >= 0:
+    #             ctg_name = 'ctg_{}'.format(ctg.group_name)
+    #             ctg.enabled = self.flags.get(ctg_name, True)
+    #         else:
+    #             ctg.enabled = False
 
     def setOptCTGEnabled(self, ctg_name, opt):
         key_name = 'ctg_{}'.format(ctg_name)
         self.flags[key_name] = opt
 
     def getConstructionLevel(self, name):
-        if name in self.construction_levels:
+        try:
             return (self.construction_levels[name]['probability'],
                     self.construction_levels[name]['mean_factor'],
                     self.construction_levels[name]['cov_factor'])
+        except KeyError:
+            msg = '{} not found in the construction_levels'.format(name)
+            raise KeyError(msg)
 
     def setConstructionLevel(self, name, prob, mf, cf):
-        if name in self.construction_levels:
-            self.construction_levels[name] = dict(zip(
-                ['probability', 'mean_factor', 'cov_factor'],
-                [prob, mf, cf]))
+        self.construction_levels[name] = dict(zip(
+            ['probability', 'mean_factor', 'cov_factor'],
+            [prob, mf, cf]))
 
     def sampleConstructionLevel(self):
         rv = np.random.uniform(0, 1)
@@ -112,14 +105,6 @@ class Scenario(object):
             return np.random.random_integers(0, 7)
         else:
             return self.wind_dir_index
-
-    @property
-    def debris_manager(self):
-        return self._debris_manager
-
-    @debris_manager.setter
-    def debris_manager(self, value):
-        self._debris_manager = value
 
     @property
     def speeds(self):
@@ -138,35 +123,6 @@ class Scenario(object):
     def wind_profile(self, value):
         assert isinstance(value, dict)
         self._wind_profile = value
-
-    @property
-    def result_buckets(self):
-        return self._result_buckets
-
-    @result_buckets.setter
-    def result_buckets(self, value):
-        assert isinstance(value, dict)
-        self._result_buckets = value
-
-
-
-    @property
-    def rows(self):
-        return self._rows
-
-    @rows.setter
-    def rows(self, value):
-        assert isinstance(value, list)
-        self._rows = value
-
-    @property
-    def cols(self):
-        return self._cols
-
-    @cols.setter
-    def cols(self, value):
-        assert isinstance(value, list)
-        self._cols = value
 
     @property
     def regional_shielding_factor(self):
@@ -225,16 +181,18 @@ class Scenario(object):
         self._debris_extension = value
 
     @property
-    def region(self):
-        return self._region
+    def region_name(self):
+        return self._region_name
 
-    @region.setter
-    def region(self, region_name):
-        if region_name in ['Capital_city', 'Tropical_town']:
-            self._region = debris.qryDebrisRegionByName(region_name)
+    @region_name.setter
+    def region_name(self, value):
+        try:
+            assert value in ['Capital_city', 'Tropical_town']
+        except AssertionError:
+            self._region_name = 'Capital_city'
+            print('Capital_city is set for region_name by default')
         else:
-            self._region = debris.qryDebrisRegionByName('Capital_city')
-            print('8(for Random) is set for wind_dir_index by default')
+            self._region_name = value
 
     @property
     def construction_levels(self):
@@ -264,12 +222,12 @@ class Scenario(object):
         self._flags = value
 
     @property
-    def house(self):
-        return self._house
+    def house_name(self):
+        return self._house_name
 
-    @house.setter
-    def house(self, house_name):
-        self._house = house.queryHouseWithName(house_name)
+    @house_name.setter
+    def house_name(self, house_name):
+        self._house_name = house_name
 
     @property
     def source_items(self):
@@ -321,13 +279,13 @@ class Scenario(object):
     def file_damage(self, file_name):
         self._file_damage = open(file_name, 'w')
         header = 'Simulated House #,Wind Speed(m/s),Wind Direction,'
-        list_ = []
-        for ctg in self.house.conn_type_groups:
-            if ctg.enabled:
-                for ct in ctg.conn_types:
-                    list_.append(ct.connection_type)
-        header += ','.join(list_)
-        header += '\n'
+        # list_ = []
+        # for ctg in self.house.conn_type_groups:
+        #     if ctg.enabled:
+        #         for ct in ctg.conn_types:
+        #             list_.append(ct.connection_type)
+        # header += ','.join(list_)
+        # header += '\n'
         self._file_damage.write(header)
 
     @property
@@ -360,6 +318,9 @@ class Scenario(object):
                    'Severe Median,Severe Beta,Complete Median,Complete Beta\n')
         self._file_frag.write(header)
 
+    '''
+    # used by main.pyw
+
     def setOpt_SampleSeed(self, b=True):
         self.flags['random_seed'] = b
 
@@ -389,18 +350,11 @@ class Scenario(object):
 
     def setOpt_VulnFitLog(self, b=True):
         self.flags['vul_fit_log'] = b
+    '''
 
     def storeToCSV(self, cfg_file):
 
         config = ConfigParser.RawConfigParser()
-
-        # When adding sections or items, add them in the reverse order of
-        # how you want them to be displayed in the actual file.
-        # In addition, please note that using RawConfigParser's and the raw
-        # mode of ConfigParser's respective set functions, you can assign
-        # non-string values to keys internally, but will receive an error
-        # when attempting to write to a file or when you get it in non-raw
-        # mode. SafeConfigParser does not allow such assignments to take place.
 
         key = 'main'
         config.add_section(key)
@@ -409,11 +363,11 @@ class Scenario(object):
         config.set(key, 'wind_speed_max', self.wind_speed_max)
         config.set(key, 'wind_speed_steps', self.wind_speed_num_steps)
         config.set(key, 'terrain_cat', self.terrain_category)
-        config.set(key, 'house_name', self.house.house_name)
+        config.set(key, 'house_name', self.house_name)
         config.set(key, 'regional_shielding_factor',
                    self.regional_shielding_factor)
         config.set(key, 'wind_fixed_dir', type(self).dirs[self.wind_dir_index])
-        config.set(key, 'region_name', self.region.name)
+        config.set(key, 'region_name', self.region_name)
 
         key = 'options'
         config.add_section(key)
@@ -483,10 +437,15 @@ def loadFromCSV(cfg_file):
                  conf.getint(key, 'wind_speed_steps'),
                  conf.get(key, 'terrain_cat'))
 
-    s.house = conf.get(key, 'house_name')
-    s.regional_shielding_factor = conf.getfloat(key, 'regional_shielding_factor')
+    s.speeds = np.linspace(s.wind_speed_min,
+                           s.wind_speed_max,
+                           s.wind_speed_num_steps)
+
+    s.house_name = conf.get(key, 'house_name')
+    s.regional_shielding_factor = conf.getfloat(key,
+                                                'regional_shielding_factor')
     s.wind_dir_index = conf.get(key, 'wind_fixed_dir')
-    s.region = conf.get(key, 'region_name')
+    s.region_name = conf.get(key, 'region_name')
 
     key = 'options'
     for sub_key, value in conf.items('options'):
@@ -496,10 +455,11 @@ def loadFromCSV(cfg_file):
     if s.flags[key]:
         levels = [x.strip() for x in conf.get(key, 'levels').split(',')]
         probabilities = [float(x) for x in conf.get(key,
-                                                   'probabilities').split(',')]
+                                                    'probabilities').split(',')]
         mean_factors = [float(x) for x in conf.get(key,
-                                                  'mean_factors').split(',')]
-        cov_factors = [float(x) for x in conf.get(key, 'cov_factors').split(',')]
+                                                   'mean_factors').split(',')]
+        cov_factors = [float(x) for x in conf.get(key,
+                                                  'cov_factors').split(',')]
 
         for i, level in enumerate(levels):
             s.construction_levels.setdefault(
@@ -522,7 +482,6 @@ def loadFromCSV(cfg_file):
     if conf.has_section(key):
         states = [x.strip() for x in conf.get(key, 'states').split(',')]
         thresholds = [float(x) for x in conf.get(key, 'thresholds').split(',')]
-
     else:
         states = ['slight', 'medium', 'severe', 'complete']
         thresholds = [0.15, 0.45, 0.6, 0.9]
@@ -531,7 +490,6 @@ def loadFromCSV(cfg_file):
     s.fragility_thresholds = pd.DataFrame(thresholds, index=states,
                                           columns=['threshold'])
     s.fragility_thresholds['color'] = ['b', 'g', 'y', 'r']
-    s.fragility_thresholds['object'] = [None, None, None, None]
 
     key = 'debris'
     if s.flags[key]:
@@ -545,7 +503,6 @@ def loadFromCSV(cfg_file):
 
     s.wind_profile = terrain.populate_wind_profile_by_terrain()
 
-
     # if 'red_V' in args:
     #     s.red_V = float(args['red_V'])
     #     del args['red_V']
@@ -557,7 +514,7 @@ def loadFromCSV(cfg_file):
     # for ctg in s.house.conn_type_groups:
     #     print('{}:{}'.format(ctg.enabled, ctg.group_name))
 
-    s.updateModel()
+    # s.updateModel()
 
     # for ctg in s.house.conn_type_groups:
     #     print('{}:{}'.format(ctg.enabled, ctg.group_name))
@@ -569,7 +526,7 @@ if __name__ == '__main__':
 
     import unittest
 
-    database.configure()
+    # database.configure()
 
     path_, _ = os.path.split(os.path.abspath(__file__))
 
