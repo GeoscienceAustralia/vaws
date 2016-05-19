@@ -167,6 +167,7 @@ def calc_zone_pressures(zones, wind_dir_index, cpi, qz, Ms, building_spacing,
     for z in zones:
         # optionally apply differential shielding
         diff_shielding = 1.0
+
         if building_spacing > 0 and diff_shielding:
             front_facing = z.getIsLeadingRoofEdgeForDir(wind_dir_index)
             Ms2 = math.pow(Ms, 2)
@@ -183,12 +184,11 @@ def calc_zone_pressures(zones, wind_dir_index, cpi, qz, Ms, building_spacing,
             diff_shielding = (dsn / dsd)
 
             # calculate zone pressure
-        z.result_pz = qz * (
-        z.sampled_cpe - (z.cpi_alpha * cpi)) * diff_shielding
+        z.result_pz = qz * (z.sampled_cpe - z.cpi_alpha * cpi) * diff_shielding
 
         # calculate zone structure pressure
-        z.result_pz_struct = qz * (z.sampled_cpe_struct - (
-        z.cpi_alpha * cpi) - z.sampled_cpe_eaves) * diff_shielding
+        z.result_pz_struct = qz * (z.sampled_cpe_struct - z.cpi_alpha * cpi
+                                   - z.sampled_cpe_eaves) * diff_shielding
 
     # unit tests
 

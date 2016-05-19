@@ -22,14 +22,17 @@ class Scenario(object):
     dirs = ['S', 'SW', 'W', 'NW', 'N', 'NE', 'E', 'SE', 'Random']
 
     def __init__(self, no_sims, wind_min, wind_max, wind_steps, terrain_cat):
+
         self.no_sims = no_sims
         self.wind_speed_min = wind_min
         self.wind_speed_max = wind_max
         self.wind_speed_num_steps = wind_steps
         self.terrain_category = terrain_cat
 
+        self._parallel = None
         self._house_name = None
         self._region_name = None
+        self._db_file = None
         self._construction_levels = dict()
         self._fragility_thresholds = None
 
@@ -49,6 +52,7 @@ class Scenario(object):
         self._file_water = None
         self._file_damage = None
         self._file_dmg = None
+        self._file_dmg_idx = None
 
         self._wind_profile = None
 
@@ -105,6 +109,24 @@ class Scenario(object):
             return np.random.random_integers(0, 7)
         else:
             return self.wind_dir_index
+
+    @property
+    def parallel(self):
+        return self._parallel
+
+    @parallel.setter
+    def parallel(self, value):
+        assert isinstance(value, bool)
+        self._parallel = value
+
+    @property
+    def db_file(self):
+        return self._db_file
+
+    @db_file.setter
+    def db_file(self, value):
+        assert isinstance(value, str)
+        self._db_file = value
 
     @property
     def speeds(self):
@@ -250,6 +272,14 @@ class Scenario(object):
             self._wind_dir_index = 8
 
     @property
+    def file_dmg_idx(self):
+        return self._file_dmg_idx
+
+    @file_dmg_idx.setter
+    def file_dmg_idx(self, file_name):
+        self._file_dmg_idx = open(file_name, 'w')
+
+    @property
     def file_cpis(self):
         return self._file_cpis
 
@@ -358,6 +388,8 @@ class Scenario(object):
 
         key = 'main'
         config.add_section(key)
+        config.set(key, 'db_file', self.db_file)
+        config.set(key, 'parallel', self.parallel)
         config.set(key, 'no_simulations', self.no_sims)
         config.set(key, 'wind_speed_min', self.wind_speed_min)
         config.set(key, 'wind_speed_max', self.wind_speed_max)
@@ -430,6 +462,8 @@ def loadFromCSV(cfg_file):
     conf.optionxform = str
     conf.read(cfg_file)
 
+    path_cfg_file = os.path.dirname(os.path.realpath(cfg_file))
+
     key = 'main'
     s = Scenario(conf.getint(key, 'no_simulations'),
                  conf.getfloat(key, 'wind_speed_min'),
@@ -441,6 +475,9 @@ def loadFromCSV(cfg_file):
                            s.wind_speed_max,
                            s.wind_speed_num_steps)
 
+    s.db_file = os.path.join(path_cfg_file, conf.get(key, 'db_file'))
+
+    s.parallel = conf.getboolean(key, 'parallel')
     s.house_name = conf.get(key, 'house_name')
     s.regional_shielding_factor = conf.getfloat(key,
                                                 'regional_shielding_factor')

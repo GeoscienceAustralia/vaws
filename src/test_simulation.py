@@ -1,8 +1,6 @@
 #!/usr/bin/env python
 from __future__ import print_function
 
-__author__ = 'Hyeuk Ryu'
-
 import unittest
 import os
 import filecmp
@@ -30,25 +28,27 @@ class TestWindDamageSimulator(unittest.TestCase):
 
         # model_db = os.path.join(path_, './core/output/model.db')
         # model_db = os.path.join(path_, '../data/model.db')
-        model_db = os.path.join(path, 'model.db')
-        database.configure(model_db)
+
+        # cls.model_db = database.configure(os.path.join(path, 'model.db'))
 
         cfg = scenario.loadFromCSV(os.path.join(path, 'scenarios/carl1.cfg'))
         cfg.flags['seed_random'] = True
+        cfg.parallel = False
+        cfg.flags['dmg_distribute'] = True
 
         option = options()
         option.output_folder = cls.path_output
 
-        simulate_wind_damage_to_house(cfg, option)
+        cls.results = simulate_wind_damage_to_house(cfg, option)
         # print('{}'.format(cfg.file_damage))
-        #cls.mySim = HouseDamage(cfg, option)
+        # cls.mySim = HouseDamage(cfg, option)
         #_, house_results = cls.mySim.simulator_mainloop()
         # key = cls.mySim.result_buckets.keys()[0]
         # print('{}:{}'.format(key, cls.mySim.result_buckets[key]))
 
-    @classmethod
-    def tearDownClass(cls):
-        database.db.close()
+    # @classmethod
+    # def tearDownClass(cls):
+    #     cls.model_db.close()
 
         # delete test/output
         # os.path.join(path_, 'test/output')
@@ -105,6 +105,12 @@ class TestWindDamageSimulator(unittest.TestCase):
 
     def test_consistency_wind_debris(self):
         filename = 'wind_debris.csv'
+        file1 = os.path.join(self.path_reference, filename)
+        file2 = os.path.join(self.path_output, filename)
+        self.check_file_consistency(file1, file2)
+
+    def test_consistency_dmg_idx(self):
+        filename = 'house_dmg_idx.csv'
         file1 = os.path.join(self.path_reference, filename)
         file2 = os.path.join(self.path_output, filename)
         self.check_file_consistency(file1, file2)

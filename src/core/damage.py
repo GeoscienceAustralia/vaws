@@ -79,7 +79,6 @@ class WindDamageSimulator(object):
         self.diCallback = diCallback
         self.wind_orientation = 0
         self.mzcat = 0
-        self.di = 0
         self.mplDict = mplDict
         self.prevCurvePlot = None
         self.options = options

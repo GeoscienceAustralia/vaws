@@ -66,6 +66,7 @@ class Coverage(database.Base):
 
 
 class House(database.Base):
+
     __tablename__ = 'houses'
     id = Column(Integer, primary_key=True)
     house_name = Column(String)
@@ -141,8 +142,8 @@ class House(database.Base):
                 arr.append(z)
         return arr
 
-    def qryZoneByWallDirection(self, wall_dir):
-        return database.db.session.query(zone.Zone).filter(
+    def qryZoneByWallDirection(self, wall_dir, db):
+        return db.session.query(zone.Zone).filter(
             zone.Zone.house_id == self.id).filter(
             zone.Zone.wall_dir == wall_dir).all()
 
@@ -177,13 +178,12 @@ class House(database.Base):
         raise LookupError('Invalid wind_dir: %d' % wind_dir)
 
 
-def loadStructurePatchesFromCSV(path, house):
+def loadStructurePatchesFromCSV(path, house, db):
     """
     Load structural influence patches CSV -
     format is: damaged_conn, target_conn, zone, infl, zone, infl,....
     """
     fileName = os.path.join(path, 'influencefactorpatches.csv')
-    db = database.db
     lineCount = 0
     for line in open(fileName, 'r'):
         if lineCount != 0:
@@ -213,21 +213,22 @@ def loadStructurePatchesFromCSV(path, house):
     db.session.commit()
 
 
-def queryHouses():
-    return database.db.session.query(House.house_name, House.replace_cost,
+def queryHouses(db):
+    return db.session.query(House.house_name, House.replace_cost,
                                      House.height).all()
 
 
-def queryHouseWithName(hn):
+def queryHouseWithName(hn, db):
     """
     find (and select as current) the given house name
     Args:
         hn: house name
+        db: instance of DatabaseManager
 
     Returns:
     """
 
-    house = database.db.session.query(House).filter_by(house_name=hn).one()
+    house = db.session.query(House).filter_by(house_name=hn).one()
     house.reset_results()
 
     connByTypeMap.clear()
@@ -272,11 +273,11 @@ def queryHouseWithName(hn):
 
     house.resetZoneInfluences()
     house.resetCoverages()
-    wateringress.populate_water_costs(house.id)
+    wateringress.populate_water_costs(db, house.id)
     return house
 
 
-def loadFromCSV(path):
+def loadFromCSV(path, db):
     fileName = os.path.join(path, 'house_data.csv')
     x = pd.read_csv(fileName)
     for _, row in x.iterrows():
@@ -290,12 +291,12 @@ def loadFromCSV(path):
                     width=float(row[7]),
                     roof_columns=int(row[8]),
                     roof_rows=int(row[9]))
-        database.db.session.add(tmp)
-        database.db.session.commit()
+        db.session.add(tmp)
+        db.session.commit()
         return tmp
 
 
-def loadConnectionTypeGroupsFromCSV(path, house):
+def loadConnectionTypeGroupsFromCSV(path, house, db):
     fileName = os.path.join(path, 'conn_group.csv')
     x = pd.read_csv(fileName)
     for _, row in x.iterrows():
@@ -309,10 +310,10 @@ def loadConnectionTypeGroupsFromCSV(path, house):
             water_ingress_order=int(row[7]))
         tmp.costing = house.getCostingByName(row[3])
         house.conn_type_groups.append(tmp)
-    database.db.session.commit()
+    db.session.commit()
 
 
-def loadConnectionTypesFromCSV(path, house):
+def loadConnectionTypesFromCSV(path, house, db):
     fileName = os.path.join(path, 'conn_type.csv')
     x = pd.read_csv(fileName)
     for _, row in x.iterrows():
@@ -324,10 +325,10 @@ def loadConnectionTypesFromCSV(path, house):
                                              float(row[4]))
         tmp.group = house.getConnTypeGroupByName(row[5])
         house.conn_types.append(tmp)
-    database.db.session.commit()
+    db.session.commit()
 
 
-def loadConnectionsFromCSV(path, house):
+def loadConnectionsFromCSV(path, house, db):
     fileName = os.path.join(path, 'connections.csv')
     x = pd.read_csv(fileName)
     for _, row in x.iterrows():
@@ -335,10 +336,10 @@ def loadConnectionsFromCSV(path, house):
         tmp.ctype = house.getConnTypeByName(row[1])
         tmp.zone_id = house.getZoneByName(row[2]).id
         house.connections.append(tmp)
-    database.db.session.commit()
+    db.session.commit()
 
 
-def loadDamageCostingsFromCSV(path, house):
+def loadDamageCostingsFromCSV(path, house, db):
     fileName = os.path.join(path, 'damage_costing_data.csv')
     x = pd.read_csv(fileName)
     for _, row in x.iterrows():
@@ -356,10 +357,10 @@ def loadDamageCostingsFromCSV(path, house):
             int_coeff_2=float(row[10]),
             int_coeff_3=float(row[11]))
         house.costings.append(tmp)
-    database.db.session.commit()
+    db.session.commit()
 
 
-def loadDamageFactoringsFromCSV(path, house):
+def loadDamageFactoringsFromCSV(path, house, db):
     fileName = os.path.join(path, 'damage_factorings.csv')
     x = pd.read_csv(fileName)
     for _, row in x.iterrows():
@@ -379,10 +380,10 @@ def loadDamageFactoringsFromCSV(path, house):
         tmp = damage_costing.DamageFactoring(parent_id=parent_id,
                                              factor_id=factor_id)
         house.factorings.append(tmp)
-    database.db.session.commit()
+    db.session.commit()
 
 
-def loadWaterCostingsFromCSV(path, house):
+def loadWaterCostingsFromCSV(path, house, db):
     fileName = os.path.join(path, 'water_ingress_costing_data.csv')
     x = pd.read_csv(fileName)
     for _, row in x.iterrows():
@@ -394,11 +395,11 @@ def loadWaterCostingsFromCSV(path, house):
                                                coeff2=float(row[5]),
                                                coeff3=float(row[6]))
         tmp.house_id = house.id
-        database.db.session.add(tmp)
-    database.db.session.commit()
+        db.session.add(tmp)
+    db.session.commit()
 
 
-def loadZoneFromCSV(path, house):
+def loadZoneFromCSV(path, house, db):
     fileName = os.path.join(path, 'zones.csv')
     x = pd.read_csv(fileName)
     for _, row in x.iterrows():
@@ -439,10 +440,10 @@ def loadZoneFromCSV(path, house):
                         cpi_alpha=float(row[34]),
                         wall_dir=int(row[35]))
         house.zones.append(tmp)
-    database.db.session.commit()
+    db.session.commit()
 
 
-def loadConnectionInfluencesFromCSV(path, house):
+def loadConnectionInfluencesFromCSV(path, house, db):
     fileName = os.path.join(path, 'connectionzoneinfluences.csv')
     # input: connection_name, zone1_name, zone1_infl, (.....)
     lineCount = 0
@@ -467,19 +468,19 @@ def loadConnectionInfluencesFromCSV(path, house):
                     parentLeft.zones.append(inf)
                     childRight = None
         lineCount += 1
-    database.db.session.commit()
+    db.session.commit()
 
 
-def loadWallsFromCSV(path, house):
+def loadWallsFromCSV(path, house, db):
     fileName = os.path.join(path, 'walls.csv')
     x = pd.read_csv(fileName)
     for _, row in x.iterrows():
         tmp = Wall(direction=int(row[0]), area=float(row[1]))
         house.walls.append(tmp)
-    database.db.session.commit()
+    db.session.commit()
 
 
-def loadCoverageTypesFromCSV(path, house):
+def loadCoverageTypesFromCSV(path, house, db):
     fileName = os.path.join(path, 'cov_types.csv')
     x = pd.read_csv(fileName)
     for _, row in x.iterrows():
@@ -487,10 +488,10 @@ def loadCoverageTypesFromCSV(path, house):
                            failure_momentum_mean=float(row[1]),
                            failure_momentum_stddev=float(row[2]))
         house.cov_types.append(tmp)
-    database.db.session.commit()
+    db.session.commit()
 
 
-def loadCoveragesFromCSV(path, house):
+def loadCoveragesFromCSV(path, house, db):
     fileName = os.path.join(path, 'coverages.csv')
     x = pd.read_csv(fileName)
     for _, row in x.iterrows():
@@ -504,7 +505,7 @@ def loadCoveragesFromCSV(path, house):
                 tmp.wall_id = wall.id
                 wall.coverages.append(tmp)
                 break
-    database.db.session.commit()
+    db.session.commit()
 
 
 def importDataFromPath(path):
@@ -541,7 +542,7 @@ def importDataFromPath(path):
 if __name__ == '__main__':
     import unittest
 
-    database.configure()
+    db_ = database.configure()
 
     class MyTestCase(unittest.TestCase):
         def test_constr(self):
@@ -560,7 +561,7 @@ if __name__ == '__main__':
         def test_house(self):
             house_name = 'Masonry Block House'
             # house_name = 'Group 4 House'
-            h = queryHouseWithName(house_name)
+            h = queryHouseWithName(house_name, db_)
             print 'Found my house: ', h
             print 'Costings: '
             for costing in h.costings:

@@ -2,7 +2,7 @@
     database.py - manage SQLite database
 """
 from sqlalchemy import create_engine, Table, Integer, String, Float, Column, \
-    MetaData, ForeignKey
+    MetaData, ForeignKey, event, exc
 from sqlalchemy.sql import select
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.ext.declarative import declarative_base
@@ -23,30 +23,60 @@ class ForeignKeysListener(PoolListener):
             # print 'row: ', row
 
 
-def configure(model_db=None, verbose=False, flag_make=False):
+def configure(db_file=None, verbose=False, flag_make=False):
 
-    if not model_db:
+    if not db_file:
         path_, _ = os.path.split(os.path.abspath(__file__))
-        model_db = os.path.abspath(os.path.join(path_, '../model.db'))
+        db_file = os.path.abspath(os.path.join(path_, '../model.db'))
 
-    if not (flag_make or os.path.exists(model_db)):
-        msg = 'Error: database file {} not found'.format(model_db)
+    if not (flag_make or os.path.exists(db_file)):
+        msg = 'Error: database file {} not found'.format(db_file)
         sys.exit(msg)
 
-    print 'model db is loaded from or created to : {}'.format(model_db)
+    print 'model db is loaded from or created to : {}'.format(db_file)
 
-    global db
-    db = DatabaseManager(model_db, verbose)
+    return DatabaseManager(db_file, verbose)
+
+
+def _add_process_guards(engine):
+    """Add multiprocessing guards.
+
+    Forces a connection to be reconnected if it is detected
+    as having been shared to a sub-process.
+
+    """
+
+    @event.listens_for(engine, "connect")
+    def connect(dbapi_connection, connection_record):
+        connection_record.info['pid'] = os.getpid()
+
+    @event.listens_for(engine, "checkout")
+    def checkout(dbapi_connection, connection_record, connection_proxy):
+        pid = os.getpid()
+        if connection_record.info['pid'] != pid:
+            # LOG.debug(_LW(
+            #     "Parent process %(orig)s forked (%(newproc)s) with an open "
+            #     "database connection, "
+            #     "which is being discarded and recreated."),
+            #     {"newproc": pid, "orig": connection_record.info['pid']})
+            connection_record.connection = connection_proxy.connection = None
+            raise exc.DisconnectionError(
+                "Connection record belongs to pid %s, "
+                "attempting to check out in pid %s" %
+                (connection_record.info['pid'], pid)
+            )
 
 
 class DatabaseManager(object):
-    def __init__(self, file_name, verbose):
+    def __init__(self, file_name, verbose=False):
         self.file_name = file_name
         self.database_url = 'sqlite:///' + file_name
         self.engine = create_engine(self.database_url,
                                     echo=verbose,
                                     echo_pool=False,
                                     listeners=[ForeignKeysListener()])
+        # _add_process_guards(self.engine)
+
         Session = sessionmaker(bind=self.engine)
         self.session = Session()
         self.metadata = MetaData()
@@ -65,7 +95,7 @@ class DatabaseManager(object):
                                                primary_key=True),
                                         Column('cdav', Float))
 
-        self.structure_patch_table = Table('patches', Base.metadata,
+        self.structure_patch_table = Table('patches', self.metadata,
                                            Column('damaged_connection_id',
                                                   Integer,
                                                   ForeignKey('connections.id'),

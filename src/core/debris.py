@@ -66,13 +66,13 @@ class DebrisRegion(database.Base):
     beta = Column(Float)
 
 
-def qryDebrisRegions():
-    return database.db.session.query(DebrisRegion).all()
+def qryDebrisRegions(db):
+    return db.session.query(DebrisRegion).all()
 
 
-def qryDebrisRegionByName(n):
+def qryDebrisRegionByName(n, db):
     try:
-        return database.db.session.query(DebrisRegion).filter_by(name=n).one()
+        return db.session.query(DebrisRegion).filter_by(name=n).one()
     except:
         return None
 
@@ -358,14 +358,14 @@ if __name__ == '__main__':
     import unittest
     import house
 
-    database.configure()
+    model_db = database.configure()
 
     class MyTestCase(unittest.TestCase):
         def test_debris_types(self):
             expectednames = ['Compact', 'Sheet', 'Rod']
             expectedcdavs = [0.65, 0.9, 0.8]
             i = 0
-            for dt in database.db.qryDebrisTypes():
+            for dt in model_db.qryDebrisTypes():
                 self.assertEquals(dt[0], expectednames[i])
                 self.assertAlmostEquals(dt[1], expectedcdavs[i])
                 i += 1
@@ -374,19 +374,19 @@ if __name__ == '__main__':
             expectednames = ['Capital_city', 'Tropical_town']
             expectedalphas = [0.1585, 0.103040002286434]
             i = 0
-            for r in qryDebrisRegions():
+            for r in qryDebrisRegions(model_db):
                 self.assertEquals(r.name, expectednames[i])
                 self.assertAlmostEquals(r.alpha, expectedalphas[i])
                 self.assertTrue(r.cr < r.rr)
                 self.assertTrue(r.rr < r.pr)
                 i += 1
-            self.assertEquals(qryDebrisRegionByName('Foobar'), None)
-            self.assertNotEquals(qryDebrisRegionByName('Capital_city'), None)
+            self.assertEquals(qryDebrisRegionByName('Foobar', model_db), None)
+            self.assertNotEquals(qryDebrisRegionByName('Capital_city', model_db), None)
 
         def test_with_render(self):
             # this is the minimum case
-            h = house.queryHouseWithName('Group 4 House')
-            r = qryDebrisRegionByName('Capital_city')
+            h = house.queryHouseWithName('Group 4 House', model_db)
+            r = qryDebrisRegionByName('Capital_city', model_db)
             v = 55.0
             mgr = DebrisManager(h, r)
             mgr.set_wind_direction_index(1)

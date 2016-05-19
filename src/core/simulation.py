@@ -27,29 +27,29 @@ from house import zoneByLocationMap, connByZoneTypeMap, ctgMap, \
 from version import VERSION_DESC
 
 
-class CurvePlot(object):
-    def __init__(self, coeff, method, xmin, xmax, label='_nolegend_', col='b'):
-        self.coeff = coeff
-        self.method = method
-        self.x_arr = np.linspace(xmin, xmax, 500)
-        self.label = label
-        self.col = col
-
-    def plot_vuln(self, faint=False):
-        alpha = 0.3 if faint else 1.0
-        col = 'r' if faint else 'b'
-        if self.method == 'lognormal':
-            obs = curve_log.generate_observations(self.coeff, self.x_arr)
-            output.plot_fitted_curve(self.x_arr, obs, self.label, alpha, col)
-        else:
-            obs = curve.generate_observations(self.coeff, self.x_arr)
-            output.plot_fitted_curve(self.x_arr, obs, self.label, alpha, col)
-
-    def plot_frag(self, faint=False):
-        alpha = 0.3 if faint else 1.0
-        obs = curve_log.generate_observations(self.coeff, self.x_arr)
-        output.plot_fragility_curve(self.x_arr, obs, self.label, alpha,
-                                    self.col)
+# class CurvePlot(object):
+#     def __init__(self, coeff, method, xmin, xmax, label='_nolegend_', col='b'):
+#         self.coeff = coeff
+#         self.method = method
+#         self.x_arr = np.linspace(xmin, xmax, 500)
+#         self.label = label
+#         self.col = col
+#
+#     def plot_vuln(self, faint=False):
+#         alpha = 0.3 if faint else 1.0
+#         col = 'r' if faint else 'b'
+#         if self.method == 'lognormal':
+#             obs = curve_log.generate_observations(self.coeff, self.x_arr)
+#             output.plot_fitted_curve(self.x_arr, obs, self.label, alpha, col)
+#         else:
+#             obs = curve.generate_observations(self.coeff, self.x_arr)
+#             output.plot_fitted_curve(self.x_arr, obs, self.label, alpha, col)
+#
+#     def plot_frag(self, faint=False):
+#         alpha = 0.3 if faint else 1.0
+#         obs = curve_log.generate_observations(self.coeff, self.x_arr)
+#         output.plot_fragility_curve(self.x_arr, obs, self.label, alpha,
+#                                     self.col)
 
 
 def simulate_wind_damage_to_house(cfg, options):
@@ -58,13 +58,15 @@ def simulate_wind_damage_to_house(cfg, options):
     if not os.path.exists(options.output_folder):
         os.makedirs(options.output_folder)
 
-    cfg.file_cpis = os.path.join(options.output_folder, 'house_cpi.csv')
+    # cfg.file_cpis = os.path.join(options.output_folder, 'house_cpi.csv')
+    # cfg.file_dmg = os.path.join(options.output_folder,
+    #                            'houses_damaged_at_v.csv')
+    # cfg.file_frag = os.path.join(options.output_folder,'fragilities.csv')
+    # cfg.file_water = os.path.join(options.output_folder, 'wateringress.csv')
+    # cfg.file_damage = os.path.join(options.output_folder, 'house_damage.csv')
+
     cfg.file_debris = os.path.join(options.output_folder, 'wind_debris.csv')
-    cfg.file_damage = os.path.join(options.output_folder,'house_damage.csv')
-    cfg.file_dmg = os.path.join(options.output_folder,
-                                'houses_damaged_at_v.csv')
-    cfg.file_frag = os.path.join(options.output_folder,'fragilities.csv')
-    cfg.file_water = os.path.join(options.output_folder, 'wateringress.csv')
+    cfg.file_dmg_idx = os.path.join(options.output_folder, 'house_dmg_idx.csv')
 
     # optionally seed random numbers
     if cfg.flags['random_seed']:
@@ -75,38 +77,39 @@ def simulate_wind_damage_to_house(cfg, options):
     # simulator main_loop
     tic = time.time()
 
-    #parmap.map(run_simulation_per_house, lines)
-    list_house_damage = [HouseDamage(cfg) for id_sim in range(cfg.no_sims)]
+    # parmap.map(run_simulation_per_house, lines)
+    # list_house_damage = [HouseDamage(cfg, db) for id_sim in range(cfg.no_sims)]
 
-    # collection = dict()
-    # for id_sim in range(cfg.no_sims):
-    #     collection[id_sim] = HouseDamage(cfg)
-    #     run_simulation_per_house(collection[id_sim], cfg)
+    if cfg.parallel:
+        list_results = parmap.map(run_simulation_per_house,
+                                  range(cfg.no_sims), cfg)
+    else:
+        list_results = []
+        db = database.DatabaseManager(cfg.db_file)
+        for id_sim in range(cfg.no_sims):
+            list_results.append(run_simulation_per_house(cfg, db))
 
-    list_results = parmap.map(run_simulation_per_house, list_house_damage, cfg,
-                               chunksize=4)
+        db.close()
 
     print('{}'.format(time.time()-tic))
 
-
     # post processing of results (aggregations)
     # write debris output file
-    mean_debris = pd.concat([x.result_buckets['debris']
-                             for x in collection.itervalues()],
+    mean_debris = pd.concat([x.result_buckets['debris'] for x in list_results],
                             axis=1).mean(axis=1) * 100.0
 
-    perc = pd.concat([x.result_buckets['pressurized']
-                      for x in collection.itervalues()], axis=1).sum(axis=1)\
-           / float(cfg.no_sims) * 100.0
+    press = pd.concat([x.result_buckets['pressurized'] for x in list_results],
+                      axis=1).sum(axis=1) / float(cfg.no_sims) * 100.0
 
-    pd.concat([pd.Series(cfg.speeds), perc, mean_debris], axis=1).to_csv(
+    pd.concat([pd.Series(cfg.speeds), press, mean_debris], axis=1).to_csv(
         cfg.file_debris, index=False, header=False, float_format='%.3f')
 
     # calculate and store DI mean
     df_dmg_index = pd.concat([x.result_buckets['dmg_index']
-                               for x in collection.itervalues()],
-                               axis=1)
-    mean_dmg_index = df_dmg_index.mean(axis=1)
+                               for x in list_results], axis=1)
+    df_dmg_index['speed'] = cfg.speeds
+    df_dmg_index['mean'] = df_dmg_index.mean(axis=1)
+    df_dmg_index.to_csv(cfg.file_dmg_idx, index=False)
 
     # calculate damage probability
     counted = dict()
@@ -116,15 +119,14 @@ def simulate_wind_damage_to_house(cfg, options):
     counted = pd.DataFrame.from_dict(counted)
 
     # cleanup: close output files
-    cfg.file_cpis.close()
+    # cfg.file_cpis.close()
     cfg.file_debris.close()
-    cfg.file_damage.close()
-    cfg.file_dmg.close()
-    cfg.file_water.close()
+    cfg.file_dmg_idx.close()
+    # cfg.file_damage.close()
+    # cfg.file_dmg.close()
+    # cfg.file_water.close()
 
     '''
-
-
     # produce damage map report
     cfg.file_dmg.write('Number of Damaged Houses\n')
     cfg.file_dmg.write('Num Houses,%d\n' % cfg.no_sims)
@@ -173,10 +175,23 @@ def simulate_wind_damage_to_house(cfg, options):
     self.cfg.file_frag.close()
     runTime = time.time() - tic
     '''
-    return
+
+    return list_results
 
 
-def run_simulation_per_house(house_damage, cfg):
+# def create_house_damage(dummy, cfg):
+#
+#     print('{}'.format(dummy))
+#     # create db
+#
+#     # create instance of HouseDamge
+#
+#     return house_damage
+
+
+def run_simulation_per_house(cfg, db):
+
+    house_damage = HouseDamage(cfg, db)
 
     # sample new house and wind direction (if random)
     if cfg.wind_dir_index == 8:
@@ -207,9 +222,9 @@ def run_simulation_per_house(house_damage, cfg):
         house_damage.result_buckets['water_ingress'][id_speed] = \
             house_damage.water_ingress_cost
 
-        house_damage.result_buckets['dmg_index'][id_speed] = house_damage
+        house_damage.result_buckets['dmg_index'][id_speed] = house_damage.di
 
-        if cfg.flags['debris']:
+        if house_damage.cfg.flags['debris']:
             house_damage.result_buckets['debris'][id_speed] = \
                 house_damage.debris_manager.result_dmgperc
             house_damage.result_buckets['debris_nv'][id_speed] = \
@@ -233,19 +248,20 @@ def run_simulation_per_house(house_damage, cfg):
     # collect results to be used by the GUI client
     for z in house_damage.house.zones:
         house_damage.zone_results[z.zone_name] = [z.zone_name,
-                                          z.sampled_cpe,
-                                          z.sampled_cpe_struct,
-                                          z.sampled_cpe_eaves]
+                                                  z.sampled_cpe,
+                                                  z.sampled_cpe_struct,
+                                                  z.sampled_cpe_eaves]
 
     for c in house_damage.house.connections:
         house_damage.conn_results.append([c.ctype.connection_type,
-                                  c.location_zone.zone_name,
-                                  c.result_failure_v_raw,
-                                  c.result_strength,
-                                  c.result_deadload,
-                                  c.result_damaged_report,
-                                  c.ctype.group.group_name,
-                                  c.id])
+                                          c.location_zone.zone_name,
+                                          c.result_failure_v_raw,
+                                          c.result_strength,
+                                          c.result_deadload,
+                                          c.result_damaged_report,
+                                          c.ctype.group.group_name,
+                                          c.id])
+
     return house_damage
 
 
@@ -263,9 +279,10 @@ class HouseDamage(object):
 
     # id_sim_gen = itertools.count()
 
-    def __init__(self, cfg, diCallback=None, mplDict=None):
-        # self.cfg = cfg
+    def __init__(self, cfg, db, diCallback=None, mplDict=None):
+        self.cfg = cfg
 
+        self.db = db
         self.flags = copy.deepcopy(cfg.flags)
         # self.id_sim = next(self.id_sim_gen)
 
@@ -275,9 +292,8 @@ class HouseDamage(object):
         self.terrain_category = cfg.terrain_category
         self.construction_levels = cfg.construction_levels
 
-
-        self.region = debris.qryDebrisRegionByName(cfg.region_name)
-        self.house = house.queryHouseWithName(cfg.house_name)
+        # self.region = debris.qryDebrisRegionByName(cfg.region_name, self.db)
+        self.house = house.queryHouseWithName(cfg.house_name, self.db)
 
         for ctg in self.house.conn_type_groups:
             if ctg.distribution_order >= 0:
@@ -292,7 +308,7 @@ class HouseDamage(object):
         if cfg.flags['debris']:
             self.debris_manager = debris.DebrisManager(
                 self.house,
-                self.region,
+                debris.qryDebrisRegionByName(cfg.region_name, self.db),
                 cfg.wind_speed_min,
                 cfg.wind_speed_max,
                 cfg.wind_speed_num_steps,
@@ -307,7 +323,6 @@ class HouseDamage(object):
 
         self.house.clear_sim_results()
         self.calculate_connection_group_areas()
-
 
         self.A_final = None
         self.diCallback = diCallback
@@ -324,7 +339,7 @@ class HouseDamage(object):
         # self.rows = None
 
         self.cols = [chr(x) for x in range(ord('A'), ord('A') +
-                                          self.house.roof_columns)]
+                                           self.house.roof_columns)]
         self.rows = range(1, self.house.roof_rows + 1)
 
         self.qz = 0.0
@@ -385,7 +400,6 @@ class HouseDamage(object):
 
         self.check_house_collapse(wind_speed)
         self.calculate_damage_ratio(wind_speed)
-
 
     def calculate_connection_group_areas(self):
         for ctg in self.house.conn_type_groups:
@@ -483,7 +497,6 @@ class HouseDamage(object):
                             z.result_effective_area = 0
                         self.result_wall_collapse = True
 
-
     def calculate_damage_ratio(self, wind_speed):
 
         # calculate damage percentages        
@@ -580,7 +593,7 @@ class HouseDamage(object):
 
                     if ctg.patch_distribution == 1:
                         patchList = \
-                            database.db.qryConnectionPatchesFromDamagedConn(c.id)
+                            self.db.qryConnectionPatchesFromDamagedConn(c.id)
 
                         for patch in patchList:
                             patch_zone = zoneByIDMap[patch[1]]
@@ -920,24 +933,24 @@ def simProgressCallback(V, di, percLoops):
 
 
 # @profile
-def simulate(cfg, options):
-    if options.verbose:
-        arg = simProgressCallback
-    else:
-        arg = None
-    mySim = WindDamageSimulator(cfg, options, arg, None)
-    # mySim.set_scenario(cfg)
-    runTime, hr = mySim.simulator_mainloop(options.verbose)
-    if runTime:
-        if options.plot_frag:
-            mySim.plot_fragility(options.output_folder)
-        if options.plot_vuln:
-            mySim.plot_vulnerability(options.output_folder, None)
-            output.plot_wind_event_show(cfg.no_sims,
-                                        cfg.wind_speed_min,
-                                        cfg.wind_speed_max,
-                                        options.output_folder)
-    return runTime
+# def simulate(cfg, options):
+#     if options.verbose:
+#         arg = simProgressCallback
+#     else:
+#         arg = None
+#     mySim = WindDamageSimulator(cfg, options, arg, None)
+#     # mySim.set_scenario(cfg)
+#     runTime, hr = mySim.simulator_mainloop(options.verbose)
+#     if runTime:
+#         if options.plot_frag:
+#             mySim.plot_fragility(options.output_folder)
+#         if options.plot_vuln:
+#             mySim.plot_vulnerability(options.output_folder, None)
+#             output.plot_wind_event_show(cfg.no_sims,
+#                                         cfg.wind_speed_min,
+#                                         cfg.wind_speed_max,
+#                                         options.output_folder)
+#     return runTime
 
 
 def main():
@@ -1004,14 +1017,14 @@ def main():
 
         database.configure(model_db, flag_make=True)
         dbimport.import_model(options.data_folder, options.model_database)
-        database.db.close()
+        db.close()
         return
 
     if options.scenario_filename:
-        database.configure(model_db)
+        db = database.configure(model_db)
         conf = scenario.loadFromCSV(options.scenario_filename)
         simulate(conf, options)
-        database.db.close()
+        db.close()
     else:
         print '\nERROR: Must provide as scenario file to run simulator...\n'
         parser.print_help()
