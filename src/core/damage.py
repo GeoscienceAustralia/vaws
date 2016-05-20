@@ -2,6 +2,7 @@
 import sys
 import os
 import numpy as np
+import pandas as pd
 import math
 import datetime
 from optparse import OptionParser
@@ -391,6 +392,8 @@ class WindDamageSimulator(object):
         self.file_debris.write('Wind Speed(m/s),% Houses Internally Pressurized,% Debris Damage Mean\n')
         self.file_damage = open(os.path.join(self.options.output_folder,
                                              'house_damage.csv'), 'w')
+        self.file_dmg_idx = open(os.path.join(self.options.output_folder,
+                                             'house_dmg_idx.csv'), 'w')
         self.file_dmg = open(os.path.join(self.options.output_folder,
                                           'houses_damaged_at_v.csv'), 'w')
         self.file_frag = open(os.path.join(self.options.output_folder,
@@ -576,6 +579,20 @@ class WindDamageSimulator(object):
         self.file_dmg.close()
         self.file_water.close()
         self.debrisManager = None
+
+        # temporary
+        di_summary = []
+        for speed, value in type(self).result_buckets.iteritems():
+            tmp = np.array(value[1])
+            tmp_added = np.append(tmp, [speed, tmp.mean()])
+            di_summary.append(tmp_added)
+
+        columns_str = [str(x) for x in range(self.s.num_iters)]
+        columns_str.append('speed')
+        columns_str.append('mean')
+        df_di_summary = pd.DataFrame(di_summary, columns=columns_str)
+        df_di_summary.to_csv(self.file_dmg_idx, index=False)
+        self.file_dmg_idx.close()
 
         if keep_looping:
             self.fit_fragility_curves()

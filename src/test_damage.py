@@ -22,7 +22,7 @@ class TestWindDamageSimulator(unittest.TestCase):
 
         path_ = '/'.join(__file__.split('/')[:-1])
         cls.path_reference = os.path.join(path_, 'test/output')
-        cls.path_output = os.path.join(path_, 'core/outputs')
+        cls.path_output = os.path.join(path_, 'output')
 
         database.configure(os.path.join(path_, 'model.db'))
         scenario1 = scenario.loadFromCSV(os.path.join(path_,
@@ -44,6 +44,7 @@ class TestWindDamageSimulator(unittest.TestCase):
                          'house_damage.csv',
                          'houses_damaged_at_v.csv',
                          'wateringress.csv',
+                         'house_dmg_idx.csv',
                          'wind_debris.csv',
                          'fragilities.csv']
 
@@ -51,11 +52,12 @@ class TestWindDamageSimulator(unittest.TestCase):
 
             file1 = os.path.join(self.path_reference, item)
             file2 = os.path.join(self.path_output, item)
+            print('{}:{}'.format(file1, file2))
 
             try:
                 self.assertTrue(filecmp.cmp(file1, file2))
             except AssertionError:
-                print('{}:{}'.format(file1, file2))
+                print('{}:{} are different'.format(file1, file2))
 
 if __name__ == '__main__':
     unittest.main()
