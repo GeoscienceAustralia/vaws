@@ -65,7 +65,7 @@ class DatabaseManager(object):
                                                primary_key=True),
                                         Column('cdav', Float))
 
-        self.structure_patch_table = Table('patches', Base.metadata,
+        self.structure_patch_table = Table('patches', self.metadata,
                                            Column('damaged_connection_id',
                                                   Integer,
                                                   ForeignKey('connections.id'),
