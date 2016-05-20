@@ -24,87 +24,85 @@ class TestWindDamageSimulator(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
 
-        path = '/'.join(__file__.split('/')[:-1])
-        cls.path_reference = os.path.join(path, 'test/output')
-        cls.path_output = os.path.join(path, 'output')
+        cls.path = '/'.join(__file__.split('/')[:-1])
+        cls.path_reference = os.path.join(cls.path, 'test/output')
+        cls.path_output = os.path.join(cls.path, 'output')
 
-        # model_db = os.path.join(path_, './core/output/model.db')
-        # model_db = os.path.join(path_, '../data/model.db')
-        model_db = os.path.join(path, 'model.db')
-        database.configure(model_db)
+        cls.path_output_no_dist = os.path.join(cls.path, 'output_no_dist')
+        cls.path_reference_no_dist = os.path.join(cls.path, 'test/output_no_dist')
 
-        scenario1 = scenario.loadFromCSV(os.path.join(path,
-                                                      'scenarios/carl1.csv'))
-        scenario1.flags['SCEN_SEED_RANDOM'] = True
+        cls.list_of_files = ['house_damage.csv',
+                         'house_dmg_idx.csv',
+                         'house_cpi.csv',
+                         'fragilities.csv',
+                         'houses_damaged_at_v.csv',
+                         'wateringress.csv',
+                         'wind_debris.csv']
 
-        option = options()
-        option.output_folder = cls.path_output
-
-        cls.mySim = WindDamageSimulator(option, None, None)
-        cls.mySim.set_scenario(scenario1)
-        cls.mySim.simulator_mainloop()
-
-    @classmethod
-    def tearDownClass(cls):
-        database.db.close()
-
-        # delete test/output
-        # os.path.join(path_, 'test/output')
+    # @classmethod
+    # def tearDownClass(cls):
+    #     database.db.close()
+    #
+    #     # delete test/output
+    #     # os.path.join(path_, 'test/output')
 
     def check_file_consistency(self, file1, file2, **kwargs):
 
-        data1 = pd.read_csv(file1, **kwargs)
-        data2 = pd.read_csv(file2, **kwargs)
-        print('{}:{}'.format(file1, file2))
-        # print('{}'.format(data1.head()))
-        pd.util.testing.assert_frame_equal(data1, data2)
+        true_value = filecmp.cmp(file1, file2)
+        if not true_value:
+            try:
+                data1 = pd.read_csv(file1, **kwargs)
+                data2 = pd.read_csv(file2, **kwargs)
+                pd.util.testing.assert_frame_equal(data1, data2)
+            except AssertionError:
+                print('{} and {} are different'.format(file1, file2))
+            except pd.parser.CParserError:
+                print('can not parse the files {},{}'.format(file1, file2))
 
-        try:
-            self.assertTrue(filecmp.cmp(file1, file2))
-        except AssertionError:
-            print('{} and {} are different'.format(file1, file2))
+    def test_output_vs_reference(self):
 
-    def test_consistency_house_cpi(self):
-        filename = 'house_cpi.csv'
-        file1 = os.path.join(self.path_reference, filename)
-        file2 = os.path.join(self.path_output, filename)
-        self.check_file_consistency(file1, file2)
+        model_db = os.path.join(self.path, 'model.db')
+        database.configure(model_db)
 
-    def test_consistency_house_damage(self):
-        filename = 'house_damage.csv'
-        file1 = os.path.join(self.path_reference, filename)
-        file2 = os.path.join(self.path_output, filename)
-        self.check_file_consistency(file1, file2)
+        scenario1 = scenario.loadFromCSV(os.path.join(self.path,
+                                                      'scenarios/carl1.csv'))
+        scenario1.flags['SCEN_SEED_RANDOM'] = True
+        scenario1.flags['SCEN_DMG_DISTRIBUTE'] = True
 
-    def test_consistency_house_dmg_idx(self):
-        filename = 'house_dmg_idx.csv'
-        file1 = os.path.join(self.path_reference, filename)
-        file2 = os.path.join(self.path_output, filename)
-        self.check_file_consistency(file1, file2)
+        option = options()
+        option.output_folder = self.path_output
 
-    def test_consistency_fragilites(self):
-        filename = 'fragilities.csv'
-        file1 = os.path.join(self.path_reference, filename)
-        file2 = os.path.join(self.path_output, filename)
-        self.check_file_consistency(file1, file2)
+        sim = WindDamageSimulator(option, None, None)
+        sim.set_scenario(scenario1)
+        _ = sim.simulator_mainloop()
+        database.db.close()
 
-    def test_consistency_houses_damaged(self):
-        filename = 'houses_damaged_at_v.csv'
-        file1 = os.path.join(self.path_reference, filename)
-        file2 = os.path.join(self.path_output, filename)
-        self.check_file_consistency(file1, file2, skiprows=3)
+        for filename in self.list_of_files:
+            file1 = os.path.join(self.path_reference, filename)
+            file2 = os.path.join(self.path_output, filename)
+            self.check_file_consistency(file1, file2)
 
-    def test_consistency_wateringress(self):
-        filename = 'wateringress.csv'
-        file1 = os.path.join(self.path_reference, filename)
-        file2 = os.path.join(self.path_output, filename)
-        self.check_file_consistency(file1, file2)
+    def test_output_vs_reference_no_dist(self):
 
-    def test_consistency_wind_debris(self):
-        filename = 'wind_debris.csv'
-        file1 = os.path.join(self.path_reference, filename)
-        file2 = os.path.join(self.path_output, filename)
-        self.check_file_consistency(file1, file2)
+        model_db = os.path.join(self.path, 'model.db')
+        database.configure(model_db)
+
+        scenario1 = scenario.loadFromCSV(os.path.join(self.path,
+                                                      'scenarios/carl1.csv'))
+        scenario1.flags['SCEN_SEED_RANDOM'] = True
+        scenario1.flags['SCEN_DMG_DISTRIBUTE'] = False
+
+        option = options()
+        option.output_folder = self.path_output_no_dist
+
+        sim = WindDamageSimulator(option, None, None)
+        sim.set_scenario(scenario1)
+        _ = sim.simulator_mainloop()
+
+        for filename in self.list_of_files:
+            file3 = os.path.join(self.path_reference_no_dist, filename)
+            file4 = os.path.join(self.path_output_no_dist, filename)
+            self.check_file_consistency(file3, file4)
 
 if __name__ == '__main__':
     unittest.main()
