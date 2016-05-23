@@ -6,6 +6,7 @@ __author__ = 'Hyeuk Ryu'
 import unittest
 import os
 import filecmp
+import pandas as pd
 from core.damage import WindDamageSimulator
 import core.database as database
 import core.scenario as scenario
@@ -56,6 +57,26 @@ class TestWindDamageSimulator(unittest.TestCase):
                 self.assertTrue(filecmp.cmp(file1, file2))
             except AssertionError:
                 print('{}:{}'.format(file1, file2))
+
+    def test_consistency_dmg_idx(self):
+
+        filename = 'house_dmg_idx.csv'
+
+        file1 = os.path.join(self.path_reference, filename)
+        file2 = os.path.join(self.path_output, filename)
+
+        data1 = pd.read_csv(file1)
+        data2 = pd.read_csv(file2)
+
+        sorted_data1 = data1.sort_values(by='speed').reset_index(drop=True)
+        sorted_data2 = data2.sort_values(by='speed').reset_index(drop=True)
+
+        try:
+            pd.util.testing.assert_frame_equal(sorted_data1, sorted_data2)
+        except AssertionError:
+            print ('{} and {} are different'.format(file1, file2))
+        else:
+            print ('{} and {} are identical'.format(file1, file2))
 
 if __name__ == '__main__':
     unittest.main()
