@@ -28,6 +28,14 @@ class TestWindDamageSimulator(unittest.TestCase):
         cls.path_reference = os.path.join(path, 'test/output')
         cls.path_output = os.path.join(path, 'output')
 
+        for the_file in os.listdir(cls.path_output):
+            file_path = os.path.join(cls.path_output, the_file)
+            try:
+                if os.path.isfile(file_path):
+                    os.unlink(file_path)
+            except Exception as e:
+                print(e)
+
         # model_db = os.path.join(path_, './core/output/model.db')
         # model_db = os.path.join(path_, '../data/model.db')
         model_db = os.path.join(path, 'model.db')
@@ -55,14 +63,14 @@ class TestWindDamageSimulator(unittest.TestCase):
 
         data1 = pd.read_csv(file1, **kwargs)
         data2 = pd.read_csv(file2, **kwargs)
-        print('{}:{}'.format(file1, file2))
-        # print('{}'.format(data1.head()))
-        pd.util.testing.assert_frame_equal(data1, data2)
 
-        try:
-            self.assertTrue(filecmp.cmp(file1, file2))
-        except AssertionError:
-            print('{} and {} are different'.format(file1, file2))
+        identical = filecmp.cmp(file1, file2)
+
+        if not identical:
+            try:
+                pd.util.testing.assert_frame_equal(data1, data2)
+            except AssertionError:
+                print('{} and {} are different'.format(file1, file2))
 
     # def test_consistency_house_cpi(self):
     #     filename = 'house_cpi.csv'
