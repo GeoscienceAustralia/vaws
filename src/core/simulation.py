@@ -70,6 +70,7 @@ def simulate_wind_damage_to_house(cfg, options):
 
     # optionally seed random numbers
     if cfg.flags['random_seed']:
+        print('random seed is set')
         np.random.seed(42)
         zone.seed_scipy(42)
         engine.seed(42)
@@ -86,6 +87,7 @@ def simulate_wind_damage_to_house(cfg, options):
     else:
         list_results = []
         db = database.DatabaseManager(cfg.db_file)
+        print('{}'.format(cfg.construction_levels))
         for id_sim in range(cfg.no_sims):
             list_results.append(run_simulation_per_house(cfg, db))
 
@@ -193,6 +195,10 @@ def run_simulation_per_house(cfg, db):
 
     house_damage = HouseDamage(cfg, db)
 
+    house_damage.sample_house_and_wind_params()
+
+    print('{}'.format(house_damage.construction_level))
+
     # sample new house and wind direction (if random)
     if cfg.wind_dir_index == 8:
         house_damage.wind_orientation = cfg.get_wind_dir_index()
@@ -202,8 +208,6 @@ def run_simulation_per_house(cfg, db):
     if house_damage.debris_manager:
         house_damage.debris_manager.set_wind_direction_index(
             house_damage.wind_orientation)
-
-    house_damage.sample_house_and_wind_params()
 
     # prime damage map where we track min() V that damage occurs
     # across types for this house (reporting)
@@ -445,10 +449,10 @@ class HouseDamage(object):
                 # self.cfg.file_cpis.write('%d,%.3f\n' % (self.id_sim + 1, v))
 
     def sample_construction_level(self):
-        rv = np.random.uniform(0, 1)
+        rv = np.random.random_integers(0, 100)
         cumprob = 0.0
         for key, value in self.construction_levels.iteritems():
-            cumprob += value['probability']
+            cumprob += value['probability'] * 100
             if rv <= cumprob:
                 break
         return key, value['mean_factor'], value['cov_factor']

@@ -12,6 +12,8 @@ import ConfigParser
 import numpy as np
 import pandas as pd
 
+from collections import OrderedDict
+
 # import database
 import terrain
 
@@ -33,7 +35,7 @@ class Scenario(object):
         self._house_name = None
         self._region_name = None
         self._db_file = None
-        self._construction_levels = dict()
+        self._construction_levels = OrderedDict()
         self._fragility_thresholds = None
 
         self._source_items = None
@@ -91,18 +93,18 @@ class Scenario(object):
             raise KeyError(msg)
 
     def setConstructionLevel(self, name, prob, mf, cf):
-        self.construction_levels[name] = dict(zip(
+        self.construction_levels[name] = OrderedDict(zip(
             ['probability', 'mean_factor', 'cov_factor'],
             [prob, mf, cf]))
 
-    def sampleConstructionLevel(self):
-        rv = np.random.uniform(0, 1)
-        cumprob = 0.0
-        for key, value in self.construction_levels.iteritems():
-            cumprob += value['probability']
-            if rv <= cumprob:
-                break
-        return key, value['mean_factor'], value['cov_factor']
+    # def sampleConstructionLevel(self):
+    #     rv = np.random.random_integers(0, 100)
+    #     cumprob = 0.0
+    #     for key, value in self.construction_levels.iteritems():
+    #         cumprob += value['probability'] * 100.0
+    #         if rv <= cumprob:
+    #             break
+    #     return key, value['mean_factor'], value['cov_factor']
 
     def get_wind_dir_index(self):
         if self.wind_dir_index == 8:
@@ -222,7 +224,7 @@ class Scenario(object):
 
     @construction_levels.setter
     def construction_levels(self, value):
-        assert isinstance(value, dict)
+        assert isinstance(value, OrderedDict)
         self._construction_levels = value
 
     @property
@@ -504,15 +506,19 @@ def loadFromCSV(cfg_file):
             s.construction_levels[level]['mean_factor'] = mean_factors[i]
             s.construction_levels[level]['cov_factor'] = cov_factors[i]
     else:
-        s.construction_levels = {'low': {'probability': 0.33,
-                                         'mean_factor': 0.9,
-                                         'cov_factor': 0.58},
-                                 'medium': {'probability': 0.34,
-                                            'mean_factor': 1.0,
-                                            'cov_factor': 0.58},
-                                 'high': {'probability': 0.33,
-                                          'mean_factor': 1.1,
-                                          'cov_factor': 0.58}}
+        s.construction_levels = OrderedDict()
+        s.construction_levels.setdefault('low', {})['probability'] = 0.33
+        s.construction_levels.setdefault('medium', {})['probability'] = 0.34
+        s.construction_levels.setdefault('high', {})['probability'] = 0.33
+
+        s.construction_levels['low']['mean_factor'] = 0.9
+        s.construction_levels['medium']['mean_factor'] = 1.0
+        s.construction_levels['high']['mean_factor'] = 1.1
+
+        s.construction_levels['low']['cov_factor'] = 0.58
+        s.construction_levels['medium']['cov_factor'] = 0.58
+        s.construction_levels['high']['cov_factor'] = 0.58
+
         print('default construction level distribution is used')
 
     key = 'fragility_thresholds'
