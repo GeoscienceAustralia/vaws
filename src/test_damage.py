@@ -25,6 +25,14 @@ class TestWindDamageSimulator(unittest.TestCase):
         cls.path_reference = os.path.join(path_, 'test/output')
         cls.path_output = os.path.join(path_, 'core/outputs')
 
+        for the_file in os.listdir(cls.path_output):
+            file_path = os.path.join(cls.path_output, the_file)
+            try:
+                if os.path.isfile(file_path):
+                    os.unlink(file_path)
+            except Exception as e:
+                print(e)
+
         database.configure(os.path.join(path_, 'model.db'))
         scenario1 = scenario.loadFromCSV(os.path.join(path_,
                                                       'scenarios/carl1.csv'))
