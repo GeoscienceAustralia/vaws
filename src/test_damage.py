@@ -43,7 +43,7 @@ class TestWindDamageSimulator(unittest.TestCase):
 
         scenario1 = scenario.loadFromCSV(os.path.join(path,
                                                       'scenarios/carl1.cfg'))
-        scenario1.flags['seed_random'] = True
+        scenario1.flags['random_seed'] = True
 
         option = options()
         option.output_folder = cls.path_output
@@ -58,6 +58,9 @@ class TestWindDamageSimulator(unittest.TestCase):
 
         # delete test/output
         # os.path.join(path_, 'test/output')
+
+    def test_random_seed(self):
+        self.assertEqual(self.mySim.s.flags['random_seed'], True)
 
     def check_file_consistency(self, file1, file2, **kwargs):
 
