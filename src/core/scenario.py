@@ -10,6 +10,7 @@ import os
 import sys
 import ConfigParser
 import numpy as np
+from collections import OrderedDict
 
 import house
 import database
@@ -30,7 +31,7 @@ class Scenario(object):
 
         self._house = None
         self._region = None
-        self._construction_levels = dict()
+        self._construction_levels = OrderedDict()
         self._fragility_thresholds = dict()
 
         self._source_items = None

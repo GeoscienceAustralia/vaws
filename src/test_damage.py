@@ -61,13 +61,13 @@ class TestWindDamageSimulator(unittest.TestCase):
 
     def check_file_consistency(self, file1, file2, **kwargs):
 
-        data1 = pd.read_csv(file1, **kwargs)
-        data2 = pd.read_csv(file2, **kwargs)
-
         identical = filecmp.cmp(file1, file2)
 
         if not identical:
             try:
+                data1 = pd.read_csv(file1, **kwargs)
+                data2 = pd.read_csv(file2, **kwargs)
+
                 pd.util.testing.assert_frame_equal(data1, data2)
             except AssertionError:
                 print('{} and {} are different'.format(file1, file2))
