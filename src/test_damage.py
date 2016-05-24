@@ -23,7 +23,7 @@ class TestWindDamageSimulator(unittest.TestCase):
 
         path_ = '/'.join(__file__.split('/')[:-1])
         cls.path_reference = os.path.join(path_, 'test/output')
-        cls.path_output = os.path.join(path_, 'core/outputs')
+        cls.path_output = os.path.join(path_, 'output')
 
         for the_file in os.listdir(cls.path_output):
             file_path = os.path.join(cls.path_output, the_file)
