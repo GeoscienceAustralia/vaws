@@ -72,17 +72,17 @@ class TestWindDamageSimulator(unittest.TestCase):
             except AssertionError:
                 print('{} and {} are different'.format(file1, file2))
 
-    # def test_consistency_house_cpi(self):
-    #     filename = 'house_cpi.csv'
-    #     file1 = os.path.join(self.path_reference, filename)
-    #     file2 = os.path.join(self.path_output, filename)
-    #     self.check_file_consistency(file1, file2)
-    #
-    # def test_consistency_house_damage(self):
-    #     filename = 'house_damage.csv'
-    #     file1 = os.path.join(self.path_reference, filename)
-    #     file2 = os.path.join(self.path_output, filename)
-    #     self.check_file_consistency(file1, file2)
+    def test_consistency_house_cpi(self):
+        filename = 'house_cpi.csv'
+        file1 = os.path.join(self.path_reference, filename)
+        file2 = os.path.join(self.path_output, filename)
+        self.check_file_consistency(file1, file2)
+
+    def test_consistency_house_damage(self):
+        filename = 'house_damage.csv'
+        file1 = os.path.join(self.path_reference, filename)
+        file2 = os.path.join(self.path_output, filename)
+        self.check_file_consistency(file1, file2)
 
     def test_consistency_house_damage(self):
         filename = 'house_dmg_idx.csv'
@@ -96,23 +96,23 @@ class TestWindDamageSimulator(unittest.TestCase):
         file2 = os.path.join(self.path_output, filename)
         self.check_file_consistency(file1, file2)
 
-    # def test_consistency_houses_damaged(self):
-    #     filename = 'houses_damaged_at_v.csv'
-    #     file1 = os.path.join(self.path_reference, filename)
-    #     file2 = os.path.join(self.path_output, filename)
-    #     self.check_file_consistency(file1, file2, skiprows=3)
-    #
-    # def test_consistency_wateringress(self):
-    #     filename = 'wateringress.csv'
-    #     file1 = os.path.join(self.path_reference, filename)
-    #     file2 = os.path.join(self.path_output, filename)
-    #     self.check_file_consistency(file1, file2)
-    #
-    # def test_consistency_wind_debris(self):
-    #     filename = 'wind_debris.csv'
-    #     file1 = os.path.join(self.path_reference, filename)
-    #     file2 = os.path.join(self.path_output, filename)
-    #     self.check_file_consistency(file1, file2)
+    def test_consistency_houses_damaged(self):
+        filename = 'houses_damaged_at_v.csv'
+        file1 = os.path.join(self.path_reference, filename)
+        file2 = os.path.join(self.path_output, filename)
+        self.check_file_consistency(file1, file2, skiprows=3)
+
+    def test_consistency_wateringress(self):
+        filename = 'wateringress.csv'
+        file1 = os.path.join(self.path_reference, filename)
+        file2 = os.path.join(self.path_output, filename)
+        self.check_file_consistency(file1, file2)
+
+    def test_consistency_wind_debris(self):
+        filename = 'wind_debris.csv'
+        file1 = os.path.join(self.path_reference, filename)
+        file2 = os.path.join(self.path_output, filename)
+        self.check_file_consistency(file1, file2)
 
 if __name__ == '__main__':
     unittest.main()
