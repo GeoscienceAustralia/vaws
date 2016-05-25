@@ -133,5 +133,120 @@ class TestWindDamageSimulator(unittest.TestCase):
         file2 = os.path.join(self.path_output, filename)
         self.check_file_consistency(file1, file2)
 
+
+class TestWindDamageSimulator_No_Distribute(unittest.TestCase):
+
+    @classmethod
+    def setUpClass(cls):
+
+        path = '/'.join(__file__.split('/')[:-1])
+        cls.path_reference = os.path.join(path, 'test/output_no_dist')
+        cls.path_output = os.path.join(path, 'output_no_dist')
+
+        for the_file in os.listdir(cls.path_output):
+            file_path = os.path.join(cls.path_output, the_file)
+            try:
+                if os.path.isfile(file_path):
+                    os.unlink(file_path)
+            except Exception as e:
+                print(e)
+
+        # model_db = os.path.join(path_, './core/output/model.db')
+        # model_db = os.path.join(path_, '../data/model.db')
+        model_db = os.path.join(path, 'model.db')
+        cls.db = database.configure(model_db)
+
+        scenario1 = scenario.loadFromCSV(os.path.join(path,
+                                                      'scenarios/carl1.cfg'))
+        scenario1.flags['random_seed'] = True
+        scenario1.flags['dmg_distribute'] = False
+
+        option = options()
+        option.output_folder = cls.path_output
+
+        cls.mySim = WindDamageSimulator(scenario1, option, cls.db, None, None)
+        #cls.mySim.set_scenario(scenario1)
+        cls.mySim.simulator_mainloop()
+
+    @classmethod
+    def tearDownClass(cls):
+        cls.db.close()
+
+        # delete test/output
+        # os.path.join(path_, 'test/output')
+
+    def test_random_seed(self):
+        self.assertEqual(self.mySim.cfg.flags['random_seed'], True)
+
+    def check_file_consistency(self, file1, file2, **kwargs):
+
+        try:
+            identical = filecmp.cmp(file1, file2)
+        except OSError:
+            print('{} does not exist'.format(file2))
+        else:
+            if not identical:
+                data1 = pd.read_csv(file1, **kwargs)
+                data2 = pd.read_csv(file2, **kwargs)
+                try:
+                    pd.util.testing.assert_frame_equal(data1, data2)
+                except AssertionError:
+                    print('{} and {} are different'.format(file1, file2))
+
+    def test_consistency_house_cpi(self):
+        filename = 'house_cpi.csv'
+        file1 = os.path.join(self.path_reference, filename)
+        file2 = os.path.join(self.path_output, filename)
+        self.check_file_consistency(file1, file2)
+
+    def test_consistency_house_damage(self):
+        filename = 'house_damage.csv'
+        file1 = os.path.join(self.path_reference, filename)
+        file2 = os.path.join(self.path_output, filename)
+        self.check_file_consistency(file1, file2)
+
+    def test_consistency_house_damage_idx(self):
+        filename = 'house_dmg_idx.csv'
+        file1 = os.path.join(self.path_reference, filename)
+        file2 = os.path.join(self.path_output, filename)
+
+        identical = filecmp.cmp(file1, file2)
+
+        if not identical:
+            try:
+                data1 = pd.read_csv(file1)
+                data2 = pd.read_csv(file2)
+
+                data1 = data1.sort_values(by='speed').reset_index(drop=True)
+                data2 = data2.sort_values(by='speed').reset_index(drop=True)
+
+                pd.util.testing.assert_frame_equal(data1, data2)
+            except AssertionError:
+                print('{} and {} are different'.format(file1, file2))
+
+    def test_consistency_fragilites(self):
+        filename = 'fragilities.csv'
+        file1 = os.path.join(self.path_reference, filename)
+        file2 = os.path.join(self.path_output, filename)
+        self.check_file_consistency(file1, file2)
+
+    def test_consistency_houses_damaged(self):
+        filename = 'houses_damaged_at_v.csv'
+        file1 = os.path.join(self.path_reference, filename)
+        file2 = os.path.join(self.path_output, filename)
+        self.check_file_consistency(file1, file2, skiprows=3)
+
+    def test_consistency_wateringress(self):
+        filename = 'wateringress.csv'
+        file1 = os.path.join(self.path_reference, filename)
+        file2 = os.path.join(self.path_output, filename)
+        self.check_file_consistency(file1, file2)
+
+    def test_consistency_wind_debris(self):
+        filename = 'wind_debris.csv'
+        file1 = os.path.join(self.path_reference, filename)
+        file2 = os.path.join(self.path_output, filename)
+        self.check_file_consistency(file1, file2)
+
 if __name__ == '__main__':
     unittest.main()

@@ -295,7 +295,7 @@ class WindDamageSimulator(object):
 
             self.sample_house_and_wind_params()
 
-            print('{}'.format(self.construction_level))
+            # print('{}'.format(self.construction_level))
 
             # prime damage map where we track min() V that damage occurs
             # across types for this house (reporting)

@@ -207,7 +207,7 @@ def run_simulation_per_house(cfg, db):
 
     house_damage.sample_house_and_wind_params()
 
-    print('{}'.format(house_damage.construction_level))
+    # print('{}'.format(house_damage.construction_level))
 
     # prime damage map where we track min() V that damage occurs
     # across types for this house (reporting)
