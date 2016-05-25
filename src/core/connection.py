@@ -130,5 +130,5 @@ def calc_connection_loads(V, ctg, house, file_damage, dmg_map, inflZonesByConn,
 
                     # report percentage of connection type damaged at this V
                     # to file.
-        file_damage.write(',')
-        file_damage.write(str(ct.perc_damaged() * 100.0))
+        # file_damage.write(',')
+        # file_damage.write(str(ct.perc_damaged() * 100.0))
