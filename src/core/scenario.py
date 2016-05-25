@@ -11,7 +11,6 @@ import sys
 import ConfigParser
 import numpy as np
 import pandas as pd
-
 from collections import OrderedDict
 
 # import database
@@ -97,14 +96,14 @@ class Scenario(object):
             ['probability', 'mean_factor', 'cov_factor'],
             [prob, mf, cf]))
 
-    # def sampleConstructionLevel(self):
-    #     rv = np.random.random_integers(0, 100)
-    #     cumprob = 0.0
-    #     for key, value in self.construction_levels.iteritems():
-    #         cumprob += value['probability'] * 100.0
-    #         if rv <= cumprob:
-    #             break
-    #     return key, value['mean_factor'], value['cov_factor']
+    def sampleConstructionLevel(self):
+        rv = np.random.random_integers(0, 100)
+        cumprob = 0.0
+        for key, value in self.construction_levels.iteritems():
+            cumprob += value['probability'] * 100.0
+            if rv <= cumprob:
+                break
+        return key, value['mean_factor'], value['cov_factor']
 
     def get_wind_dir_index(self):
         if self.wind_dir_index == 8:
@@ -274,14 +273,6 @@ class Scenario(object):
             self._wind_dir_index = 8
 
     @property
-    def file_dmg_idx(self):
-        return self._file_dmg_idx
-
-    @file_dmg_idx.setter
-    def file_dmg_idx(self, file_name):
-        self._file_dmg_idx = open(file_name, 'w')
-
-    @property
     def file_cpis(self):
         return self._file_cpis
 
@@ -302,6 +293,14 @@ class Scenario(object):
         self._file_debris.write(header)
         self._file_debris.close()
         self._file_debris = open(file_name, 'a')
+
+    @property
+    def file_dmg_idx(self):
+        return self._file_dmg_idx
+
+    @file_dmg_idx.setter
+    def file_dmg_idx(self, file_name):
+        self._file_dmg_idx = file_name
 
     @property
     def file_damage(self):
