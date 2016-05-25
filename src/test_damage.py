@@ -60,7 +60,7 @@ class TestWindDamageSimulator(unittest.TestCase):
         # os.path.join(path_, 'test/output')
 
     def test_random_seed(self):
-        self.assertEqual(self.mySim.s.flags['random_seed'], True)
+        self.assertEqual(self.mySim.cfg.flags['random_seed'], True)
 
     def check_file_consistency(self, file1, file2, **kwargs):
 
