@@ -58,16 +58,40 @@ def simulate_wind_damage_to_house(cfg, options):
     if not os.path.exists(options.output_folder):
         os.makedirs(options.output_folder)
 
-    cfg.file_cpis = os.path.join(options.output_folder, 'house_cpi.csv')
+    # cfg.file_cpis = os.path.join(options.output_folder, 'house_cpi.csv')
     cfg.file_debris = os.path.join(options.output_folder, 'wind_debris.csv')
-    cfg.file_damage = os.path.join(options.output_folder,'house_damage.csv')
-    cfg.file_dmg = os.path.join(options.output_folder,
-                                'houses_damaged_at_v.csv')
-    cfg.file_frag = os.path.join(options.output_folder,'fragilities.csv')
-    cfg.file_water = os.path.join(options.output_folder, 'wateringress.csv')
+    # cfg.file_damage = os.path.join(options.output_folder,'house_damage.csv')
+    # cfg.file_dmg = os.path.join(options.output_folder,
+    #                            'houses_damaged_at_v.csv')
+    # cfg.file_frag = os.path.join(options.output_folder,'fragilities.csv')
+    # cfg.file_water = os.path.join(options.output_folder, 'wateringress.csv')
+
+    cfg.file_dmg_idx = os.path.join(options.output_folder,
+                                    'house_dmg_idx.csv')
+
+    # cfg.cols = [chr(x) for x in range(ord('A'), ord('A') +
+    #                                   cfg.house.roof_columns)]
+    # cfg.rows = range(1, cfg.house.roof_rows + 1)
+
+    # # need to move to HouseDamage class
+    # cfg.result_buckets = dict()
+    # for item in ['mean', 'pressurized_count']:
+    #     cfg.result_buckets[item] = pd.Series(
+    #         0.0, index=range(cfg.wind_speed_num_steps))
+    #
+    # cfg.result_buckets['fragility'] = pd.DataFrame(
+    #     0.0, index=range(cfg.wind_speed_num_steps),
+    #     columns=cfg.fragility_thresholds.index)
+    #
+    # for item in ['dmg_index', 'debris', 'water_ingress', 'debris_nv',
+    #              'debris_num', 'pressurized']:
+    #     cfg.result_buckets[item] = pd.DataFrame(
+    #         0.0, index=range(cfg.wind_speed_num_steps),
+    #         columns=range(cfg.no_sims))
 
     # optionally seed random numbers
     if cfg.flags['random_seed']:
+        print('random seed is set')
         np.random.seed(42)
         zone.seed_scipy(42)
         engine.seed(42)
@@ -75,52 +99,50 @@ def simulate_wind_damage_to_house(cfg, options):
     # simulator main_loop
     tic = time.time()
 
-    #parmap.map(run_simulation_per_house, lines)
-    list_house_damage = [HouseDamage(cfg) for id_sim in range(cfg.no_sims)]
-
-    # collection = dict()
-    # for id_sim in range(cfg.no_sims):
-    #     collection[id_sim] = HouseDamage(cfg)
-    #     run_simulation_per_house(collection[id_sim], cfg)
-
-    list_results = parmap.map(run_simulation_per_house, list_house_damage, cfg,
-                               chunksize=4)
+    list_results = []
+    for id_sim in range(cfg.no_sims):
+        house_ = HouseDamage(cfg)
+        list_results.append(run_simulation_per_house(house_, cfg))
 
     print('{}'.format(time.time()-tic))
-
 
     # post processing of results (aggregations)
     # write debris output file
     mean_debris = pd.concat([x.result_buckets['debris']
-                             for x in collection.itervalues()],
+                             for x in list_results],
                             axis=1).mean(axis=1) * 100.0
 
     perc = pd.concat([x.result_buckets['pressurized']
-                      for x in collection.itervalues()], axis=1).sum(axis=1)\
+                      for x in list_results], axis=1).sum(axis=1)\
            / float(cfg.no_sims) * 100.0
 
     pd.concat([pd.Series(cfg.speeds), perc, mean_debris], axis=1).to_csv(
         cfg.file_debris, index=False, header=False, float_format='%.3f')
 
     # calculate and store DI mean
-    df_dmg_index = pd.concat([x.result_buckets['dmg_index']
-                               for x in collection.itervalues()],
+    df_dmg_idx = pd.concat([x.result_buckets['dmg_index']
+                               for x in list_results],
                                axis=1)
-    mean_dmg_index = df_dmg_index.mean(axis=1)
+    mean_dmg_idx = df_dmg_idx.mean(axis=1)
+
+    df_dmg_idx['speed'] = cfg.speeds
+    df_dmg_idx['mean'] = mean_dmg_idx
+    df_dmg_idx.to_csv(cfg.file_dmg_idx, index=False)
 
     # calculate damage probability
     counted = dict()
     for state, value in cfg.fragility_thresholds.iterrows():
-        counted[state] = (df_dmg_index > value['threshold']).sum(axis=1)\
+        counted[state] = (df_dmg_idx > value['threshold']).sum(axis=1)\
                          / float(cfg.no_sims)
     counted = pd.DataFrame.from_dict(counted)
 
     # cleanup: close output files
-    cfg.file_cpis.close()
+    # cfg.file_cpis.close()
     cfg.file_debris.close()
-    cfg.file_damage.close()
-    cfg.file_dmg.close()
-    cfg.file_water.close()
+    # cfg.file_damage.close()
+    # cfg.file_dmg.close()
+    # cfg.file_water.close()
+
 
     '''
 
@@ -190,6 +212,8 @@ def run_simulation_per_house(house_damage, cfg):
 
     house_damage.sample_house_and_wind_params()
 
+    print('{}'.format(house_damage.construction_level))
+
     # prime damage map where we track min() V that damage occurs
     # across types for this house (reporting)
     house_damage.dmg_map = {}
@@ -207,7 +231,7 @@ def run_simulation_per_house(house_damage, cfg):
         house_damage.result_buckets['water_ingress'][id_speed] = \
             house_damage.water_ingress_cost
 
-        house_damage.result_buckets['dmg_index'][id_speed] = house_damage
+        house_damage.result_buckets['dmg_index'][id_speed] = house_damage.di
 
         if cfg.flags['debris']:
             house_damage.result_buckets['debris'][id_speed] = \
@@ -431,10 +455,10 @@ class HouseDamage(object):
                 # self.cfg.file_cpis.write('%d,%.3f\n' % (self.id_sim + 1, v))
 
     def sample_construction_level(self):
-        rv = np.random.uniform(0, 1)
+        rv = np.random.random_integers(0, 100)
         cumprob = 0.0
         for key, value in self.construction_levels.iteritems():
-            cumprob += value['probability']
+            cumprob += value['probability'] * 100.0
             if rv <= cumprob:
                 break
         return key, value['mean_factor'], value['cov_factor']

@@ -3,6 +3,7 @@ import sys
 import os
 import pandas as pd
 import numpy as np
+import pandas as pd
 import datetime
 from optparse import OptionParser
 from version import VERSION_DESC
@@ -19,6 +20,7 @@ import database
 import debris
 import wateringress
 import engine
+import house
 from house import zoneByLocationMap, connByZoneTypeMap, ctgMap, \
     connByTypeGroupMap, inflZonesByConn, connByTypeMap, connByIDMap, zoneByIDMap
 
@@ -88,6 +90,9 @@ class WindDamageSimulator(object):
         # Undefined and later added
         self.result_wall_collapse = None
 
+        self.house = house.queryHouseWithName(cfg.house_name)
+        self.region = debris.qryDebrisRegionByName(cfg.region_name)
+
         self.cols = None
         self.rows = None
 
@@ -144,9 +149,9 @@ class WindDamageSimulator(object):
     def set_scenario(self):
 
         self.cols = [chr(x) for x in range(ord('A'), ord('A') +
-                                           self.cfg.house.roof_columns)]
-        self.rows = range(1, self.cfg.house.roof_rows + 1)
-        self.cfg.house.clear_sim_results()
+                                           self.house.roof_columns)]
+        self.rows = range(1, self.house.roof_rows + 1)
+        self.house.clear_sim_results()
 
         for item in ['mean', 'pressurized_count']:
             self.result_buckets[item] = pd.Series(
@@ -166,7 +171,7 @@ class WindDamageSimulator(object):
         self.check_pressurized_failure(wind_speed)
 
         self.calculate_qz(wind_speed)
-        zone.calc_zone_pressures(self.cfg.house.zones,
+        zone.calc_zone_pressures(self.house.zones,
                                  self.wind_orientation,
                                  self.cpi,
                                  self.qz,
@@ -174,21 +179,22 @@ class WindDamageSimulator(object):
                                  self.cfg.building_spacing,
                                  self.cfg.flags['diff_shielding'])
 
-        self.file_damage.write('%d,%.3f,%s' % (self.id_sim + 1,
-                                               wind_speed,
-                                               scenario.Scenario.dirs[self.wind_orientation]))
-        for ctg in self.cfg.house.conn_type_groups:
+        # self.file_damage.write('%d,%.3f,%s' % (self.id_sim + 1,
+        #                                       wind_speed,
+        #                                       scenario.Scenario.dirs[self.wind_orientation]))
+        for ctg in self.house.conn_type_groups:
             connection.calc_connection_loads(wind_speed,
                                              ctg,
-                                             self.cfg.house,
-                                             self.file_damage,
+                                             # self.house,
+                                             # self.file_damage,
                                              self.dmg_map,
                                              inflZonesByConn,
                                              connByTypeMap)
+
         if self.cfg.flags['dmg_distribute']:
-            for ctg in self.cfg.house.conn_type_groups:
+            for ctg in self.house.conn_type_groups:
                 self.redistribute_damage(ctg)
-        self.file_damage.write('\n')
+        # self.file_damage.write('\n')
 
         self.check_house_collapse(wind_speed)
         self.calculate_damage_ratio(wind_speed)
@@ -208,8 +214,8 @@ class WindDamageSimulator(object):
         header_ = ('Wind Speed(m/s),% Houses Internally Pressurized,'
                    '% Debris Damage Mean\n')
         self.file_debris.write(header_)
-        self.file_damage = open(os.path.join(self.options.output_folder,
-                                             'house_damage.csv'), 'w')
+        # self.file_damage = open(os.path.join(self.options.output_folder,
+        #                                      'house_damage.csv'), 'w')
         self.file_dmg = open(os.path.join(self.options.output_folder,
                                           'houses_damaged_at_v.csv'), 'w')
         self.file_frag = open(os.path.join(self.options.output_folder,
@@ -225,11 +231,11 @@ class WindDamageSimulator(object):
 
         header = 'Simulated House #,Wind Speed(m/s),Wind Direction,'
 
-        list_ = [ct.connection_type for ctg in self.cfg.house.conn_type_groups
+        list_ = [ct.connection_type for ctg in self.house.conn_type_groups
                  if ctg.enabled for ct in ctg.conn_types]
         header += ','.join(list_)
         header += '\n'
-        self.file_damage.write(header)
+        # self.file_damage.write(header)
 
         # optionally seed random numbers
         if self.cfg.flags['random_seed']:
@@ -246,7 +252,7 @@ class WindDamageSimulator(object):
         #     self.result_buckets[wind_speed] = [0., [], [], 0, [], [], [], []]
 
         # setup connections and groups
-        self.cfg.house.clear_sim_results()
+        self.house.clear_sim_results()
         self.calculate_connection_group_areas()
 
         # optionally create the debris manager and
@@ -254,8 +260,8 @@ class WindDamageSimulator(object):
         # bDebris = self.cfg.flags['debris']
         if self.cfg.flags['debris']:
             self.debrisManager = debris.DebrisManager(
-                self.cfg.house,
-                self.cfg.region,
+                self.house,
+                self.region,
                 self.cfg.wind_speed_min,
                 self.cfg.wind_speed_max,
                 self.cfg.wind_speed_num_steps,
@@ -290,10 +296,12 @@ class WindDamageSimulator(object):
 
             self.sample_house_and_wind_params()
 
+            print('{}'.format(self.construction_level))
+
             # prime damage map where we track min() V that damage occurs
             # across types for this house (reporting)
             self.dmg_map = {}
-            for conn_type in self.cfg.house.conn_types:
+            for conn_type in self.house.conn_types:
                 self.dmg_map[conn_type.connection_type] = 99999
 
             # iteration over wind speed list
@@ -332,14 +340,14 @@ class WindDamageSimulator(object):
 
             # collect results to be used by the GUI client
             zone_results = {}
-            for z in self.cfg.house.zones:
+            for z in self.house.zones:
                 zone_results[z.zone_name] = [z.zone_name,
                                              z.sampled_cpe,
                                              z.sampled_cpe_struct,
                                              z.sampled_cpe_eaves]
 
             conn_results = []
-            for c in self.cfg.house.connections:
+            for c in self.house.connections:
                 conn_results.append([c.ctype.connection_type,
                                      c.location_zone.zone_name,
                                      c.result_failure_v_raw,
@@ -385,7 +393,7 @@ class WindDamageSimulator(object):
 
         # setup headers and counts
         str_ = [conn_type.connection_type for conn_type in
-                self.cfg.house.conn_types]
+                self.house.conn_types]
         self.file_dmg.write(','.join(str_))
         self.file_dmg.write('\n')
 
@@ -395,31 +403,40 @@ class WindDamageSimulator(object):
             self.file_dmg.write(str(wind_speed))
 
             # initialise damage counts for each conn_type to zero
-            for conn_type in self.cfg.house.conn_types:
+            for conn_type in self.house.conn_types:
                 counts[conn_type.connection_type] = 0
 
             # for all houses, increment type counts
             # if wind_speed exceeds minimum observed damages.
             for hr in house_results:
                 dmg_map = hr[1]
-                for conn_type in self.cfg.house.conn_types:
+                for conn_type in self.house.conn_types:
                     dmg_min = dmg_map[conn_type.connection_type]
                     if wind_speed >= dmg_min:
                         counts[conn_type.connection_type] += 1
 
             # write accumulated counts for this wind speed
             str_ = [str(counts[conn_type.connection_type]) for conn_type
-                    in self.cfg.house.conn_types]
+                    in self.house.conn_types]
             self.file_dmg.write(','.join(str_))
             self.file_dmg.write('\n')
 
         # cleanup: close output files
         self.file_cpis.close()
         self.file_debris.close()
-        self.file_damage.close()
+        # self.file_damage.close()
         self.file_dmg.close()
         self.file_water.close()
         self.debrisManager = None
+
+        filename = 'house_dmg_idx.csv'
+        file_dmg_idx = os.path.join(self.options.output_folder, filename)
+
+        df_dmg_idx = self.result_buckets['dmg_index']
+        mean_dmg_idx = self.result_buckets['dmg_index'].mean(axis=1)
+        df_dmg_idx['speed'] = self.speeds
+        df_dmg_idx['mean'] = mean_dmg_idx
+        df_dmg_idx.to_csv(file_dmg_idx, index=False)
 
         if keep_looping:
             self.fit_fragility_curves()
@@ -443,9 +460,10 @@ class WindDamageSimulator(object):
 
     def set_wind_profile(self):
         self.profile = np.random.random_integers(1, 10)
-        self.mzcat = terrain.calculateMZCAT(self.cfg.terrain_category,
+        self.mzcat = terrain.calculateMZCAT(self.cfg.wind_profile,
+                                            self.cfg.terrain_category,
                                             self.profile,
-                                            self.cfg.house.height)
+                                            self.house.height)
 
     def calculate_qz(self, wind_speed):
         if self.cfg.regional_shielding_factor <= 0.85:
@@ -471,7 +489,7 @@ class WindDamageSimulator(object):
         self.cpiAt = 0
         self.internally_pressurized = False
         self.set_wind_profile()
-        self.cfg.house.reset_results()
+        self.house.reset_results()
         self.prev_di = 0
 
         self.construction_level = 'na'
@@ -482,44 +500,44 @@ class WindDamageSimulator(object):
                 self.cfg.sampleConstructionLevel()
 
         # print('{}'.format(self.construction_level))
-        connection.assign_connection_strengths(self.cfg.house.connections,
+        connection.assign_connection_strengths(self.house.connections,
                                                mean_factor,
                                                cov_factor)
 
-        connection.assign_connection_deadloads(self.cfg.house.connections)
+        connection.assign_connection_deadloads(self.house.connections)
 
-        zone.sample_zone_pressures(self.cfg.house.zones,
+        zone.sample_zone_pressures(self.house.zones,
                                    self.wind_orientation,
-                                   self.cfg.house.cpe_V,
-                                   self.cfg.house.cpe_k,
-                                   self.cfg.house.cpe_struct_V)
+                                   self.house.cpe_V,
+                                   self.house.cpe_k,
+                                   self.house.cpe_struct_V)
         # we don't want to collapse multiple times (no need)
         self.result_wall_collapse = False
 
     def check_house_collapse(self, wind_speed):
         if not self.result_wall_collapse:
-            for ctg in self.cfg.house.conn_type_groups:
+            for ctg in self.house.conn_type_groups:
                 if ctg.trigger_collapse_at > 0:
                     perc_damaged = 0
                     for ct in ctg.conn_types:
                         perc_damaged += ct.perc_damaged()
                     if perc_damaged >= ctg.trigger_collapse_at:
-                        for c in self.cfg.house.connections:
+                        for c in self.house.connections:
                             c.damage(wind_speed, 99.9, inflZonesByConn[c])
-                        for z in self.cfg.house.zones:
+                        for z in self.house.zones:
                             z.result_effective_area = 0
                         self.result_wall_collapse = True
 
     def calculate_connection_group_areas(self):
-        for ctg in self.cfg.house.conn_type_groups:
+        for ctg in self.house.conn_type_groups:
             ctg.result_area = 0.0
-        for c in self.cfg.house.connections:
+        for c in self.house.connections:
             c.ctype.group.result_area += c.ctype.costing_area
 
     def calculate_damage_ratio(self, wind_speed):
 
         # calculate damage percentages        
-        for ctg in self.cfg.house.conn_type_groups:
+        for ctg in self.house.conn_type_groups:
             ctg.result_percent_damaged = 0.0
             if ctg.group_name == 'debris':
                 if not self.debrisManager:
@@ -536,11 +554,11 @@ class WindDamageSimulator(object):
 
         # calculate repair cost
         repair_cost = 0
-        for ctg in self.cfg.house.conn_type_groups:
+        for ctg in self.house.conn_type_groups:
             ctg_perc = ctg.result_percent_damaged
             if ctg_perc > 0:
                 fact_arr = [0]
-                for factor in self.cfg.house.factorings:
+                for factor in self.house.factorings:
                     if factor.parent_id == ctg.id:
                         factor_perc = factor.factor.result_percent_damaged
                         if factor_perc:
@@ -551,7 +569,7 @@ class WindDamageSimulator(object):
                     repair_cost += ctg.costing.calculate_damage(ctg_perc)
 
         # calculate initial envelope repair cost before water ingress is added
-        self.di = repair_cost / self.cfg.house.replace_cost
+        self.di = repair_cost / self.house.replace_cost
         if self.di > 1.0:
             self.di = 1.0
         else:
@@ -561,12 +579,12 @@ class WindDamageSimulator(object):
                     wateringress.get_costing_for_envelope_damage_at_v(
                         self.di,
                         wind_speed,
-                        self.cfg.house.water_groups,
+                        self.house.water_groups,
                         self.file_water)
                 repair_cost += self.water_ingress_cost
 
         # combined internal + envelope damage costing can now be calculated
-        self.di = repair_cost / self.cfg.house.replace_cost
+        self.di = repair_cost / self.house.replace_cost
         if self.di > 1.0:
             self.di = 1.0
         self.prev_di = self.di
@@ -631,26 +649,26 @@ class WindDamageSimulator(object):
                             if distByCol:
                                 if c.edge == 0:
                                     k = 0.5
-                                    if not self.redistribute_to_nearest_zone(z, range(gridRow+1, self.cfg.house.roof_rows), k, ctg, gridCol, gridRow, distByCol):
+                                    if not self.redistribute_to_nearest_zone(z, range(gridRow+1, self.house.roof_rows), k, ctg, gridCol, gridRow, distByCol):
                                         k = 1.0
                                     if not self.redistribute_to_nearest_zone(z, reversed(range(0, gridRow)), k, ctg, gridCol, gridRow, distByCol):
-                                        self.redistribute_to_nearest_zone(z, range(gridRow+1, self.cfg.house.roof_rows), k, ctg, gridCol, gridRow, distByCol)
+                                        self.redistribute_to_nearest_zone(z, range(gridRow+1, self.house.roof_rows), k, ctg, gridCol, gridRow, distByCol)
                                 elif c.edge == 2:
                                     k = 1.0
-                                    self.redistribute_to_nearest_zone(z, range(gridRow+1, self.cfg.house.roof_rows), k, ctg, gridCol, gridRow, distByCol)
+                                    self.redistribute_to_nearest_zone(z, range(gridRow+1, self.house.roof_rows), k, ctg, gridCol, gridRow, distByCol)
                                 elif c.edge == 1:
                                     k = 1.0
                                     self.redistribute_to_nearest_zone(z, reversed(range(0, gridRow)), k, ctg, gridCol, gridRow, distByCol)
                             else:
                                 if c.edge == 0:
                                     k = 0.5
-                                    if not self.redistribute_to_nearest_zone(z, range(gridCol+1, self.cfg.house.roof_columns), k, ctg, gridCol, gridRow, distByCol):
+                                    if not self.redistribute_to_nearest_zone(z, range(gridCol+1, self.house.roof_columns), k, ctg, gridCol, gridRow, distByCol):
                                         k = 1.0
                                     if not self.redistribute_to_nearest_zone(z, reversed(range(0, gridCol)), k, ctg, gridCol, gridRow, distByCol):
-                                        self.redistribute_to_nearest_zone(z, range(gridCol+1, self.cfg.house.roof_columns), k, ctg, gridCol, gridRow, distByCol)
+                                        self.redistribute_to_nearest_zone(z, range(gridCol+1, self.house.roof_columns), k, ctg, gridCol, gridRow, distByCol)
                                 elif c.edge == 2:
                                     k = 1.0
-                                    self.redistribute_to_nearest_zone(z, range(gridCol+1, self.cfg.house.roof_columns), k, ctg, gridCol, gridRow, distByCol)
+                                    self.redistribute_to_nearest_zone(z, range(gridCol+1, self.house.roof_columns), k, ctg, gridCol, gridRow, distByCol)
                                 elif c.edge == 1:
                                     k = 1.0
                                     self.redistribute_to_nearest_zone(z, reversed(range(0, gridCol)), k, ctg, gridCol, gridRow, distByCol)
@@ -718,19 +736,19 @@ class WindDamageSimulator(object):
                          'wallracking', 'Truss']:
             if ctgMap.get(ctg_name, None) is None:
                 continue
-            vgrid = np.ones((self.cfg.house.roof_rows, self.cfg.house.roof_columns),
+            vgrid = np.ones((self.house.roof_rows, self.house.roof_columns),
                             dtype=np.float32) * vBlue + 10.0
             for conn in connByTypeGroupMap[ctg_name]:
                 gridCol, gridRow = \
                     zone.getGridFromZoneLoc(conn.location_zone.zone_name)
                 if conn.result_failure_v > 0:
                     vgrid[gridRow][gridCol] = conn.result_failure_v
-            output.plot_damage_show(ctg_name, vgrid, self.cfg.house.roof_columns,
-                                    self.cfg.house.roof_rows, vRed, vBlue)
+            output.plot_damage_show(ctg_name, vgrid, self.house.roof_columns,
+                                    self.house.roof_rows, vRed, vBlue)
 
         if 'plot_wall_damage_show' in output.__dict__:
             wall_major_rows = 2
-            wall_major_cols = self.cfg.house.roof_columns
+            wall_major_cols = self.house.roof_columns
             wall_minor_rows = 2
             wall_minor_cols = 8
 
@@ -914,17 +932,17 @@ class WindDamageSimulator(object):
         self.plot_connection_damage(vRed, vBlue)
 
     def clear_connection_damage(self):
-        v = np.ones((self.cfg.house.roof_rows, self.cfg.house.roof_columns),
+        v = np.ones((self.house.roof_rows, self.house.roof_columns),
                     dtype=np.float32) * self.cfg.wind_speed_max
         for ctname in ['sheeting', 'batten', 'rafter', 'piersgroup',
                        'wallracking']:
-            output.plot_damage_show(ctname, v, self.cfg.house.roof_columns,
-                                    self.cfg.house.roof_rows,
+            output.plot_damage_show(ctname, v, self.house.roof_columns,
+                                    self.house.roof_rows,
                                     self.cfg.wind_speed_min,
                                     self.cfg.wind_speed_max)
         for ctname in ['wallcladding', 'wallcollapse']:
             wall_major_rows = 2
-            wall_major_cols = self.cfg.house.roof_columns
+            wall_major_cols = self.house.roof_columns
             wall_minor_rows = 2
             wall_minor_cols = 8
             v_major_grid = np.ones((wall_major_rows, wall_major_cols),
