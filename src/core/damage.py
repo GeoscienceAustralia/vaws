@@ -685,19 +685,11 @@ class WindDamageSimulator(object):
         filename = 'house_dmg_idx.csv'
         file_dmg_idx = os.path.join(self.options.output_folder, filename)
 
-        speeds = []
-        di_array = []
-        for key, value in type(self).result_buckets.iteritems():
-            speeds.append(key)
-            di_array.append(value[type(self).FLD_DIARRAY])
-
-        df_dmg_idx = pd.DataFrame(di_array)
-        mean_dmg_idx = df_dmg_idx.mean(axis=1)
-        df_dmg_idx['speed'] = speeds
+        df_dmg_idx = self.result_buckets['dmg_index']
+        mean_dmg_idx = self.result_buckets['dmg_index'].mean(axis=1)
+        df_dmg_idx['speed'] = self.speeds
         df_dmg_idx['mean'] = mean_dmg_idx
-
         df_dmg_idx.to_csv(file_dmg_idx, index=False)
-
 
         if keep_looping:
             self.fit_fragility_curves()
