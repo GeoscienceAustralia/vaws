@@ -12,6 +12,7 @@ import ConfigParser
 import numpy as np
 import pandas as pd
 
+from collections import OrderedDict
 import house
 import database
 import debris
@@ -32,7 +33,7 @@ class Scenario(object):
 
         self._house = None
         self._region = None
-        self._construction_levels = dict()
+        self._construction_levels = OrderedDict()
         self._fragility_thresholds = None
 
         self._source_items = None
@@ -99,10 +100,10 @@ class Scenario(object):
                 [prob, mf, cf]))
 
     def sampleConstructionLevel(self):
-        rv = np.random.uniform(0, 1)
+        rv = np.random.random_integers(0, 100)
         cumprob = 0.0
         for key, value in self.construction_levels.iteritems():
-            cumprob += value['probability']
+            cumprob += value['probability'] * 100.0
             if rv <= cumprob:
                 break
         return key, value['mean_factor'], value['cov_factor']
