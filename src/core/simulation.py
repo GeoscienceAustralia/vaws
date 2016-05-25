@@ -70,6 +70,7 @@ def simulate_wind_damage_to_house(cfg, options):
 
     # optionally seed random numbers
     if cfg.flags['random_seed']:
+        print('random seed is set')
         np.random.seed(42)
         zone.seed_scipy(42)
         engine.seed(42)
@@ -84,11 +85,10 @@ def simulate_wind_damage_to_house(cfg, options):
         list_results = parmap.map(run_simulation_per_house,
                                   range(cfg.no_sims), cfg)
     else:
-        list_results = []
         db = database.DatabaseManager(cfg.db_file)
+        list_results = []
         for id_sim in range(cfg.no_sims):
             list_results.append(run_simulation_per_house(cfg, db))
-
         db.close()
 
     print('{}'.format(time.time()-tic))
@@ -105,23 +105,25 @@ def simulate_wind_damage_to_house(cfg, options):
         cfg.file_debris, index=False, header=False, float_format='%.3f')
 
     # calculate and store DI mean
-    df_dmg_index = pd.concat([x.result_buckets['dmg_index']
-                               for x in list_results], axis=1)
-    df_dmg_index['speed'] = cfg.speeds
-    df_dmg_index['mean'] = df_dmg_index.mean(axis=1)
-    df_dmg_index.to_csv(cfg.file_dmg_idx, index=False)
+    df_dmg_idx = pd.concat([x.result_buckets['dmg_index']
+                               for x in list_results],
+                               axis=1)
+    mean_dmg_idx = df_dmg_idx.mean(axis=1)
+
+    df_dmg_idx['speed'] = cfg.speeds
+    df_dmg_idx['mean'] = mean_dmg_idx
+    df_dmg_idx.to_csv(cfg.file_dmg_idx, index=False)
 
     # calculate damage probability
     counted = dict()
     for state, value in cfg.fragility_thresholds.iterrows():
-        counted[state] = (df_dmg_index > value['threshold']).sum(axis=1)\
+        counted[state] = (df_dmg_idx > value['threshold']).sum(axis=1)\
                          / float(cfg.no_sims)
     counted = pd.DataFrame.from_dict(counted)
 
     # cleanup: close output files
     # cfg.file_cpis.close()
     cfg.file_debris.close()
-    cfg.file_dmg_idx.close()
     # cfg.file_damage.close()
     # cfg.file_dmg.close()
     # cfg.file_water.close()
@@ -204,6 +206,8 @@ def run_simulation_per_house(cfg, db):
             house_damage.wind_orientation)
 
     house_damage.sample_house_and_wind_params()
+
+    print('{}'.format(house_damage.construction_level))
 
     # prime damage map where we track min() V that damage occurs
     # across types for this house (reporting)
@@ -445,10 +449,10 @@ class HouseDamage(object):
                 # self.cfg.file_cpis.write('%d,%.3f\n' % (self.id_sim + 1, v))
 
     def sample_construction_level(self):
-        rv = np.random.uniform(0, 1)
+        rv = np.random.random_integers(0, 100)
         cumprob = 0.0
         for key, value in self.construction_levels.iteritems():
-            cumprob += value['probability']
+            cumprob += value['probability'] * 100.0
             if rv <= cumprob:
                 break
         return key, value['mean_factor'], value['cov_factor']
