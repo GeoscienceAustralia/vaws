@@ -36,13 +36,13 @@ cached_water_costs = {}
 
 # note: house specific: needs to be rebuilt when house changes.
 #
-def populate_water_costs(hid):
+def populate_water_costs(db, hid):
     cached_water_costs.clear()
-    damage_names = database.db.session.query(
+    damage_names = db.session.query(
         WaterIngressCosting.name).filter_by(house_id=hid).distinct().all()
     for damage_name in damage_names:
         dname = damage_name[0]
-        wiarr = database.db.session.query(WaterIngressCosting).filter_by(
+        wiarr = db.session.query(WaterIngressCosting).filter_by(
             house_id=hid).filter_by(name=dname).order_by(
             WaterIngressCosting.wi).all()
         cached_water_costs[dname] = wiarr

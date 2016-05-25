@@ -85,8 +85,7 @@ def assign_connection_deadloads(house_conns):
         conn.result_deadload = conn.ctype.sample_deadload()
 
 
-def calc_connection_loads(V, ctg, house, file_damage, dmg_map, inflZonesByConn,
-                          connByTypeMap):
+def calc_connection_loads(V, ctg, dmg_map, inflZonesByConn, connByTypeMap):
     if not ctg.enabled or len(ctg.conn_types) == 0:
         return
 
@@ -130,5 +129,5 @@ def calc_connection_loads(V, ctg, house, file_damage, dmg_map, inflZonesByConn,
 
                     # report percentage of connection type damaged at this V
                     # to file.
-        file_damage.write(',')
-        file_damage.write(str(ct.perc_damaged() * 100.0))
+        # file_damage.write(',')
+        # file_damage.write(str(ct.perc_damaged() * 100.0))

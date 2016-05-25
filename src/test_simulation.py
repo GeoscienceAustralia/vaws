@@ -1,14 +1,12 @@
 #!/usr/bin/env python
 from __future__ import print_function
 
-__author__ = 'Hyeuk Ryu'
-
 import unittest
 import os
 import filecmp
 import pandas as pd
 
-from core.damage import WindDamageSimulator
+from core.simulation import HouseDamage, simulate_wind_damage_to_house
 import core.database as database
 import core.scenario as scenario
 
@@ -33,35 +31,45 @@ class TestWindDamageSimulator(unittest.TestCase):
             try:
                 if os.path.isfile(file_path):
                     os.unlink(file_path)
+                #elif os.path.isdir(file_path): shutil.rmtree(file_path)
             except Exception as e:
                 print(e)
 
         # model_db = os.path.join(path_, './core/output/model.db')
         # model_db = os.path.join(path_, '../data/model.db')
-        model_db = os.path.join(path, 'model.db')
-        cls.db = database.configure(model_db)
 
-        scenario1 = scenario.loadFromCSV(os.path.join(path,
-                                                      'scenarios/carl1.cfg'))
-        scenario1.flags['random_seed'] = True
-        scenario1.flags['dmg_distribute'] = True
+        # cls.model_db = database.configure(os.path.join(path, 'model.db'))
+
+        cfg = scenario.loadFromCSV(os.path.join(path, 'scenarios/carl1.cfg'))
+        cfg.flags['random_seed'] = True
+        cfg.parallel = False
+        cfg.flags['dmg_distribute'] = True
 
         option = options()
         option.output_folder = cls.path_output
 
-        cls.mySim = WindDamageSimulator(scenario1, option, cls.db, None, None)
-        #cls.mySim.set_scenario(scenario1)
-        cls.mySim.simulator_mainloop()
+        _ = simulate_wind_damage_to_house(cfg, option)
+        # print('{}'.format(cfg.file_damage))
+        # cls.mySim = HouseDamage(cfg, option)
+        #_, house_results = cls.mySim.simulator_mainloop()
+        # key = cls.mySim.result_buckets.keys()[0]
+        # print('{}:{}'.format(key, cls.mySim.result_buckets[key]))
 
-    @classmethod
-    def tearDownClass(cls):
-        cls.db.close()
+    # @classmethod
+    # def tearDownClass(cls):
+    #     cls.model_db.close()
 
         # delete test/output
         # os.path.join(path_, 'test/output')
 
-    def test_random_seed(self):
-        self.assertEqual(self.mySim.cfg.flags['random_seed'], True)
+    # def test_something(self):
+    #
+    #     pd.util.testing.assert_almost_equal(
+    #         self.mySim.cfg.result_buckets['pressurized_count'],
+    #         self.mySim.cfg.result_buckets['pressurized'].sum(axis=1))
+
+    # def test_random_seed(self):
+    #     self.assertEqual(cfg.flags['random_seed'], True)
 
     def check_file_consistency(self, file1, file2, **kwargs):
 
@@ -77,18 +85,6 @@ class TestWindDamageSimulator(unittest.TestCase):
                     pd.util.testing.assert_frame_equal(data1, data2)
                 except AssertionError:
                     print('{} and {} are different'.format(file1, file2))
-
-    def test_consistency_house_cpi(self):
-        filename = 'house_cpi.csv'
-        file1 = os.path.join(self.path_reference, filename)
-        file2 = os.path.join(self.path_output, filename)
-        self.check_file_consistency(file1, file2)
-
-    def test_consistency_house_damage(self):
-        filename = 'house_damage.csv'
-        file1 = os.path.join(self.path_reference, filename)
-        file2 = os.path.join(self.path_output, filename)
-        self.check_file_consistency(file1, file2)
 
     def test_consistency_house_damage_idx(self):
         filename = 'house_dmg_idx.csv'
@@ -108,6 +104,18 @@ class TestWindDamageSimulator(unittest.TestCase):
                 pd.util.testing.assert_frame_equal(data1, data2)
             except AssertionError:
                 print('{} and {} are different'.format(file1, file2))
+
+    def test_consistency_house_cpi(self):
+        filename = 'house_cpi.csv'
+        file1 = os.path.join(self.path_reference, filename)
+        file2 = os.path.join(self.path_output, filename)
+        self.check_file_consistency(file1, file2)
+
+    def test_consistency_house_damage(self):
+        filename = 'house_damage.csv'
+        file1 = os.path.join(self.path_reference, filename)
+        file2 = os.path.join(self.path_output, filename)
+        self.check_file_consistency(file1, file2)
 
     def test_consistency_fragilites(self):
         filename = 'fragilities.csv'
