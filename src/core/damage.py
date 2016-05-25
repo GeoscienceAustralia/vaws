@@ -455,7 +455,8 @@ class WindDamageSimulator(object):
 
     def set_wind_profile(self):
         self.profile = np.random.random_integers(1, 10)
-        self.mzcat = terrain.calculateMZCAT(self.cfg.terrain_category,
+        self.mzcat = terrain.calculateMZCAT(self.cfg.wind_profile,
+                                            self.cfg.terrain_category,
                                             self.profile,
                                             self.cfg.house.height)
 
