@@ -3,6 +3,7 @@ import sys
 import os
 import pandas as pd
 import numpy as np
+import pandas as pd
 import datetime
 from optparse import OptionParser
 from version import VERSION_DESC
@@ -290,6 +291,8 @@ class WindDamageSimulator(object):
 
             self.sample_house_and_wind_params()
 
+            print('{}'.format(self.construction_level))
+
             # prime damage map where we track min() V that damage occurs
             # across types for this house (reporting)
             self.dmg_map = {}
@@ -420,6 +423,15 @@ class WindDamageSimulator(object):
         self.file_dmg.close()
         self.file_water.close()
         self.debrisManager = None
+
+        filename = 'house_dmg_idx.csv'
+        file_dmg_idx = os.path.join(self.options.output_folder, filename)
+
+        df_dmg_idx = self.result_buckets['dmg_index']
+        mean_dmg_idx = self.result_buckets['dmg_index'].mean(axis=1)
+        df_dmg_idx['speed'] = self.speeds
+        df_dmg_idx['mean'] = mean_dmg_idx
+        df_dmg_idx.to_csv(file_dmg_idx, index=False)
 
         if keep_looping:
             self.fit_fragility_curves()

@@ -427,6 +427,15 @@ class HouseDamage(object):
         self.file_water.close()
         self.debrisManager = None
 
+        filename = 'house_dmg_idx.csv'
+        file_dmg_idx = os.path.join(self.options.output_folder, filename)
+
+        df_dmg_idx = self.result_buckets['dmg_index']
+        mean_dmg_idx = self.result_buckets['dmg_index'].mean(axis=1)
+        df_dmg_idx['speed'] = self.speeds
+        df_dmg_idx['mean'] = mean_dmg_idx
+        df_dmg_idx.to_csv(file_dmg_idx, index=False)
+
         if keep_looping:
             self.fit_fragility_curves()
             self.file_frag.close()
