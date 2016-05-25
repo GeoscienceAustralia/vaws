@@ -72,6 +72,14 @@ class TestWindDamageSimulator(unittest.TestCase):
         option = options()
         option.output_folder = self.path_output
 
+        for the_file in os.listdir(self.path_output):
+            file_path = os.path.join(self.path_output, the_file)
+            try:
+                if os.path.isfile(file_path):
+                    os.unlink(file_path)
+            except Exception as e:
+                print(e)
+
         sim = WindDamageSimulator(option, None, None)
         sim.set_scenario(scenario1)
         _ = sim.simulator_mainloop()
@@ -94,6 +102,14 @@ class TestWindDamageSimulator(unittest.TestCase):
 
         option = options()
         option.output_folder = self.path_output_no_dist
+
+        for the_file in os.listdir(self.path_output):
+            file_path = os.path.join(self.path_output, the_file)
+            try:
+                if os.path.isfile(file_path):
+                    os.unlink(file_path)
+            except Exception as e:
+                print(e)
 
         sim = WindDamageSimulator(option, None, None)
         sim.set_scenario(scenario1)
