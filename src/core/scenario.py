@@ -13,6 +13,7 @@ import numpy as np
 import pandas as pd
 
 # import database
+from collections import OrderedDict
 import terrain
 
 
@@ -30,7 +31,7 @@ class Scenario(object):
 
         self._house_name = None
         self._region_name = None
-        self._construction_levels = dict()
+        self._construction_levels = OrderedDict()
         self._fragility_thresholds = None
 
         self._source_items = None
@@ -49,6 +50,7 @@ class Scenario(object):
         self._file_water = None
         self._file_damage = None
         self._file_dmg = None
+        self._file_dmg_idx = None
 
         self._wind_profile = None
 
@@ -92,10 +94,10 @@ class Scenario(object):
             [prob, mf, cf]))
 
     def sampleConstructionLevel(self):
-        rv = np.random.uniform(0, 1)
+        rv = np.random.random_integers(0, 100)
         cumprob = 0.0
         for key, value in self.construction_levels.iteritems():
-            cumprob += value['probability']
+            cumprob += value['probability'] * 100.0
             if rv <= cumprob:
                 break
         return key, value['mean_factor'], value['cov_factor']
@@ -270,6 +272,14 @@ class Scenario(object):
         self._file_debris.write(header)
         self._file_debris.close()
         self._file_debris = open(file_name, 'a')
+
+    @property
+    def file_dmg_idx(self):
+        return self._file_dmg_idx
+
+    @file_dmg_idx.setter
+    def file_dmg_idx(self, file_name):
+        self._file_dmg_idx = file_name
 
     @property
     def file_damage(self):
