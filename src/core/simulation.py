@@ -385,9 +385,9 @@ class HouseDamage(object):
         filename = 'house_dmg_idx.csv'
         file_dmg_idx = os.path.join(self.options.output_folder, filename)
 
-        df_dmg_idx = self.result_buckets['dmg_index']
-        mean_dmg_idx = self.result_buckets['dmg_index'].mean(axis=1)
-        df_dmg_idx['speed'] = self.speeds
+        df_dmg_idx = self.cfg.result_buckets['dmg_index']
+        mean_dmg_idx = self.cfg.result_buckets['dmg_index'].mean(axis=1)
+        df_dmg_idx['speed'] = self.cfg.speeds
         df_dmg_idx['mean'] = mean_dmg_idx
         df_dmg_idx.to_csv(file_dmg_idx, index=False)
 
