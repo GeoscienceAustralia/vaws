@@ -7,17 +7,18 @@ import scipy.special
 from optparse import OptionParser
 from scipy.optimize.minpack import leastsq
 from matplotlib.pyplot import *
+from scipy.stats import lognorm
 
 MEDIAN = 0
 BETA = 1
 
 
 def model_func(coeff_arr, x_arr):
-    median = coeff_arr[MEDIAN]
-    beta = coeff_arr[BETA]
-    sqrt2 = math.sqrt(2.0)
-    return 0.5 + 0.5 * scipy.special.erf((np.log(x_arr) - np.log(median)) / (beta * sqrt2))   
-
+    # median = coeff_arr[MEDIAN]
+    # beta = coeff_arr[BETA]
+    # sqrt2 = math.sqrt(2.0)
+    # return 0.5 + 0.5 * scipy.special.erf((np.log(x_arr) - np.log(median)) / (beta * sqrt2))
+    return lognorm.cdf(x_arr, coeff_arr[BETA], scale=coeff_arr[MEDIAN])
 
 def objective_func(coeff_arr, obs_arr, x_arr, verbose):
     diff = obs_arr - model_func(coeff_arr, x_arr)

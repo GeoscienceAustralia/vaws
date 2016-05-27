@@ -89,7 +89,7 @@ class WindDamageSimulator(object):
         self.result_wall_collapse = None
 
         self.house = house.queryHouseWithName(cfg.house_name, db)
-        self.region = debris.qryDebrisRegionByName(cfg.region_name, db)
+        #self.region = debris.qryDebrisRegionByName(cfg.region_name, db)
 
         self.cols = None
         self.rows = None
@@ -218,7 +218,7 @@ class WindDamageSimulator(object):
                                           'houses_damaged_at_v.csv'), 'w')
         self.file_frag = open(os.path.join(self.options.output_folder,
                                            'fragilities.csv'), 'w')
-        header_ = ('Slight Median,Slight Beta,Medium Median,Median Beta,'
+        header_ = ('Slight Median,Slight Beta,Medium Median,Medium Beta,'
                    'Severe Median,Severe Beta,Complete Median,Complete Beta\n')
         self.file_frag.write(header_)
         self.file_water = open(os.path.join(self.options.output_folder,
@@ -259,8 +259,9 @@ class WindDamageSimulator(object):
         # bDebris = self.cfg.flags['debris']
         if self.cfg.flags['debris']:
             self.debrisManager = debris.DebrisManager(
+                self.db,
                 self.house,
-                self.region,
+                self.cfg.region_name,
                 self.cfg.wind_speed_min,
                 self.cfg.wind_speed_max,
                 self.cfg.wind_speed_num_steps,
@@ -427,6 +428,10 @@ class WindDamageSimulator(object):
         self.file_dmg.close()
         self.file_water.close()
         self.debrisManager = None
+
+
+        file_df_frag = os.path.join(self.options.output_folder, 'df_frag.csv')
+        self.result_buckets['fragility'].to_csv(file_df_frag, index=False)
 
         filename = 'house_dmg_idx.csv'
         file_dmg_idx = os.path.join(self.options.output_folder, filename)

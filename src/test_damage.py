@@ -189,7 +189,8 @@ class TestWindDamageSimulator_No_Distribute(unittest.TestCase):
                 data1 = pd.read_csv(file1, **kwargs)
                 data2 = pd.read_csv(file2, **kwargs)
                 try:
-                    pd.util.testing.assert_frame_equal(data1, data2)
+                    pd.util.testing.assert_almost_equal(data1, data2,
+                                                        check_less_precise=True)
                 except AssertionError:
                     print('{} and {} are different'.format(file1, file2))
 

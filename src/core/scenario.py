@@ -344,10 +344,11 @@ class Scenario(object):
 
     @file_frag.setter
     def file_frag(self, file_name):
-        self._file_frag = open(file_name, 'w')
-        header = ('Slight Median,Slight Beta,Medium Median,Median Beta,'
-                   'Severe Median,Severe Beta,Complete Median,Complete Beta\n')
-        self._file_frag.write(header)
+        # self._file_frag = open(file_name, 'w')
+        # header = ('Slight Median,Slight Beta,Medium Median,Median Beta,'
+        #            'Severe Median,Severe Beta,Complete Median,Complete Beta\n')
+        # self._file_frag.write(header)
+        self._file_frag = file_name
 
     '''
     # used by main.pyw

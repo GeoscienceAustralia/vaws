@@ -92,8 +92,9 @@ class DebrisSource(object):
 
 class DebrisManager(object):
     def __init__(self,
+                 db,
                  house_inst,
-                 region,
+                 region_name,
                  wind_min=30.0,
                  wind_max=150.0,
                  wind_steps=40.0,
@@ -113,10 +114,10 @@ class DebrisManager(object):
         self.source_items = source_items
         self.flighttime_mean = flighttime_mean
         self.flighttime_stddev = flighttime_stddev
-        self.wind_step = float((wind_max - wind_min) / float(wind_steps))
+        self.wind_step = (wind_max - wind_min) / float(wind_steps)
         self.source_items = source_items
         self.sources = []
-        self.region = region
+        self.region = qryDebrisRegionByName(region_name, db)
         self.house = house_inst
 
         # added
@@ -149,22 +150,27 @@ class DebrisManager(object):
             self.sources.append(src)
             isrc += 1
 
-        if region.name == 'Capital_city':
-            self.dt_compact = DebrisType(0, 0.65, region.cr, region.cmm,
-                                         region.cmc, region.cfm, region.cfc,
+        if region_name == 'Capital_city':
+            self.dt_compact = DebrisType(0, 0.65, self.region.cr,
+                                         self.region.cmm, self.region.cmc,
+                                         self.region.cfm, self.region.cfc,
                                          'o')
-            self.dt_sheet = DebrisType(1, 0.9, region.pr, region.pmm,
-                                       region.pmc, region.pfm, region.pfc, 's')
-            self.dt_rod = DebrisType(2, 0.8, region.rr, region.rmm, region.rmc,
-                                     region.rfm, region.rfc, 'd')
+            self.dt_sheet = DebrisType(1, 0.9, self.region.pr, self.region.pmm,
+                                       self.region.pmc, self.region.pfm,
+                                       self.region.pfc, 's')
+            self.dt_rod = DebrisType(2, 0.8, self.region.rr, self.region.rmm,
+                                     self.region.rmc,
+                                     self.region.rfm, self.region.rfc, 'd')
         else:
-            self.dt_compact = DebrisType(0, 0.65, region.cr, region.cmm,
-                                         region.cmc, region.cfm, region.cfc,
-                                         'o')
-            self.dt_sheet = DebrisType(1, 0.9, region.pr, region.pmm,
-                                       region.pmc, region.pfm, region.pfc, 's')
-            self.dt_rod = DebrisType(2, 0.8, region.rr, region.rmm, region.rmc,
-                                     region.rfm, region.rfc, 'd')
+            self.dt_compact = DebrisType(0, 0.65, self.region.cr,
+                                         self.region.cmm, self.region.cmc,
+                                         self.region.cfm, self.region.cfc, 'o')
+            self.dt_sheet = DebrisType(1, 0.9, self.region.pr, self.region.pmm,
+                                       self.region.pmc, self.region.pfm,
+                                       self.region.pfc, 's')
+            self.dt_rod = DebrisType(2, 0.8, self.region.rr, self.region.rmm,
+                                     self.region.rmc, self.region.rfm,
+                                     self.region.rfc, 'd')
 
     def set_wind_direction_index(self, wind_dir_index):
         self.wind_dir_index = wind_dir_index
@@ -385,10 +391,10 @@ if __name__ == '__main__':
 
         def test_with_render(self):
             # this is the minimum case
-            h = house.queryHouseWithName('Group 4 House', model_db)
-            r = qryDebrisRegionByName('Capital_city', model_db)
+            house_inst = house.queryHouseWithName('Group 4 House', model_db)
+            region_name = 'Capital_city'
             v = 55.0
-            mgr = DebrisManager(h, r)
+            mgr = DebrisManager(model_db, house_inst, region_name)
             mgr.set_wind_direction_index(1)
             mgr.run(v, True)
             mgr.render(v)
