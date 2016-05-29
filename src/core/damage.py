@@ -107,6 +107,9 @@ class WindDamageSimulator(object):
         self.construction_level = None
         self.cpiAt = None
         self.prev_di = None
+        self.water_ratio = None
+        self.water_damage_name = None
+        self.water_costing = None
         self.water_ingress_cost = None
         self.file_cpis = None
         self.file_debris = None
@@ -149,7 +152,7 @@ class WindDamageSimulator(object):
         self.cols = [chr(x) for x in range(ord('A'), ord('A') +
                                            self.house.roof_columns)]
         self.rows = range(1, self.house.roof_rows + 1)
-        self.house.clear_sim_results()
+        self.house.reset_connection_failure()
 
         for item in ['mean', 'pressurized_count']:
             self.result_buckets[item] = pd.Series(
@@ -251,7 +254,7 @@ class WindDamageSimulator(object):
         #     self.result_buckets[wind_speed] = [0., [], [], 0, [], [], [], []]
 
         # setup connections and groups
-        self.house.clear_sim_results()
+        self.house.reset_connection_failure()
         self.calculate_connection_group_areas()
 
         # optionally create the debris manager and
@@ -579,12 +582,15 @@ class WindDamageSimulator(object):
         else:
             self.water_ingress_cost = 0
             if self.cfg.flags['water_ingress']:
-                self.water_ingress_cost = \
+
+                (self.water_ratio, self.water_damage_name,
+                 self.water_ingress_cost, self.water_costing) = \
                     wateringress.get_costing_for_envelope_damage_at_v(
                         self.di,
                         wind_speed,
                         self.house.water_groups,
                         self.file_water)
+
                 repair_cost += self.water_ingress_cost
 
         # combined internal + envelope damage costing can now be calculated

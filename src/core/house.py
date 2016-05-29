@@ -113,7 +113,7 @@ class House(database.Base):
             for infl in c.zones:
                 inflZonesByConn[c][infl.zone] = infl.coeff
 
-    def clear_sim_results(self):
+    def reset_connection_failure(self):
         for c in self.connections:
             c.result_failure_v = 0.0
             c.result_failure_v_i = 0

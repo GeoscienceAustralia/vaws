@@ -104,12 +104,13 @@ def get_costing_for_envelope_damage_at_v(di, wind_speed, water_groups,
         water_ingress_cost = watercosting.base_cost * watercosting.coeff1 * \
                              di ** watercosting.coeff2
 
+    watercosting_str = '{}'.format(watercosting)
+
     if out_file:
         out_file.write('\n%f,%f,%f,%s,%f,%s' % (wind_speed, di, water_ratio,
                                                 damage_name, water_ingress_cost,
                                                 watercosting))
-
-    return water_ingress_cost
+    return water_ratio, damage_name, water_ingress_cost, watercosting_str
 
 
 # unit tests

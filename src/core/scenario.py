@@ -280,6 +280,8 @@ class Scenario(object):
     def file_cpis(self, file_name):
         self._file_cpis = open(file_name, 'w')
         self._file_cpis.write('Simulated House #, Cpi Changed At\n')
+        self._file_cpis.close()
+        self._file_cpis = open(file_name, 'a')
 
     @property
     def file_debris(self):
@@ -337,6 +339,8 @@ class Scenario(object):
         header_ = ('V,Envelope DI,Water Damage,Damage Scenario,'
                    'Water Damage Cost,WaterCosting\n')
         self._file_water.write(header_)
+        self._file_water.close()
+        self._file_water = open(file_name, 'a')
 
     @property
     def file_frag(self):
