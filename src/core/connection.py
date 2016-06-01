@@ -78,11 +78,12 @@ def assign_connection_deadloads(house_conns):
 
 def calc_connection_loads(V, ctg, dmg_map, inflZonesByConn, connByTypeMap):
     if not ctg.enabled or len(ctg.conn_types) == 0:
-        return
+        return dict()
 
     # hard coded for optimization
     use_struct_pz = ctg.group_name in use_struct_pz_for
 
+    damage_conn_type = dict()
     # for all connection types belonging to the specified group
     for ct in ctg.conn_types:
 
@@ -122,3 +123,6 @@ def calc_connection_loads(V, ctg, dmg_map, inflZonesByConn, connByTypeMap):
                     # to file.
         # file_damage.write(',')
         # file_damage.write(str(ct.perc_damaged() * 100.0))
+        damage_conn_type[ct.connection_type] = ct.perc_damaged() * 100.0
+
+    return damage_conn_type

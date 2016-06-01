@@ -11,7 +11,8 @@ from core.simulation import HouseDamage, simulate_wind_damage_to_house
 import core.database as database
 import core.scenario as scenario
 
-class options(object):
+
+class Options(object):
 
     def __init__(self):
         self.output_folder = None
@@ -78,7 +79,29 @@ def consistency_house_damage(path_reference, path_output):
     filename = 'house_damage.csv'
     file1 = os.path.join(path_reference, filename)
     file2 = os.path.join(path_output, filename)
-    check_file_consistency(file1, file2)
+
+    try:
+        identical = filecmp.cmp(file1, file2)
+    except OSError:
+        print('{} does not exist'.format(file2))
+    else:
+        if not identical:
+            data1 = pd.read_csv(file1)
+            data2 = pd.read_csv(file2)
+
+            try:
+                col_ = 'Wind Direction'
+                assert pd.util.testing.Series.equals(data1[col_], data2[col_])
+            except AssertionError:
+                print('{} and {} are different in {}'.format(file1, file2, col_))
+
+            data1.drop(col_, axis=1, inplace=True)
+            data2.drop(col_, axis=1, inplace=True)
+            try:
+                np.testing.assert_almost_equal(data1.values, data2.values,
+                                               decimal=3)
+            except AssertionError:
+                print('{} and {} are different'.format(file1, file2))
 
 
 def consistency_fragilites(path_reference, path_output):
@@ -176,7 +199,7 @@ class TestWindDamageSimulator(unittest.TestCase):
         cfg.parallel = False
         cfg.flags['dmg_distribute'] = True
 
-        option = options()
+        option = Options()
         option.output_folder = cls.path_output
 
         _ = simulate_wind_damage_to_house(cfg, option)
@@ -253,7 +276,7 @@ class TestWindDamageSimulator_no_distribute(unittest.TestCase):
         cfg.parallel = False
         cfg.flags['dmg_distribute'] = False
 
-        option = options()
+        option = Options()
         option.output_folder = cls.path_output
 
         _ = simulate_wind_damage_to_house(cfg, option)
@@ -343,7 +366,7 @@ class TestHouseDamage(unittest.TestCase):
             # zone.seed_scipy(42)
             # engine.seed(42)
 
-        option = options()
+        option = Options()
         option.output_folder = path_output
 
         cls.model_db = database.DatabaseManager(cfg.db_file)

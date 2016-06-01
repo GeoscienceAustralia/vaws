@@ -310,8 +310,9 @@ class Scenario(object):
 
     @file_damage.setter
     def file_damage(self, file_name):
-        self._file_damage = open(file_name, 'w')
-        header = 'Simulated House #,Wind Speed(m/s),Wind Direction,'
+        self._file_damage = file_name
+        # self._file_damage = open(file_name, 'w')
+        # header = 'Simulated House #,Wind Speed(m/s),Wind Direction,'
         # list_ = []
         # for ctg in self.house.conn_type_groups:
         #     if ctg.enabled:
@@ -319,7 +320,7 @@ class Scenario(object):
         #             list_.append(ct.connection_type)
         # header += ','.join(list_)
         # header += '\n'
-        self._file_damage.write(header)
+        # self._file_damage.write(header)
 
     @property
     def file_dmg(self):

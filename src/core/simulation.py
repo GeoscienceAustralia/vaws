@@ -64,7 +64,7 @@ def simulate_wind_damage_to_house(cfg, options):
     #                            'houses_damaged_at_v.csv')
     cfg.file_frag = os.path.join(options.output_folder,'fragilities.csv')
     cfg.file_water = os.path.join(options.output_folder, 'wateringress.csv')
-    # cfg.file_damage = os.path.join(options.output_folder, 'house_damage.csv')
+    cfg.file_damage = os.path.join(options.output_folder, 'house_damage.csv')
 
     cfg.file_debris = os.path.join(options.output_folder, 'wind_debris.csv')
     cfg.file_dmg_idx = os.path.join(options.output_folder, 'house_dmg_idx.csv')
@@ -83,26 +83,26 @@ def simulate_wind_damage_to_house(cfg, options):
     # list_house_damage = [HouseDamage(cfg, db) for id_sim in range(cfg.no_sims)]
 
     if cfg.parallel:
-        list_results = parmap.map(run_simulation_per_house,
-                                  range(cfg.no_sims), cfg)
+        # list_results = parmap.map(run_simulation_per_house,
+        #                           range(cfg.no_sims), cfg)
+        print('Not implemented yet')
     else:
         db = database.DatabaseManager(cfg.db_file)
         list_results = []
         for id_sim in range(cfg.no_sims):
-            list_results.append(run_simulation_per_house(cfg, db))
+            _, results = run_simulation_per_house(cfg, db)
+            list_results.append(results)
         db.close()
 
     print('{}'.format(time.time()-tic))
 
     # post processing of results (aggregations)
     # write debris output file
-    ps_speeds = pd.Series(cfg.speeds)
-    df_debris = pd.concat([x.result_buckets['debris'] for x in list_results],
-                          axis=1)
+    ps_speeds = list_results[0]['speed']
+    df_debris = pd.concat([x['debris'] for x in list_results], axis=1)
     ps_mean_debris = df_debris.mean(axis=1) * 100.0
 
-    df_pressurized = pd.concat([x.result_buckets['pressurized'] for x in
-                                list_results], axis=1)
+    df_pressurized = pd.concat([x['pressurized'] for x in list_results], axis=1)
     ps_pressurized = df_pressurized.sum(axis=1) / float(cfg.no_sims) * 100.0
 
     pd.concat([ps_speeds, ps_pressurized, ps_mean_debris], axis=1).to_csv(
@@ -110,8 +110,7 @@ def simulate_wind_damage_to_house(cfg, options):
     cfg.file_debris.close()
 
     # calculate and store DI mean
-    df_dmg_idx = pd.concat([x.result_buckets['dmg_idx']
-                            for x in list_results], axis=1)
+    df_dmg_idx = pd.concat([x['dmg_idx'] for x in list_results], axis=1)
     mean_dmg_idx = df_dmg_idx.mean(axis=1)
 
     df_dmg_idx_extra = pd.concat([df_dmg_idx, ps_speeds, mean_dmg_idx], axis=1)
@@ -125,26 +124,26 @@ def simulate_wind_damage_to_house(cfg, options):
     fit_fragility_curves(cfg, df_dmg_idx)
 
     # house_cpi
-    ps_cpi = pd.Series([x.result_buckets['cpi'] for x in list_results])
+    ps_cpi = pd.Series([x['cpi'] for x in list_results])
     ps_cpi.index += 1
     ps_cpi.to_csv(cfg.file_cpis)
     cfg.file_cpis.close()
 
     # water ingress
     ps_speeds_across_simulations = pd.concat(
-        [ps_speeds for i in range(cfg.no_sims)]).reset_index(drop=True)
+        [x['speed'] for x in list_results]).reset_index(drop=True)
     ps_dmg_idx_except_water = pd.concat(
-        [x.result_buckets['dmg_idx_except_water'] for x in list_results]).reset_index(drop=True)
+        [x['dmg_idx_except_water'] for x in list_results]).reset_index(
+        drop=True)
     ps_water_damage_name = pd.concat(
-        [x.result_buckets['water_damage_name'] for x in list_results]).reset_index(drop=True)
+        [x['water_damage_name'] for x in list_results]).reset_index(drop=True)
     ps_water_ingress_cost = pd.concat(
-        [x.result_buckets['water_ingress_cost'] for x in list_results]).reset_index(drop=True)
+        [x['water_ingress_cost'] for x in list_results]).reset_index(drop=True)
     ps_water_ratio = pd.concat(
-        [x.result_buckets['water_ratio'] for x in list_results]).reset_index(drop=True)
+        [x['water_ratio'] for x in list_results]).reset_index(drop=True)
     ps_water_costing = pd.concat(
-        [x.result_buckets['water_costing'] for x in list_results]).reset_index(drop=True)
+        [x['water_costing'] for x in list_results]).reset_index(drop=True)
 
-    #V	Envelope DI	Water Damage	Damage Scenario	Water Damage Cost
     df_water_ingress = pd.concat([ps_speeds_across_simulations,
                                   ps_dmg_idx_except_water, ps_water_ratio,
                                   ps_water_damage_name, ps_water_ingress_cost,
@@ -154,9 +153,21 @@ def simulate_wind_damage_to_house(cfg, options):
         cfg.file_water, index=False, header=False)
     cfg.file_water.close()
 
-    # cleanup: close output files
-    # cfg.file_damage.close()
-    # cfg.file_dmg.close()
+    # house_damage
+    df_dmg_conn_types = pd.DataFrame(None)
+    list_id_sim = []
+    for i in range(1, cfg.no_sims + 1):
+        list_id_sim += [str(i) for _ in range(cfg.wind_speed_num_steps)]
+    df_dmg_conn_types['Simulated House #'] = pd.Series(list_id_sim)
+    df_dmg_conn_types['Wind Speed(m/s)'] = ps_speeds_across_simulations
+    df_dmg_conn_types['Wind Direction'] = pd.concat(
+        [x['wind_direction'] for x in list_results]).reset_index(drop=True)
+
+    df_dmg_conn_types_sub = pd.concat(
+        [x['conn_types'] for x in list_results]).reset_index(drop=True)
+    pd.concat([df_dmg_conn_types, df_dmg_conn_types_sub], axis=1).to_csv(
+        cfg.file_damage, index=False)
+
 
     '''
     # produce damage map report
@@ -242,7 +253,26 @@ def fit_fragility_curves(cfg, df_dmg_idx):
 
 def run_simulation_per_house(cfg, db):
 
+    result_buckets = dict()
+    for item in ['dmg_idx', 'debris', 'debris_nv',
+                 'debris_num', 'pressurized', 'water_ratio',
+                 'water_damage_name', 'dmg_idx_except_water',
+                 'water_ingress_cost', 'water_costing', 'speed',
+                 'wind_direction']:
+        result_buckets[item] = pd.Series(
+            None, index=range(cfg.wind_speed_num_steps))
+
+    result_buckets['cpi'] = None
+
     house_damage = HouseDamage(cfg, db)
+
+    list_conn_type = []
+    for conn_type_group in house_damage.house.conn_type_groups:
+        for conn_type in conn_type_group.conn_types:
+            list_conn_type.append(conn_type.connection_type)
+
+    result_buckets['conn_types'] = pd.DataFrame(
+        None, columns=list_conn_type, index=range(cfg.wind_speed_num_steps))
 
     # sample new house and wind direction (if random)
     if cfg.wind_dir_index == 8:
@@ -271,40 +301,47 @@ def run_simulation_per_house(cfg, db):
         house_damage.clear_loop_results()
         house_damage.run_simulation(wind_speed)
 
+        result_buckets['wind_direction'][id_speed] = \
+            cfg.dirs[house_damage.wind_orientation]
+        result_buckets['speed'][id_speed] = wind_speed
+
         # collect results
         if cfg.flags['water_ingress']:
 
-            house_damage.result_buckets['dmg_idx_except_water'][id_speed] = \
+            result_buckets['dmg_idx_except_water'][id_speed] = \
                 house_damage.di_except_water
 
-            house_damage.result_buckets['water_ingress_cost'][id_speed] = \
+            result_buckets['water_ingress_cost'][id_speed] = \
                 house_damage.water_ingress_cost
 
-            house_damage.result_buckets['water_ratio'][id_speed] = \
+            result_buckets['water_ratio'][id_speed] = \
                 house_damage.water_ratio
 
-            house_damage.result_buckets['water_damage_name'][id_speed] = \
+            result_buckets['water_damage_name'][id_speed] = \
                 house_damage.water_damage_name
 
-            house_damage.result_buckets['water_costing'][id_speed] = \
+            result_buckets['water_costing'][id_speed] = \
                 house_damage.water_costing
 
-        house_damage.result_buckets['dmg_idx'][id_speed] = house_damage.di
+        result_buckets['dmg_idx'][id_speed] = house_damage.di
 
         if house_damage.cfg.flags['debris']:
-            house_damage.result_buckets['debris'][id_speed] = \
+            result_buckets['debris'][id_speed] = \
                 house_damage.debris_manager.result_dmgperc
-            house_damage.result_buckets['debris_nv'][id_speed] = \
+            result_buckets['debris_nv'][id_speed] = \
                 house_damage.debris_manager.result_nv
-            house_damage.result_buckets['debris_num'][id_speed] = \
+            result_buckets['debris_num'][id_speed] = \
                 house_damage.debris_manager.result_num_items
 
         # for all houses, count the number that were pressurized at
         # this wind_speed
         if house_damage.cpi == 0:
-            house_damage.result_buckets['pressurized'][id_speed] = False
+            result_buckets['pressurized'][id_speed] = False
         else:
-            house_damage.result_buckets['pressurized'][id_speed] = True
+            result_buckets['pressurized'][id_speed] = True
+
+        if house_damage.cpiAt:
+            result_buckets['cpi'] = house_damage.cpiAt
 
         # # interact with GUI listener
         # if self.diCallback:
@@ -313,6 +350,9 @@ def run_simulation_per_house(cfg, db):
         #     keep_looping = self.diCallback(wind_speed, self.di, percLoops)
         #     if not keep_looping:
         #         break
+
+        result_buckets['conn_types'].loc[id_speed] = \
+            house_damage.damage_conn_type
 
     # collect results to be used by the GUI client
     for z in house_damage.house.zones:
@@ -331,7 +371,7 @@ def run_simulation_per_house(cfg, db):
                                           c.ctype.group.group_name,
                                           c.id])
 
-    return house_damage
+    return house_damage, result_buckets
 
 
 class HouseDamage(object):
@@ -346,7 +386,7 @@ class HouseDamage(object):
 
     """
 
-    # FIXME: HouseDamage for one speed or for a series of speeds?
+    # FIXME: HouseDamage for one speed
 
     # id_sim_gen = itertools.count()
 
@@ -378,6 +418,7 @@ class HouseDamage(object):
         self.ss = None
         self.zone_results = dict()
         self.conn_results = []
+        self.damage_conn_type = dict()
 
         self.A_final = None
         self.diCallback = diCallback
@@ -434,15 +475,23 @@ class HouseDamage(object):
                                            self.house.roof_columns)]
         self.rows = range(1, self.house.roof_rows + 1)
 
-        self.result_buckets = dict()
-        for item in ['dmg_idx', 'debris', 'debris_nv',
-                     'debris_num', 'pressurized', 'water_ratio',
-                     'water_damage_name', 'dmg_idx_except_water',
-                     'water_ingress_cost', 'water_costing']:
-            self.result_buckets[item] = pd.Series(
-                None, index=range(cfg.wind_speed_num_steps))
+        # self.result_buckets = dict()
+        # for item in ['dmg_idx', 'debris', 'debris_nv',
+        #              'debris_num', 'pressurized', 'water_ratio',
+        #              'water_damage_name', 'dmg_idx_except_water',
+        #              'water_ingress_cost', 'water_costing']:
+        #     self.result_buckets[item] = pd.Series(
+        #         None, index=range(cfg.wind_speed_num_steps))
 
-        self.result_buckets['cpi'] = None
+        # self.result_buckets['cpi'] = None
+
+        # list_conn_type = []
+        # for conn_type_group in self.house.conn_type_groups:
+        #     for conn_type in conn_type_group.conn_types:
+        #         list_conn_type.append(conn_type.connection_type)
+        #
+        # self.result_buckets['conn_types'] = pd.DataFrame(
+        #     None, columns=list_conn_type, index=range(cfg.wind_speed_num_steps))
 
     def run_simulation(self, wind_speed):
 
@@ -461,12 +510,16 @@ class HouseDamage(object):
         # self.cfg.file_damage.write('%d,%.3f,%s' % (self.id_sim + 1,
         #                                        wind_speed,
         #                                       scenario.Scenario.dirs[self.wind_orientation]))
+
         for conn_type_group in self.house.conn_type_groups:
-            connection.calc_connection_loads(wind_speed,
-                                             conn_type_group,
-                                             self.dmg_map,
-                                             inflZonesByConn,
-                                             connByTypeMap)
+            damage_conn_type_by_group = connection.calc_connection_loads(
+                wind_speed,
+                conn_type_group,
+                self.dmg_map,
+                inflZonesByConn,
+                connByTypeMap)
+            self.damage_conn_type.update(damage_conn_type_by_group)
+
         if self.flags['dmg_distribute']:
             for conn_type_group in self.house.conn_type_groups:
                 self.redistribute_damage(conn_type_group)
@@ -514,7 +567,7 @@ class HouseDamage(object):
             if self.cpi == 0 and self.debris_manager.get_breached():
                 self.cpi = 0.7
                 self.cpiAt = v
-                self.result_buckets['cpi'] = v
+                #self.result_buckets['cpi'] = v
                 # self.cfg.file_cpis.write('%d,%.3f\n' % (self.id_sim + 1, v))
 
     def sample_construction_level(self):
@@ -1048,10 +1101,8 @@ def main():
         return
 
     if options.scenario_filename:
-        db = database.configure(model_db)
         conf = scenario.loadFromCSV(options.scenario_filename)
-        simulate(conf, options)
-        db.close()
+        _ = simulate_wind_damage_to_house(conf, options)
     else:
         print '\nERROR: Must provide as scenario file to run simulator...\n'
         parser.print_help()
