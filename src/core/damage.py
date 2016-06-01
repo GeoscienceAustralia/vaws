@@ -249,7 +249,6 @@ class WindDamageSimulator(object):
         self.speeds = np.linspace(self.cfg.wind_speed_min,
                                   self.cfg.wind_speed_max,
                                   self.cfg.wind_speed_num_steps)
-
         # for wind_speed in self.speeds:
         #     self.result_buckets[wind_speed] = [0., [], [], 0, [], [], [], []]
 
@@ -392,7 +391,7 @@ class WindDamageSimulator(object):
         self.file_dmg.write('Number of Damaged Houses\n')
         self.file_dmg.write('Num Houses,%d\n' % self.cfg.no_sims)
         self.file_dmg.write('Wind Direction,%s\n' % scenario.Scenario.dirs[self.wind_orientation])
-        self.file_dmg.write('Wind Speed(m/s)')
+        self.file_dmg.write('Wind Speed(m/s),')
 
         # setup headers and counts
         str_ = [conn_type.connection_type for conn_type in
@@ -403,8 +402,7 @@ class WindDamageSimulator(object):
         # we need to count houses damaged by type for each v
         counts = {}
         for wind_speed in self.speeds:
-            self.file_dmg.write(str(wind_speed))
-
+            self.file_dmg.write(str(wind_speed)+',')
             # initialise damage counts for each conn_type to zero
             for conn_type in self.house.conn_types:
                 counts[conn_type.connection_type] = 0

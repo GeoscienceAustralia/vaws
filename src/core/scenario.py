@@ -329,6 +329,12 @@ class Scenario(object):
     @file_dmg.setter
     def file_dmg(self, file_name):
         self._file_dmg = open(file_name, 'w')
+        self._file_dmg.write('Number of Damaged Houses\n')
+        self._file_dmg.write('Num Houses,{:d}\n'.format(self.no_sims))
+        self._file_dmg.write('Wind Direction,{}\n'.format(
+            self.dirs[self.wind_dir_index]))
+        self._file_dmg.close()
+        self._file_dmg = open(file_name, 'a')
 
     @property
     def file_water(self):

@@ -26,12 +26,16 @@ def check_file_consistency(file1, file2, **kwargs):
         print('{} does not exist'.format(file2))
     else:
         if not identical:
-            data1 = pd.read_csv(file1, **kwargs)
-            data2 = pd.read_csv(file2, **kwargs)
             try:
-                pd.util.testing.assert_frame_equal(data1, data2)
-            except AssertionError:
-                print('{} and {} are different'.format(file1, file2))
+                data1 = pd.read_csv(file1, **kwargs)
+                data2 = pd.read_csv(file2, **kwargs)
+            except ValueError:
+                print('No columns to parse from {}'.format(file2))
+            else:
+                try:
+                    pd.util.testing.assert_frame_equal(data1, data2)
+                except AssertionError:
+                    print('{} and {} are different'.format(file1, file2))
 
 
 def consistency_house_damage_idx(path_reference, path_output):
@@ -89,19 +93,19 @@ def consistency_house_damage(path_reference, path_output):
             data1 = pd.read_csv(file1)
             data2 = pd.read_csv(file2)
 
-            try:
-                col_ = 'Wind Direction'
-                assert pd.util.testing.Series.equals(data1[col_], data2[col_])
-            except AssertionError:
-                print('{} and {} are different in {}'.format(file1, file2, col_))
+            for col in data1.columns:
 
-            data1.drop(col_, axis=1, inplace=True)
-            data2.drop(col_, axis=1, inplace=True)
-            try:
-                np.testing.assert_almost_equal(data1.values, data2.values,
-                                               decimal=3)
-            except AssertionError:
-                print('{} and {} are different'.format(file1, file2))
+                try:
+                    assert pd.util.testing.Series.equals(data1[col], data2[col])
+
+                except AssertionError:
+                    try:
+                        np.testing.assert_almost_equal(data1[col].values,
+                                                       data2[col].values,
+                                                       decimal=3)
+                    except AssertionError:
+                        print('{} and {} are different in {}'.format(
+                            file1, file2, col))
 
 
 def consistency_fragilites(path_reference, path_output):
@@ -137,7 +141,26 @@ def consistency_houses_damaged(path_reference, path_output):
     filename = 'houses_damaged_at_v.csv'
     file1 = os.path.join(path_reference, filename)
     file2 = os.path.join(path_output, filename)
-    check_file_consistency(file1, file2, skiprows=3)
+
+    try:
+        identical = filecmp.cmp(file1, file2)
+    except OSError:
+        print('{} does not exist'.format(file2))
+    else:
+        if not identical:
+            data1 = pd.read_csv(file1, skiprows=3)
+            data2 = pd.read_csv(file2, skiprows=3)
+
+            for col in data1.columns:
+
+                try:
+                    np.testing.assert_almost_equal(data1[col].values,
+                                                   data2[col].values,
+                                                   decimal=3)
+                except AssertionError:
+                    print('{} and {} are different in {}'.format(
+                        file1, file2, col))
+
 
 
 def consistency_wateringress(path_reference, path_output):

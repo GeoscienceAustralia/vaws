@@ -117,7 +117,7 @@ def calc_connection_loads(V, ctg, dmg_map, inflZonesByConn, connByTypeMap):
                     # if the damaged wind speed is less than current type min
                     # then store (for reporting of min damage speeds by type)
                     curr = dmg_map[ct.connection_type]
-                    dmg_map[ct.connection_type] = V if V <= curr else curr
+                    dmg_map[ct.connection_type] = min(V, curr)
 
                     # report percentage of connection type damaged at this V
                     # to file.

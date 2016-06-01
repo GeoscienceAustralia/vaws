@@ -52,6 +52,34 @@ from version import VERSION_DESC
 #         output.plot_fragility_curve(self.x_arr, obs, self.label, alpha,
 #                                     self.col)
 
+# This needs to be done outside of the plotting function
+# as these coefficients are
+# the final output of this program in batch... they are all that matters.
+#
+def fit_fragility_curves(cfg, df_dmg_idx):
+
+    # calculate damage probability
+    frag_counted = OrderedDict()
+    for state, value in cfg.fragility_thresholds.iterrows():
+        counted = (df_dmg_idx > value['threshold']).sum(axis=1) / \
+                  float(cfg.no_sims)
+        try:
+            coeff_arr, ss = curve_log.fit_curve(cfg.speeds,
+                                                counted.values)
+        except Exception, err:
+            msg = 'not successful curve fitting: {}, {}'.format(state, ss)
+            print(msg, err)
+        else:
+            frag_counted.setdefault(state, {})['median'] = coeff_arr[0]
+            frag_counted[state]['sigma'] = coeff_arr[1]
+
+    frag_counted = pd.DataFrame.from_dict(frag_counted)
+
+    if cfg.file_frag:
+        frag_counted.transpose().to_csv(cfg.file_frag)
+
+    return frag_counted
+
 
 def simulate_wind_damage_to_house(cfg, options):
 
@@ -60,8 +88,8 @@ def simulate_wind_damage_to_house(cfg, options):
         os.makedirs(options.output_folder)
 
     cfg.file_cpis = os.path.join(options.output_folder, 'house_cpi.csv')
-    # cfg.file_dmg = os.path.join(options.output_folder,
-    #                            'houses_damaged_at_v.csv')
+    cfg.file_dmg = os.path.join(options.output_folder,
+                                'houses_damaged_at_v.csv')
     cfg.file_frag = os.path.join(options.output_folder,'fragilities.csv')
     cfg.file_water = os.path.join(options.output_folder, 'wateringress.csv')
     cfg.file_damage = os.path.join(options.output_folder, 'house_damage.csv')
@@ -168,12 +196,31 @@ def simulate_wind_damage_to_house(cfg, options):
     pd.concat([df_dmg_conn_types, df_dmg_conn_types_sub], axis=1).to_csv(
         cfg.file_damage, index=False)
 
+    # produce damage map report
+    df_dmg_house = pd.DataFrame(None)
+    df_dmg_house['Wind Speed(m/s)'] = cfg.speeds
+    df_dmg_map = pd.concat([x['dmg_map']
+                            for x in list_results]).reset_index(drop=True)
+
+    df_dmg_house_sub = pd.DataFrame(None, index=range(cfg.wind_speed_num_steps),
+                                    columns=df_dmg_map.columns)
+
+    for conn_type, ps_ in df_dmg_map.iteritems():
+        df_ = pd.concat([ps_ <= ps_speeds_across_simulations,
+                         ps_speeds_across_simulations], axis=1)
+        for speed_, grouped in df_.groupby(1):
+            df_dmg_house_sub.loc[df_dmg_house['Wind Speed(m/s)'] == speed_,
+                                 conn_type] = grouped[0].sum()
+
+    pd.concat([df_dmg_house, df_dmg_house_sub], axis=1).to_csv(
+        cfg.file_dmg, index=False)
+    cfg.file_dmg.close()
+
+    # df_dmg_map = pd.concat(
+    #     [x['wind_direction'] for x in list_results]).reset_index(drop=True)
+
 
     '''
-    # produce damage map report
-    cfg.file_dmg.write('Number of Damaged Houses\n')
-    cfg.file_dmg.write('Num Houses,%d\n' % cfg.no_sims)
-    # cfg.file_dmg.write('Wind Direction,%s\n' % )
     cfg.file_dmg.write('Wind Speed(m/s)')
 
     # setup headers and counts
@@ -205,50 +252,9 @@ def simulate_wind_damage_to_house(cfg, options):
                 in self.cfg.house.conn_types]
         self.cfg.file_dmg.write(','.join(str_))
         self.cfg.file_dmg.write('\n')
-
-    # cleanup: close output files
-    cfg.file_cpis.close()
-    cfg.file_debris.close()
-    cfg.file_damage.close()
-    cfg.file_dmg.close()
-    cfg.file_water.close()
-    #self.debrisManager = None
-
-    self.fit_fragility_curves()
-    self.cfg.file_frag.close()
-    runTime = time.time() - tic
     '''
 
     return list_results
-
-
-# This needs to be done outside of the plotting function
-# as these coefficients are
-# the final output of this program in batch... they are all that matters.
-#
-def fit_fragility_curves(cfg, df_dmg_idx):
-
-    # calculate damage probability
-    frag_counted = OrderedDict()
-    for state, value in cfg.fragility_thresholds.iterrows():
-        counted = (df_dmg_idx > value['threshold']).sum(axis=1) / \
-                  float(cfg.no_sims)
-        try:
-            coeff_arr, ss = curve_log.fit_curve(cfg.speeds,
-                                                counted.values)
-        except Exception, err:
-            msg = 'not successful curve fitting: {}, {}'.format(state, ss)
-            print(msg, err)
-        else:
-            frag_counted.setdefault(state, {})['median'] = coeff_arr[0]
-            frag_counted[state]['sigma'] = coeff_arr[1]
-
-    frag_counted = pd.DataFrame.from_dict(frag_counted)
-
-    if cfg.file_frag:
-        frag_counted.transpose().to_csv(cfg.file_frag)
-
-    return frag_counted
 
 
 def run_simulation_per_house(cfg, db):
@@ -267,11 +273,13 @@ def run_simulation_per_house(cfg, db):
     house_damage = HouseDamage(cfg, db)
 
     list_conn_type = []
-    for conn_type_group in house_damage.house.conn_type_groups:
-        for conn_type in conn_type_group.conn_types:
-            list_conn_type.append(conn_type.connection_type)
+    for conn_type in house_damage.house.conn_types:
+        list_conn_type.append(conn_type.connection_type)
 
     result_buckets['conn_types'] = pd.DataFrame(
+        None, columns=list_conn_type, index=range(cfg.wind_speed_num_steps))
+
+    result_buckets['dmg_map'] = pd.DataFrame(
         None, columns=list_conn_type, index=range(cfg.wind_speed_num_steps))
 
     # sample new house and wind direction (if random)
@@ -354,6 +362,8 @@ def run_simulation_per_house(cfg, db):
         result_buckets['conn_types'].loc[id_speed] = \
             house_damage.damage_conn_type
 
+        result_buckets['dmg_map'].loc[id_speed] = house_damage.dmg_map
+
     # collect results to be used by the GUI client
     for z in house_damage.house.zones:
         house_damage.zone_results[z.zone_name] = [z.zone_name,
@@ -370,6 +380,7 @@ def run_simulation_per_house(cfg, db):
                                           c.result_damaged_report,
                                           c.ctype.group.group_name,
                                           c.id])
+
 
     return house_damage, result_buckets
 

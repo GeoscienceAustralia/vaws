@@ -107,7 +107,7 @@ class TestWindDamageSimulator(unittest.TestCase):
         consistency_fragilites(self.path_reference, self.path_output)
 
     def test_consistency_houses_damaged(self):
-        consistency_houses_damaged(self.path_output, self.path_output)
+        consistency_houses_damaged(self.path_reference, self.path_output)
 
     def test_consistency_wateringress(self):
         consistency_wateringress(self.path_reference, self.path_output)
