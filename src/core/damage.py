@@ -545,7 +545,7 @@ class WindDamageSimulator(object):
         self.file_dmg.write('Number of Damaged Houses\n')
         self.file_dmg.write('Num Houses,%d\n' % self.s.num_iters)
         self.file_dmg.write('Wind Direction,%s\n' % scenario.Scenario.dirs[self.wind_orientation])
-        self.file_dmg.write('Wind Speed(m/s)')
+        self.file_dmg.write('Wind Speed(m/s),')
 
         # setup headers and counts
         self.file_dmg.write(','.join([conn_type.connection_type for conn_type in self.s.house.conn_types]))
@@ -554,7 +554,7 @@ class WindDamageSimulator(object):
         # we need to count houses damaged by type for each v
         counts = {}
         for wind_speed in self.speeds:
-            self.file_dmg.write(str(wind_speed))
+            self.file_dmg.write(str(wind_speed) + ',')
 
             # initialise damage counts for each conn_type to zero
             for conn_type in self.s.house.conn_types:
