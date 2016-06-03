@@ -200,161 +200,6 @@ def consistency_wind_debris(path_reference, path_output):
     check_file_consistency(file1, file2)
 
 
-class TestWindDamageSimulator(unittest.TestCase):
-
-    @classmethod
-    def setUpClass(cls):
-
-        path = '/'.join(__file__.split('/')[:-1])
-        cls.path_reference = os.path.join(path, 'test/output')
-        cls.path_output = os.path.join(path, 'output')
-
-        for the_file in os.listdir(cls.path_output):
-            file_path = os.path.join(cls.path_output, the_file)
-            try:
-                if os.path.isfile(file_path):
-                    os.unlink(file_path)
-            except Exception as e:
-                print(e)
-
-        cfg = scenario.loadFromCSV(os.path.join(path, 'scenarios/carl1.cfg'))
-        cfg.flags['random_seed'] = True
-        cfg.parallel = False
-        cfg.flags['dmg_distribute'] = True
-
-        option = Options()
-        option.output_folder = cls.path_output
-
-        _ = simulate_wind_damage_to_house(cfg, option)
-        # print('{}'.format(cfg.file_damage))
-        # cls.mySim = HouseDamage(cfg, option)
-        #_, house_results = cls.mySim.simulator_mainloop()
-        # key = cls.mySim.result_buckets.keys()[0]
-        # print('{}:{}'.format(key, cls.mySim.result_buckets[key]))
-
-    # @classmethod
-    # def tearDownClass(cls):
-    #     cls.model_db.close()
-
-        # delete test/output
-        # os.path.join(path_, 'test/output')
-
-    # def test_something(self):
-    #
-    #     pd.util.testing.assert_almost_equal(
-    #         self.mySim.cfg.result_buckets['pressurized_count'],
-    #         self.mySim.cfg.result_buckets['pressurized'].sum(axis=1))
-
-    # def test_random_seed(self):
-    #     self.assertEqual(cfg.flags['random_seed'], True)
-
-    def test_consistency_house_damage_idx(self):
-
-        consistency_house_damage_idx(self.path_reference, self.path_output)
-
-    def test_consistency_house_cpi(self):
-
-        consistency_house_cpi(self.path_reference, self.path_output)
-
-    def test_consistency_house_damage(self):
-
-        consistency_house_damage(self.path_reference, self.path_output)
-
-    def test_consistency_fragilites(self):
-
-        consistency_fragilites(self.path_reference, self.path_output)
-
-    def test_consistency_houses_damaged(self):
-
-        consistency_houses_damaged(self.path_reference, self.path_output)
-
-    def test_consistency_wateringress(self):
-
-        consistency_wateringress(self.path_reference, self.path_output)
-
-    def test_consistency_wind_debris(self):
-
-        consistency_wind_debris(self.path_reference, self.path_output)
-
-
-class TestWindDamageSimulator_no_distribute(unittest.TestCase):
-
-    @classmethod
-    def setUpClass(cls):
-
-        path = '/'.join(__file__.split('/')[:-1])
-        cls.path_reference = os.path.join(path, 'test/output_no_dist')
-        cls.path_output = os.path.join(path, 'output_no_dist')
-
-        for the_file in os.listdir(cls.path_output):
-            file_path = os.path.join(cls.path_output, the_file)
-            try:
-                if os.path.isfile(file_path):
-                    os.unlink(file_path)
-            except Exception as e:
-                print(e)
-
-        cfg = scenario.loadFromCSV(os.path.join(path, 'scenarios/carl1.cfg'))
-        cfg.flags['random_seed'] = True
-        cfg.parallel = False
-        cfg.flags['dmg_distribute'] = False
-
-        option = Options()
-        option.output_folder = cls.path_output
-
-        _ = simulate_wind_damage_to_house(cfg, option)
-        # print('{}'.format(cfg.file_damage))
-        # cls.mySim = HouseDamage(cfg, option)
-        #_, house_results = cls.mySim.simulator_mainloop()
-        # key = cls.mySim.result_buckets.keys()[0]
-        # print('{}:{}'.format(key, cls.mySim.result_buckets[key]))
-
-    # @classmethod
-    # def tearDownClass(cls):
-    #     cls.model_db.close()
-
-        # delete test/output
-        # os.path.join(path_, 'test/output')
-
-    # def test_something(self):
-    #
-    #     pd.util.testing.assert_almost_equal(
-    #         self.mySim.cfg.result_buckets['pressurized_count'],
-    #         self.mySim.cfg.result_buckets['pressurized'].sum(axis=1))
-
-    # def test_random_seed(self):
-    #     self.assertEqual(cfg.flags['random_seed'], True)
-
-    def test_consistency_house_damage_idx(self):
-
-        consistency_house_damage_idx(self.path_reference, self.path_output)
-
-    def test_consistency_house_cpi(self):
-
-        consistency_house_cpi(self.path_reference, self.path_output)
-
-    def test_consistency_house_damage(self):
-
-        consistency_house_damage(self.path_reference, self.path_output)
-
-    def test_consistency_fragilites(self):
-
-        consistency_fragilites(self.path_reference, self.path_output)
-
-    def test_consistency_houses_damaged(self):
-
-        consistency_houses_damaged(self.path_reference, self.path_output)
-
-    def test_consistency_wateringress(self):
-
-        consistency_wateringress(self.path_reference, self.path_output)
-
-    def test_consistency_wind_debris(self):
-
-        consistency_wind_debris(self.path_reference, self.path_output)
-
-
-
 class TestHouseDamage(unittest.TestCase):
 
     @classmethod
@@ -377,10 +222,13 @@ class TestHouseDamage(unittest.TestCase):
 
         # cls.model_db = database.configure(os.path.join(path, 'model.db'))
 
-        cfg = scenario.loadFromCSV(os.path.join(path, 'scenarios/carl1.cfg'))
+        # cfg = scenario.loadFromCSV(os.path.join(path, 'scenarios/carl1.cfg'))
+        cfg = scenario.loadFromCSV(os.path.join(path,
+                                                'scenarios/carl1_dmg_dist.cfg'))
+
         cfg.flags['random_seed'] = True
         cfg.parallel = False
-        cfg.flags['dmg_distribute'] = True
+        # cfg.flags['dmg_distribute'] = True
 
         # optionally seed random numbers
         if cfg.flags['random_seed']:
@@ -425,6 +273,65 @@ class TestHouseDamage(unittest.TestCase):
         self.house_damage.regional_shielding_factor = 0.5
         self.house_damage.calculate_qz(10.0)
         self.assertAlmostEqual(self.house_damage.qz, 0.21888, places=4)
+
+
+class TestDistributeMultiSwitches(unittest.TestCase):
+
+    @classmethod
+    def setUpClass(cls):
+
+        path = '/'.join(__file__.split('/')[:-1])
+        cls.path_reference = os.path.join(path, 'test/output')
+        # cls.path_reference = os.path.join(path, 'test/output_no_dist')
+        cls.path_output = os.path.join(path, 'output')
+
+        for the_file in os.listdir(cls.path_output):
+            file_path = os.path.join(cls.path_output, the_file)
+            try:
+                if os.path.isfile(file_path):
+                    os.unlink(file_path)
+            except Exception as e:
+                print(e)
+
+        cfg = scenario.loadFromCSV(os.path.join(path,
+                                                'scenarios/carl1_dmg_dist.cfg'))
+
+        cfg.flags['random_seed'] = True
+        cfg.parallel = False
+        # cfg.flags['dmg_distribute'] = False
+
+        option = Options()
+        option.output_folder = cls.path_output
+
+        _ = simulate_wind_damage_to_house(cfg, option)
+
+    def test_consistency_house_damage_idx(self):
+
+        consistency_house_damage_idx(self.path_reference, self.path_output)
+
+    def test_consistency_house_cpi(self):
+
+        consistency_house_cpi(self.path_reference, self.path_output)
+
+    def test_consistency_house_damage(self):
+
+        consistency_house_damage(self.path_reference, self.path_output)
+
+    def test_consistency_fragilites(self):
+
+        consistency_fragilites(self.path_reference, self.path_output)
+
+    def test_consistency_houses_damaged(self):
+
+        consistency_houses_damaged(self.path_reference, self.path_output)
+
+    def test_consistency_wateringress(self):
+
+        consistency_wateringress(self.path_reference, self.path_output)
+
+    def test_consistency_wind_debris(self):
+
+        consistency_wind_debris(self.path_reference, self.path_output)
 
 if __name__ == '__main__':
     unittest.main()

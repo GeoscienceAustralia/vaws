@@ -20,7 +20,7 @@ import terrain
 class Scenario(object):
 
     # lookup table mapping (0-7) to wind direction desc
-    dirs = ['S', 'SW', 'W', 'NW', 'N', 'NE', 'E', 'SE', 'Random']
+    dirs = ['S', 'SW', 'W', 'NW', 'N', 'NE', 'E', 'SE', 'RANDOM']
 
     def __init__(self, no_sims, wind_min, wind_max, wind_steps, terrain_cat):
 
@@ -269,7 +269,7 @@ class Scenario(object):
         try:
             self._wind_dir_index = Scenario.dirs.index(wind_dir_str.upper())
         except ValueError:
-            print('8(i.e., Random) is set for wind_dir_index by default')
+            print('8(i.e., RANDOM) is set for wind_dir_index by default')
             self._wind_dir_index = 8
 
     @property

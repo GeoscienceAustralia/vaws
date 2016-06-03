@@ -72,8 +72,12 @@ class House(database.Base):
     house_name = Column(String)
     replace_cost = Column(Float)
     height = Column(Float)
+
+    # Cpe (external pressure coefficient) for roof assumed to
+    # follow Type III GEV with V (cov) and k (shape factor)
     cpe_V = Column(Float)
     cpe_k = Column(Float)
+    # Cpe for structure. Only cov is provided assuming k is the same as roof
     cpe_struct_V = Column(Float)
     length = Column(Float)
     width = Column(Float)

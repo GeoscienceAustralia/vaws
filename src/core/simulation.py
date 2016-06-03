@@ -415,7 +415,7 @@ class HouseDamage(object):
         self.profile = None
         self.mzcat = None
         self.cpiAt = None
-        self.cpi = None
+        self.cpi = None  # internal pressure coefficient
         self.internally_pressurized = None
         self.construction_level = None
         self.water_ingress_cost = None
@@ -531,9 +531,9 @@ class HouseDamage(object):
                 connByTypeMap)
             self.damage_conn_type.update(damage_conn_type_by_group)
 
-        if self.flags['dmg_distribute']:
-            for conn_type_group in self.house.conn_type_groups:
-                self.redistribute_damage(conn_type_group)
+        #if self.flags['dmg_distribute']:
+        for conn_type_group in self.house.conn_type_groups:
+            self.redistribute_damage(conn_type_group)
         # self.cfg.file_damage.write('\n')
 
         self.check_house_collapse(wind_speed)
@@ -625,13 +625,14 @@ class HouseDamage(object):
             for conn_type_group in self.house.conn_type_groups:
                 if conn_type_group.trigger_collapse_at > 0:
                     perc_damaged = 0
-                    for ct in conn_type_group.conn_types:
-                        perc_damaged += ct.perc_damaged()
+                    for conn_type in conn_type_group.conn_types:
+                        perc_damaged += conn_type.perc_damaged()
+
                     if perc_damaged >= conn_type_group.trigger_collapse_at:
-                        for c in self.house.connections:
-                            c.damage(wind_speed, 99.9, inflZonesByConn[c])
-                        for z in self.house.zones:
-                            z.result_effective_area = 0
+                        for conn in self.house.connections:
+                            conn.damage(wind_speed, 99.9, inflZonesByConn[conn])
+                        for zone_ in self.house.zones:
+                            zone_.result_effective_area = 0
                         self.result_wall_collapse = True
 
     def calculate_damage_ratio(self, wind_speed):
@@ -691,10 +692,13 @@ class HouseDamage(object):
         # setup for distribution
         if conn_type_group.distribution_order <= 0:
             return
-        distByCol = conn_type_group.distribution_direction == 'col'
-        primaryDir = self.cols
-        secondaryDir = self.rows
-        if not distByCol:
+
+        if conn_type_group.distribution_direction == 'col':
+            distByCol = True
+            primaryDir = self.cols
+            secondaryDir = self.rows
+        else:
+            distByCol = False
             primaryDir = self.rows
             secondaryDir = self.cols
 
@@ -703,8 +707,12 @@ class HouseDamage(object):
         for i in primaryDir:
             for j in secondaryDir:
                 # determine zoneLocation and then zone
-                zoneLoc = i if distByCol else j
-                zoneLoc += str(j) if distByCol else str(i)
+                if distByCol:
+                    zoneLoc = i
+                    zoneLoc += str(j)
+                else:
+                    zoneLoc = j
+                    zoneLoc += str(i)
 
                 # not all grid locations have a zone
                 if zoneLoc not in house.zoneByLocationMap:
@@ -720,16 +728,20 @@ class HouseDamage(object):
                     continue
 
                 # grab appropriate connection from zone
-                c = connByZoneTypeMap[z.zone_name][conn_type_group.group_name]
+                if self.cfg.flags.get('dmg_distribute_{}'.format(
+                        conn_type_group.group_name)):
+                    conn = connByZoneTypeMap[z.zone_name][conn_type_group.group_name]
+                else:
+                    continue
 
                 # if that connection is (newly) damaged then redistribute
                 # load/infl/area
-                if c.result_damaged and not c.result_damage_distributed:
-                    # print 'Connection: %s newly damaged' % c
+                if conn.result_damaged and not conn.result_damage_distributed:
+                    # print 'Connection: {} newly damaged'.format(conn_type_group.group_name)
 
                     if conn_type_group.patch_distribution == 1:
                         patchList = \
-                            self.db.qryConnectionPatchesFromDamagedConn(c.id)
+                            self.db.qryConnectionPatchesFromDamagedConn(conn.id)
 
                         for patch in patchList:
                             patch_zone = zoneByIDMap[patch[1]]
@@ -743,37 +755,52 @@ class HouseDamage(object):
                             inflZonesByConn[patch_conn][patch_zone] = patch[2]
                     else:
                         gridCol, gridRow = zone.getGridFromZoneLoc(z.zone_name)
-                        if c.edge != 3:
+                        if conn.edge != 3:
                             if distByCol:
-                                if c.edge == 0:
+                                if conn.edge == 0:
                                     k = 0.5
                                     if not self.redistribute_to_nearest_zone(z, range(gridRow+1, self.house.roof_rows), k, conn_type_group, gridCol, gridRow, distByCol):
                                         k = 1.0
                                     if not self.redistribute_to_nearest_zone(z, reversed(range(0, gridRow)), k, conn_type_group, gridCol, gridRow, distByCol):
                                         self.redistribute_to_nearest_zone(z, range(gridRow+1, self.house.roof_rows), k, conn_type_group, gridCol, gridRow, distByCol)
-                                elif c.edge == 2:
+                                elif conn.edge == 2:
                                     k = 1.0
                                     self.redistribute_to_nearest_zone(z, range(gridRow+1, self.house.roof_rows), k, conn_type_group, gridCol, gridRow, distByCol)
-                                elif c.edge == 1:
+                                elif conn.edge == 1:
                                     k = 1.0
                                     self.redistribute_to_nearest_zone(z, reversed(range(0, gridRow)), k, conn_type_group, gridCol, gridRow, distByCol)
                             else:
-                                if c.edge == 0:
+                                if conn.edge == 0:
                                     k = 0.5
-                                    if not self.redistribute_to_nearest_zone(z, range(gridCol+1, self.house.roof_columns), k, conn_type_group, gridCol, gridRow, distByCol):
+                                    if not self.redistribute_to_nearest_zone(
+                                            z, range(gridCol+1, self.house.roof_columns),
+                                            k, conn_type_group, gridCol,
+                                            gridRow, distByCol):
                                         k = 1.0
-                                    if not self.redistribute_to_nearest_zone(z, reversed(range(0, gridCol)), k, conn_type_group, gridCol, gridRow, distByCol):
-                                        self.redistribute_to_nearest_zone(z, range(gridCol+1, self.house.roof_columns), k, conn_type_group, gridCol, gridRow, distByCol)
-                                elif c.edge == 2:
+                                    if not self.redistribute_to_nearest_zone(
+                                            z, reversed(range(0, gridCol)), k,
+                                            conn_type_group, gridCol, gridRow,
+                                            distByCol):
+                                        self.redistribute_to_nearest_zone(
+                                            z, range(gridCol+1, self.house.roof_columns),
+                                            k, conn_type_group, gridCol,
+                                            gridRow, distByCol)
+                                elif conn.edge == 2:
                                     k = 1.0
-                                    self.redistribute_to_nearest_zone(z, range(gridCol+1, self.house.roof_columns), k, conn_type_group, gridCol, gridRow, distByCol)
-                                elif c.edge == 1:
+                                    self.redistribute_to_nearest_zone(
+                                        z, range(gridCol+1, self.house.roof_columns),
+                                        k, conn_type_group, gridCol, gridRow,
+                                        distByCol)
+                                elif conn.edge == 1:
                                     k = 1.0
-                                    self.redistribute_to_nearest_zone(z, reversed(range(0, gridCol)), k, conn_type_group, gridCol, gridRow, distByCol)
+                                    self.redistribute_to_nearest_zone(
+                                        z, reversed(range(0, gridCol)), k,
+                                        conn_type_group, gridCol, gridRow,
+                                        distByCol)
 
                     if conn_type_group.set_zone_to_zero > 0:
                         z.result_effective_area = 0.0
-                    c.result_damage_distributed = True
+                    conn.result_damage_distributed = True
 
     @staticmethod
     def redistribute_to_nearest_zone(zoneSrc, connRange, k, ctgroup, gridCol,
