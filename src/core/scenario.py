@@ -54,6 +54,7 @@ class Scenario(object):
         self._file_damage = None
         self._file_dmg = None
         self._file_dmg_idx = None
+        self._file_dmg_map = None
 
         self._wind_profile = None
 
@@ -303,6 +304,14 @@ class Scenario(object):
     @file_dmg_idx.setter
     def file_dmg_idx(self, file_name):
         self._file_dmg_idx = file_name
+
+    @property
+    def file_dmg_map(self):
+        return self._file_dmg_map
+
+    @file_dmg_map.setter
+    def file_dmg_map(self, file_name):
+        self._file_dmg_map = file_name
 
     @property
     def file_damage(self):

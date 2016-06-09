@@ -90,6 +90,8 @@ def simulate_wind_damage_to_house(cfg, options):
     cfg.file_cpis = os.path.join(options.output_folder, 'house_cpi.csv')
     cfg.file_dmg = os.path.join(options.output_folder,
                                 'houses_damaged_at_v.csv')
+    cfg.file_dmg_map = os.path.join(options.output_folder,
+                                    'houses_damage_map.csv')
     cfg.file_frag = os.path.join(options.output_folder,'fragilities.csv')
     cfg.file_water = os.path.join(options.output_folder, 'wateringress.csv')
     cfg.file_damage = os.path.join(options.output_folder, 'house_damage.csv')
@@ -202,6 +204,8 @@ def simulate_wind_damage_to_house(cfg, options):
     df_dmg_map = pd.concat([x['dmg_map']
                             for x in list_results]).reset_index(drop=True)
 
+    df_dmg_map.to_csv(cfg.file_dmg_map, index=False)
+
     df_dmg_house_sub = pd.DataFrame(None, index=range(cfg.wind_speed_num_steps),
                                     columns=df_dmg_map.columns)
 
@@ -215,44 +219,6 @@ def simulate_wind_damage_to_house(cfg, options):
     pd.concat([df_dmg_house, df_dmg_house_sub], axis=1).to_csv(
         cfg.file_dmg, index=False)
     cfg.file_dmg.close()
-
-    # df_dmg_map = pd.concat(
-    #     [x['wind_direction'] for x in list_results]).reset_index(drop=True)
-
-
-    '''
-    cfg.file_dmg.write('Wind Speed(m/s)')
-
-    # setup headers and counts
-    str_ = [conn_type.connection_type for conn_type in
-            cfg.house.conn_types]
-    cfg.file_dmg.write(','.join(str_))
-    cfg.file_dmg.write('\n')
-
-    # we need to count houses damaged by type for each v
-    counts = {}
-    for wind_speed in self.cfg.speeds:
-        self.cfg.file_dmg.write(str(wind_speed))
-
-        # initialise damage counts for each conn_type to zero
-        for conn_type in self.cfg.house.conn_types:
-            counts[conn_type.connection_type] = 0
-
-        # for all houses, increment type counts
-        # if wind_speed exceeds minimum observed damages.
-        for hr in house_results:
-            dmg_map = hr[1]
-            for conn_type in self.cfg.house.conn_types:
-                dmg_min = dmg_map[conn_type.connection_type]
-                if wind_speed >= dmg_min:
-                    counts[conn_type.connection_type] += 1
-
-        # write accumulated counts for this wind speed
-        str_ = [str(counts[conn_type.connection_type]) for conn_type
-                in self.cfg.house.conn_types]
-        self.cfg.file_dmg.write(','.join(str_))
-        self.cfg.file_dmg.write('\n')
-    '''
 
     return list_results
 
