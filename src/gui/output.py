@@ -1,7 +1,7 @@
-'''
+"""
     output.py - output module, postprocess and plot display engine
-'''
-from matplotlib import cm, mpl
+"""
+from matplotlib import cm, colors, colorbar
 from core import version, zone, house
 mplDict = None
         
@@ -106,9 +106,9 @@ def plot_wall_damage_show(plotKey,
     width = (1.0 - left*2.0)
     height = 0.05
     axLegend = fig.add_axes([left, bottom, width, height])
-    cmap = mpl.cm.jet_r
-    norm = mpl.colors.Normalize(vmin=v_min, vmax=v_max)
-    cb1 = mpl.colorbar.ColorbarBase(axLegend, cmap=cmap, norm=norm, orientation='horizontal')
+    cmap = cm.jet_r
+    norm = colors.Normalize(vmin=v_min, vmax=v_max)
+    cb1 = colorbar.ColorbarBase(axLegend, cmap=cmap, norm=norm, orientation='horizontal')
     cb1.set_label('Wind Speed')
 
     # setup south ticks
@@ -213,9 +213,9 @@ def plot_damage_show(plotKey, v_damaged_at, numCols, numRows, v_min, v_max):
     width = (1.0 - left*2.0)
     height = 0.05
     axLegend = fig.add_axes([left, bottom, width, height])
-    cmap = mpl.cm.jet_r
-    norm = mpl.colors.Normalize(vmin=v_min, vmax=v_max)
-    cb1 = mpl.colorbar.ColorbarBase(axLegend, cmap=cmap, norm=norm, orientation='horizontal')
+    cmap = cm.jet_r
+    norm = colors.Normalize(vmin=v_min, vmax=v_max)
+    cb1 = colorbar.ColorbarBase(axLegend, cmap=cmap, norm=norm, orientation='horizontal')
     cb1.set_label('Wind Speed')
 
     # add the heatmap

@@ -821,11 +821,13 @@ class WindDamageSimulator(object):
             wall_minor_cols = 8
             v_major_grid = np.ones((wall_major_rows, wall_major_cols), 'Float32') * self.s.wind_speed_max
             v_minor_grid = np.ones((wall_minor_rows, wall_minor_cols), 'Float32') * self.s.wind_speed_max
-            output.plot_wall_damage_show(ctname,
-                                         v_major_grid, v_major_grid, v_minor_grid, v_minor_grid,
-                                         wall_major_cols, wall_major_rows,
-                                         wall_minor_cols, wall_minor_rows,
-                                         self.s.wind_speed_min, self.s.wind_speed_max)
+
+            if 'plot_wall_damage_show' in output.__dict__:
+                output.plot_wall_damage_show(ctname,
+                                             v_major_grid, v_major_grid, v_minor_grid, v_minor_grid,
+                                             wall_major_cols, wall_major_rows,
+                                             wall_minor_cols, wall_minor_rows,
+                                             self.s.wind_speed_min, self.s.wind_speed_max)
 
 # --------------------------------------------------------------
 lastiPerc = -1

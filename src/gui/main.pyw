@@ -14,7 +14,12 @@ from core import damage, scenario, house, version, terrain, database, debris, st
 from mixins import PersistSizePosMixin, setupTable, finiTable 
 
 myapp = None
-    
+
+class Options(object):
+
+    def __init__(self):
+        self.output_folder = './output'
+
 # -----------------------------------------------------------------------------   
 def scenarioDICallback(V, di, percLoops):
     myapp.statusProgressBar.setValue(percLoops)
@@ -656,7 +661,8 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
                         'statusbar': self.statusBar(),
                         'house': self.s.house}
         if self.simulator is None:
-            self.simulator = damage.WindDamageSimulator(scenarioDICallback, self.mplDict)
+            options = Options()
+            self.simulator = damage.WindDamageSimulator(None, scenarioDICallback, self.mplDict)
         self.simulator.set_scenario(s)
         self.simulator.clear_connection_damage()
         self.updateUIFromScenario()
