@@ -2,12 +2,55 @@
     output.py - output module, postprocess and plot display engine
 '''
 from numpy.random import normal
-from matplotlib.pyplot import *
+from matplotlib import colorbar, colors, cm
+import matplotlib.pyplot as plt
 import version
 
 # ------------------------------------------------------------
-def plot_damage_show(plotKey, v_damaged_at, numCols, numRows, v_min, v_max):
-    pass
+def plot_damage_show(plotKey, v_damaged_at, numCols, numRows, v_min, v_max,
+                     file_name):
+    xticks = range(0, numCols)
+    xticklabels = []
+    for tick in xticks:
+        xticklabels.append(chr(ord('A')+tick))
+    yticks = range(0, numRows)
+    yticklabels = range(1, numRows+1)
+
+    # add the legend colorbar axes
+    fig = plt.figure()
+    fig.clf()
+    fig.canvas.draw()
+    left = 0.1
+    bottom = left
+    width = (1.0 - left*2.0)
+    height = 0.05
+    axLegend = fig.add_axes([left, bottom, width, height])
+    cmap = cm.jet_r
+    norm = colors.Normalize(vmin=v_min, vmax=v_max)
+    cb1 = colorbar.ColorbarBase(axLegend, cmap=cmap, norm=norm,
+                                orientation='horizontal')
+    cb1.set_label('Wind Speed')
+
+    # add the heatmap
+    left = 0.1
+    bottom = 0.2
+    width = (1.0 - left*2.0)
+    height = 0.75
+    axPlot = fig.add_axes([left, bottom, width, height])
+    axPlot.imshow(v_damaged_at, cmap=cm.jet_r, interpolation='nearest',
+                  origin='lower', vmin=v_min, vmax=v_max)
+    axPlot.set_yticks(yticks)
+    axPlot.set_yticklabels(yticklabels)
+    axPlot.set_xticks(xticks)
+    axPlot.set_xticklabels(xticklabels)
+    axPlot.set_title('Wind Speed Damaged At Heatmap for {}'.format(plotKey))
+    # axPlot.format_coord = format_coord
+
+    # fig.canvas.mpl_connect('motion_notify_event', PlotFlyoverCallback(axPlot, v_damaged_at, mplDict['statusbar'], numCols, numRows))
+    # fig.canvas.mpl_connect('button_press_event', PlotClickCallback(fig, axPlot, plotKey, mplDict['owner'], mplDict['house']))
+    fig.canvas.draw()
+    fig.savefig(file_name)
+    plt.close(fig)
     
 # ------------------------------------------------------------
 def plot_pdf(y):
