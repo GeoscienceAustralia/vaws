@@ -65,8 +65,8 @@ dependencies:
 - terminado=0.5=py27_1
 - tornado=4.3=py27_0
 
-- dill=0.2.5-py27_0 
-- multiprocess=0.70.4-py27_0
+# - dill=0.2.5=py27_0
+# - multiprocess=0.70.4-py27_0
 
 - pip:
   - parmap==1.2.3

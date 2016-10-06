@@ -134,10 +134,11 @@ def calc_a_u(mean, cpe_V, A, B):
 
 def sample_gev(mean, A, B, cpe_V, cpe_k):
     a, u = calc_a_u(mean, cpe_V, A, B)
+    value = scipy.stats.genextreme.rvs(cpe_k, loc=u, scale=a, size=1)[0]
     if mean >= 0:
-        return float(scipy.stats.genextreme.rvs(cpe_k, loc=u, scale=a, size=1))
+        return value
     else:
-        return float(-scipy.stats.genextreme.rvs(cpe_k, loc=u, scale=a, size=1))
+        return -1.0 * value
 
 
 def sample_zone_pressures(zones, wind_dir_index, cpe_V, cpe_k, cpe_struct_V):
@@ -149,7 +150,7 @@ def sample_zone_pressures(zones, wind_dir_index, cpe_V, cpe_k, cpe_struct_V):
     A = calc_A(cpe_k)
     B = calc_B(cpe_k)
     for z in zones:
-        z.result_effective_area = float(z.zone_area)
+        z.result_effective_area = 1.0 * z.zone_area
         z.sampled_cpe = sample_gev(z.getCpeMeanForDir(wind_dir_index), A, B,
                                    cpe_V, cpe_k)
         z.sampled_cpe_struct = sample_gev(
@@ -195,7 +196,7 @@ def calc_zone_pressures(zones, wind_dir_index, cpi, qz, Ms, building_spacing,
 
 if __name__ == '__main__':
     import unittest
-
+    import numpy as np
 
     class MyTestCase(unittest.TestCase):
         # def test_breaks(self):
@@ -212,11 +213,15 @@ if __name__ == '__main__':
             A = calc_A(0.1)
             B = calc_B(0.1)
             a, u = calc_a_u(0.95, 0.07, A, B)
+            cpe_k = 1.0
+            rnd_state = np.random.RandomState(42)
+            rv_ = scipy.stats.genextreme.rvs(cpe_k, loc=u, scale=a,
+                                             size=1, random_state=rnd_state)[0]
             self.assertAlmostEqual(a, 0.058, 2)
             self.assertAlmostEqual(u, 0.922, 2)
             self.assertAlmostEqual(A, 0.4865, 3)
             self.assertAlmostEqual(B, 1.1446, 3)
-
+            self.assertAlmostEqual(rv_, 0.9230, 3)
 
     suite = unittest.TestLoader().loadTestsFromTestCase(MyTestCase)
     unittest.TextTestRunner(verbosity=2).run(suite)

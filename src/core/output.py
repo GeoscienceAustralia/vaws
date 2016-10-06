@@ -1,14 +1,69 @@
-'''
+"""
     output.py - output module, postprocess and plot display engine
-'''
-from numpy.random import normal
-from matplotlib.pyplot import *
+"""
+from matplotlib import cm, colorbar, colors
+import matplotlib.pyplot as plt
 import version
+import numpy as np
 
 
-def plot_damage_show(plotKey, v_damaged_at, numCols, numRows, v_min, v_max):
-    pass
-    
+def plot_damage_show(plotKey, v_damaged_at, numCols, numRows, v_min,
+                     v_max, file_name):
+    """
+
+    Args:
+        plotKey:
+        id_sim:
+        v_damaged_at:
+        numCols:
+        numRows:
+        v_min:
+        v_max:
+        file_name:
+
+    Returns:
+
+    """
+    xticks = range(numCols)
+    xticklabels = [chr(ord('A')+tick) for tick in xticks]
+    yticks = range(numRows)
+    yticklabels = range(1, numRows+1)
+
+    # add the legend colorbar axes
+    fig = plt.figure()
+    fig.clf()
+    fig.canvas.draw()
+    left = 0.1
+    bottom = left
+    width = (1.0 - left*2.0)
+    height = 0.05
+    axLegend = fig.add_axes([left, bottom, width, height])
+    cmap = cm.jet_r
+    # norm = colors.Normalize(vmin=v_min, vmax=v_max)
+    bounds = np.linspace(v_min, v_max, 21)
+    norm = colors.BoundaryNorm(bounds, cmap.N)
+    cb1 = colorbar.ColorbarBase(axLegend, cmap=cmap, norm=norm,
+                                orientation='horizontal')
+    cb1.set_label('Wind Speed')
+
+    # add the heatmap
+    left = 0.1
+    bottom = 0.2
+    width = (1.0 - left*2.0)
+    height = 0.75
+    axPlot = fig.add_axes([left, bottom, width, height])
+    axPlot.imshow(v_damaged_at, cmap=cm.jet_r, interpolation='nearest',
+                  origin='lower', vmin=v_min, vmax=v_max)
+    axPlot.set_yticks(yticks)
+    axPlot.set_yticklabels(yticklabels)
+    axPlot.set_xticks(xticks)
+    axPlot.set_xticklabels(xticklabels)
+    axPlot.set_title('Wind Speed Damaged At Heatmap For {}'.format(plotKey))
+    # not required for static map
+    # axPlot.format_coord = format_coord
+    fig.savefig('{}.png'.format(file_name))
+    plt.close(fig)
+
 
 def plot_pdf(y):
     hist(y, bins=50)
@@ -100,7 +155,7 @@ def plot_show(show_legend=False):
         legend(loc=2)
     show()
     
-
+"""
 def testme():
     print "output.py says hi"
     n = 100
@@ -110,6 +165,6 @@ def testme():
     scatter([25]*n, normal(0.40, 0.03, n))
     scatter([30]*n, normal(0.60, 0.04, n))
     show()
-    
+
 if __name__ == '__main__': testme()
-    
+"""

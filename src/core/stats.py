@@ -1,4 +1,5 @@
-import math
+from math import log, exp, sqrt
+from scipy.stats import lognorm
 
 
 def lognormal_mean(m, stddev):
@@ -10,7 +11,7 @@ def lognormal_mean(m, stddev):
     Returns: mean of log x
 
     """
-    return math.log(m) - (0.5 * math.log(1.0 + (stddev * stddev) / (m * m)))
+    return log(m) - (0.5 * log(1.0 + (stddev * stddev) / (m * m)))
 
 
 def lognormal_stddev(m, stddev):
@@ -23,8 +24,18 @@ def lognormal_stddev(m, stddev):
     Returns: std. of log x
 
     """
-    return math.sqrt(math.log((stddev * stddev) / (m * m) + 1))
+    return sqrt(log((stddev * stddev) / (m * m) + 1))
 
+
+def lognorm_rv_given_mean_stddev(m, stddev, rnd_state=None):
+
+    mean_logx = lognormal_mean(m, stddev)
+    sigma_logx = lognormal_stddev(m, stddev)
+
+    if rnd_state:
+        rnd_state.lognormal(mean=mean_logx, sigma=sigma_logx)
+    else:
+        lognorm.rvs(sigma_logx, scale=exp(mean_logx))
 
 def lognormal_underlying_mean(m, stddev):
     """ compute mean of x with mean and std of log x
@@ -39,7 +50,7 @@ def lognormal_underlying_mean(m, stddev):
     # if m == 0 or stddev == 0:
     #     print '{}'.format('why ???')
     #     return 0
-    return math.exp(m + 0.5 * stddev * stddev)
+    return exp(m + 0.5 * stddev * stddev)
 
 
 def lognormal_underlying_stddev(m, stddev):
@@ -55,7 +66,6 @@ def lognormal_underlying_stddev(m, stddev):
     # if m == 0 or stddev == 0:
     #     print '{}'.format('strange why???')
     #     return 0
-    return math.sqrt((math.exp(stddev**2.0) - 1.0) *
-                     math.exp(2.0*m + stddev**2.0))
+    return sqrt((exp(stddev * stddev) - 1.0) * exp(2.0 * m + stddev * stddev))
     #return lognormal_underlying_mean(m, stddev) * \
     #       math.sqrt((math.exp(stddev * stddev) - 1.0))

@@ -18,9 +18,11 @@ import curve
 import engine
 import database
 from rect import Rect, Point
+from stats import lognorm_rv_given_mean_stddev
+from scipy.stats import poisson
 
 # lookup table mapping (0-7) to wind direction desc
-dirs = ['S', 'SW', 'W', 'NW', 'N', 'NE', 'E', 'SE', 'Random']
+# dirs = ['S', 'SW', 'W', 'NW', 'N', 'NE', 'E', 'SE', 'Random']
 
 # lookup table mapping wind direction (1-8) to list of front facing wall
 # directions
@@ -97,7 +99,7 @@ class DebrisManager(object):
                  region_name,
                  wind_min=30.0,
                  wind_max=150.0,
-                 wind_steps=40.0,
+                 wind_steps=40,
                  staggered_sources=False,
                  debris_radius=100.0,
                  debris_angle=45.0,
@@ -114,8 +116,8 @@ class DebrisManager(object):
         self.source_items = source_items
         self.flighttime_mean = flighttime_mean
         self.flighttime_stddev = flighttime_stddev
-        self.wind_step = (wind_max - wind_min) / float(wind_steps)
-        self.source_items = source_items
+        self.wind_incr = (wind_max - wind_min) / float(wind_steps)
+        # self.source_items = source_items
         self.sources = []
         self.region = qryDebrisRegionByName(region_name, db)
         self.house = house_inst
@@ -210,7 +212,7 @@ class DebrisManager(object):
 
         mean_prev = curve.single_exponential_given_V(self.region.beta,
                                                      self.region.alpha,
-                                                     wind_speed - self.wind_step)
+                                                     wind_speed - self.wind_incr)
         mean_now = curve.single_exponential_given_V(self.region.beta,
                                                     self.region.alpha,
                                                     wind_speed)
@@ -318,10 +320,17 @@ class DebrisManager(object):
                 q = cov.area
 
                 Ed = engine.lognormal(cov.type.failure_momentum_mean,
-                                      cov.type.failure_momentum_stddev)
+                                       cov.type.failure_momentum_stddev)
 
-                Cum_Ed = engine.percentileofscore(self.result_scores.tolist(),
-                                                  Ed)
+                # Ed = lognorm_rv_given_mean_stddev(
+                #     cov.type.failure_momentum_mean,
+                #     cov.type.failure_momentum_stddev)
+
+                #Cum_Ed = engine.percentileofscore(self.result_scores.tolist(),
+                #                                  Ed)
+                Cum_Ed = (self.result_scores <= Ed).sum()\
+                          /float(len(self.result_scores))
+
                 if cov.description == 'window':
                     Pd = 1.0 - math.exp(-Nv * (q / A) * (1.0 - Cum_Ed))
                     dice = np.random.random()
@@ -332,6 +341,7 @@ class DebrisManager(object):
                     mean_num_impacts = Nv * (q / A) * (1 - Cum_Ed)
                     if mean_num_impacts > 0:
                         sampled_impacts = engine.poisson(mean_num_impacts)
+                        # sampled_impacts = poisson(mean_num_impacts, random_state=24)
                         cov.result_num_impacts += sampled_impacts
                         if cov.result_num_impacts > 0:
                             cov.result_intact = False

@@ -30,6 +30,8 @@ static int not_doublevector(PyArrayObject *vec)  {
 
 static double lognormal(double m, double stddev) {
 /*
+compute pdf with parameters m and stddev
+gsl_ran_lognormal(g_rng, mulnx, siglnx)
 m: mean of x
 stddev: std of x
 */

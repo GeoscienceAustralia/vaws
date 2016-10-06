@@ -10,3 +10,6 @@ outputs/
 
 # pycharm
 .idea
+
+# output directories
+output*/

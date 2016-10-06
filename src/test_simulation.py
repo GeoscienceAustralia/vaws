@@ -275,7 +275,72 @@ class TestHouseDamage(unittest.TestCase):
         self.assertAlmostEqual(self.house_damage.qz, 0.21888, places=4)
 
 
-class TestDistributeMultiSwitches(unittest.TestCase):
+class TestDistributeMultiSwitchesOff(unittest.TestCase):
+
+    @classmethod
+    def setUpClass(cls):
+
+        path = '/'.join(__file__.split('/')[:-1])
+        # cls.path_reference = os.path.join(path, 'test/output')
+        cls.path_reference = os.path.join(path, 'test/output_no_dist')
+        cls.path_output = os.path.join(path, 'output')
+
+        for the_file in os.listdir(cls.path_output):
+            file_path = os.path.join(cls.path_output, the_file)
+            try:
+                if os.path.isfile(file_path):
+                    os.unlink(file_path)
+            except Exception as e:
+                print(e)
+
+        cfg = scenario.loadFromCSV(os.path.join(path,
+                                                'scenarios/carl1_dmg_dist.cfg'))
+
+        # setting
+        cfg.flags['random_seed'] = True
+        cfg.parallel = False
+        # cfg.flags['dmg_distribute'] = False
+        components_list = ['batten', 'rafter', 'sheeting', 'wallcladding',
+                           'wallcollapse', 'wallracking']
+
+        for component in components_list:
+            cfg.flags['dmg_distribute_{}'.format(component)] = False
+
+        option = Options()
+        option.output_folder = cls.path_output
+
+        _ = simulate_wind_damage_to_house(cfg, option)
+
+    def test_consistency_house_damage_idx(self):
+
+        consistency_house_damage_idx(self.path_reference, self.path_output)
+
+    def test_consistency_house_cpi(self):
+
+        consistency_house_cpi(self.path_reference, self.path_output)
+
+    def test_consistency_house_damage(self):
+
+        consistency_house_damage(self.path_reference, self.path_output)
+
+    def test_consistency_fragilites(self):
+
+        consistency_fragilites(self.path_reference, self.path_output)
+
+    def test_consistency_houses_damaged(self):
+
+        consistency_houses_damaged(self.path_reference, self.path_output)
+
+    def test_consistency_wateringress(self):
+
+        consistency_wateringress(self.path_reference, self.path_output)
+
+    def test_consistency_wind_debris(self):
+
+        consistency_wind_debris(self.path_reference, self.path_output)
+
+
+class TestDistributeMultiSwitchesOn(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
@@ -299,6 +364,11 @@ class TestDistributeMultiSwitches(unittest.TestCase):
         cfg.flags['random_seed'] = True
         cfg.parallel = False
         # cfg.flags['dmg_distribute'] = False
+        components_list = ['batten', 'rafter', 'sheeting', 'wallcladding',
+                           'wallcollapse', 'wallracking']
+
+        for component in components_list:
+            cfg.flags['dmg_distribute_{}'.format(component)] = True
 
         option = Options()
         option.output_folder = cls.path_output

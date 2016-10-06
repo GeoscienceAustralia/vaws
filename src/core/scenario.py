@@ -60,6 +60,8 @@ class Scenario(object):
 
         self._speeds = None
 
+        self._rnd_state = None
+
         # self.red_V = 40.0
         # self.blue_V = 80.0
         self._flags = dict()
@@ -108,7 +110,8 @@ class Scenario(object):
 
     def get_wind_dir_index(self):
         if self.wind_dir_index == 8:
-            return np.random.random_integers(0, 7)
+            # return np.random.random_integers(0, 7)
+            return self.rnd_state.random_integers(0, 7)
         else:
             return self.wind_dir_index
 
@@ -120,6 +123,14 @@ class Scenario(object):
     def parallel(self, value):
         assert isinstance(value, bool)
         self._parallel = value
+
+    @property
+    def rnd_state(self):
+        return self._rnd_state
+
+    @rnd_state.setter
+    def rnd_state(self, value):
+        self._rnd_state = value
 
     @property
     def db_file(self):
@@ -566,21 +577,15 @@ def loadFromCSV(cfg_file):
 
     s.wind_profile = terrain.populate_wind_profile_by_terrain()
 
-    # if 'red_V' in args:
-    #     s.red_V = float(args['red_V'])
-    #     del args['red_V']
-    #
-    # if 'blue_V' in args:
-    #     s.blue_V = float(args['blue_V'])
-    #     del args['blue_V']
+    key = 'heatmap'
+    try:
+        s.red_v = conf.getfloat(key, 'red_V')
+        s.blue_v = conf.getfloat(key, 'blue_V')
 
-    # for ctg in s.house.conn_type_groups:
-    #     print('{}:{}'.format(ctg.enabled, ctg.group_name))
-
-    # s.updateModel()
-
-    # for ctg in s.house.conn_type_groups:
-    #     print('{}:{}'.format(ctg.enabled, ctg.group_name))
+    except ConfigParser.NoSectionError:
+        s.red_v = 54.0
+        s.blue_v = 95.0
+        print('default value is used for heatmap')
 
     return s
 

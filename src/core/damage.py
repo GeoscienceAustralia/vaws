@@ -298,7 +298,8 @@ class WindDamageSimulator(object):
 
             self.sample_house_and_wind_params()
 
-            # print('{}'.format(self.construction_level))
+            print('{}:{}'.format(self.construction_level,
+                                 self.profile))
 
             # prime damage map where we track min() V that damage occurs
             # across types for this house (reporting)
@@ -465,6 +466,7 @@ class WindDamageSimulator(object):
 
     def set_wind_profile(self):
         self.profile = np.random.random_integers(1, 10)
+        print ('self.profile: {}'.format(self.profile))
         self.mzcat = terrain.calculateMZCAT(self.cfg.wind_profile,
                                             self.cfg.terrain_category,
                                             self.profile,
@@ -494,6 +496,7 @@ class WindDamageSimulator(object):
         self.cpiAt = 0
         self.internally_pressurized = False
         self.set_wind_profile()
+
         self.house.reset_results()
         self.prev_di = 0
 
@@ -503,6 +506,7 @@ class WindDamageSimulator(object):
         if self.cfg.flags['construction_levels']:
             self.construction_level, mean_factor, cov_factor = \
                 self.cfg.sampleConstructionLevel()
+        print('self.construction_level: {}'.format(self.construction_level))
 
         # print('{}'.format(self.construction_level))
         connection.assign_connection_strengths(self.house.connections,
