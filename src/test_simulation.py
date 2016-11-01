@@ -206,7 +206,7 @@ class TestHouseDamage(unittest.TestCase):
     def setUpClass(cls):
 
         path = '/'.join(__file__.split('/')[:-1])
-        # cls.path_reference = os.path.join(path, 'test/output_no_dist')
+        cls.path_reference = os.path.join(path, 'test')
         path_output = os.path.join(path, 'output')
         #
         # for the_file in os.listdir(cls.path_output):
@@ -274,6 +274,48 @@ class TestHouseDamage(unittest.TestCase):
         self.house_damage.calculate_qz(10.0)
         self.assertAlmostEqual(self.house_damage.qz, 0.21888, places=4)
 
+    def test_calculate_damage_ratio(self):
+
+        ref_dat = pd.read_csv(os.path.join(self.path_reference,
+                                           'repair_cost_by_conn_type_group.csv'))
+        wind_speed = 0.0
+
+        for _, item in ref_dat.iterrows():
+
+            dic_ = {'(piersgroup)': 0.0,
+                    '(debris)': 0.0,
+                    '(sheeting)': item['dmg_ratio_sheeting'],
+                    '(batten)': item['dmg_ratio_batten'],
+                    '(rafter)': item['dmg_ratio_rafter'],
+                    '(wallcladding)': 0.0,
+                    '(wallracking)': 0.0,
+                    '(wallcollapse)': 0.0}
+
+            repair_dic_ = {'(piersgroup)': 0.0,
+                           '(debris)': 0.0,
+                           '(sheeting)': item['repair_cost_sheeting'],
+                           '(batten)': item['repair_cost_batten'],
+                           '(rafter)': item['repair_cost_rafter'],
+                           '(wallcladding)': 0.0,
+                           '(wallracking)': 0.0,
+                           '(wallcollapse)': 0.0}
+
+            # assign damage area
+            for conn_type_group in self.house_damage.house.conn_type_groups:
+                conn_type_group.result_percent_damaged = dic_[str(conn_type_group)]
+
+            self.house_damage.calculate_damage_ratio(wind_speed)
+
+            for conn_type_group in self.house_damage.house.conn_type_groups:
+
+                try:
+                    self.assertAlmostEqual(conn_type_group.repair_cost,
+                                           repair_dic_[str(conn_type_group)])
+                except AssertionError:
+                    print('{}:{}:{}'.format(
+                        conn_type_group,
+                        conn_type_group.repair_cost,
+                        repair_dic_[str(conn_type_group)]))
 
 class TestDistributeMultiSwitchesOff(unittest.TestCase):
 
@@ -312,33 +354,25 @@ class TestDistributeMultiSwitchesOff(unittest.TestCase):
         _ = simulate_wind_damage_to_house(cfg, option)
 
     def test_consistency_house_damage_idx(self):
-
         consistency_house_damage_idx(self.path_reference, self.path_output)
 
     def test_consistency_house_cpi(self):
-
         consistency_house_cpi(self.path_reference, self.path_output)
 
     def test_consistency_house_damage(self):
-
         consistency_house_damage(self.path_reference, self.path_output)
 
     def test_consistency_fragilites(self):
-
         consistency_fragilites(self.path_reference, self.path_output)
 
     def test_consistency_houses_damaged(self):
-
         consistency_houses_damaged(self.path_reference, self.path_output)
 
     def test_consistency_wateringress(self):
-
         consistency_wateringress(self.path_reference, self.path_output)
 
     def test_consistency_wind_debris(self):
-
         consistency_wind_debris(self.path_reference, self.path_output)
-
 
 class TestDistributeMultiSwitchesOn(unittest.TestCase):
 
@@ -376,31 +410,24 @@ class TestDistributeMultiSwitchesOn(unittest.TestCase):
         _ = simulate_wind_damage_to_house(cfg, option)
 
     def test_consistency_house_damage_idx(self):
-
         consistency_house_damage_idx(self.path_reference, self.path_output)
 
     def test_consistency_house_cpi(self):
-
         consistency_house_cpi(self.path_reference, self.path_output)
 
     def test_consistency_house_damage(self):
-
         consistency_house_damage(self.path_reference, self.path_output)
 
     def test_consistency_fragilites(self):
-
         consistency_fragilites(self.path_reference, self.path_output)
 
     def test_consistency_houses_damaged(self):
-
         consistency_houses_damaged(self.path_reference, self.path_output)
 
     def test_consistency_wateringress(self):
-
         consistency_wateringress(self.path_reference, self.path_output)
 
     def test_consistency_wind_debris(self):
-
         consistency_wind_debris(self.path_reference, self.path_output)
 
 if __name__ == '__main__':

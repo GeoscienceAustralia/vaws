@@ -89,9 +89,13 @@ def simulate_wind_damage_to_house(cfg, options):
         os.makedirs(options.output_folder)
 
     cfg.output_folder = options.output_folder
+    # wind speed at pressurised failure
     cfg.file_cpis = os.path.join(options.output_folder, 'house_cpi.csv')
+
+    # failure frequency by connection type with wind speed ?
     cfg.file_dmg = os.path.join(options.output_folder,
                                 'houses_damaged_at_v.csv')
+
     cfg.file_dmg_map = os.path.join(options.output_folder,
                                     'houses_damage_map.csv')
     cfg.file_frag = os.path.join(options.output_folder, 'fragilities.csv')
@@ -100,6 +104,10 @@ def simulate_wind_damage_to_house(cfg, options):
 
     cfg.file_debris = os.path.join(options.output_folder, 'wind_debris.csv')
     cfg.file_dmg_idx = os.path.join(options.output_folder, 'house_dmg_idx.csv')
+
+    cfg.file_damage_area = os.path.join(options.output_folder, 'damage_area.csv')
+    cfg.file_repair_cost = os.path.join(options.output_folder, 'repair_cost.csv')
+    cfg.file_failure = os.path.join(options.output_folder, 'failure.csv')
 
     # optionally seed random numbers
     if cfg.flags['random_seed']:
@@ -122,7 +130,7 @@ def simulate_wind_damage_to_house(cfg, options):
         db = database.DatabaseManager(cfg.db_file)
         list_results = []
         for id_sim in range(cfg.no_sims):
-            _, results = run_simulation_per_house(cfg, db, id_sim)
+            house_damage_, results = run_simulation_per_house(cfg, db, id_sim)
             list_results.append(results)
         db.close()
 
@@ -222,6 +230,31 @@ def simulate_wind_damage_to_house(cfg, options):
         cfg.file_dmg, index=False)
     cfg.file_dmg.close()
 
+    # damage_area by connection type group
+    df_damage_area_by_conn_type_group = pd.concat(
+        [x['damage_area'] for x in list_results]).reset_index(drop=True)
+    pd.concat([df_dmg_conn_types, df_damage_area_by_conn_type_group], axis=1).to_csv(
+        cfg.file_damage_area, index=False)
+
+    # repair cost by connection type group
+    df_repair_cost_by_conn_type_group = pd.concat(
+        [x['repair_cost'] for x in list_results]).reset_index(drop=True)
+    pd.concat([df_dmg_conn_types, df_repair_cost_by_conn_type_group], axis=1).to_csv(
+        cfg.file_repair_cost, index=False)
+
+    df_failure_by_conn = pd.concat(
+        [x['failure'] for x in list_results]).reset_index(drop=True)
+    pd.concat([df_dmg_conn_types, df_failure_by_conn], axis=1).to_csv(
+        cfg.file_failure, index=False)
+
+    # record conn_type_group, conn_type, conn
+    # map_conn_to_group = {}
+    # for conn_type_group in house_damage_.house.conn_type_groups:
+    #     for ct in conn_type_group.conn_types:
+    #         for c in ct.connections_of_type:
+    #             temp = int(str(c).split('@')[0].strip('('))
+    #             map_conn_to_group[temp] = str(conn_type_group)
+
     return list_results
 
 
@@ -240,15 +273,29 @@ def run_simulation_per_house(cfg, db, id_sim):
 
     house_damage = HouseDamage(cfg, db)
 
-    list_conn_type = []
-    for conn_type in house_damage.house.conn_types:
-        list_conn_type.append(conn_type.connection_type)
+    list_conn_type_group, list_conn_type, list_conn = [], [], []
+    for conn_type_group in house_damage.house.conn_type_groups:
+        list_conn_type_group.append(str(conn_type_group))
+        for ct in conn_type_group.conn_types:
+            str_ = str(ct).strip('()').split('/')[1]
+            list_conn_type.append(str_)
+            for c in ct.connections_of_type:
+                list_conn.append(str(c))
 
     result_buckets['conn_types'] = pd.DataFrame(
         None, columns=list_conn_type, index=range(cfg.wind_speed_num_steps))
 
     result_buckets['dmg_map'] = pd.DataFrame(
         None, columns=list_conn_type, index=range(cfg.wind_speed_num_steps))
+
+    result_buckets['damage_area'] = pd.DataFrame(
+        None, columns=list_conn_type_group, index=range(cfg.wind_speed_num_steps))
+
+    result_buckets['repair_cost'] = pd.DataFrame(
+        None, columns=list_conn_type_group, index=range(cfg.wind_speed_num_steps))
+
+    result_buckets['failure'] = pd.DataFrame(
+        None, columns=list_conn, index=range(cfg.wind_speed_num_steps))
 
     # sample new house and wind direction (if random)
     if cfg.wind_dir_index == 8:
@@ -332,6 +379,17 @@ def run_simulation_per_house(cfg, db, id_sim):
             house_damage.damage_conn_type
 
         result_buckets['dmg_map'].loc[id_speed] = house_damage.dmg_map
+
+        for conn_type_group in house_damage.house.conn_type_groups:
+            result_buckets['damage_area'].loc[id_speed][str(conn_type_group)] = \
+                conn_type_group.result_percent_damaged
+            result_buckets['repair_cost'].loc[id_speed][str(conn_type_group)] = \
+                conn_type_group.repair_cost
+
+            for conn_type in conn_type_group.conn_types:
+                for conn in conn_type.connections_of_type:
+                    result_buckets['failure'].loc[id_speed][str(conn)] = \
+                        conn.result_damaged
 
     # collect results to be used by the GUI client
     for z in house_damage.house.zones:
@@ -508,6 +566,7 @@ class HouseDamage(object):
         # self.cfg.file_damage.write('\n')
 
         self.check_house_collapse(wind_speed)
+        self.calculate_damage_area()
         self.calculate_damage_ratio(wind_speed)
 
     def calculate_connection_group_areas(self):
@@ -609,17 +668,19 @@ class HouseDamage(object):
                             zone_.result_effective_area = 0
                         self.result_wall_collapse = True
 
-    def calculate_damage_ratio(self, wind_speed):
+    # def calculate_damage_ratio(self, wind_speed):
+    def calculate_damage_area(self):
 
-        # calculate damage percentages        
+        # calculate damage percentages (scale of 0 to 1)
         for conn_type_group in self.house.conn_type_groups:
+            # not defined in the class
             conn_type_group.result_percent_damaged = 0.0
             if conn_type_group.group_name == 'debris':
-                if not self.debris_manager:
-                    conn_type_group.result_percent_damaged = 0
-                else:
+                if self.debris_manager:
                     conn_type_group.result_percent_damaged = \
                         self.debris_manager.result_dmgperc
+                else:
+                    conn_type_group.result_percent_damaged = 0
             else:
                 for ct in conn_type_group.conn_types:
                     for c in ct.connections_of_type:
@@ -627,21 +688,23 @@ class HouseDamage(object):
                             conn_type_group.result_percent_damaged += \
                                 c.ctype.costing_area / float(conn_type_group.result_area)
 
+    def calculate_damage_ratio(self, wind_speed):
+
         # calculate repair cost
         repair_cost = 0
         for conn_type_group in self.house.conn_type_groups:
+            conn_type_group.repair_cost = 0.0
             conn_type_group_perc = conn_type_group.result_percent_damaged
             if conn_type_group_perc > 0:
-                fact_arr = [0]
                 for factor in self.house.factorings:
                     if factor.parent_id == conn_type_group.id:
-                        factor_perc = factor.factor.result_percent_damaged
-                        if factor_perc:
-                            fact_arr.append(factor_perc)
-                max_factor_perc = max(fact_arr)
-                if conn_type_group_perc > max_factor_perc:
-                    conn_type_group_perc = conn_type_group_perc - max_factor_perc
-                    repair_cost += conn_type_group.costing.calculate_damage(conn_type_group_perc)
+                        conn_type_group_perc -= factor.factor.result_percent_damaged
+                        #print '*{}:{}'.format(conn_type_group, conn_type_group_perc)
+
+                if conn_type_group_perc > 0:
+                    # print '**{}:{}'.format(conn_type_group, conn_type_group_perc)
+                    conn_type_group.repair_cost = conn_type_group.costing.calculate_damage(conn_type_group_perc)
+                    repair_cost += conn_type_group.repair_cost
 
         # calculate initial envelope repair cost before water ingress is added
         self.di_except_water = min(repair_cost / self.house.replace_cost, 1.0)

@@ -55,6 +55,9 @@ class Scenario(object):
         self._file_dmg = None
         self._file_dmg_idx = None
         self._file_dmg_map = None
+        self._file_damage_area = None
+        self._file_repair_cost = None
+        self._file_failure = None
 
         self._wind_profile = None
 
@@ -381,6 +384,30 @@ class Scenario(object):
         # self._file_frag.write(header)
         self._file_frag = file_name
 
+    @property
+    def file_damage_area(self):
+        return self._file_damage_area
+
+    @file_damage_area.setter
+    def file_damage_area(self, file_name):
+        self._file_damage_area = file_name
+
+    @property
+    def file_repair_cost(self):
+        return self._file_repair_cost
+
+    @file_repair_cost.setter
+    def file_repair_cost(self, file_name):
+        self._file_repair_cost = file_name
+
+    @property
+    def file_failure(self):
+        return self._file_failure
+
+    @file_failure.setter
+    def file_failure(self, file_name):
+        self._file_failure = file_name
+
     '''
     # used by main.pyw
 
@@ -590,7 +617,7 @@ def loadFromCSV(cfg_file):
     return s
 
 
-if __name__ == '__main__': 
+if __name__ == '__main__':
 
     import unittest
 
@@ -670,6 +697,6 @@ if __name__ == '__main__':
             s = loadFromCSV(self.file3)
             self.assertAlmostEquals(
                 s.construction_levels['low']['mean_factor'], 0.42)
-            
+
     suite = unittest.TestLoader().loadTestsFromTestCase(MyTestCase)
     unittest.TextTestRunner(verbosity=2).run(suite)
