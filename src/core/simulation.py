@@ -3,7 +3,7 @@ import sys
 import os
 import time
 import copy
-import parmap
+# import parmap
 # import itertools
 import pandas as pd
 import numpy as np
@@ -90,24 +90,28 @@ def simulate_wind_damage_to_house(cfg, options):
 
     cfg.output_folder = options.output_folder
     # wind speed at pressurised failure
-    cfg.file_cpis = os.path.join(options.output_folder, 'house_cpi.csv')
+    cfg.file_house_cpi = os.path.join(options.output_folder, 'house_cpi.csv')
 
     # failure frequency by connection type with wind speed ?
-    cfg.file_dmg = os.path.join(options.output_folder,
-                                'houses_damaged_at_v.csv')
+    cfg.file_dmg_freq_by_conn_type = os.path.join(options.output_folder,
+                                                  'houses_damaged_at_v.csv')
 
-    cfg.file_dmg_map = os.path.join(options.output_folder,
+    cfg.file_dmg_map_by_conn_type = os.path.join(options.output_folder,
                                     'houses_damage_map.csv')
     cfg.file_frag = os.path.join(options.output_folder, 'fragilities.csv')
     cfg.file_water = os.path.join(options.output_folder, 'wateringress.csv')
-    cfg.file_damage = os.path.join(options.output_folder, 'house_damage.csv')
+    cfg.file_dmg_pct_by_conn_type = os.path.join(options.output_folder,
+                                                 'house_damage.csv')
 
-    cfg.file_debris = os.path.join(options.output_folder, 'wind_debris.csv')
+    cfg.file_wind_debris = os.path.join(options.output_folder, 'wind_debris.csv')
     cfg.file_dmg_idx = os.path.join(options.output_folder, 'house_dmg_idx.csv')
 
-    cfg.file_damage_area = os.path.join(options.output_folder, 'damage_area.csv')
-    cfg.file_repair_cost = os.path.join(options.output_folder, 'repair_cost.csv')
-    cfg.file_failure = os.path.join(options.output_folder, 'failure.csv')
+    cfg.file_dmg_area_by_conn_grp = os.path.join(options.output_folder,
+                                                 'dmg_area_by_conn_grp.csv')
+    cfg.file_repair_cost_by_conn_grp = os.path.join(options.output_folder,
+                                                    'repair_cost_by_conn_grp.csv')
+    cfg.file_dmg_by_conn = os.path.join(options.output_folder,
+                                        'dmg_by_conn.csv')
 
     # optionally seed random numbers
     if cfg.flags['random_seed']:
@@ -146,8 +150,8 @@ def simulate_wind_damage_to_house(cfg, options):
     ps_pressurized = df_pressurized.sum(axis=1) / float(cfg.no_sims) * 100.0
 
     pd.concat([ps_speeds, ps_pressurized, ps_mean_debris], axis=1).to_csv(
-        cfg.file_debris, index=False, header=False, float_format='%.3f')
-    cfg.file_debris.close()
+        cfg.file_wind_debris, index=False, header=False, float_format='%.3f')
+    cfg.file_wind_debris.close()
 
     # calculate and store DI mean
     df_dmg_idx = pd.concat([x['dmg_idx'] for x in list_results], axis=1)
@@ -166,8 +170,8 @@ def simulate_wind_damage_to_house(cfg, options):
     # house_cpi
     ps_cpi = pd.Series([x['cpi'] for x in list_results])
     ps_cpi.index += 1
-    ps_cpi.to_csv(cfg.file_cpis)
-    cfg.file_cpis.close()
+    ps_cpi.to_csv(cfg.file_house_cpi)
+    cfg.file_house_cpi.close()
 
     # water ingress
     ps_speeds_across_simulations = pd.concat(
@@ -206,7 +210,7 @@ def simulate_wind_damage_to_house(cfg, options):
     df_dmg_conn_types_sub = pd.concat(
         [x['conn_types'] for x in list_results]).reset_index(drop=True)
     pd.concat([df_dmg_conn_types, df_dmg_conn_types_sub], axis=1).to_csv(
-        cfg.file_damage, index=False)
+        cfg.file_dmg_pct_by_conn_type, index=False)
 
     # produce damage map report
     df_dmg_house = pd.DataFrame(None)
@@ -214,7 +218,7 @@ def simulate_wind_damage_to_house(cfg, options):
     df_dmg_map = pd.concat([x['dmg_map']
                             for x in list_results]).reset_index(drop=True)
 
-    df_dmg_map.to_csv(cfg.file_dmg_map, index=False)
+    df_dmg_map.to_csv(cfg.file_dmg_map_by_conn_type, index=False)
 
     df_dmg_house_sub = pd.DataFrame(None, index=range(cfg.wind_speed_num_steps),
                                     columns=df_dmg_map.columns)
@@ -227,25 +231,25 @@ def simulate_wind_damage_to_house(cfg, options):
                                  conn_type] = grouped[0].sum()
 
     pd.concat([df_dmg_house, df_dmg_house_sub], axis=1).to_csv(
-        cfg.file_dmg, index=False)
-    cfg.file_dmg.close()
+        cfg.file_dmg_freq_by_conn_type, index=False)
+    cfg.file_dmg_freq_by_conn_type.close()
 
     # damage_area by connection type group
     df_damage_area_by_conn_type_group = pd.concat(
         [x['damage_area'] for x in list_results]).reset_index(drop=True)
     pd.concat([df_dmg_conn_types, df_damage_area_by_conn_type_group], axis=1).to_csv(
-        cfg.file_damage_area, index=False)
+        cfg.file_dmg_area_by_conn_grp, index=False)
 
     # repair cost by connection type group
     df_repair_cost_by_conn_type_group = pd.concat(
         [x['repair_cost'] for x in list_results]).reset_index(drop=True)
     pd.concat([df_dmg_conn_types, df_repair_cost_by_conn_type_group], axis=1).to_csv(
-        cfg.file_repair_cost, index=False)
+        cfg.file_repair_cost_by_conn_grp, index=False)
 
-    df_failure_by_conn = pd.concat(
-        [x['failure'] for x in list_results]).reset_index(drop=True)
-    pd.concat([df_dmg_conn_types, df_failure_by_conn], axis=1).to_csv(
-        cfg.file_failure, index=False)
+    df_dmg_by_conn = pd.concat(
+        [x['result_damaged'] for x in list_results]).reset_index(drop=True)
+    pd.concat([df_dmg_conn_types, df_dmg_by_conn], axis=1).to_csv(
+        cfg.file_dmg_by_conn, index=False)
 
     # record conn_type_group, conn_type, conn
     # map_conn_to_group = {}
@@ -277,10 +281,11 @@ def run_simulation_per_house(cfg, db, id_sim):
     for conn_type_group in house_damage.house.conn_type_groups:
         list_conn_type_group.append(str(conn_type_group))
         for ct in conn_type_group.conn_types:
-            str_ = str(ct).strip('()').split('/')[1]
-            list_conn_type.append(str_)
+            str_ct = str(ct).strip('()').split('/')[1]
+            list_conn_type.append(str_ct)
             for c in ct.connections_of_type:
-                list_conn.append(str(c))
+                str_c = int(str(c).split('@')[0].strip('('))
+                list_conn.append(str(str_c))
 
     result_buckets['conn_types'] = pd.DataFrame(
         None, columns=list_conn_type, index=range(cfg.wind_speed_num_steps))
@@ -294,7 +299,16 @@ def run_simulation_per_house(cfg, db, id_sim):
     result_buckets['repair_cost'] = pd.DataFrame(
         None, columns=list_conn_type_group, index=range(cfg.wind_speed_num_steps))
 
-    result_buckets['failure'] = pd.DataFrame(
+    result_buckets['result_damaged'] = pd.DataFrame(
+        None, columns=list_conn, index=range(cfg.wind_speed_num_steps))
+
+    result_buckets['result_damage_distributed'] = pd.DataFrame(
+        None, columns=list_conn, index=range(cfg.wind_speed_num_steps))
+
+    result_buckets['result_strength'] = pd.DataFrame(
+        None, columns=list_conn, index=range(cfg.wind_speed_num_steps))
+
+    result_buckets['result_load'] = pd.DataFrame(
         None, columns=list_conn, index=range(cfg.wind_speed_num_steps))
 
     # sample new house and wind direction (if random)
@@ -388,8 +402,19 @@ def run_simulation_per_house(cfg, db, id_sim):
 
             for conn_type in conn_type_group.conn_types:
                 for conn in conn_type.connections_of_type:
-                    result_buckets['failure'].loc[id_speed][str(conn)] = \
+                    str_c = str(conn).split('@')[0].strip('(').strip()
+
+                    result_buckets['result_damaged'].loc[id_speed][str_c] = \
                         conn.result_damaged
+
+                    result_buckets['result_damage_distributed'].loc[id_speed][str_c] = \
+                        conn.result_damaged
+
+                    result_buckets['result_strength'].loc[id_speed][str_c] = \
+                        conn.result_strength
+
+                    #result_buckets['result_load'].loc[id_speed][str_c] = \
+                    #    conn.result_load
 
     # collect results to be used by the GUI client
     for z in house_damage.house.zones:
@@ -535,6 +560,7 @@ class HouseDamage(object):
 
     def run_simulation(self, wind_speed):
 
+        # only check if debris is ON
         self.check_pressurized_failure(wind_speed)
 
         self.calculate_qz(wind_speed)
@@ -1152,14 +1178,9 @@ def main():
 
     path_, _ = os.path.split(sys.argv[0])
 
-    if options.model_database is None:
-        model_db = None
-    else:
-        model_db = os.path.abspath(os.path.join(os.getcwd(),
-                                                options.model_database))
     if options.output_folder is None:
         options.output_folder = os.path.abspath(os.path.join(path_,
-                                                             './outputs'))
+                                                             './output'))
     else:
         options.output_folder = os.path.abspath(os.path.join(
             os.getcwd(), options.output_folder))
@@ -1171,11 +1192,9 @@ def main():
         logger.configure(logger.LOGGING_NONE)
 
     if options.data_folder:
-        print ('Importing database from folder: {} '
-               'to: {}').format(options.data_folder, options.model_database)
-
-        database.configure(model_db, flag_make=True)
-        dbimport.import_model(options.data_folder, options.model_database)
+        db = database.configure(db_file=None, verbose=options.verbose,
+                                flag_make=True)
+        dbimport.import_model(options.data_folder, model_database=db)
         db.close()
         return
 

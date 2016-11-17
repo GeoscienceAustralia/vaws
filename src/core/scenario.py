@@ -47,17 +47,17 @@ class Scenario(object):
         self._flight_time_mean = None
         self._flight_time_stddev = None
 
-        self._file_cpis = None
-        self._file_debris = None
+        self._file_house_cpi = None  #
+        self._file_wind_debris = None
+        self._file_dmg_idx = None
+        self._file_dmg_map_by_conn_type = None
         self._file_frag = None
         self._file_water = None
-        self._file_damage = None
-        self._file_dmg = None
-        self._file_dmg_idx = None
-        self._file_dmg_map = None
-        self._file_damage_area = None
-        self._file_repair_cost = None
-        self._file_failure = None
+        self._file_dmg_pct_by_conn_type = None
+        self._file_dmg_freq_by_conn_type = None
+        self._file_dmg_area_by_conn_grp = None
+        self._file_repair_cost_by_conn_grp = None
+        self._file_dmg_by_conn = None
 
         self._wind_profile = None
 
@@ -288,28 +288,28 @@ class Scenario(object):
             self._wind_dir_index = 8
 
     @property
-    def file_cpis(self):
-        return self._file_cpis
+    def file_house_cpi(self):
+        return self._file_house_cpi
 
-    @file_cpis.setter
-    def file_cpis(self, file_name):
-        self._file_cpis = open(file_name, 'w')
-        self._file_cpis.write('Simulated House #, Cpi Changed At\n')
-        self._file_cpis.close()
-        self._file_cpis = open(file_name, 'a')
+    @file_house_cpi.setter
+    def file_house_cpi(self, file_name):
+        self._file_house_cpi = open(file_name, 'w')
+        self._file_house_cpi.write('Simulated House #, Cpi Changed At\n')
+        self._file_house_cpi.close()
+        self._file_house_cpi = open(file_name, 'a')
 
     @property
-    def file_debris(self):
-        return self._file_debris
+    def file_wind_debris(self):
+        return self._file_wind_debris
 
-    @file_debris.setter
-    def file_debris(self, file_name):
-        self._file_debris = open(file_name, 'w')
+    @file_wind_debris.setter
+    def file_wind_debris(self, file_name):
+        self._file_wind_debris = open(file_name, 'w')
         header = ('Wind Speed(m/s),% Houses Internally Pressurized,'
                   '% Debris Damage Mean\n')
-        self._file_debris.write(header)
-        self._file_debris.close()
-        self._file_debris = open(file_name, 'a')
+        self._file_wind_debris.write(header)
+        self._file_wind_debris.close()
+        self._file_wind_debris = open(file_name, 'a')
 
     @property
     def file_dmg_idx(self):
@@ -320,44 +320,34 @@ class Scenario(object):
         self._file_dmg_idx = file_name
 
     @property
-    def file_dmg_map(self):
-        return self._file_dmg_map
+    def file_dmg_map_by_conn_type(self):
+        return self._file_dmg_map_by_conn_type
 
-    @file_dmg_map.setter
-    def file_dmg_map(self, file_name):
-        self._file_dmg_map = file_name
-
-    @property
-    def file_damage(self):
-        return self._file_damage
-
-    @file_damage.setter
-    def file_damage(self, file_name):
-        self._file_damage = file_name
-        # self._file_damage = open(file_name, 'w')
-        # header = 'Simulated House #,Wind Speed(m/s),Wind Direction,'
-        # list_ = []
-        # for ctg in self.house.conn_type_groups:
-        #     if ctg.enabled:
-        #         for ct in ctg.conn_types:
-        #             list_.append(ct.connection_type)
-        # header += ','.join(list_)
-        # header += '\n'
-        # self._file_damage.write(header)
+    @file_dmg_map_by_conn_type.setter
+    def file_dmg_map_by_conn_type(self, file_name):
+        self._file_dmg_map_by_conn_type = file_name
 
     @property
-    def file_dmg(self):
-        return self._file_dmg
+    def file_dmg_pct_by_conn_type(self):
+        return self._file_dmg_pct_by_conn_type
 
-    @file_dmg.setter
-    def file_dmg(self, file_name):
-        self._file_dmg = open(file_name, 'w')
-        self._file_dmg.write('Number of Damaged Houses\n')
-        self._file_dmg.write('Num Houses,{:d}\n'.format(self.no_sims))
-        self._file_dmg.write('Wind Direction,{}\n'.format(
+    @file_dmg_pct_by_conn_type.setter
+    def file_dmg_pct_by_conn_type(self, file_name):
+        self._file_dmg_pct_by_conn_type = file_name
+
+    @property
+    def file_dmg_freq_by_conn_type(self):
+        return self._file_dmg_freq_by_conn_type
+
+    @file_dmg_freq_by_conn_type.setter
+    def file_dmg_freq_by_conn_type(self, file_name):
+        self._file_dmg_freq_by_conn_type = open(file_name, 'w')
+        self._file_dmg_freq_by_conn_type.write('Number of Damaged Houses\n')
+        self._file_dmg_freq_by_conn_type.write('Num Houses,{:d}\n'.format(self.no_sims))
+        self._file_dmg_freq_by_conn_type.write('Wind Direction,{}\n'.format(
             self.dirs[self.wind_dir_index]))
-        self._file_dmg.close()
-        self._file_dmg = open(file_name, 'a')
+        self._file_dmg_freq_by_conn_type.close()
+        self._file_dmg_freq_by_conn_type = open(file_name, 'a')
 
     @property
     def file_water(self):
@@ -378,35 +368,31 @@ class Scenario(object):
 
     @file_frag.setter
     def file_frag(self, file_name):
-        # self._file_frag = open(file_name, 'w')
-        # header = ('Slight Median,Slight Beta,Medium Median,Median Beta,'
-        #            'Severe Median,Severe Beta,Complete Median,Complete Beta\n')
-        # self._file_frag.write(header)
         self._file_frag = file_name
 
     @property
-    def file_damage_area(self):
-        return self._file_damage_area
+    def file_dmg_area_by_conn_grp(self):
+        return self._file_dmg_area_by_conn_grp
 
-    @file_damage_area.setter
-    def file_damage_area(self, file_name):
-        self._file_damage_area = file_name
-
-    @property
-    def file_repair_cost(self):
-        return self._file_repair_cost
-
-    @file_repair_cost.setter
-    def file_repair_cost(self, file_name):
-        self._file_repair_cost = file_name
+    @file_dmg_area_by_conn_grp.setter
+    def file_dmg_area_by_conn_grp(self, file_name):
+        self._file_dmg_area_by_conn_grp = file_name
 
     @property
-    def file_failure(self):
-        return self._file_failure
+    def file_repair_cost_by_conn_grp(self):
+        return self._file_repair_cost_by_conn_grp
 
-    @file_failure.setter
-    def file_failure(self, file_name):
-        self._file_failure = file_name
+    @file_repair_cost_by_conn_grp.setter
+    def file_repair_cost_by_conn_grp(self, file_name):
+        self._file_repair_cost_by_conn_grp = file_name
+
+    @property
+    def file_dmg_by_conn(self):
+        return self._file_dmg_by_conn
+
+    @file_dmg_by_conn.setter
+    def file_dmg_by_conn(self, file_name):
+        self._file_dmg_by_conn = file_name
 
     '''
     # used by main.pyw
