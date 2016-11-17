@@ -38,33 +38,33 @@ def configure(db_file=None, verbose=False, flag_make=False):
     return DatabaseManager(db_file, verbose)
 
 
-def _add_process_guards(engine):
-    """Add multiprocessing guards.
-
-    Forces a connection to be reconnected if it is detected
-    as having been shared to a sub-process.
-
-    """
-
-    @event.listens_for(engine, "connect")
-    def connect(dbapi_connection, connection_record):
-        connection_record.info['pid'] = os.getpid()
-
-    @event.listens_for(engine, "checkout")
-    def checkout(dbapi_connection, connection_record, connection_proxy):
-        pid = os.getpid()
-        if connection_record.info['pid'] != pid:
-            # LOG.debug(_LW(
-            #     "Parent process %(orig)s forked (%(newproc)s) with an open "
-            #     "database connection, "
-            #     "which is being discarded and recreated."),
-            #     {"newproc": pid, "orig": connection_record.info['pid']})
-            connection_record.connection = connection_proxy.connection = None
-            raise exc.DisconnectionError(
-                "Connection record belongs to pid %s, "
-                "attempting to check out in pid %s" %
-                (connection_record.info['pid'], pid)
-            )
+# def _add_process_guards(engine):
+#     """Add multiprocessing guards.
+#
+#     Forces a connection to be reconnected if it is detected
+#     as having been shared to a sub-process.
+#
+#     """
+#
+#     @event.listens_for(engine, "connect")
+#     def connect(dbapi_connection, connection_record):
+#         connection_record.info['pid'] = os.getpid()
+#
+#     @event.listens_for(engine, "checkout")
+#     def checkout(dbapi_connection, connection_record, connection_proxy):
+#         pid = os.getpid()
+#         if connection_record.info['pid'] != pid:
+#             # LOG.debug(_LW(
+#             #     "Parent process %(orig)s forked (%(newproc)s) with an open "
+#             #     "database connection, "
+#             #     "which is being discarded and recreated."),
+#             #     {"newproc": pid, "orig": connection_record.info['pid']})
+#             connection_record.connection = connection_proxy.connection = None
+#             raise exc.DisconnectionError(
+#                 "Connection record belongs to pid %s, "
+#                 "attempting to check out in pid %s" %
+#                 (connection_record.info['pid'], pid)
+#             )
 
 
 class DatabaseManager(object):
@@ -79,42 +79,42 @@ class DatabaseManager(object):
 
         Session = sessionmaker(bind=self.engine)
         self.session = Session()
-        self.metadata = MetaData()
-        self.metadata.bind = self.engine
+        # self.metadata = MetaData()
+        # self.metadata.bind = self.engine
 
-        # DESIGN: some tables don't need ORM mappings and can be dealt with
-        # pure SQL.
-        self.terrain_table = Table('terrain_envelopes', self.metadata,
-                                   Column('tcat', String, primary_key=True),
-                                   Column('profile', Integer, primary_key=True),
-                                   Column('z', Integer, primary_key=True),
-                                   Column('m', Float))
-
-        self.debris_types_table = Table('debris_types', self.metadata,
-                                        Column('name', String,
-                                               primary_key=True),
-                                        Column('cdav', Float))
-
-        self.structure_patch_table = Table('patches', self.metadata,
-                                           Column('damaged_connection_id',
-                                                  Integer,
-                                                  ForeignKey('connections.id'),
-                                                  primary_key=True),
-                                           Column('target_connection_id',
-                                                  Integer,
-                                                  ForeignKey('connections.id'),
-                                                  primary_key=True),
-                                           Column('zone_id', Integer,
-                                                  ForeignKey('zones.id'),
-                                                  primary_key=True),
-                                           Column('coeff', Float))
+        # # DESIGN: some tables don't need ORM mappings and can be dealt with
+        # # pure SQL.
+        # self.terrain_table = Table('terrain_envelopes', self.metadata,
+        #                            Column('tcat', String, primary_key=True),
+        #                            Column('profile', Integer, primary_key=True),
+        #                            Column('z', Integer, primary_key=True),
+        #                            Column('m', Float))
+        #
+        # self.debris_types_table = Table('debris_types', self.metadata,
+        #                                 Column('name', String,
+        #                                        primary_key=True),
+        #                                 Column('cdav', Float))
+        #
+        # self.structure_patch_table = Table('patches', self.metadata,
+        #                                    Column('damaged_connection_id',
+        #                                           Integer,
+        #                                           ForeignKey('connections.id'),
+        #                                           primary_key=True),
+        #                                    Column('target_connection_id',
+        #                                           Integer,
+        #                                           ForeignKey('connections.id'),
+        #                                           primary_key=True),
+        #                                    Column('zone_id', Integer,
+        #                                           ForeignKey('zones.id'),
+        #                                           primary_key=True),
+        #                                    Column('coeff', Float))
 
     def create_tables(self):
-        self.metadata.create_all()
+        # self.metadata.create_all()
         Base.metadata.create_all(self.engine)
 
     def drop_tables(self):
-        self.metadata.drop_all()
+        # self.metadata.drop_all()
         Base.metadata.drop_all(self.engine)
 
     def close(self):
@@ -123,30 +123,57 @@ class DatabaseManager(object):
 
     def qryDebrisTypes(self):
         s = select(
-            [self.debris_types_table.c.name, self.debris_types_table.c.cdav])
-        result = self.engine.execute(s)
+            [DebrisType.name, DebrisType.cdav])
+        result = self.session.execute(s)
         list_ = result.fetchall()
         result.close()
         return list_
 
     def qryConnectionPatchesFromDamagedConn(self, damagedConnID):
-        patches = self.structure_patch_table
-        s = select([patches.c.target_connection_id, patches.c.zone_id,
-                    patches.c.coeff],
-                   patches.c.damaged_connection_id == damagedConnID)
-        result = self.engine.execute(s)
+        s = select([Patch.target_connection_id, Patch.zone_id,
+                    Patch.coeff],
+                   Patch.damaged_connection_id == damagedConnID)
+        result = self.session.execute(s)
         list_ = result.fetchall()
         result.close()
         return list_
 
     def qryConnectionPatches(self):
-        patches = self.structure_patch_table
         s = select(
-            [patches.c.damaged_connection_id, patches.c.target_connection_id,
-             patches.c.zone_id, patches.c.coeff]).order_by(
-            patches.c.damaged_connection_id, patches.c.target_connection_id,
-            patches.c.zone_id)
-        result = self.engine.execute(s)
+            [Patch.damaged_connection_id, Patch.target_connection_id,
+             Patch.zone_id, Patch.coeff]).order_by(
+            Patch.damaged_connection_id, Patch.target_connection_id,
+            Patch.zone_id)
+        result = self.session.execute(s)
         list_ = result.fetchall()
         result.close()
         return list_
+
+
+class Terrain(Base):
+    __tablename__ = 'terrain_envelopes'
+    tcat = Column(String, primary_key=True)
+    profile = Column(Integer, primary_key=True)
+    z = Column(Integer, primary_key=True)
+    m = Column(Float)
+
+
+class DebrisType(Base):
+    __tablename__ = 'debris_types'
+    name = Column(String, primary_key=True)
+    cdav = Column(Float)
+
+
+class Patch(Base):
+    __tablename__ = 'patches'
+    damaged_connection_id = Column(Integer,
+                                   ForeignKey('connections.id'),
+                                   primary_key=True)
+    target_connection_id = Column(Integer,
+                                  ForeignKey('connections.id'),
+                                  primary_key=True)
+    zone_id = Column(Integer,
+                     ForeignKey('zones.id'),
+                     primary_key=True)
+    coeff = Column(Float)
+
