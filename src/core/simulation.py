@@ -1192,11 +1192,16 @@ def main():
         logger.configure(logger.LOGGING_NONE)
 
     if options.data_folder:
-        db = database.configure(db_file=None, verbose=options.verbose,
-                                flag_make=True)
-        dbimport.import_model(options.data_folder, model_database=db)
-        db.close()
-        return
+        try:
+            db = database.DatabaseManager(options.model_database,
+                                          verbose=options.verbose)
+        except TypeError:
+            sys.exit('Must provide model database file')
+        else:
+            dbimport.import_model(options.data_folder,
+                                  model_database=db,
+                                  verbose=options.verbose)
+            db.close()
 
     if options.scenario_filename:
         conf = scenario.loadFromCSV(options.scenario_filename)

@@ -1,8 +1,8 @@
 """
     database.py - manage SQLite database
 """
-from sqlalchemy import create_engine, Table, Integer, String, Float, Column, \
-    MetaData, ForeignKey, event, exc
+from sqlalchemy import create_engine, Integer, String, Float, Column, \
+    ForeignKey, event, exc
 from sqlalchemy.sql import select
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.ext.declarative import declarative_base
@@ -23,19 +23,19 @@ class ForeignKeysListener(PoolListener):
             # print 'row: ', row
 
 
-def configure(db_file=None, verbose=False, flag_make=False):
-
-    if not db_file:
-        path_, _ = os.path.split(os.path.abspath(__file__))
-        db_file = os.path.abspath(os.path.join(path_, '../model.db'))
-
-    if not (flag_make or os.path.exists(db_file)):
-        msg = 'Error: database file {} not found'.format(db_file)
-        sys.exit(msg)
-
-    print 'model db is loaded from or created to : {}'.format(db_file)
-
-    return DatabaseManager(db_file, verbose)
+# def configure(db_file=None, verbose=False, flag_make=False):
+#
+#     if not db_file:
+#         path_, _ = os.path.split(os.path.abspath(__file__))
+#         db_file = os.path.abspath(os.path.join(path_, '../model.db'))
+#
+#     if not (flag_make or os.path.exists(db_file)):
+#         msg = 'Error: database file {} not found'.format(db_file)
+#         sys.exit(msg)
+#
+#     print 'model db is loaded from or created to : {}'.format(db_file)
+#
+#     return DatabaseManager(db_file, verbose)
 
 
 # def _add_process_guards(engine):
@@ -70,7 +70,10 @@ def configure(db_file=None, verbose=False, flag_make=False):
 class DatabaseManager(object):
     def __init__(self, file_name, verbose=False):
         self.file_name = file_name
-        self.database_url = 'sqlite:///' + file_name
+        try:
+            self.database_url = 'sqlite:///' + file_name
+        except TypeError:
+            self.database_url = 'sqlite://'
         self.engine = create_engine(self.database_url,
                                     echo=verbose,
                                     echo_pool=False,

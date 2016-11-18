@@ -206,12 +206,11 @@ def loadStructurePatchesFromCSV(path, house, db):
                 elif (col % 2) == 0:
                     zone = house.getZoneByName(data)
                 elif damagedConn is not None and targetConn is not None and zone is not None:
-                    ins = db.structure_patch_table.insert().values(
-                        damaged_connection_id=damagedConn.id,
-                        target_connection_id=targetConn.id,
-                        zone_id=zone.id,
-                        coeff=float(data))
-                    db.session.execute(ins)
+                    ins = database.Patch(damaged_connection_id=damagedConn.id,
+                                         target_connection_id=targetConn.id,
+                                         zone_id=zone.id,
+                                         coeff=float(data))
+                    db.session.add(ins)
                     zone = None
         lineCount += 1
     db.session.commit()
@@ -512,33 +511,34 @@ def loadCoveragesFromCSV(path, house, db):
     db.session.commit()
 
 
-def importDataFromPath(path):
+def importDataFromPath(path, db):
+
     print 'Importing House Data from path: {}'.format(path)
-    house = loadFromCSV(path)
+    house = loadFromCSV(path, db)
     print house
-    loadWallsFromCSV(path, house)
+    loadWallsFromCSV(path, house, db)
     print 'walls'
-    loadCoverageTypesFromCSV(path, house)
+    loadCoverageTypesFromCSV(path, house, db)
     print 'coverage types'
-    loadCoveragesFromCSV(path, house)
+    loadCoveragesFromCSV(path, house, db)
     print 'coverages'
-    loadDamageCostingsFromCSV(path, house)
+    loadDamageCostingsFromCSV(path, house, db)
     print 'damage costings'
-    loadWaterCostingsFromCSV(path, house)
+    loadWaterCostingsFromCSV(path, house, db)
     print 'water costings'
-    loadConnectionTypeGroupsFromCSV(path, house)
+    loadConnectionTypeGroupsFromCSV(path, house, db)
     print 'connection type groups'
-    loadConnectionTypesFromCSV(path, house)
+    loadConnectionTypesFromCSV(path, house, db)
     print 'connection types'
-    loadDamageFactoringsFromCSV(path, house)
+    loadDamageFactoringsFromCSV(path, house, db)
     print 'damage factorings'
-    loadZoneFromCSV(path, house)
+    loadZoneFromCSV(path, house, db)
     print 'zones'
-    loadConnectionsFromCSV(path, house)
+    loadConnectionsFromCSV(path, house, db)
     print 'connections'
-    loadConnectionInfluencesFromCSV(path, house)
+    loadConnectionInfluencesFromCSV(path, house, db)
     print 'connectionzoneinfluences'
-    loadStructurePatchesFromCSV(path, house)
+    loadStructurePatchesFromCSV(path, house, db)
     print 'structureinfluencepatches'
 
 
@@ -546,7 +546,7 @@ def importDataFromPath(path):
 if __name__ == '__main__':
     import unittest
 
-    db_ = database.configure()
+    db_ = database.DatabaseManager('../model.db', verbose=False)
 
     class MyTestCase(unittest.TestCase):
         def test_constr(self):

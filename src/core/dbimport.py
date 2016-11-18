@@ -8,45 +8,42 @@ import sys
 import datetime
 import pandas as pd
 
-import database
 import debris
 import house
+import database
 
 
-def import_house(arg, dirname, names):
-    # if dirname.find('.svn') == -1:
-    if 'house_data.csv' in names:
-        print 'Importing House from folder: %s' % dirname
-        house.importDataFromPath(dirname)
+def import_house(path, db):
+    for path_, _, list_files in os.walk(path):
+
+        if 'house_data.csv' in list_files:
+            house.importDataFromPath(path_, db)
 
 
-def loadTerrainProfiles(path):
+def loadTerrainProfiles(path, db):
     for tcat in ['2', '2.5', '3', '5']:
-        db = database.db
         fileName = os.path.join(path, 'mzcat_terrain_' + tcat + '.csv')
         x = pd.read_csv(fileName, skiprows=1, header=None)
         for _, row in x.iterrows():
             for i, value in enumerate(row[1:], 1):
-                ins = db.terrain_table.insert().values(tcat=tcat,
-                                                       profile=i,
-                                                       z=int(row[0]),
-                                                       m=float(value))
-                db.session.execute(ins)
+                ins = database.Terrain(tcat=tcat,
+                                       profile=i,
+                                       z=int(row[0]),
+                                       m=float(value))
+                db.session.add(ins)
         db.session.commit()
 
 
-def loadDebrisTypes(path):
-    db = database.db
+def loadDebrisTypes(path, db):
     fileName = os.path.join(path, 'debris_types.csv')
     x = pd.read_csv(fileName)
     for _, row in x.iterrows():
-        ins = db.debris_types_table.insert().values(name=row[0],
-                                                    cdav=float(row[1]))
-        db.session.execute(ins)
+        ins = database.DebrisType(name=row[0], cdav=float(row[1]))
+        db.session.add(ins)
     db.session.commit()
     
 
-def loadDebrisRegions(path):
+def loadDebrisRegions(path, db):
     fileName = os.path.join(path, 'debris_regions.csv')
     x = pd.read_csv(fileName)
     for _, row in x.iterrows():
@@ -69,34 +66,34 @@ def loadDebrisRegions(path):
                                   alpha=float(row[16]),
                                   beta=float(row[17]))
 
-        database.db.session.add(tmp)
-    database.db.session.commit()
+        db.session.add(tmp)
+    db.session.commit()
     
 
-def import_model(base_path, model_database, verbose=False):
+def import_model(base_path, db):
     date_run = datetime.datetime.now()
     # print 'Current Path: %s' % (os.getcwd())
     print 'Importing Wind Vulnerability Model Data into database' \
           'from folder: {}'.format(base_path)
     
-    database.db.drop_tables()
-    database.db.create_tables()
+    db.drop_tables()
+    db.create_tables()
     print 'created new tables...'
     
-    loadTerrainProfiles(base_path)
+    loadTerrainProfiles(base_path, db)
     print 'imported terrain profiles'
     
-    loadDebrisTypes(base_path)
+    loadDebrisTypes(base_path, db)
     print 'imported debris types'
     
-    loadDebrisRegions(base_path)
+    loadDebrisRegions(base_path, db)
     print 'imported debris regions'
     
-    print 'Enumerating house-type subfolders...'
-    os.path.walk(os.path.join(base_path,'houses'), import_house, None)
+    import_house(base_path, db)
     
     #h = house.queryHouseWithName('Group 4 House')
-    print 'Database has been imported in: %s' % (datetime.datetime.now() - date_run)
+    print 'Database has been imported in: {}'.format(datetime.datetime.now()
+                                                     - date_run)
         
  
 # unit tests
