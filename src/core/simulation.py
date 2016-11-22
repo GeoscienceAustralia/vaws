@@ -17,7 +17,6 @@ import zone
 import scenario
 import curve
 import curve_log
-import dbimport
 import logger
 import database
 import debris
@@ -94,14 +93,17 @@ def simulate_wind_damage_to_house(cfg, options):
 
     # failure frequency by connection type with wind speed ?
     cfg.file_dmg_freq_by_conn_type = os.path.join(options.output_folder,
-                                                  'houses_damaged_at_v.csv')
+                                                  'dmg_freq_by_conn_type.csv')
+                                                 # 'houses_damaged_at_v.csv')
 
     cfg.file_dmg_map_by_conn_type = os.path.join(options.output_folder,
-                                    'houses_damage_map.csv')
+                                                 'dmg_map_by_conn_type.csv')
+                                    # 'houses_damage_map.csv')
     cfg.file_frag = os.path.join(options.output_folder, 'fragilities.csv')
     cfg.file_water = os.path.join(options.output_folder, 'wateringress.csv')
     cfg.file_dmg_pct_by_conn_type = os.path.join(options.output_folder,
-                                                 'house_damage.csv')
+                                                 'dmg_pct_by_conn_type.csv')
+                                                # 'house_damage.csv')
 
     cfg.file_wind_debris = os.path.join(options.output_folder, 'wind_debris.csv')
     cfg.file_dmg_idx = os.path.join(options.output_folder, 'house_dmg_idx.csv')
@@ -112,6 +114,17 @@ def simulate_wind_damage_to_house(cfg, options):
                                                     'repair_cost_by_conn_grp.csv')
     cfg.file_dmg_by_conn = os.path.join(options.output_folder,
                                         'dmg_by_conn.csv')
+
+    cfg.file_strength_by_conn = os.path.join(options.output_folder,
+                                             'strength_by_conn.csv')
+
+    cfg.file_deadload_by_conn = os.path.join(options.output_folder,
+                                             'deadload_by_conn.csv')
+
+    cfg.file_dmg_dist_by_conn = os.path.join(options.output_folder,
+                                             'dmg_dist_by_conn.csv')
+    cfg.file_rnd_parameters = os.path.join(options.output_folder,
+                                            'random_parameters.csv')
 
     # optionally seed random numbers
     if cfg.flags['random_seed']:
@@ -133,12 +146,23 @@ def simulate_wind_damage_to_house(cfg, options):
     else:
         db = database.DatabaseManager(cfg.db_file)
         list_results = []
+        random_parameters = pd.DataFrame(
+            None, columns=['wind_ort', 'profile_no', 'const_level'],
+            index=range(cfg.no_sims))
+
         for id_sim in range(cfg.no_sims):
             house_damage_, results = run_simulation_per_house(cfg, db, id_sim)
             list_results.append(results)
+            random_parameters.loc[id_sim, 'wind_ort'] = \
+                house_damage_.wind_orientation
+            random_parameters.loc[id_sim, 'profile_no'] = house_damage_.profile
+            random_parameters.loc[id_sim, 'const_level'] = house_damage_.construction_level
         db.close()
 
     print('{}'.format(time.time()-tic))
+
+    # record randomly generated parameters
+    random_parameters.to_csv(cfg.file_rnd_parameters)
 
     # post processing of results (aggregations)
     # write debris output file
@@ -251,6 +275,21 @@ def simulate_wind_damage_to_house(cfg, options):
     pd.concat([df_dmg_conn_types, df_dmg_by_conn], axis=1).to_csv(
         cfg.file_dmg_by_conn, index=False)
 
+    df_dmg_dist_by_conn = pd.concat(
+        [x['result_damage_distributed'] for x in list_results]).reset_index(drop=True)
+    pd.concat([df_dmg_conn_types, df_dmg_dist_by_conn], axis=1).to_csv(
+        cfg.file_dmg_dist_by_conn, index=False)
+
+    df_strength_by_conn = pd.concat(
+        [x['result_strength'] for x in list_results]).reset_index(drop=True)
+    pd.concat([df_dmg_conn_types, df_strength_by_conn], axis=1).to_csv(
+        cfg.file_strength_by_conn, index=False)
+
+    df_deadload_by_conn = pd.concat(
+        [x['result_deadload'] for x in list_results]).reset_index(drop=True)
+    pd.concat([df_dmg_conn_types, df_deadload_by_conn], axis=1).to_csv(
+        cfg.file_deadload_by_conn, index=False)
+
     # record conn_type_group, conn_type, conn
     # map_conn_to_group = {}
     # for conn_type_group in house_damage_.house.conn_type_groups:
@@ -308,7 +347,7 @@ def run_simulation_per_house(cfg, db, id_sim):
     result_buckets['result_strength'] = pd.DataFrame(
         None, columns=list_conn, index=range(cfg.wind_speed_num_steps))
 
-    result_buckets['result_load'] = pd.DataFrame(
+    result_buckets['result_deadload'] = pd.DataFrame(
         None, columns=list_conn, index=range(cfg.wind_speed_num_steps))
 
     # sample new house and wind direction (if random)
@@ -408,13 +447,13 @@ def run_simulation_per_house(cfg, db, id_sim):
                         conn.result_damaged
 
                     result_buckets['result_damage_distributed'].loc[id_speed][str_c] = \
-                        conn.result_damaged
+                        conn.result_damage_distributed
 
                     result_buckets['result_strength'].loc[id_speed][str_c] = \
                         conn.result_strength
 
-                    #result_buckets['result_load'].loc[id_speed][str_c] = \
-                    #    conn.result_load
+                    result_buckets['result_deadload'].loc[id_speed][str_c] = \
+                        conn.result_deadload
 
     # collect results to be used by the GUI client
     for z in house_damage.house.zones:
@@ -1192,23 +1231,19 @@ def main():
         logger.configure(logger.LOGGING_NONE)
 
     if options.data_folder:
-        try:
-            db = database.DatabaseManager(options.model_database,
-                                          verbose=options.verbose)
-        except TypeError:
-            sys.exit('Must provide model database file')
-        else:
-            dbimport.import_model(options.data_folder,
-                                  model_database=db,
-                                  verbose=options.verbose)
-            db.close()
+        db = database.DatabaseManager(options.model_database,
+                                      verbose=options.verbose)
+        import dbimport
+        dbimport.import_model(options.data_folder, db)
+        db.close()
 
-    if options.scenario_filename:
-        conf = scenario.loadFromCSV(options.scenario_filename)
-        _ = simulate_wind_damage_to_house(conf, options)
     else:
-        print '\nERROR: Must provide as scenario file to run simulator...\n'
-        parser.print_help()
+        if options.scenario_filename:
+            conf = scenario.loadFromCSV(options.scenario_filename)
+            _ = simulate_wind_damage_to_house(conf, options)
+        else:
+            print '\nERROR: Must provide as scenario file to run simulator...\n'
+            parser.print_help()
 
 
 if __name__ == '__main__':

@@ -374,7 +374,7 @@ if __name__ == '__main__':
     import unittest
     import house
 
-    model_db = database.configure()
+    model_db = database.DatabaseManager('../model.db', verbose=False)
 
     class MyTestCase(unittest.TestCase):
         def test_debris_types(self):

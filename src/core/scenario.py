@@ -58,6 +58,10 @@ class Scenario(object):
         self._file_dmg_area_by_conn_grp = None
         self._file_repair_cost_by_conn_grp = None
         self._file_dmg_by_conn = None
+        self._file_strength_by_conn = None
+        self._file_deadload_by_conn = None
+        self._file_dmg_dist_by_conn = None
+        self._file_rnd_parameters = None
 
         self._wind_profile = None
 
@@ -85,7 +89,7 @@ class Scenario(object):
     #             ctg.enabled = False
 
     def setOptCTGEnabled(self, ctg_name, opt):
-        key_name = 'ctg_{}'.format(ctg_name)
+        key_name = 'conn_type_group_{}'.format(ctg_name)
         self.flags[key_name] = opt
 
     def getConstructionLevel(self, name):
@@ -102,19 +106,19 @@ class Scenario(object):
             ['probability', 'mean_factor', 'cov_factor'],
             [prob, mf, cf]))
 
-    def sampleConstructionLevel(self):
-        rv = np.random.random_integers(0, 100)
-        cumprob = 0.0
-        for key, value in self.construction_levels.iteritems():
-            cumprob += value['probability'] * 100.0
-            if rv <= cumprob:
-                break
-        return key, value['mean_factor'], value['cov_factor']
+    # def sampleConstructionLevel(self):
+    #     rv = np.random.random_integers(0, 100)
+    #     cumprob = 0.0
+    #     for key, value in self.construction_levels.iteritems():
+    #         cumprob += value['probability'] * 100.0
+    #         if rv <= cumprob:
+    #             break
+    #     return key, value['mean_factor'], value['cov_factor']
 
     def get_wind_dir_index(self):
         if self.wind_dir_index == 8:
-            # return np.random.random_integers(0, 7)
-            return self.rnd_state.random_integers(0, 7)
+            return np.random.random_integers(0, 7)
+            # return self.rnd_state.random_integers(0, 7)
         else:
             return self.wind_dir_index
 
@@ -394,6 +398,38 @@ class Scenario(object):
     def file_dmg_by_conn(self, file_name):
         self._file_dmg_by_conn = file_name
 
+    @property
+    def file_dmg_dist_by_conn(self):
+        return self._file_dmg_dist_by_conn
+
+    @file_dmg_dist_by_conn.setter
+    def file_dmg_dist_by_conn(self, file_name):
+        self._file_dmg_dist_by_conn = file_name
+
+    @property
+    def file_strength_by_conn(self):
+        return self._file_strength_by_conn
+
+    @file_strength_by_conn.setter
+    def file_strength_by_conn(self, file_name):
+        self._file_strength_by_conn = file_name
+
+    @property
+    def file_deadload_by_conn(self):
+        return self._file_deadload_by_conn
+
+    @file_deadload_by_conn.setter
+    def file_deadload_by_conn(self, file_name):
+        self._file_deadload_by_conn = file_name
+
+    @property
+    def file_rnd_parameters(self):
+        return self._file_rnd_parameters
+
+    @file_rnd_parameters.setter
+    def file_rnd_parameters(self, file_name):
+        self._file_rnd_parameters = file_name
+
     '''
     # used by main.pyw
 
@@ -658,25 +694,17 @@ if __name__ == '__main__':
 
         def test_ctgenables(self):
             s = loadFromCSV(self.file1)
-            self.assertTrue(s.flags['ctg_{}'.format('rafter')])
+            self.assertTrue(s.flags['conn_type_group_{}'.format('rafter')])
             s.setOptCTGEnabled('batten', False)
-            self.assertFalse(s.flags['ctg_{}'.format('batten')])
+            self.assertFalse(s.flags['conn_type_group_{}'.format('batten')])
 
             s.storeToCSV(self.file3)
             s2 = loadFromCSV(self.file3)
-            self.assertFalse(s2.flags['ctg_{}'.format('batten')])
-            self.assertTrue(s2.flags['ctg_{}'.format('sheeting')])
+            self.assertFalse(s2.flags['conn_type_group_{}'.format('batten')])
+            self.assertTrue(s2.flags['conn_type_group_{}'.format('sheeting')])
 
         def test_construction_levels(self):
             s1 = loadFromCSV(self.file1)
-            s1.setConstructionLevel('low', 0.33, 0.75, 0.78)
-            counts = {'low': 0, 'medium': 0, 'high': 0}
-            for i in range(1000):
-                level, mf, cf = s1.sampleConstructionLevel()
-                if level == 'low':
-                    self.assertAlmostEquals(mf, 0.75)
-                    self.assertAlmostEquals(cf, 0.78)
-                counts[level] += 1
             s1.setConstructionLevel('low', 0.33, 0.42, 0.78)
 
             s1.storeToCSV(self.file3)

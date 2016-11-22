@@ -6,6 +6,7 @@ import os
 import numpy as np
 import filecmp
 import pandas as pd
+import matplotlib.pyplot as plt
 
 from core.simulation import HouseDamage, simulate_wind_damage_to_house
 import core.database as database
@@ -80,7 +81,8 @@ def consistency_house_cpi(path_reference, path_output):
 
 
 def consistency_house_damage(path_reference, path_output):
-    filename = 'house_damage.csv'
+    # filename = 'house_damage.csv'
+    filename = 'dmg_pct_by_conn_type.csv'
     file1 = os.path.join(path_reference, filename)
     file2 = os.path.join(path_output, filename)
 
@@ -138,7 +140,8 @@ def consistency_fragilites(path_reference, path_output):
 
 
 def consistency_houses_damaged(path_reference, path_output):
-    filename = 'houses_damaged_at_v.csv'
+    # filename = 'houses_damaged_at_v.csv'
+    filename = 'dmg_freq_by_conn_type.csv'
     file1 = os.path.join(path_reference, filename)
     file2 = os.path.join(path_output, filename)
 
@@ -317,6 +320,35 @@ class TestHouseDamage(unittest.TestCase):
                         conn_type_group.repair_cost,
                         repair_dic_[str(conn_type_group)]))
 
+    # def test_pdfs(self):
+    #     for ct in self.house_damage.house.conn_types:
+    #         if True or ct.connection_type == 'piers':
+    #             x = []
+    #             for i in xrange(50000):
+    #                 # print('ctype mean({:.3f}), stddev({:.3f})'.format(
+    #                 #    ct.strength_mean, ct.strength_std_dev))
+    #                 rv = np.random.lognormal(ct.strength_mean,
+    #                                          ct.strength_std_dev)
+    #                 x.append(rv)
+    #             n, bins, patches = plt.hist(x, 50, normed=1, facecolor='green',
+    #                                         alpha=0.75)
+    #             plt.title(ct.connection_type)
+    #             plt.grid(True)
+    #             plt.savefig(os.path.join(self.path_reference,
+    #                                      'plot_{}.png'.format(ct.connection_type)))
+    #             plt.close()
+
+    def test_construction_levels(self):
+        self.cfg.setConstructionLevel('low', 0.33, 0.75, 0.78)
+        counts = {'low': 0, 'medium': 0, 'high': 0}
+        for i in range(1000):
+            level, mf, cf = self.house_damage.sample_construction_level()
+            if level == 'low':
+                self.assertAlmostEquals(mf, 0.75)
+                self.assertAlmostEquals(cf, 0.78)
+            counts[level] += 1
+
+"""
 class TestDistributeMultiSwitchesOff(unittest.TestCase):
 
     @classmethod
@@ -374,7 +406,7 @@ class TestDistributeMultiSwitchesOff(unittest.TestCase):
     def test_consistency_wind_debris(self):
         consistency_wind_debris(self.path_reference, self.path_output)
 
-"""
+
 class TestDistributeMultiSwitchesOn(unittest.TestCase):
 
     @classmethod
@@ -431,5 +463,6 @@ class TestDistributeMultiSwitchesOn(unittest.TestCase):
     def test_consistency_wind_debris(self):
         consistency_wind_debris(self.path_reference, self.path_output)
 """
+
 if __name__ == '__main__':
     unittest.main()

@@ -546,9 +546,21 @@ def importDataFromPath(path, db):
 if __name__ == '__main__':
     import unittest
 
-    db_ = database.DatabaseManager('../model.db', verbose=False)
-
     class MyTestCase(unittest.TestCase):
+
+        @classmethod
+        def setUpClass(cls):
+            cls.db1 = database.DatabaseManager(os.path.join('../model.db'),
+                                              verbose=False)
+
+            cls.db2 = database.DatabaseManager(os.path.join('../test.db'),
+                                           verbose=False)
+
+        @classmethod
+        def tearDown(cls):
+            cls.db1.close()
+            cls.db2.close()
+
         def test_constr(self):
             h = House(house_name='Carl House',
                       replace_cost=3434.0,
@@ -562,10 +574,46 @@ if __name__ == '__main__':
                       roof_rows=20)
             print h
 
-        def test_house(self):
+        def test_house1(self):
+
+            # db_ = database.DatabaseManager('../model.db', verbose=False)
+
             house_name = 'Masonry Block House'
-            # house_name = 'Group 4 House'
-            h = queryHouseWithName(house_name, db_)
+            h = queryHouseWithName(house_name, self.db1)
+            print 'Found my house: ', h
+            print 'Costings: '
+            for costing in h.costings:
+                print costing
+            print 'Walls: '
+            for wall in h.walls:
+                print wall
+                for cov in wall.coverages:
+                    print '\tcoverage: ', cov
+            print 'CoverageTypes: '
+            for covt in h.cov_types:
+                print covt
+
+        def test_house2(self):
+
+            house_name = 'Group 4 House'
+            h = queryHouseWithName(house_name, self.db1)
+            print 'Found my house: ', h
+            print 'Costings: '
+            for costing in h.costings:
+                print costing
+            print 'Walls: '
+            for wall in h.walls:
+                print wall
+                for cov in wall.coverages:
+                    print '\tcoverage: ', cov
+            print 'CoverageTypes: '
+            for covt in h.cov_types:
+                print covt
+
+        def test_house3(self):
+
+            house_name = 'Test1'
+            h = queryHouseWithName(house_name, self.db2)
             print 'Found my house: ', h
             print 'Costings: '
             for costing in h.costings:

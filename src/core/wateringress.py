@@ -117,8 +117,8 @@ def get_costing_for_envelope_damage_at_v(di, wind_speed, water_groups,
 if __name__ == '__main__':
     import unittest
 
-    database.configure()
-    populate_water_costs(1)
+    db = database.DatabaseManager('../model.db', verbose=False)
+    populate_water_costs(db, 1)
 
 
     class MyTestCase(unittest.TestCase):
