@@ -145,24 +145,26 @@ def simulate_wind_damage_to_house(cfg, options):
         print('Not implemented yet')
     else:
         db = database.DatabaseManager(cfg.db_file)
-        list_results = []
-        random_parameters = pd.DataFrame(
-            None, columns=['wind_ort', 'profile_no', 'const_level'],
-            index=range(cfg.no_sims))
+        cfg.list_conn, cfg.list_conn_type, cfg.list_conn_type_group = \
+            db.get_list_conn_type(cfg.house_name)
 
+        list_results = []
         for id_sim in range(cfg.no_sims):
             house_damage_, results = run_simulation_per_house(cfg, db, id_sim)
             list_results.append(results)
-            random_parameters.loc[id_sim, 'wind_ort'] = \
-                house_damage_.wind_orientation
-            random_parameters.loc[id_sim, 'profile_no'] = house_damage_.profile
-            random_parameters.loc[id_sim, 'const_level'] = house_damage_.construction_level
         db.close()
 
     print('{}'.format(time.time()-tic))
 
     # record randomly generated parameters
-    random_parameters.to_csv(cfg.file_rnd_parameters)
+    df_rnd_params = pd.DataFrame([[x['wind_ort'],
+                                   x['profile_no'],
+                                   x['const_level']] for x in list_results],
+                                 columns=['wind_ort',
+                                          'profile_no',
+                                          'const_level'])
+    df_rnd_params.index += 1
+    df_rnd_params.to_csv(cfg.file_rnd_parameters)
 
     # post processing of results (aggregations)
     # write debris output file
@@ -280,15 +282,21 @@ def simulate_wind_damage_to_house(cfg, options):
     pd.concat([df_dmg_conn_types, df_dmg_dist_by_conn], axis=1).to_csv(
         cfg.file_dmg_dist_by_conn, index=False)
 
-    df_strength_by_conn = pd.concat(
-        [x['result_strength'] for x in list_results]).reset_index(drop=True)
-    pd.concat([df_dmg_conn_types, df_strength_by_conn], axis=1).to_csv(
+    pd.DataFrame.from_dict([x['dead_load'] for x in list_results]).to_csv(
+        cfg.file_deadload_by_conn, index=False)
+
+    pd.DataFrame.from_dict([x['strength'] for x in list_results]).to_csv(
         cfg.file_strength_by_conn, index=False)
 
-    df_deadload_by_conn = pd.concat(
-        [x['result_deadload'] for x in list_results]).reset_index(drop=True)
-    pd.concat([df_dmg_conn_types, df_deadload_by_conn], axis=1).to_csv(
-        cfg.file_deadload_by_conn, index=False)
+    # df_strength_by_conn = pd.concat(
+    #     [x['result_strength'] for x in list_results]).reset_index(drop=True)
+    # pd.concat([df_dmg_conn_types, df_strength_by_conn], axis=1).to_csv(
+    #     cfg.file_strength_by_conn, index=False)
+
+    # df_deadload_by_conn = pd.concat(
+    #     [x['result_deadload'] for x in list_results]).reset_index(drop=True)
+    # pd.concat([df_dmg_conn_types, df_deadload_by_conn], axis=1).to_csv(
+    #     cfg.file_deadload_by_conn, index=False)
 
     # record conn_type_group, conn_type, conn
     # map_conn_to_group = {}
@@ -312,43 +320,43 @@ def run_simulation_per_house(cfg, db, id_sim):
         result_buckets[item] = pd.Series(
             None, index=range(cfg.wind_speed_num_steps))
 
-    result_buckets['cpi'] = None
+    for item in ['cpi', 'wind_ort', 'profile_no', 'const_level']:
+        result_buckets[item] = None
 
     house_damage = HouseDamage(cfg, db)
 
-    list_conn_type_group, list_conn_type, list_conn = [], [], []
-    for conn_type_group in house_damage.house.conn_type_groups:
-        list_conn_type_group.append(str(conn_type_group))
-        for ct in conn_type_group.conn_types:
-            str_ct = str(ct).strip('()').split('/')[1]
-            list_conn_type.append(str_ct)
-            for c in ct.connections_of_type:
-                str_c = int(str(c).split('@')[0].strip('('))
-                list_conn.append(str(str_c))
+    # list_conn_type_group, list_conn_type, list_conn = [], [], []
+    # for conn_type_group in house_damage.house.conn_type_groups:
+    #     str_ctg = str(conn_type_group).strip('()')
+    #     list_conn_type_group.append(str_ctg)
+    #     for ct in conn_type_group.conn_types:
+    #         str_ct = str(ct).strip('()').split('/')[1]
+    #         list_conn_type.append(str_ct)
+    #         for c in ct.connections_of_type:
+    #             str_c = int(str(c).split('@')[0].strip('('))
+    #             list_conn.append(str(str_c))
 
     result_buckets['conn_types'] = pd.DataFrame(
-        None, columns=list_conn_type, index=range(cfg.wind_speed_num_steps))
+        None, columns=cfg.list_conn_type, index=range(cfg.wind_speed_num_steps))
 
     result_buckets['dmg_map'] = pd.DataFrame(
-        None, columns=list_conn_type, index=range(cfg.wind_speed_num_steps))
+        None, columns=cfg.list_conn_type, index=range(cfg.wind_speed_num_steps))
 
     result_buckets['damage_area'] = pd.DataFrame(
-        None, columns=list_conn_type_group, index=range(cfg.wind_speed_num_steps))
+        None, columns=cfg.list_conn_type_group, index=range(cfg.wind_speed_num_steps))
 
     result_buckets['repair_cost'] = pd.DataFrame(
-        None, columns=list_conn_type_group, index=range(cfg.wind_speed_num_steps))
+        None, columns=cfg.list_conn_type_group, index=range(cfg.wind_speed_num_steps))
 
     result_buckets['result_damaged'] = pd.DataFrame(
-        None, columns=list_conn, index=range(cfg.wind_speed_num_steps))
+        None, columns=cfg.list_conn, index=range(cfg.wind_speed_num_steps))
 
     result_buckets['result_damage_distributed'] = pd.DataFrame(
-        None, columns=list_conn, index=range(cfg.wind_speed_num_steps))
+        None, columns=cfg.list_conn, index=range(cfg.wind_speed_num_steps))
 
-    result_buckets['result_strength'] = pd.DataFrame(
-        None, columns=list_conn, index=range(cfg.wind_speed_num_steps))
-
-    result_buckets['result_deadload'] = pd.DataFrame(
-        None, columns=list_conn, index=range(cfg.wind_speed_num_steps))
+    for item in cfg.list_conn:
+        result_buckets.setdefault('strength', {})[item] = None
+        result_buckets.setdefault('dead_load', {})[item] = None
 
     # sample new house and wind direction (if random)
     if cfg.wind_dir_index == 8:
@@ -420,6 +428,9 @@ def run_simulation_per_house(cfg, db, id_sim):
         if house_damage.cpiAt:
             result_buckets['cpi'] = house_damage.cpiAt
 
+        result_buckets['wind_ort'] = house_damage.wind_orientation
+        result_buckets['profile_no'] = house_damage.profile
+        result_buckets['const_level'] = house_damage.construction_level
         # # interact with GUI listener
         # if self.diCallback:
         #     currentLoop += 1
@@ -434,9 +445,10 @@ def run_simulation_per_house(cfg, db, id_sim):
         result_buckets['dmg_map'].loc[id_speed] = house_damage.dmg_map
 
         for conn_type_group in house_damage.house.conn_type_groups:
-            result_buckets['damage_area'].loc[id_speed][str(conn_type_group)] = \
+            str_ctg = str(conn_type_group).strip('()')
+            result_buckets['damage_area'].loc[id_speed][str_ctg] = \
                 conn_type_group.result_percent_damaged
-            result_buckets['repair_cost'].loc[id_speed][str(conn_type_group)] = \
+            result_buckets['repair_cost'].loc[id_speed][str_ctg] = \
                 conn_type_group.repair_cost
 
             for conn_type in conn_type_group.conn_types:
@@ -449,11 +461,13 @@ def run_simulation_per_house(cfg, db, id_sim):
                     result_buckets['result_damage_distributed'].loc[id_speed][str_c] = \
                         conn.result_damage_distributed
 
-                    result_buckets['result_strength'].loc[id_speed][str_c] = \
-                        conn.result_strength
+    for conn_type_group in house_damage.house.conn_type_groups:
+        for conn_type in conn_type_group.conn_types:
+            for conn in conn_type.connections_of_type:
+                str_c = str(conn).split('@')[0].strip('(').strip()
 
-                    result_buckets['result_deadload'].loc[id_speed][str_c] = \
-                        conn.result_deadload
+                result_buckets['strength'][str_c] = conn.result_strength
+                result_buckets['dead_load'][str_c] = conn.result_deadload
 
     # collect results to be used by the GUI client
     for z in house_damage.house.zones:

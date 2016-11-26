@@ -152,6 +152,30 @@ class DatabaseManager(object):
         result.close()
         return list_
 
+    def get_list_conn_type(self, house_name):
+
+        tb_house = Base.metadata.tables['houses']
+        tb_conn = Base.metadata.tables['connections']
+        tb_conn_type = Base.metadata.tables['connection_types']
+        tb_conn_type_group = Base.metadata.tables['connection_type_groups']
+
+        s0 = select([tb_house.c.id]).where(tb_house.c.house_name == house_name)
+        house_id = str(self.session.query(s0).one()[0])
+
+        s = select([tb_conn.c.connection_name,
+                    tb_conn_type.c.connection_type,
+                    tb_conn_type_group.c.group_name]).where(
+            (tb_conn.c.connection_type_id == tb_conn_type.c.id) &
+            (tb_conn.c.house_id == house_id))
+
+        list_conn, list_conn_type, list_conn_type_group = set(), set(), set()
+        for item in self.session.execute(s):
+            (conn, conn_type, conn_type_group) = item
+            list_conn.add(conn)
+            list_conn_type.add(conn_type)
+            list_conn_type_group.add(conn_type_group)
+        return list_conn, list_conn_type, list_conn_type_group
+
 
 class Terrain(Base):
     __tablename__ = 'terrain_envelopes'

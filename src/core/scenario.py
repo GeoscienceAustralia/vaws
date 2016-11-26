@@ -69,6 +69,10 @@ class Scenario(object):
 
         self._rnd_state = None
 
+        self._list_conn = None
+        self._list_conn_type = None
+        self._list_conn_type_group = None
+
         # self.red_V = 40.0
         # self.blue_V = 80.0
         self._flags = dict()
@@ -165,6 +169,33 @@ class Scenario(object):
     def wind_profile(self, value):
         assert isinstance(value, dict)
         self._wind_profile = value
+
+    @property
+    def list_conn_type_group(self):
+        return self._list_conn_type_group
+
+    @list_conn_type_group.setter
+    def list_conn_type_group(self, value):
+        assert isinstance(value, set)
+        self._list_conn_type_group = value
+
+    @property
+    def list_conn_type(self):
+        return self._list_conn_type
+
+    @list_conn_type.setter
+    def list_conn_type(self, value):
+        assert isinstance(value, set)
+        self._list_conn_type = value
+
+    @property
+    def list_conn(self):
+        return self._list_conn
+
+    @list_conn.setter
+    def list_conn(self, value):
+        assert isinstance(value, set)
+        self._list_conn = value
 
     @property
     def regional_shielding_factor(self):
