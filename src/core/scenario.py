@@ -588,7 +588,11 @@ def loadFromCSV(cfg_file):
                            s.wind_speed_max,
                            s.wind_speed_num_steps)
 
+    s.idx_speeds = range(s.wind_speed_num_steps)
+
     s.db_file = os.path.join(path_cfg_file, conf.get(key, 'db_file'))
+
+
 
     s.parallel = conf.getboolean(key, 'parallel')
     s.house_name = conf.get(key, 'house_name')

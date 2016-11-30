@@ -6,7 +6,6 @@ import os
 import numpy as np
 import filecmp
 import pandas as pd
-import matplotlib.pyplot as plt
 
 from core.simulation import HouseDamage, simulate_wind_damage_to_house
 import core.database as database
@@ -203,14 +202,162 @@ def consistency_wind_debris(path_reference, path_output):
     check_file_consistency(file1, file2)
 
 
+class TestHouseDamage(unittest.TestCase):
+
+    @classmethod
+    def setUpClass(cls):
+
+        path = '/'.join(__file__.split('/')[:-1])
+        cls.path_reference = os.path.join(path, 'test')
+        path_output = os.path.join(path, 'output')
+        #
+        # for the_file in os.listdir(cls.path_output):
+        #     file_path = os.path.join(cls.path_output, the_file)
+        #     try:
+        #         if os.path.isfile(file_path):
+        #             os.unlink(file_path)
+        #     except Exception as e:
+        #         print(e)
+
+        # model_db = os.path.join(path_, './core/output/model.db')
+        # model_db = os.path.join(path_, '../data/model.db')
+
+        # cls.model_db = database.configure(os.path.join(path, 'model.db'))
+
+        # cfg = scenario.loadFromCSV(os.path.join(path, 'scenarios/carl1.cfg'))
+        cfg = scenario.loadFromCSV(os.path.join(path,
+                                                'scenarios/carl1_dmg_dist.cfg'))
+
+        cfg.flags['random_seed'] = True
+        cfg.parallel = False
+        # cfg.flags['dmg_distribute'] = True
+
+        # optionally seed random numbers
+        if cfg.flags['random_seed']:
+            print('random seed is set')
+            np.random.seed(42)
+            # zone.seed_scipy(42)
+            # engine.seed(42)
+
+        option = Options()
+        option.output_folder = path_output
+
+        cls.model_db = database.DatabaseManager(cfg.db_file)
+        cfg.list_conn, cfg.list_conn_type, cfg.list_conn_type_group = \
+            cls.model_db.get_list_conn_type(cfg.house_name)
+
+        cls.cfg = cfg
+
+        cls.house_damage = HouseDamage(cls.cfg, cls.model_db)
+
+        # print('{}'.format(cfg.file_damage))
+        # cls.mySim = HouseDamage(cfg, option)
+        #_, house_results = cls.mySim.simulator_mainloop()
+        # key = cls.mySim.result_buckets.keys()[0]
+        # print('{}:{}'.format(key, cls.mySim.result_buckets[key]))
+
+    @classmethod
+    def tearDownClass(cls):
+        cls.model_db.close()
+
+    def test_calculate_qz(self):
+
+        self.assertEqual(self.house_damage.house.height, 4.5)
+        self.assertEqual(self.house_damage.terrain_category, '2')
+
+        # self.house_damage.set_wind_profile()
+        # self.assertEqual(self.house_damage.profile, 5)
+        # self.assertAlmostEqual(self.house_damage.mzcat, 0.9425, places=4)
+        #
+        # # regional_shielding_factor > 0.85
+        # self.house_damage.regional_shielding_factor = 1.0
+        # self.house_damage.calculate_qz(10.0)
+        # self.assertAlmostEqual(self.house_damage.qz, 0.05472, places=4)
+        #
+        # # regional_shielding_factor < 0.85
+        # self.house_damage.regional_shielding_factor = 0.5
+        # self.house_damage.calculate_qz(10.0)
+        # self.assertAlmostEqual(self.house_damage.qz, 0.21888, places=4)
+
+    def test_calculate_damage_ratio(self):
+
+        ref_dat = pd.read_csv(os.path.join(self.path_reference,
+                                           'repair_cost_by_conn_type_group.csv'))
+        wind_speed = 0.0
+
+        for _, item in ref_dat.iterrows():
+
+            dic_ = {'(piersgroup)': 0.0,
+                    '(debris)': 0.0,
+                    '(sheeting)': item['dmg_ratio_sheeting'],
+                    '(batten)': item['dmg_ratio_batten'],
+                    '(rafter)': item['dmg_ratio_rafter'],
+                    '(wallcladding)': 0.0,
+                    '(wallracking)': 0.0,
+                    '(wallcollapse)': 0.0}
+
+            repair_dic_ = {'(piersgroup)': 0.0,
+                           '(debris)': 0.0,
+                           '(sheeting)': item['repair_cost_sheeting'],
+                           '(batten)': item['repair_cost_batten'],
+                           '(rafter)': item['repair_cost_rafter'],
+                           '(wallcladding)': 0.0,
+                           '(wallracking)': 0.0,
+                           '(wallcollapse)': 0.0}
+
+            # assign damage area
+            for conn_type_group in self.house_damage.house.conn_type_groups:
+                conn_type_group.result_percent_damaged = dic_[str(conn_type_group)]
+
+            self.house_damage.calculate_damage_ratio(wind_speed)
+
+            for conn_type_group in self.house_damage.house.conn_type_groups:
+
+                try:
+                    self.assertAlmostEqual(conn_type_group.repair_cost,
+                                           repair_dic_[str(conn_type_group)])
+                except AssertionError:
+                    print('{}:{}:{}'.format(
+                        conn_type_group,
+                        conn_type_group.repair_cost,
+                        repair_dic_[str(conn_type_group)]))
+
+    # def test_pdfs(self):
+    #     for ct in self.house_damage.house.conn_types:
+    #         if True or ct.connection_type == 'piers':
+    #             x = []
+    #             for i in xrange(50000):
+    #                 # print('ctype mean({:.3f}), stddev({:.3f})'.format(
+    #                 #    ct.strength_mean, ct.strength_std_dev))
+    #                 rv = np.random.lognormal(ct.strength_mean,
+    #                                          ct.strength_std_dev)
+    #                 x.append(rv)
+    #             n, bins, patches = plt.hist(x, 50, normed=1, facecolor='green',
+    #                                         alpha=0.75)
+    #             plt.title(ct.connection_type)
+    #             plt.grid(True)
+    #             plt.savefig(os.path.join(self.path_reference,
+    #                                      'plot_{}.png'.format(ct.connection_type)))
+    #             plt.close()
+
+    def test_construction_levels(self):
+        self.cfg.setConstructionLevel('low', 0.33, 0.75, 0.78)
+        counts = {'low': 0, 'medium': 0, 'high': 0}
+        for i in range(1000):
+            level, mf, cf = self.house_damage.sample_construction_level()
+            if level == 'low':
+                self.assertAlmostEquals(mf, 0.75)
+                self.assertAlmostEquals(cf, 0.78)
+            counts[level] += 1
+
+
 class TestDistributeMultiSwitchesOff(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
 
         path = '/'.join(__file__.split('/')[:-1])
-        # cls.path_reference = os.path.join(path, 'test/output')
-        cls.path_reference = os.path.join(path, 'test/output_no_dist_corrected')
+        cls.path_reference = os.path.join(path, 'test/output_test1_dmg_dist_off')
         cls.path_output = os.path.join(path, 'output')
 
         for the_file in os.listdir(cls.path_output):
@@ -222,7 +369,7 @@ class TestDistributeMultiSwitchesOff(unittest.TestCase):
                 print(e)
 
         cfg = scenario.loadFromCSV(os.path.join(path,
-                                                'scenarios/carl1_dmg_dist.cfg'))
+                                                'scenarios/test.cfg'))
 
         # setting
         cfg.flags['random_seed'] = True
@@ -260,14 +407,14 @@ class TestDistributeMultiSwitchesOff(unittest.TestCase):
     def test_consistency_wind_debris(self):
         consistency_wind_debris(self.path_reference, self.path_output)
 
-"""
+
 class TestDistributeMultiSwitchesOn(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
 
         path = '/'.join(__file__.split('/')[:-1])
-        cls.path_reference = os.path.join(path, 'test/output')
+        cls.path_reference = os.path.join(path, 'test/output_test1_dmg_dist_on')
         # cls.path_reference = os.path.join(path, 'test/output_no_dist')
         cls.path_output = os.path.join(path, 'output')
 
@@ -280,16 +427,18 @@ class TestDistributeMultiSwitchesOn(unittest.TestCase):
                 print(e)
 
         cfg = scenario.loadFromCSV(os.path.join(path,
-                                                'scenarios/carl1_dmg_dist.cfg'))
+                                                'scenarios/test.cfg'))
 
         cfg.flags['random_seed'] = True
         cfg.parallel = False
-        # cfg.flags['dmg_distribute'] = False
-        components_list = ['batten', 'rafter', 'sheeting', 'wallcladding',
+
+        cfg.flags['dmg_distribute_sheeting'] = True
+        components_list = ['rafter', 'batten', 'wallcladding',
                            'wallcollapse', 'wallracking']
 
         for component in components_list:
-            cfg.flags['dmg_distribute_{}'.format(component)] = True
+            cfg.flags['dmg_distribute_{}'.format(component)] = False
+
 
         option = Options()
         option.output_folder = cls.path_output
@@ -316,7 +465,6 @@ class TestDistributeMultiSwitchesOn(unittest.TestCase):
 
     def test_consistency_wind_debris(self):
         consistency_wind_debris(self.path_reference, self.path_output)
-"""
 
 if __name__ == '__main__':
     unittest.main()

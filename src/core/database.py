@@ -8,8 +8,8 @@ from sqlalchemy.orm import sessionmaker
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.interfaces import PoolListener
 
-import sys
-import os
+# import sys
+# import os
 
 Base = declarative_base()
 
