@@ -8,8 +8,7 @@ import filecmp
 import pandas as pd
 import matplotlib.pyplot as plt
 
-from core.simulation import HouseDamage, simulate_wind_damage_to_house
-import core.database as database
+from core.simulation import simulate_wind_damage_to_house
 from core.scenario import Scenario
 
 

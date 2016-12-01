@@ -158,7 +158,6 @@ def consistency_houses_damaged(path_reference, path_output):
                         file1, file2, col))
 
 
-
 def consistency_wateringress(path_reference, path_output):
     filename = 'wateringress.csv'
     file1 = os.path.join(path_reference, filename)

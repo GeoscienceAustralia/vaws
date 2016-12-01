@@ -384,6 +384,12 @@ def run_simulation_per_house(cfg, db, id_sim):
                     result_buckets['result_damage_distributed'].loc[id_speed][str_c] = \
                         conn.result_damage_distributed
 
+                    # try:
+                    #     result_buckets['result_effective_area'].loc[id_speed][str_c] = \
+                    #     conn.result_effective_area
+                    # except AttributeError:
+                    #     pass
+
     for conn_type_group in house_damage.house.conn_type_groups:
         for conn_type in conn_type_group.conn_types:
             for conn in conn_type.connections_of_type:
@@ -409,8 +415,10 @@ def run_simulation_per_house(cfg, db, id_sim):
                                           c.ctype.group.group_name,
                                           c.id])
 
-    house_damage.plot_connection_damage(vRed=cfg.red_v, vBlue=cfg.blue_v,
-                                        id_sim=id_sim)
+    if cfg.flags['plot_connection_damage']:
+        house_damage.plot_connection_damage(vRed=cfg.red_v,
+                                            vBlue=cfg.blue_v,
+                                            id_sim=id_sim)
 
     return house_damage, result_buckets
 
