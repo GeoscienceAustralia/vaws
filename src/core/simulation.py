@@ -14,7 +14,7 @@ import terrain
 import house
 import connection
 import zone
-import scenario
+from scenario import Scenario
 import curve
 import curve_log
 import logger
@@ -81,50 +81,11 @@ def fit_fragility_curves(cfg, df_dmg_idx):
     return frag_counted
 
 
-def simulate_wind_damage_to_house(cfg, options):
+def simulate_wind_damage_to_house(cfg):
 
     # setup file based reporting (files must exist and be runnable)
-    if not os.path.exists(options.output_folder):
-        os.makedirs(options.output_folder)
-
-    cfg.output_folder = options.output_folder
-    # wind speed at pressurised failure
-    cfg.file_house_cpi = os.path.join(options.output_folder, 'house_cpi.csv')
-
-    # failure frequency by connection type with wind speed ?
-    cfg.file_dmg_freq_by_conn_type = os.path.join(options.output_folder,
-                                                  'dmg_freq_by_conn_type.csv')
-                                                 # 'houses_damaged_at_v.csv')
-
-    cfg.file_dmg_map_by_conn_type = os.path.join(options.output_folder,
-                                                 'dmg_map_by_conn_type.csv')
-                                    # 'houses_damage_map.csv')
-    cfg.file_frag = os.path.join(options.output_folder, 'fragilities.csv')
-    cfg.file_water = os.path.join(options.output_folder, 'wateringress.csv')
-    cfg.file_dmg_pct_by_conn_type = os.path.join(options.output_folder,
-                                                 'dmg_pct_by_conn_type.csv')
-                                                # 'house_damage.csv')
-
-    cfg.file_wind_debris = os.path.join(options.output_folder, 'wind_debris.csv')
-    cfg.file_dmg_idx = os.path.join(options.output_folder, 'house_dmg_idx.csv')
-
-    cfg.file_dmg_area_by_conn_grp = os.path.join(options.output_folder,
-                                                 'dmg_area_by_conn_grp.csv')
-    cfg.file_repair_cost_by_conn_grp = os.path.join(options.output_folder,
-                                                    'repair_cost_by_conn_grp.csv')
-    cfg.file_dmg_by_conn = os.path.join(options.output_folder,
-                                        'dmg_by_conn.csv')
-
-    cfg.file_strength_by_conn = os.path.join(options.output_folder,
-                                             'strength_by_conn.csv')
-
-    cfg.file_deadload_by_conn = os.path.join(options.output_folder,
-                                             'deadload_by_conn.csv')
-
-    cfg.file_dmg_dist_by_conn = os.path.join(options.output_folder,
-                                             'dmg_dist_by_conn.csv')
-    cfg.file_rnd_parameters = os.path.join(options.output_folder,
-                                            'random_parameters.csv')
+    if not os.path.exists(cfg.output_path):
+        os.makedirs(cfg.output_path)
 
     # optionally seed random numbers
     if cfg.flags['random_seed']:
@@ -983,7 +944,7 @@ class HouseDamage(object):
         for ctg_name in selected_ctg:
             vgrid = vBlue * np.ones((self.house.roof_rows,
                                      self.house.roof_columns)) + 10.0
-            file_name = os.path.join(self.cfg.output_folder,
+            file_name = os.path.join(self.cfg.output_path,
                                      '{}_id{}'.format(ctg_name, id_sim))
             for conn in connByTypeGroupMap[ctg_name]:
                 gridCol, gridRow = \
@@ -1058,7 +1019,7 @@ class HouseDamage(object):
         #             wall_minor_cols, wall_minor_rows,
         #             vRed, vBlue)
 
-    def plot_fragility(self, output_folder):
+    def plot_fragility(self, output_path):
         for frag_ind, (state, value) in \
                 self.cfg.fragility_thresholds.iterrows():
             output.plot_fragility_curve(self.cfg.speeds,
@@ -1072,7 +1033,7 @@ class HouseDamage(object):
 
         output.plot_fragility_show(self.cfg.no_sims,
                                    self.cfg.wind_speed_min,
-                                   self.cfg.wind_speed_max, output_folder)
+                                   self.cfg.wind_speed_max, output_path)
 
     def fit_vuln_curve(self):
         self.wind_speeds = np.zeros(len(self.cfg.speeds))
@@ -1090,7 +1051,7 @@ class HouseDamage(object):
             self.A_final, self.ss = curve.fit_curve(self.wind_speeds,
                                                     self.di_means)
 
-    def plot_vulnerability(self, output_folder, label="Fitted Curve"):
+    def plot_vulnerability(self, output_path, label="Fitted Curve"):
         # fit current observations
         self.fit_vuln_curve()
 
@@ -1119,20 +1080,20 @@ class HouseDamage(object):
             self.prevCurvePlot.plot_vuln(True)
         self.prevCurvePlot = cp
 
-    def show_results(self, output_folder=None, vRed=40, vBlue=80):
+    def show_results(self, output_path=None, vRed=40, vBlue=80):
         if self.mplDict:
             self.mplDict['fragility'].axes.cla()
             self.mplDict['fragility'].axes.figure.canvas.draw()
             self.mplDict['vulnerability'].axes.cla()
             self.mplDict['vulnerability'].axes.figure.canvas.draw()
         if self.cfg.flags['dmg_plot_fragility']:
-            self.plot_fragility(output_folder)
+            self.plot_fragility(output_path)
         if self.cfg.flags['dmg_plot_vul']:
-            self.plot_vulnerability(output_folder)
+            self.plot_vulnerability(output_path)
             output.plot_wind_event_show(self.cfg.no_sims,
                                         self.cfg.wind_speed_min,
                                         self.cfg.wind_speed_max,
-                                        output_folder)
+                                        output_path)
         self.plot_connection_damage(vRed, vBlue)
 
     def clear_connection_damage(self):
@@ -1253,11 +1214,11 @@ def main():
         import dbimport
         dbimport.import_model(options.data_folder, db)
         db.close()
-
     else:
         if options.scenario_filename:
-            conf = scenario.loadFromCSV(options.scenario_filename)
-            _ = simulate_wind_damage_to_house(conf, options)
+            conf = Scenario(cfg_file=options.scenario_filename,
+                            output_path=options.output_folder)
+            _ = simulate_wind_damage_to_house(conf)
         else:
             print '\nERROR: Must provide as scenario file to run simulator...\n'
             parser.print_help()

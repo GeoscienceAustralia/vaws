@@ -10,13 +10,7 @@ import matplotlib.pyplot as plt
 
 from core.simulation import HouseDamage, simulate_wind_damage_to_house
 import core.database as database
-import core.scenario as scenario
-
-
-class Options(object):
-
-    def __init__(self):
-        self.output_folder = None
+from core.scenario import Scenario
 
 
 def check_file_consistency(file1, file2, **kwargs):
@@ -221,8 +215,9 @@ class TestDistributeMultiSwitchesOff(unittest.TestCase):
             except Exception as e:
                 print(e)
 
-        cfg = scenario.loadFromCSV(os.path.join(path,
-                                                'scenarios/carl1_dmg_dist.cfg'))
+        cfg = Scenario(
+            cfg_file=os.path.join(path, 'scenarios/carl1_dmg_dist.cfg'),
+            output_path=cls.path_output)
 
         # setting
         cfg.flags['random_seed'] = True
@@ -234,10 +229,7 @@ class TestDistributeMultiSwitchesOff(unittest.TestCase):
         for component in components_list:
             cfg.flags['dmg_distribute_{}'.format(component)] = False
 
-        option = Options()
-        option.output_folder = cls.path_output
-
-        _ = simulate_wind_damage_to_house(cfg, option)
+        _ = simulate_wind_damage_to_house(cfg)
 
     def test_consistency_house_damage_idx(self):
         consistency_house_damage_idx(self.path_reference, self.path_output)

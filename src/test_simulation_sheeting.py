@@ -9,13 +9,7 @@ import pandas as pd
 
 from core.simulation import HouseDamage, simulate_wind_damage_to_house
 import core.database as database
-import core.scenario as scenario
-
-
-class Options(object):
-
-    def __init__(self):
-        self.output_folder = None
+from core.scenario import Scenario
 
 
 def check_file_consistency(file1, file2, **kwargs):
@@ -209,7 +203,7 @@ class TestHouseDamage(unittest.TestCase):
 
         path = '/'.join(__file__.split('/')[:-1])
         cls.path_reference = os.path.join(path, 'test')
-        path_output = os.path.join(path, 'output')
+        # path_output = os.path.join(path, 'output')
         #
         # for the_file in os.listdir(cls.path_output):
         #     file_path = os.path.join(cls.path_output, the_file)
@@ -225,8 +219,9 @@ class TestHouseDamage(unittest.TestCase):
         # cls.model_db = database.configure(os.path.join(path, 'model.db'))
 
         # cfg = scenario.loadFromCSV(os.path.join(path, 'scenarios/carl1.cfg'))
-        cfg = scenario.loadFromCSV(os.path.join(path,
-                                                'scenarios/carl1_dmg_dist.cfg'))
+        cfg = Scenario(
+            cfg_file=os.path.join(path, 'scenarios/carl1_dmg_dist.cfg'),
+            output_path=os.path.join(path, 'output'))
 
         cfg.flags['random_seed'] = True
         cfg.parallel = False
@@ -238,9 +233,6 @@ class TestHouseDamage(unittest.TestCase):
             np.random.seed(42)
             # zone.seed_scipy(42)
             # engine.seed(42)
-
-        option = Options()
-        option.output_folder = path_output
 
         cls.model_db = database.DatabaseManager(cfg.db_file)
         cfg.list_conn, cfg.list_conn_type, cfg.list_conn_type_group = \
@@ -368,8 +360,8 @@ class TestDistributeMultiSwitchesOff(unittest.TestCase):
             except Exception as e:
                 print(e)
 
-        cfg = scenario.loadFromCSV(os.path.join(path,
-                                                'scenarios/test.cfg'))
+        cfg = Scenario(cfg_file=os.path.join(path,'scenarios/test.cfg'),
+                       output_path=cls.path_output)
 
         # setting
         cfg.flags['random_seed'] = True
@@ -381,10 +373,7 @@ class TestDistributeMultiSwitchesOff(unittest.TestCase):
         for component in components_list:
             cfg.flags['dmg_distribute_{}'.format(component)] = False
 
-        option = Options()
-        option.output_folder = cls.path_output
-
-        _ = simulate_wind_damage_to_house(cfg, option)
+        _ = simulate_wind_damage_to_house(cfg)
 
     def test_consistency_house_damage_idx(self):
         consistency_house_damage_idx(self.path_reference, self.path_output)
@@ -426,8 +415,8 @@ class TestDistributeMultiSwitchesOn(unittest.TestCase):
             except Exception as e:
                 print(e)
 
-        cfg = scenario.loadFromCSV(os.path.join(path,
-                                                'scenarios/test.cfg'))
+        cfg = Scenario(cfg_file=os.path.join(path,'scenarios/test.cfg'),
+                       output_path=cls.path_output)
 
         cfg.flags['random_seed'] = True
         cfg.parallel = False
@@ -439,11 +428,7 @@ class TestDistributeMultiSwitchesOn(unittest.TestCase):
         for component in components_list:
             cfg.flags['dmg_distribute_{}'.format(component)] = False
 
-
-        option = Options()
-        option.output_folder = cls.path_output
-
-        _ = simulate_wind_damage_to_house(cfg, option)
+        _ = simulate_wind_damage_to_house(cfg)
 
     def test_consistency_house_damage_idx(self):
         consistency_house_damage_idx(self.path_reference, self.path_output)
