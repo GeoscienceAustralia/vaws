@@ -160,18 +160,17 @@ def sample_zone_pressures(zones, wind_dir_index, cpe_V, cpe_k, cpe_struct_V):
 
 
 def calc_zone_pressures(zones, wind_dir_index, cpi, qz, Ms, building_spacing,
-                        diff_shielding):
+                        flag_diff_shielding):
     """
     Determine wind pressure loads on each zone (to be distributed onto
     connections)
     """
     for z in zones:
         # optionally apply differential shielding
-        diff_shielding = 1.0
 
-        if building_spacing > 0 and diff_shielding:
+        if building_spacing > 0 and flag_diff_shielding:
             front_facing = z.getIsLeadingRoofEdgeForDir(wind_dir_index)
-            Ms2 = math.pow(Ms, 2)
+            Ms2 = Ms**2.0
             dsn = 1.0
             dsd = 1.0
             if building_spacing == 40 and Ms >= 1.0 and front_facing == 0:
@@ -179,12 +178,14 @@ def calc_zone_pressures(zones, wind_dir_index, cpi, qz, Ms, building_spacing,
             elif building_spacing == 20 and front_facing == 1:
                 dsd = Ms2
                 if Ms <= 0.85:
-                    dsn = math.pow(0.7, 2)
+                    dsn = 0.7**2.0
                 else:
-                    dsn = math.pow(0.8, 2)
+                    dsn = 0.8**2.0
             diff_shielding = (dsn / dsd)
+        else:
+            diff_shielding = 1.0
 
-            # calculate zone pressure
+        # calculate zone pressure
         z.result_pz = qz * (z.sampled_cpe - z.cpi_alpha * cpi) * diff_shielding
 
         # calculate zone structure pressure

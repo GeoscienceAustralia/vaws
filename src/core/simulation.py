@@ -83,10 +83,6 @@ def fit_fragility_curves(cfg, df_dmg_idx):
 
 def simulate_wind_damage_to_house(cfg):
 
-    # setup file based reporting (files must exist and be runnable)
-    if not os.path.exists(cfg.output_path):
-        os.makedirs(cfg.output_path)
-
     # optionally seed random numbers
     if cfg.flags['random_seed']:
         print('random seed is set')

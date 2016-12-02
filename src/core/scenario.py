@@ -85,6 +85,8 @@ class Scenario(object):
             msg = 'Error: file {} not found'.format(cfg_file)
             sys.exit(msg)
         else:
+            if not os.path.exists(self.output_path):
+                os.makedirs(self.output_path)
             self.read_config()
 
     def __eq__(self, other):
