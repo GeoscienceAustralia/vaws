@@ -176,6 +176,22 @@ class DatabaseManager(object):
             list_conn_type_group.add(conn_type_group)
         return list_conn, list_conn_type, list_conn_type_group
 
+    def get_list_zone(self, house_name):
+        tb_house = Base.metadata.tables['houses']
+        tb_zone = Base.metadata.tables['zones']
+
+        s0 = select([tb_house.c.id]).where(tb_house.c.house_name == house_name)
+        house_id = str(self.session.query(s0).one()[0])
+
+        s = select([tb_zone.c.zone_name]).where(tb_zone.c.house_id == house_id)
+
+        list_zone = set()
+        for item in self.session.execute(s):
+            (zone,) = item
+            list_zone.add(zone)
+
+        return list_zone
+
 
 class Terrain(Base):
     __tablename__ = 'terrain_envelopes'

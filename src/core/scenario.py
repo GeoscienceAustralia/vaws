@@ -68,6 +68,7 @@ class Scenario(object):
         self.file_deadload_by_conn = None
         self.file_dmg_dist_by_conn = None
         self.file_rnd_parameters = None
+        self.file_eff_area_by_zone = None
 
         self.wind_profile = None
 
@@ -76,6 +77,7 @@ class Scenario(object):
         self._list_conn = None
         self._list_conn_type = None
         self._list_conn_type_group = None
+        self._list_zone = None
 
         self.red_v = 54.0
         self.blue_v = 95.0
@@ -87,6 +89,7 @@ class Scenario(object):
         else:
             if not os.path.exists(self.output_path):
                 os.makedirs(self.output_path)
+            print 'output directory: {}'.format(self.output_path)
             self.read_config()
 
     def __eq__(self, other):
@@ -271,6 +274,8 @@ class Scenario(object):
                                                    'dmg_dist_by_conn.csv')
             self.file_rnd_parameters = os.path.join(self.output_path,
                                                  'random_parameters.csv')
+            self.file_eff_area_by_zone = os.path.join(self.output_path,
+                                                      'effective_area_by_zone.csv')
 
         else:
             print 'output path is not assigned'
@@ -301,6 +306,14 @@ class Scenario(object):
     def list_conn(self, value):
         assert isinstance(value, set)
         self._list_conn = value
+
+    @property
+    def list_zone(self):
+        return self._list_zone
+
+    @list_zone.setter
+    def list_zone(self, value):
+        self._list_zone = value
 
     @property
     def region_name(self):

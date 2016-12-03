@@ -104,7 +104,7 @@ def simulate_wind_damage_to_house(cfg):
         db = database.DatabaseManager(cfg.db_file)
         cfg.list_conn, cfg.list_conn_type, cfg.list_conn_type_group = \
             db.get_list_conn_type(cfg.house_name)
-
+        cfg.list_zone = db.get_list_zone(cfg.house_name)
         list_results = []
         for id_sim in range(cfg.no_sims):
             house_damage_, results = run_simulation_per_house(cfg, db, id_sim)
@@ -245,6 +245,9 @@ def simulate_wind_damage_to_house(cfg):
     pd.DataFrame.from_dict([x['strength'] for x in list_results]).to_csv(
         cfg.file_strength_by_conn, index=False)
 
+    pd.DataFrame([x['result_effective_area'] for x in list_results]).to_csv(
+        cfg.file_eff_area_by_zone, index=False)
+
     # df_strength_by_conn = pd.concat(
     #     [x['result_strength'] for x in list_results]).reset_index(drop=True)
     # pd.concat([df_dmg_conn_types, df_strength_by_conn], axis=1).to_csv(
@@ -295,6 +298,10 @@ def run_simulation_per_house(cfg, db, id_sim):
     for item in cfg.list_conn:
         result_buckets.setdefault('strength', {})[item] = None
         result_buckets.setdefault('dead_load', {})[item] = None
+
+    for item in ['result_effective_area']:
+        result_buckets[item] = pd.DataFrame(
+            None, columns=cfg.list_zone, index=cfg.idx_speeds)
 
     house_damage = HouseDamage(cfg, db)
 
@@ -364,52 +371,45 @@ def run_simulation_per_house(cfg, db, id_sim):
         result_buckets['dmg_map'].loc[id_speed] = house_damage.dmg_map
 
         for conn_type_group in house_damage.house.conn_type_groups:
-            str_ctg = str(conn_type_group).strip('()')
-            result_buckets['damage_area'].loc[id_speed][str_ctg] = \
+            str_ = conn_type_group.group_name
+            result_buckets['damage_area'].loc[id_speed][str_] = \
                 conn_type_group.result_percent_damaged
-            result_buckets['repair_cost'].loc[id_speed][str_ctg] = \
+            result_buckets['repair_cost'].loc[id_speed][str_] = \
                 conn_type_group.repair_cost
 
-            for conn_type in conn_type_group.conn_types:
-                for conn in conn_type.connections_of_type:
-                    str_c = str(conn).split('@')[0].strip('(').strip()
+        for conn in house_damage.house.connections:
+            str_ = conn.connection_name
+            result_buckets['result_damaged'].loc[id_speed][str_] = \
+                conn.result_damaged
+            result_buckets['result_damage_distributed'].loc[id_speed][str_] = \
+                conn.result_damage_distributed
 
-                    result_buckets['result_damaged'].loc[id_speed][str_c] = \
-                        conn.result_damaged
+        for zone in house_damage.house.zones:
+            str_ = zone.zone_name
+            result_buckets['result_effective_area'].loc[id_speed][str_] = \
+                zone.result_effective_area
 
-                    result_buckets['result_damage_distributed'].loc[id_speed][str_c] = \
-                        conn.result_damage_distributed
+    for conn in house_damage.house.connections:
+        str_ = conn.connection_name
+        result_buckets['strength'][str_] = conn.result_strength
+        result_buckets['dead_load'][str_] = conn.result_deadload
 
-                    # try:
-                    #     result_buckets['result_effective_area'].loc[id_speed][str_c] = \
-                    #     conn.result_effective_area
-                    # except AttributeError:
-                    #     pass
-
-    for conn_type_group in house_damage.house.conn_type_groups:
-        for conn_type in conn_type_group.conn_types:
-            for conn in conn_type.connections_of_type:
-                str_c = str(conn).split('@')[0].strip('(').strip()
-
-                result_buckets['strength'][str_c] = conn.result_strength
-                result_buckets['dead_load'][str_c] = conn.result_deadload
-
-    # collect results to be used by the GUI client
-    for z in house_damage.house.zones:
-        house_damage.zone_results[z.zone_name] = [z.zone_name,
-                                                  z.sampled_cpe,
-                                                  z.sampled_cpe_struct,
-                                                  z.sampled_cpe_eaves]
-
-    for c in house_damage.house.connections:
-        house_damage.conn_results.append([c.ctype.connection_type,
-                                          c.location_zone.zone_name,
-                                          c.result_failure_v_raw,
-                                          c.result_strength,
-                                          c.result_deadload,
-                                          c.result_damaged_report,
-                                          c.ctype.group.group_name,
-                                          c.id])
+    # # collect results to be used by the GUI client
+    # for z in house_damage.house.zones:
+    #     house_damage.zone_results[z.zone_name] = [z.zone_name,
+    #                                               z.sampled_cpe,
+    #                                               z.sampled_cpe_struct,
+    #                                               z.sampled_cpe_eaves]
+    #
+    # for c in house_damage.house.connections:
+    #     house_damage.conn_results.append([c.ctype.connection_type,
+    #                                       c.location_zone.zone_name,
+    #                                       c.result_failure_v_raw,
+    #                                       c.result_strength,
+    #                                       c.result_deadload,
+    #                                       c.result_damaged_report,
+    #                                       c.ctype.group.group_name,
+    #                                       c.id])
 
     if cfg.flags['plot_connection_damage']:
         house_damage.plot_connection_damage(vRed=cfg.red_v,
@@ -561,6 +561,8 @@ class HouseDamage(object):
         # only check if debris is ON
         self.check_pressurized_failure(wind_speed)
 
+        # compute load
+        # load = qz * (Cpe + Cpi) * A + Dead
         self.calculate_qz(wind_speed)
 
         zone.calc_zone_pressures(self.house.zones,
@@ -618,6 +620,15 @@ class HouseDamage(object):
                                             self.house.height)
 
     def calculate_qz(self, wind_speed):
+        '''
+        calculate qz, velocity pressure given wind velocity
+        qz = 0.6*10-3*(Mz,cat*V)**2
+        Args:
+            wind_speed: wind velocity (m/s)
+
+        Returns:
+
+        '''
         if self.regional_shielding_factor <= 0.85:
             thresholds = np.array([63, 63+15])
             ms_dic = {0: 1.0, 1: 0.85, 2: 0.95}
@@ -1203,9 +1214,8 @@ def main():
         options.output_folder = os.path.abspath(os.path.join(path_,
                                                              './output'))
     else:
-        options.output_folder = os.path.abspath(os.path.join(
-            os.getcwd(), options.output_folder))
-    print 'output directory: %s' % options.output_folder
+        options.output_folder = os.path.abspath(
+            os.path.join(os.getcwd(), options.output_folder))
 
     if options.verbose:
         logger.configure(logger.LOGGING_CONSOLE)
