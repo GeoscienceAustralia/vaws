@@ -16,7 +16,7 @@ import database
 def import_house(path, db):
     for path_, _, list_files in os.walk(path):
 
-        if 'house_data.csv' in list_files:
+        if 'house_data.csv' in list_files and 'ignore' not in path_:
             house.importDataFromPath(path_, db)
 
 

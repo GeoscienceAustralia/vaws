@@ -14,19 +14,33 @@ use_struct_pz_for = ['rafter', 'piersgroup', 'wallracking']
 class Connection(database.Base):
     __tablename__ = 'connections'
     id = Column(Integer, primary_key=True)
+
     connection_name = Column(String)
     edge = Column(Integer)
+
     zone_id = Column(Integer, ForeignKey('zones.id'))
     house_id = Column(Integer, ForeignKey('houses.id'))
     connection_type_id = Column(Integer, ForeignKey('connection_types.id'))
+
     ctype = relation("ConnectionType", uselist=False,
                      backref=backref('connections_of_type'))
     location_zone = relation("Zone", uselist=False,
                              backref=backref('located_conns'))
     zones = relation(influence.Influence)
 
+    def __init__(self, conn_name, edge):
+        self.connection_name = conn_name
+        self.edge = edge
+
+        self.result_strength = 0.0
+        self.result_deadload = 0.0
+        self.result_failure_v_raw = 0.0
+        self.result_damaged = False
+        self.result_damaged_report = {}
+        self.result_damage_distributed = False
+
     def __str__(self):
-        return '(%s @ %s)' % (self.connection_name, self.location_zone)
+        return '({} @ {})'.format(self.connection_name, self.location_zone)
 
     def reset_results(self):
         self.result_strength = 0.0
@@ -66,17 +80,49 @@ class Connection(database.Base):
 
 
 def assign_connection_strengths(house_conns, mean_factor, cov_factor):
+    """
+    FIXME: it may put into connection class not outside.
+    Args:
+        house_conns:
+        mean_factor:
+        cov_factor:
+
+    Returns:
+
+    """
     for conn in house_conns:
         conn.result_strength = conn.ctype.sample_strength(mean_factor,
                                                           cov_factor)
 
 
 def assign_connection_deadloads(house_conns):
+    """
+    FIXME: it may put into connection class not outside.
+
+    Args:
+        house_conns:
+
+    Returns:
+
+    """
     for conn in house_conns:
         conn.result_deadload = conn.ctype.sample_deadload()
 
 
 def calc_connection_loads(V, ctg, dmg_map, inflZonesByConn, connByTypeMap):
+    """
+    FIXME: it may be inside of the class rather than outside.
+    Args:
+        V: wind speed
+        ctg: connection type group
+        dmg_map: damage map
+        inflZonesByConn: influence factor by connection
+        connByTypeMap:
+
+    Returns:
+        damage_conn_type:
+
+    """
     if not ctg.enabled or len(ctg.conn_types) == 0:
         return dict()
 

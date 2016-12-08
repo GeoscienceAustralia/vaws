@@ -90,16 +90,16 @@ class Zone(database.Base):
     house_id = Column(Integer, ForeignKey('houses.id'))
 
     def getCpeMeanForDir(self, dir_index):
-        return getattr(self, 'coeff_%s' % dirs[dir_index])
+        return getattr(self, 'coeff_{}'.format(dirs[dir_index]))
 
     def getCpeStructMeanForDir(self, dir_index):
-        return getattr(self, 'struct_coeff_%s' % dirs[dir_index])
+        return getattr(self, 'struct_coeff_{}'.format(dirs[dir_index]))
 
     def getCpeEavesMeanForDir(self, dir_index):
-        return getattr(self, 'eaves_coeff_%s' % dirs[dir_index])
+        return getattr(self, 'eaves_coeff_{}'.format(dirs[dir_index]))
 
     def getIsLeadingRoofEdgeForDir(self, dir_index):
-        return getattr(self, 'leading_roof_%s' % dirs[dir_index])
+        return getattr(self, 'leading_roof_{}'.format(dirs[dir_index]))
 
     def getIsWallZone(self):
         if len(self.zone_name) > 3 and self.zone_name[0] == 'W':
@@ -107,8 +107,8 @@ class Zone(database.Base):
         return False
 
     def __repr__(self):
-        return "('%s', '%f', '%f')" % (
-        self.zone_name, self.zone_area, self.cpi_alpha)
+        return "('{}', '{:.3f}', '{:.3f}')".format(
+            self.zone_name, self.zone_area, self.cpi_alpha)
 
 
 def calc_A(cpe_k):
@@ -150,7 +150,7 @@ def sample_zone_pressures(zones, wind_dir_index, cpe_V, cpe_k, cpe_struct_V):
     A = calc_A(cpe_k)
     B = calc_B(cpe_k)
     for z in zones:
-        z.result_effective_area = 1.0 * z.zone_area
+        z.result_effective_area = z.zone_area
         z.sampled_cpe = sample_gev(z.getCpeMeanForDir(wind_dir_index), A, B,
                                    cpe_V, cpe_k)
         z.sampled_cpe_struct = sample_gev(
@@ -160,7 +160,7 @@ def sample_zone_pressures(zones, wind_dir_index, cpe_V, cpe_k, cpe_struct_V):
 
 
 def calc_zone_pressures(zones, wind_dir_index, cpi, qz, Ms, building_spacing,
-                        flag_diff_shielding):
+                        flag_diff_shielding=False):
     """
     Determine wind pressure loads (Cpe) on each zone (to be distributed onto
     connections)
@@ -168,15 +168,15 @@ def calc_zone_pressures(zones, wind_dir_index, cpi, qz, Ms, building_spacing,
     Args:
         zones:
         wind_dir_index:
-        cpi:
+        cpi: internal pressure coeff
         qz:
         Ms:
         building_spacing:
-        flag_diff_shielding:
+        flag_diff_shielding: flag for differential shielding (default: False)
 
     Returns:
-        result_pz :
-        result_pz_struct:
+        result_pz : zone pressure applied for sheeting and batten
+        result_pz_struct: zone pressure applied for rafter
 
     """
     for z in zones:
@@ -197,10 +197,10 @@ def calc_zone_pressures(zones, wind_dir_index, cpi, qz, Ms, building_spacing,
 
         diff_shielding = dsn / dsd
 
-        # calculate zone pressure
+        # calculate zone pressure for sheeting and batten
         z.result_pz = qz * (z.sampled_cpe - z.cpi_alpha * cpi) * diff_shielding
 
-        # calculate zone structure pressure
+        # calculate zone structure pressure for rafter
         z.result_pz_struct = qz * (z.sampled_cpe_struct - z.cpi_alpha * cpi
                                    - z.sampled_cpe_eaves) * diff_shielding
 

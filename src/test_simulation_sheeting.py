@@ -233,12 +233,13 @@ class TestHouseDamage(unittest.TestCase):
             # zone.seed_scipy(42)
             # engine.seed(42)
 
-        cls.model_db = database.DatabaseManager(cfg.db_file)
+        model_db = database.DatabaseManager(cfg.db_file)
         cfg.list_conn, cfg.list_conn_type, cfg.list_conn_type_group = \
-            cls.model_db.get_list_conn_type(cfg.house_name)
+            model_db.get_list_conn_type(cfg.house_name)
+        cfg.list_zone = model_db.get_list_zone(cfg.house_name)
 
         cls.cfg = cfg
-
+        cls.model_db = model_db
         cls.house_damage = HouseDamage(cls.cfg, cls.model_db)
 
         # print('{}'.format(cfg.file_damage))
@@ -449,6 +450,7 @@ class TestDistributeMultiSwitchesOn(unittest.TestCase):
 
     def test_consistency_wind_debris(self):
         consistency_wind_debris(self.path_reference, self.path_output)
+
 
 if __name__ == '__main__':
     unittest.main()

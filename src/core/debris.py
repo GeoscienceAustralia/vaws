@@ -18,8 +18,6 @@ import curve
 import engine
 import database
 from rect import Rect, Point
-from stats import lognorm_rv_given_mean_stddev
-from scipy.stats import poisson
 
 # lookup table mapping (0-7) to wind direction desc
 # dirs = ['S', 'SW', 'W', 'NW', 'N', 'NE', 'E', 'SE', 'Random']

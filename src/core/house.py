@@ -37,7 +37,7 @@ class Wall(database.Base):
     coverages = relation('Coverage')
 
     def __repr__(self):
-        return 'Wall(dir: %d, area: %.3f): ' % (self.direction, self.area)
+        return 'Wall(dir: {:d}, area: {:.3f})'.format(self.direction, self.area)
 
 
 class CoverageType(database.Base):
@@ -49,7 +49,7 @@ class CoverageType(database.Base):
     house_id = Column(Integer, ForeignKey('houses.id'))
 
     def __repr__(self):
-        return 'CoverageType(name: %s): ' % (self.name)
+        return 'CoverageType(name: {})'.format(self.name)
 
 
 class Coverage(database.Base):
@@ -62,17 +62,18 @@ class Coverage(database.Base):
     type = relation(CoverageType, uselist=False)
 
     def __repr__(self):
-        return 'Coverage(desc: %s, area: %.3f)' % (self.description, self.area)
+        return 'Coverage(desc: {}, area: {:.3f})'.format(self.description,
+                                                         self.area)
 
 
 class House(database.Base):
 
     __tablename__ = 'houses'
     id = Column(Integer, primary_key=True)
+
     house_name = Column(String)
     replace_cost = Column(Float)
     height = Column(Float)
-
     # Cpe (external pressure coefficient) for roof assumed to
     # follow Type III GEV with V (cov) and k (shape factor)
     cpe_V = Column(Float)
@@ -83,6 +84,7 @@ class House(database.Base):
     width = Column(Float)
     roof_columns = Column(Integer)
     roof_rows = Column(Integer)
+
     walls = relation(Wall)
     cov_types = relation(CoverageType)
     costings = relation(damage_costing.DamageCosting)
@@ -96,13 +98,13 @@ class House(database.Base):
     connections = relation(connection.Connection)
 
     def __repr__(self):
-        return '(%s, $%.2f)' % (self.house_name, self.replace_cost)
+        return '({}, ${:.2f})'.format(self.house_name, self.replace_cost)
 
     def getConnectionByName(self, connName):
         for conn in self.connections:
             if conn.connection_name == connName:
                 return conn
-        raise LookupError('Invalid connName: %s' % connName)
+        raise LookupError('Invalid connName: {}'.format(connName))
 
     def resetCoverages(self):
         for wall in self.walls:
@@ -113,7 +115,7 @@ class House(database.Base):
 
     def resetZoneInfluences(self):
         for c in self.connections:
-            inflZonesByConn[c] = {}
+            inflZonesByConn[c] = dict()
             for infl in c.zones:
                 inflZonesByConn[c][infl.zone] = infl.coeff
 
@@ -137,7 +139,7 @@ class House(database.Base):
         for z in self.zones:
             if z.zone_name == zoneName:
                 return z
-        raise LookupError('Invalid zoneName: %s' % zoneName)
+        raise LookupError('Invalid zoneName: {}'.format(zoneName))
 
     def getZoneByWallDirection(self, wall_dir):
         arr = []
@@ -155,19 +157,19 @@ class House(database.Base):
         for ct in self.conn_types:
             if ct.connection_type == ctName:
                 return ct
-        raise LookupError('Invalid ctName: %s' % ctName)
+        raise LookupError('Invalid ctName: {}'.format(ctName))
 
     def getConnTypeGroupByName(self, ctgName):
         for group in self.conn_type_groups:
             if group.group_name == ctgName:
                 return group
-        raise LookupError('Invalid ctgName: %s' % ctgName)
+        raise LookupError('Invalid ctgName: {}'.format(ctgName))
 
     def getCostingByName(self, costingName):
         for dmg in self.costings:
             if dmg.costing_name == costingName:
                 return dmg
-        raise LookupError('Invalid costingName: %s' % costingName)
+        raise LookupError('Invalid costingName: {}'.format(costingName))
 
     def getWallArea(self):
         area = 0
@@ -179,7 +181,7 @@ class House(database.Base):
         for wall in self.walls:
             if wall.direction == wind_dir:
                 return wall
-        raise LookupError('Invalid wind_dir: %d' % wind_dir)
+        raise LookupError('Invalid wind_dir: {:d}'.format(wind_dir))
 
 
 def loadStructurePatchesFromCSV(path, house, db):
@@ -217,8 +219,9 @@ def loadStructurePatchesFromCSV(path, house, db):
 
 
 def queryHouses(db):
-    return db.session.query(House.house_name, House.replace_cost,
-                                     House.height).all()
+    return db.session.query(House.house_name,
+                            House.replace_cost,
+                            House.height).all()
 
 
 def queryHouseWithName(hn, db):
@@ -335,7 +338,8 @@ def loadConnectionsFromCSV(path, house, db):
     fileName = os.path.join(path, 'connections.csv')
     x = pd.read_csv(fileName)
     for _, row in x.iterrows():
-        tmp = connection.Connection(connection_name=row[0], edge=int(row[3]))
+        tmp = connection.Connection(conn_name=row[0],
+                                    edge=int(row[3]))
         tmp.ctype = house.getConnTypeByName(row[1])
         tmp.zone_id = house.getZoneByName(row[2]).id
         house.connections.append(tmp)
@@ -376,10 +380,10 @@ def loadDamageFactoringsFromCSV(path, house, db):
                 factor_id = ctg.id
         if parent_id == 0:
             raise LookupError(
-                'Invalid connection group name given: %s' % row[0])
+                'Invalid connection group name given: {}'.format(row[0]))
         if factor_id == 0:
             raise LookupError(
-                'Invalid connection group name given: %s' % row[1])
+                'Invalid connection group name given: {}'.format(row[1]))
         tmp = damage_costing.DamageFactoring(parent_id=parent_id,
                                              factor_id=factor_id)
         house.factorings.append(tmp)
@@ -551,10 +555,10 @@ if __name__ == '__main__':
         @classmethod
         def setUpClass(cls):
             cls.db1 = database.DatabaseManager(os.path.join('../model.db'),
-                                              verbose=False)
+                                               verbose=False)
 
             cls.db2 = database.DatabaseManager(os.path.join('../test.db'),
-                                           verbose=False)
+                                               verbose=False)
 
         @classmethod
         def tearDown(cls):

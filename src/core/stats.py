@@ -1,71 +1,71 @@
 from math import log, exp, sqrt
-from scipy.stats import lognorm
 
 
-def lognormal_mean(m, stddev):
+def compute_logarithmic_mean_stddev(m, stddev):
     """ compute mean of log x with mean and std. of x
     Args:
-        m: mean of x
-        stddev: standard deviation of x
+        m: arithmetic mean of x
+        stddev: arithmetic standard deviation of x
 
-    Returns: mean of log x
+    Returns: mean and std of log x
 
-    """
-    return log(m) - (0.5 * log(1.0 + (stddev * stddev) / (m * m)))
-
-
-def lognormal_stddev(m, stddev):
-    """ compute std. of log x with mean and std. of x
-
-    Args:
-        m: mean of x
-        stddev: standard deviation of x
-
-    Returns: std. of log x
+    mu = 2*log(m) - 0.5*log(v + m**2)
 
     """
-    return sqrt(log((stddev * stddev) / (m * m) + 1))
 
-
-def lognorm_rv_given_mean_stddev(m, stddev, rnd_state=None):
-
-    mean_logx = lognormal_mean(m, stddev)
-    sigma_logx = lognormal_stddev(m, stddev)
-
-    if rnd_state:
-        rnd_state.lognormal(mean=mean_logx, sigma=sigma_logx)
+    try:
+        mu = 2 * log(m) - 0.5 * log(stddev**2.0 + m**2.0)
+        std = sqrt(log(stddev**2.0 / m**2.0 + 1))
+    except ValueError as e:
+        print '{}: zero returned for mu, std'.format(e)
+        return 0, 0
     else:
-        lognorm.rvs(sigma_logx, scale=exp(mean_logx))
-
-def lognormal_underlying_mean(m, stddev):
-    """ compute mean of x with mean and std of log x
-
-    Args:
-        m: mean of log x
-        stddev: std of log x
-
-    Returns:
-
-    """
-    # if m == 0 or stddev == 0:
-    #     print '{}'.format('why ???')
-    #     return 0
-    return exp(m + 0.5 * stddev * stddev)
+        return mu, std
 
 
-def lognormal_underlying_stddev(m, stddev):
-    """ compute std of x with mean and std of log x
+def compute_arithmetic_mean_stddev(m, stddev):
+    """ compute arithmetic mean and std of x
 
     Args:
         m: mean of log x
         stddev: std of log x
 
-    Returns: std of x
+    Returns: arithmetic mean, std of x
 
     """
-    # if m == 0 or stddev == 0:
-    #     print '{}'.format('strange why???')
-    #     return 0
-    return sqrt((exp(stddev * stddev) - 1.0) * exp(2.0 * m + stddev * stddev))
-    #return lognormal_underlying_mean(m, stddev) * \
-    #       math.sqrt((math.exp(stddev * stddev) - 1.0))
+    assert stddev >= 0, 'std can not be less than zero'
+    mean_x = exp(m + 0.5 * stddev * stddev)
+    std_x = mean_x * sqrt(exp(stddev**2.0) - 1.0)
+    return mean_x, std_x
+
+# unit tests
+if __name__ == '__main__':
+    import unittest
+
+    class MyTestCase(unittest.TestCase):
+
+        def test_compute_logarithmic_mean_stdev(self):
+            mu, std = compute_logarithmic_mean_stddev(1.0, 0.5)
+            self.assertAlmostEqual(mu, -0.1116, places=4)
+            self.assertAlmostEqual(std, 0.4724, places=4)
+
+            mu, std = compute_logarithmic_mean_stddev(0.0, 0.0)
+            self.assertAlmostEqual(mu, 0.0, places=4)
+            self.assertAlmostEqual(std, 0.0, places=4)
+
+            m, stddev = 70.0, 14.0
+            m2, stddev2 = compute_logarithmic_mean_stddev(m, stddev)
+            self.assertAlmostEqual(stddev2, 0.1980422)
+            self.assertAlmostEqual(m2, 4.228884885)
+
+        def test_compute_arithmetic_mean_stdev(self):
+            mu, std = compute_arithmetic_mean_stddev(0.0, 0.5)
+            self.assertAlmostEqual(mu, 1.1331, places=4)
+            self.assertAlmostEqual(std, 0.6039, places=4)
+
+            mu, std = compute_arithmetic_mean_stddev(0.0, 0.0)
+            self.assertAlmostEqual(mu, 1.0, places=4)
+            self.assertAlmostEqual(std, 0.0, places=4)
+
+    suite = unittest.TestLoader().loadTestsFromTestCase(MyTestCase)
+    unittest.TextTestRunner(verbosity=2).run(suite)

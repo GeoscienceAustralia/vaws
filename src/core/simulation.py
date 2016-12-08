@@ -117,9 +117,7 @@ def simulate_wind_damage_to_house(cfg):
     df_rnd_params = pd.DataFrame([[x['wind_ort'],
                                    x['profile_no'],
                                    x['const_level']] for x in list_results],
-                                 columns=['wind_ort',
-                                          'profile_no',
-                                          'const_level'])
+                                 columns=['wind_ort', 'profile_no', 'const_level'])
     df_rnd_params.index += 1
     df_rnd_params.to_csv(cfg.file_rnd_parameters)
 
@@ -245,7 +243,7 @@ def simulate_wind_damage_to_house(cfg):
     pd.DataFrame.from_dict([x['strength'] for x in list_results]).to_csv(
         cfg.file_strength_by_conn, index=False)
 
-    pd.DataFrame([x['result_effective_area'] for x in list_results]).to_csv(
+    pd.concat([x['result_effective_area'] for x in list_results]).to_csv(
         cfg.file_eff_area_by_zone, index=False)
 
     # df_strength_by_conn = pd.concat(
@@ -305,11 +303,13 @@ def run_simulation_per_house(cfg, db, id_sim):
 
     house_damage = HouseDamage(cfg, db)
 
+    # for item in house_damage.house.conn_types:
+    #     print '{}:{:.3f}'.format(item, item.deadload_std_dev)
+
     # iteration over wind speed list
     for id_speed, wind_speed in enumerate(cfg.speeds):
 
         # simulate sampled house
-        house_damage.clear_loop_results()
         house_damage.run_simulation(wind_speed)
 
         result_buckets['wind_direction'][id_speed] = \
@@ -441,16 +441,16 @@ class HouseDamage(object):
         self.flags = copy.deepcopy(cfg.flags)
 
         self.qz = None
-        self.Ms = None
-        self.di = None
+        self.Ms = 1.0
+        self.di = 0.0
         self.di_except_water = None
-        self.prev_di = None
-        self.fragilities = []
+        self.prev_di = 0
+        # self.fragilities = []
         self.profile = None
         self.mzcat = None
-        self.cpiAt = None
-        self.cpi = None  # internal pressure coefficient
-        self.internally_pressurized = None
+        self.cpiAt = 0
+        self.cpi = 0  # internal pressure coefficient
+        self.internally_pressurized = False
         self.construction_level = None
         self.water_ingress_cost = None
         self.water_damage_name = None
@@ -601,12 +601,6 @@ class HouseDamage(object):
         for c in self.house.connections:
             c.ctype.group.result_area += c.ctype.costing_area
 
-    def clear_loop_results(self):
-        self.qz = 0.0
-        self.Ms = 1.0
-        self.di = 0.0
-        self.fragilities = []
-
     # def set_wind_direction(self):
     #     self.wind_orientation = self.cfg.get_wind_dir_index()
     #     if self.cfg.debris_manager:
@@ -620,7 +614,7 @@ class HouseDamage(object):
                                             self.house.height)
 
     def calculate_qz(self, wind_speed):
-        '''
+        """
         calculate qz, velocity pressure given wind velocity
         qz = 0.6*10-3*(Mz,cat*V)**2
         Args:
@@ -628,7 +622,7 @@ class HouseDamage(object):
 
         Returns:
 
-        '''
+        """
         if self.regional_shielding_factor <= 0.85:
             thresholds = np.array([63, 63+15])
             ms_dic = {0: 1.0, 1: 0.85, 2: 0.95}
@@ -636,6 +630,8 @@ class HouseDamage(object):
             # idx = sum(thresholds <= self.cfg.rnd_state.random_integers(0, 100))
             self.Ms = ms_dic[idx]
             wind_speed *= self.Ms / self.regional_shielding_factor
+        else:
+            self.Ms = 1.0
         self.qz = 0.6 * 1.0e-3 * (wind_speed * self.mzcat)**2
 
     def check_pressurized_failure(self, v):
@@ -657,14 +653,8 @@ class HouseDamage(object):
         return key, value['mean_factor'], value['cov_factor']
 
     def sample_house_and_wind_params(self):
-        self.cpi = 0
-        self.cpiAt = 0
-        self.internally_pressurized = False
         self.set_wind_profile()
         self.house.reset_results()
-        self.prev_di = 0
-
-        self.construction_level = None
         mean_factor = 1.0
         cov_factor = 1.0
         if self.flags['construction_levels']:
