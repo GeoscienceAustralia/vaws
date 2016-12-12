@@ -64,7 +64,7 @@ class ConnectionType(database.Base):
             mu_deadload:
             sd_deadload:
         """
-        self.result_num_damaged = 0
+        # self.result_num_damaged = 0
 
         self.connection_type = conn_type
         self.costing_area = costing_area

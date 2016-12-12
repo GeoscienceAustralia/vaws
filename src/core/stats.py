@@ -18,7 +18,7 @@ def compute_logarithmic_mean_stddev(m, stddev):
         std = sqrt(log(stddev**2.0 / m**2.0 + 1))
     except ValueError as e:
         print '{}: zero returned for mu, std'.format(e)
-        return 0, 0
+        return 0.0, 0.0
     else:
         return mu, std
 

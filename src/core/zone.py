@@ -122,7 +122,7 @@ def calc_big_a_b_values(shape_k):
     """
 
     Args:
-        cpe_k: parameter k of GEV III (JHD)
+        shape_k: parameter k of GEV III (JHD)
         CDF(x) = exp{-[1-k(x-u)/a]**(1/k)}
 
         m = u + a*A, s = a * B
@@ -189,7 +189,8 @@ def sample_gev(mean_est, cov_est, big_a, big_b, shape_k, rnd_state=None):
                     mean_est)
 
 
-def sample_zone_pressures(zones, wind_dir_index, cpe_cov, cpe_k, cpe_struct_cov):
+def sample_zone_pressures(zones, wind_dir_index, cpe_cov, cpe_k,
+                          cpe_struct_cov):
     """
     Sample external Zone Pressures for sheeting, structure and eaves Cpe,
     based on TypeIII General Extreme Value distribution. Prepare effective
@@ -213,9 +214,11 @@ def sample_zone_pressures(zones, wind_dir_index, cpe_cov, cpe_k, cpe_struct_cov)
 
         z.sampled_cpe = sample_gev(
             z.getCpeMeanForDir(wind_dir_index), cpe_cov, big_a, big_b, cpe_k)
+
         z.sampled_cpe_struct = sample_gev(
             z.getCpeStructMeanForDir(wind_dir_index), cpe_struct_cov, big_a,
             big_b, cpe_k)
+
         z.sampled_cpe_eaves = sample_gev(
             z.getCpeEavesMeanForDir(wind_dir_index), cpe_struct_cov, big_a,
             big_b, cpe_k)
