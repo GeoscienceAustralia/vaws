@@ -6,7 +6,7 @@
 from numpy.random import lognormal
 from stats import compute_logarithmic_mean_stddev, \
     compute_arithmetic_mean_stddev
-from sqlalchemy import Integer, String, Float, Column, ForeignKey
+from sqlalchemy import Integer, String, Float, Column, ForeignKey, orm
 from sqlalchemy.orm import relation, backref
 import database
 
@@ -64,8 +64,6 @@ class ConnectionType(database.Base):
             mu_deadload:
             sd_deadload:
         """
-        # self.result_num_damaged = 0
-
         self.connection_type = conn_type
         self.costing_area = costing_area
 
@@ -78,6 +76,7 @@ class ConnectionType(database.Base):
     def __str__(self):
         return "({}/{})".format(self.group.group_name, self.connection_type)
 
+    @orm.reconstructor
     def reset_results(self):
         self.result_num_damaged = 0
 

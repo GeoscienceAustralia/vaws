@@ -3,7 +3,7 @@
         - loaded from database
         - imported from '../data/houses/subfolder'
 """
-from sqlalchemy import Integer, String, Column, ForeignKey
+from sqlalchemy import Integer, String, Column, ForeignKey, orm
 from sqlalchemy.orm import relation, backref
 import database
 import influence
@@ -29,22 +29,10 @@ class Connection(database.Base):
                              backref=backref('located_conns'))
     zones = relation(influence.Influence)
 
-    # def __init__(self, conn_name, edge):
-    #     self.connection_name = conn_name
-    #     self.edge = edge
-    #
-    #     self.result_strength = 0.0
-    #     self.result_deadload = 0.0
-    #     self.result_failure_v_raw = 0.0
-    #     self.result_failure_v = 0.0
-    #     self.result_failure_v_i = 0
-    #     self.result_damaged = False
-    #     self.result_damaged_report = {}
-    #     self.result_damage_distributed = False
-
     def __str__(self):
         return '({} @ {})'.format(self.connection_name, self.location_zone)
 
+    @orm.reconstructor
     def reset_results(self):
         self.result_strength = 0.0
         self.result_deadload = 0.0

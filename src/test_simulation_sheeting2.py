@@ -10,6 +10,8 @@ import pandas as pd
 from core.simulation import HouseDamage, simulate_wind_damage_to_house
 import core.database as database
 from core.scenario import Scenario
+from core import zone
+from core import engine
 
 
 def check_file_consistency(file1, file2, **kwargs):
@@ -302,6 +304,84 @@ class TestDistributeMultiSwitchesOn(unittest.TestCase):
 
     def test_consistency_wind_debris(self):
         consistency_wind_debris(self.path_reference, self.path_output)
+
+
+
+class TestHouseDamage(unittest.TestCase):
+
+    @classmethod
+    def setUpClass(cls):
+
+        path = '/'.join(__file__.split('/')[:-1])
+        cls.path_reference = os.path.join(path, 'test')
+        cls.path_output = os.path.join(path, 'output')
+
+        cfg = Scenario(
+            cfg_file=os.path.join(path, 'scenarios/test_roof_sheeting2.cfg'),
+            output_path=cls.path_output)
+
+        cfg.flags['random_seed'] = True
+        cfg.parallel = False
+        # cfg.flags['dmg_distribute'] = True
+
+        # optionally seed random numbers
+        if cfg.flags['random_seed']:
+            print('random seed is set')
+            np.random.seed(42)
+            zone.seed_scipy(42)
+            engine.seed(42)
+
+        model_db = database.DatabaseManager(cfg.db_file)
+        cfg.list_conn, cfg.list_conn_type, cfg.list_conn_type_group = \
+            model_db.get_list_conn_type(cfg.house_name)
+        cfg.list_zone = model_db.get_list_zone(cfg.house_name)
+
+        cls.cfg = cfg
+        cls.model_db = model_db
+        print('before')
+        cls.house_damage = HouseDamage(cls.cfg, cls.model_db)
+
+
+        print('after')
+        del cls.house_damage
+        cls.house_damage = HouseDamage(cls.cfg, cls.model_db)
+
+        # print('{}'.format(cfg.file_damage))
+        # cls.mySim = HouseDamage(cfg, option)
+        #_, house_results = cls.mySim.simulator_mainloop()
+        # key = cls.mySim.result_buckets.keys()[0]
+        # print('{}:{}'.format(key, cls.mySim.result_buckets[key]))
+
+    @classmethod
+    def tearDownClass(cls):
+        cls.model_db.close()
+
+    def test_random_parameters(self):
+        #assert self.house_damage.construction_level == 'medium'
+        #assert self.house_damage.profile == 7
+        pass
+    def test_redistribute_to_nearest_zone(self):
+
+        # iteration over wind speed list
+        for id_speed, wind_speed in enumerate(self.cfg.speeds):
+
+            # simulate sampled house
+            self.house_damage.run_simulation(wind_speed)
+
+
+
+
+
+
+        # for zone in house_damage.house.zones:
+        #     str_ = zone.zone_name
+        #     result_buckets['result_effective_area'].loc[id_speed][str_] = \
+        #         zone.result_effective_area
+
+
+
+
+
 
 if __name__ == '__main__':
     unittest.main()

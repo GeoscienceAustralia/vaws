@@ -4,7 +4,7 @@
         - imported from '../data/houses/subfolder' (so we need python constr)
 """
 import os
-from sqlalchemy import Integer, String, Float, Column, ForeignKey
+from sqlalchemy import Integer, String, Float, Column, ForeignKey, orm
 from sqlalchemy.orm import relation
 import pandas as pd
 
@@ -12,7 +12,6 @@ import database
 import connection_type
 import connection
 import zone
-import influence
 import damage_costing
 import wateringress
 
@@ -40,6 +39,13 @@ class Wall(database.Base):
 
     def __repr__(self):
         return 'Wall(dir: {:d}, area: {:.3f})'.format(self.direction, self.area)
+
+    @orm.reconstructor
+    def resetCoverages(self):
+        self.result_perc_collapsed = 0
+        for cov in self.coverages:
+            cov.result_intact = True
+            cov.result_num_impacts = 0
 
 
 class CoverageType(database.Base):
@@ -126,12 +132,12 @@ class House(database.Base):
                 return conn
         raise LookupError('Invalid connName: {}'.format(connName))
 
-    def resetCoverages(self):
-        for wall in self.walls:
-            wall.result_perc_collapsed = 0
-            for cov in wall.coverages:
-                cov.result_intact = True
-                cov.result_num_impacts = 0
+    # def resetCoverages(self):
+    #     for wall in self.walls:
+    #         wall.result_perc_collapsed = 0
+    #         for cov in wall.coverages:
+    #             cov.result_intact = True
+    #             cov.result_num_impacts = 0
 
     def resetZoneInfluences(self):
         for c in self.connections:
@@ -144,9 +150,11 @@ class House(database.Base):
             c.result_failure_v = 0.0
             c.result_failure_v_i = 0
 
+    @orm.reconstructor
     def reset_results(self):
         self.resetZoneInfluences()
-        self.resetCoverages()
+        for w in self.walls:
+            w.resetCoverages()
         for c in self.connections:
             c.reset_results()
         for ct in self.conn_types:
@@ -203,13 +211,10 @@ class House(database.Base):
                 return wall
         raise LookupError('Invalid wind_dir: {:d}'.format(wind_dir))
 
-
-
-
-def queryHouses(db):
-    return db.session.query(House.house_name,
-                            House.replace_cost,
-                            House.height).all()
+# def queryHouses(db):
+#     return db.session.query(House.house_name,
+#                             House.replace_cost,
+#                             House.height).all()
 
 
 def queryHouseWithName(hn, db):
@@ -223,9 +228,9 @@ def queryHouseWithName(hn, db):
     """
 
     house = db.session.query(House).filter_by(house_name=hn).one()
-    house.reset_results()
+    # house.reset_results()
 
-    connByTypeMap.clear()
+    connByTypeMap.clear()  # clears even the copy of the dic.
     for ct in house.conn_types:
         conns = []
         for c in ct.connections_of_type:
@@ -266,25 +271,9 @@ def queryHouseWithName(hn, db):
         wallByDirMap[wall.direction] = wall
 
     house.resetZoneInfluences()
-    house.resetCoverages()
+    # house.resetCoverages()
     wateringress.populate_water_costs(db, house.id)
     return house
-
-
-
-
-
-def importDataFromPath(path, db):
-    """
-
-    Args:
-        path: data path
-        db: instance of database.DatabaseManager class
-
-    Returns: None
-
-    """
-
 
 
 # unit tests

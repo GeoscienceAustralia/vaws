@@ -17,7 +17,7 @@ Base = declarative_base()
 class ForeignKeysListener(PoolListener):
     def connect(self, dbapi_con, con_record):
         db_cursor = dbapi_con.execute('pragma foreign_keys=ON')
-        db_cursor = dbapi_con.execute('pragma foreign_keys')
+        # db_cursor = dbapi_con.execute('pragma foreign_keys')
         for row in db_cursor:
             pass
             # print 'row: ', row

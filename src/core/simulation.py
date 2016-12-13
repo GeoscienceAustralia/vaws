@@ -288,8 +288,7 @@ def run_simulation_per_house(cfg, db, id_sim):
         result_buckets[item] = pd.DataFrame(
             None, columns=cfg.list_conn_type, index=cfg.idx_speeds)
 
-    for item in ['result_damaged', 'result_damage_distributed',
-                 'result_effective_area']:
+    for item in ['result_damaged', 'result_damage_distributed']:
         result_buckets[item] = pd.DataFrame(
             None, columns=cfg.list_conn, index=cfg.idx_speeds)
 
@@ -354,9 +353,6 @@ def run_simulation_per_house(cfg, db, id_sim):
         if house_damage.cpiAt:
             result_buckets['cpi'] = house_damage.cpiAt
 
-        result_buckets['wind_ort'] = house_damage.wind_orientation
-        result_buckets['profile_no'] = house_damage.profile
-        result_buckets['const_level'] = house_damage.construction_level
         # # interact with GUI listener
         # if self.diCallback:
         #     currentLoop += 1
@@ -384,10 +380,14 @@ def run_simulation_per_house(cfg, db, id_sim):
             result_buckets['result_damage_distributed'].loc[id_speed][str_] = \
                 conn.result_damage_distributed
 
-        for zone in house_damage.house.zones:
-            str_ = zone.zone_name
+        for zone_ in house_damage.house.zones:
+            str_ = zone_.zone_name
             result_buckets['result_effective_area'].loc[id_speed][str_] = \
-                zone.result_effective_area
+                zone_.result_effective_area
+
+    result_buckets['wind_ort'] = house_damage.wind_orientation
+    result_buckets['profile_no'] = house_damage.profile
+    result_buckets['const_level'] = house_damage.construction_level
 
     for conn in house_damage.house.connections:
         str_ = conn.connection_name
