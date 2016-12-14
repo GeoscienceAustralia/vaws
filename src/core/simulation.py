@@ -431,7 +431,7 @@ class HouseDamage(object):
 
     """
 
-    # FIXME: HouseDamage for one speed
+    # FIXME: HouseDamage for a series of speed
 
     # id_sim_gen = itertools.count()
 

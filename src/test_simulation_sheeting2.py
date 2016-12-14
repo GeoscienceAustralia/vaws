@@ -338,35 +338,44 @@ class TestHouseDamage(unittest.TestCase):
 
         cls.cfg = cfg
         cls.model_db = model_db
-        print('before')
         cls.house_damage = HouseDamage(cls.cfg, cls.model_db)
-
-
-        print('after')
-        del cls.house_damage
-        cls.house_damage = HouseDamage(cls.cfg, cls.model_db)
-
-        # print('{}'.format(cfg.file_damage))
-        # cls.mySim = HouseDamage(cfg, option)
-        #_, house_results = cls.mySim.simulator_mainloop()
-        # key = cls.mySim.result_buckets.keys()[0]
-        # print('{}:{}'.format(key, cls.mySim.result_buckets[key]))
 
     @classmethod
     def tearDownClass(cls):
         cls.model_db.close()
 
     def test_random_parameters(self):
-        #assert self.house_damage.construction_level == 'medium'
-        #assert self.house_damage.profile == 7
-        pass
-    def test_redistribute_to_nearest_zone(self):
+        assert self.house_damage.construction_level == 'medium'
+        assert self.house_damage.profile == 7
 
-        # iteration over wind speed list
-        for id_speed, wind_speed in enumerate(self.cfg.speeds):
+    def test_calculate_qz(self):
 
-            # simulate sampled house
-            self.house_damage.run_simulation(wind_speed)
+        # default case
+        assert self.house_damage.regional_shielding_factor == 1
+        self.assertAlmostEqual(self.house_damage.mzcat, 0.955, places=3)
+
+        self.house_damage.calculate_qz(10.0)
+        self.assertAlmostEqual(self.house_damage.qz, 0.0547, places=3)
+        self.assertAlmostEqual(self.house_damage.Ms, 1.0, places=3)
+
+        # sampling mzcat
+        # self.house_damage.regional_shielding_factor = 0.85
+
+        # self.house_damage.calculate_qz(10.0)
+        # self.assertAlmostEqual(self.house_damage.Ms, 0.95, places=3)
+        # self.assertAlmostEqual(self.house_damage.qz, 0.0683, places=3)
+
+    def test_dummy(self):
+
+        print('{}'.format(self.house_damage.regional_shielding_factor))
+
+# def test_redistribute_to_nearest_zone(self):
+    #
+    #     # iteration over wind speed list
+    #     for id_speed, wind_speed in enumerate(self.cfg.speeds):
+    #
+    #         # simulate sampled house
+    #         self.house_damage.run_simulation(wind_speed)
 
 
 
