@@ -44,28 +44,6 @@ class DebrisType(object):
         self.plot_shape = plot_shape
 
 
-class DebrisRegion(database.Base):
-    __tablename__ = 'debris_regions'
-    name = Column(String, primary_key=True)
-    cr = Column(Float)
-    cmm = Column(Float)
-    cmc = Column(Float)
-    cfm = Column(Float)
-    cfc = Column(Float)
-    rr = Column(Float)
-    rmm = Column(Float)
-    rmc = Column(Float)
-    rfm = Column(Float)
-    rfc = Column(Float)
-    pr = Column(Float)
-    pmm = Column(Float)
-    pmc = Column(Float)
-    pfm = Column(Float)
-    pfc = Column(Float)
-    alpha = Column(Float)
-    beta = Column(Float)
-
-
 def qryDebrisRegions(db):
     return db.session.query(DebrisRegion).all()
 

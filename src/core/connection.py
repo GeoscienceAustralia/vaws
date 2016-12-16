@@ -11,63 +11,51 @@ import influence
 use_struct_pz_for = ['rafter', 'piersgroup', 'wallracking']
 
 
-class Connection(database.Base):
-    __tablename__ = 'connections'
-    id = Column(Integer, primary_key=True)
 
-    connection_name = Column(String)
-    edge = Column(Integer)
+def reset_connection(house_conn):
+    """
 
-    zone_id = Column(Integer, ForeignKey('zones.id'))
+    Args:
+        house_conn:
 
-    house_id = Column(Integer, ForeignKey('houses.id'))
-    connection_type_id = Column(Integer, ForeignKey('connection_types.id'))
+    Returns:
 
-    ctype = relation("ConnectionType", uselist=False,
-                     backref=backref('connections_of_type'))
-    location_zone = relation("Zone", uselist=False,
-                             backref=backref('located_conns'))
-    zones = relation(influence.Influence)
+    """
+    # assert huse_conn
+    house_conn.result_strength = 0.0
+    self.result_deadload = 0.0
+    self.result_failure_v_raw = 0.0
+    self.result_damaged = False
+    self.result_damaged_report = {}
+    self.result_damage_distributed = False
 
-    def __str__(self):
-        return '({} @ {})'.format(self.connection_name, self.location_zone)
-
-    @orm.reconstructor
-    def reset_results(self):
-        self.result_strength = 0.0
-        self.result_deadload = 0.0
-        self.result_failure_v_raw = 0.0
-        self.result_damaged = False
-        self.result_damaged_report = {}
-        self.result_damage_distributed = False
-
-    def damage(self, V, result_load, infl_by_zone_map, use_struct_pz=None):
-        if self.result_damaged:
-            return
-        if use_struct_pz is None:
-            use_struct_pz = self.ctype.group.group_name in use_struct_pz_for
-        self.ctype.incr_damaged()
-        self.result_damaged = True
-        self.result_damaged_report['load'] = result_load
-        infls_arr = []
-        for z in sorted(infl_by_zone_map):
-            infls_dict = {}
-            infl = infl_by_zone_map[z]
-            infls_dict['infl'] = infl
-            area = float(z.result_effective_area)
-            infls_dict['area'] = area
-            pz = z.result_pz_struct if use_struct_pz else z.result_pz
-            infls_dict['pz'] = pz
-            infls_dict['load'] = infl * area * pz
-            infls_dict['name'] = z.zone_name
-            infls_arr.append(infls_dict)
-        self.result_damaged_report['infls'] = infls_arr
-        self.result_damage_distributed = False
-        self.result_failure_v_i += 1
-        self.result_failure_v_raw = V
-        num_ = V + float(self.result_failure_v_i - 1) * self.result_failure_v
-        denom_ = self.result_failure_v_i
-        self.result_failure_v = num_ / denom_
+def calc_connection_damage(house_conn, V, result_load, infl_by_zone_map, use_struct_pz=None):
+    if self.result_damaged:
+        return
+    if use_struct_pz is None:
+        use_struct_pz = self.ctype.group.group_name in use_struct_pz_for
+    self.ctype.incr_damaged()
+    self.result_damaged = True
+    self.result_damaged_report['load'] = result_load
+    infls_arr = []
+    for z in sorted(infl_by_zone_map):
+        infls_dict = {}
+        infl = infl_by_zone_map[z]
+        infls_dict['infl'] = infl
+        area = float(z.result_effective_area)
+        infls_dict['area'] = area
+        pz = z.result_pz_struct if use_struct_pz else z.result_pz
+        infls_dict['pz'] = pz
+        infls_dict['load'] = infl * area * pz
+        infls_dict['name'] = z.zone_name
+        infls_arr.append(infls_dict)
+    self.result_damaged_report['infls'] = infls_arr
+    self.result_damage_distributed = False
+    self.result_failure_v_i += 1
+    self.result_failure_v_raw = V
+    num_ = V + float(self.result_failure_v_i - 1) * self.result_failure_v
+    denom_ = self.result_failure_v_i
+    self.result_failure_v = num_ / denom_
 
 #    def assing_connection_strengths(self, mean_factor, cov_factor):
 

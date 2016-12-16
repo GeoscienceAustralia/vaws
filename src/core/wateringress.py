@@ -8,27 +8,27 @@ from sqlalchemy import Integer, String, Float, Column, ForeignKey
 import database
 
 
-class WaterIngressCosting(database.Base):
-    __tablename__ = 'water_costs'
-    id = Column(Integer, primary_key=True)
-    name = Column(String)
-    wi = Column(Float)
-    base_cost = Column(Float)
-    formula_type = Column(Integer)
-    coeff1 = Column(Float)
-    coeff2 = Column(Float)
-    coeff3 = Column(Float)
-    house_id = Column(Integer, ForeignKey('houses.id'))
-
-    def __repr__(self):
-        return 'WaterIngressCosting(%s; %.3f; $%.2f; %d; %.3f; %.3f; %.3f)' % (
-        self.name,
-        self.wi,
-        self.base_cost,
-        self.formula_type,
-        self.coeff1,
-        self.coeff2,
-        self.coeff3)
+# class WaterIngressCosting(database.Base):
+#     __tablename__ = 'water_costs'
+#     id = Column(Integer, primary_key=True)
+#     name = Column(String)
+#     wi = Column(Float)
+#     base_cost = Column(Float)
+#     formula_type = Column(Integer)
+#     coeff1 = Column(Float)
+#     coeff2 = Column(Float)
+#     coeff3 = Column(Float)
+#     house_id = Column(Integer, ForeignKey('houses.id'))
+#
+#     def __repr__(self):
+#         return 'WaterIngressCosting(%s; %.3f; $%.2f; %d; %.3f; %.3f; %.3f)' % (
+#         self.name,
+#         self.wi,
+#         self.base_cost,
+#         self.formula_type,
+#         self.coeff1,
+#         self.coeff2,
+#         self.coeff3)
 
 
 cached_water_costs = {}

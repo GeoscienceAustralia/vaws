@@ -7,22 +7,6 @@ import os
 import numpy as np
 import pandas as pd
 
-terrain_cats = ['2', '2.5', '3', '5']
-heights = [3.0, 5.0, 7.0, 10.0, 12.0, 15.0, 17.0, 20.0, 25.0, 30.0]
-
-
-def populate_wind_profile_by_terrain():
-
-    wind_profile = dict()
-
-    path = '/'.join(__file__.split('/')[:-1])
-    for terrain_cat in terrain_cats:
-        file_ = os.path.join(path,
-                             '../../data/mzcat_terrain_' + terrain_cat + '.csv')
-        wind_profile[terrain_cat] = pd.read_csv(file_, skiprows=1, header=None,
-                                                index_col=0).to_dict('list')
-
-    return wind_profile
 
 
 def calculateMZCAT(wind_profile, terrain_cat, profile_idx, height):

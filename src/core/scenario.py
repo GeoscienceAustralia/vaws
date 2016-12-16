@@ -22,6 +22,9 @@ class Scenario(object):
     # lookup table mapping (0-7) to wind direction desc
     dirs = ['S', 'SW', 'W', 'NW', 'N', 'NE', 'E', 'SE', 'RANDOM']
 
+    terrain_cats = ['2', '2.5', '3', '5']
+    heights = [3.0, 5.0, 7.0, 10.0, 12.0, 15.0, 17.0, 20.0, 25.0, 30.0]
+
     def __init__(self, cfg_file=None, output_path=None):
 
         self.cfg_file = cfg_file
@@ -70,7 +73,7 @@ class Scenario(object):
         self.file_rnd_parameters = None
         self.file_eff_area_by_zone = None
 
-        self.wind_profile = None
+        self._wind_profiles = None
 
         # self._rnd_state = None
 
@@ -229,7 +232,6 @@ class Scenario(object):
             self.flight_time_mean = conf.getfloat(key, 'flight_time_mean')
             self.flight_time_stddev = conf.getfloat(key, 'flight_time_stddev')
 
-        self.wind_profile = terrain.populate_wind_profile_by_terrain()
 
         key = 'heatmap'
         try:
@@ -328,6 +330,27 @@ class Scenario(object):
             print('Capital_city is set for region_name by default')
         else:
             self._region_name = value
+
+    @property
+    def wind_profiles(self):
+        return self._wind_profiles
+
+    @wind_profiles.setter
+    def wind_profiles(self, path_):
+
+        wind_profiles = dict()
+
+        path = '/'.join(__file__.split('/')[:-1])
+        for terrain_cat in self.terrain_cats:
+            file_ = os.path.join(path,
+                                 '../../data/mzcat_terrain_' + terrain_cat + '.csv')
+            wind_profile[terrain_cat] = pd.read_csv(file_, skiprows=1,
+                                                    header=None,
+                                                    index_col=0).to_dict('list')
+
+        return wind_profile
+
+
 
     @property
     def wind_dir_index(self):

@@ -9,53 +9,53 @@ from sqlalchemy.orm import relation
 import database
 
 
-class DamageFactoring(database.Base):
-    __tablename__ = 'damage_factorings'
-    parent_id = Column(Integer, ForeignKey('connection_type_groups.id'),
-                       primary_key=True)
-    factor_id = Column(Integer, ForeignKey('connection_type_groups.id'),
-                       primary_key=True)
-    house_id = Column(Integer, ForeignKey('houses.id'))
-    parent = relation("ConnectionTypeGroup",
-                      primaryjoin="damage_factorings.c.parent_id"
-                                  "==connection_type_groups.c.id")
-    factor = relation("ConnectionTypeGroup",
-                      primaryjoin="damage_factorings.c.factor_id"
-                                  "==connection_type_groups.c.id")
+# class DamageFactoring(database.Base):
+#     __tablename__ = 'damage_factorings'
+#     parent_id = Column(Integer, ForeignKey('connection_type_groups.id'),
+#                        primary_key=True)
+#     factor_id = Column(Integer, ForeignKey('connection_type_groups.id'),
+#                        primary_key=True)
+#     house_id = Column(Integer, ForeignKey('houses.id'))
+#     parent = relation("ConnectionTypeGroup",
+#                       primaryjoin="damage_factorings.c.parent_id"
+#                                   "==connection_type_groups.c.id")
+#     factor = relation("ConnectionTypeGroup",
+#                       primaryjoin="damage_factorings.c.factor_id"
+#                                   "==connection_type_groups.c.id")
 
 
-class DamageCosting(database.Base):
-    __tablename__ = 'damage_costings'
-    id = Column(Integer, primary_key=True)
-    costing_name = Column(String)
-    area = Column(Float)
-    envelope_factor_formula_type = Column(Integer)
-    envelope_repair_rate = Column(Float)
-    env_coeff_1 = Column(Float)
-    env_coeff_2 = Column(Float)
-    env_coeff_3 = Column(Float)
-    internal_factor_formula_type = Column(Integer)
-    internal_repair_rate = Column(Float)
-    int_coeff_1 = Column(Float)
-    int_coeff_2 = Column(Float)
-    int_coeff_3 = Column(Float)
-    house_id = Column(Integer, ForeignKey('houses.id'))
-
-    def __repr__(self):
-        return "<DamageCosting('%s', '%f m', '%d', '$ %f', '%f', '%f', '%f', " \
-               "'%d', '$ %f', '%f', '%f', '%f')>" % (
-            self.costing_name,
-            self.area,
-            self.envelope_factor_formula_type,
-            self.envelope_repair_rate,
-            self.env_coeff_1,
-            self.env_coeff_2,
-            self.env_coeff_3,
-            self.internal_factor_formula_type,
-            self.internal_repair_rate,
-            self.int_coeff_1,
-            self.int_coeff_2,
-            self.int_coeff_3)
+class DamageCosting(object):
+    # __tablename__ = 'damage_costings'
+    # id = Column(Integer, primary_key=True)
+    # costing_name = Column(String)
+    # area = Column(Float)
+    # envelope_factor_formula_type = Column(Integer)
+    # envelope_repair_rate = Column(Float)
+    # env_coeff_1 = Column(Float)
+    # env_coeff_2 = Column(Float)
+    # env_coeff_3 = Column(Float)
+    # internal_factor_formula_type = Column(Integer)
+    # internal_repair_rate = Column(Float)
+    # int_coeff_1 = Column(Float)
+    # int_coeff_2 = Column(Float)
+    # int_coeff_3 = Column(Float)
+    # house_id = Column(Integer, ForeignKey('houses.id'))
+    #
+    # def __repr__(self):
+    #     return "<DamageCosting('%s', '%f m', '%d', '$ %f', '%f', '%f', '%f', " \
+    #            "'%d', '$ %f', '%f', '%f', '%f')>" % (
+    #         self.costing_name,
+    #         self.area,
+    #         self.envelope_factor_formula_type,
+    #         self.envelope_repair_rate,
+    #         self.env_coeff_1,
+    #         self.env_coeff_2,
+    #         self.env_coeff_3,
+    #         self.internal_factor_formula_type,
+    #         self.internal_repair_rate,
+    #         self.int_coeff_1,
+    #         self.int_coeff_2,
+    #         self.int_coeff_3)
 
     def env_func1(self, x):
         return self.env_coeff_1 * x**2 + self.env_coeff_2 * x + self.env_coeff_3

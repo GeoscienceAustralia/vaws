@@ -8,15 +8,15 @@ import os
 import filecmp
 import pandas as pd
 
-import core.database as database
-import core.dbimport as dbimport
+from core.database import DatabaseManager
+from core.dbimport import import_model
 
 
-class options(object):
-
-    def __init__(self):
-        self.model_database = None
-        self.data_folder = None
+# class options(object):
+#
+#     def __init__(self):
+#         self.model_database = None
+#         self.data_folder = None
 
 
 class TestDBimport(unittest.TestCase):
@@ -26,17 +26,18 @@ class TestDBimport(unittest.TestCase):
 
         cls.path = '/'.join(__file__.split('/')[:-1])
 
-        cls.ref_model = os.path.join(cls.path, 'test/model.db')
-        cls.out_model = os.path.join(cls.path, 'core/output/model.db')
+        cls.ref_model = os.path.join(cls.path, 'test/test_roof_sheeting2.db')
+        cls.out_model = os.path.join(cls.path, './output/test.db')
 
-        cls.path_output = os.path.join(cls.path, 'core/output')
-        cls.path_reference = os.path.join(cls.path, 'test/output')
+        # cls.path_output = os.path.join(cls.path, 'core/output')
+        # cls.path_reference = os.path.join(cls.path, 'test/output')
 
-        option = options()
-        option.data_folder = os.path.join(cls.path, '../data')
+        # option = options()
+        path_data_folder = os.path.join(cls.path,
+                                        '../data/houses/test_roof_sheeting2')
 
-        cls.db = database.DatabaseManager(cls.out_model, verbose=False)
-        dbimport.import_model(option.data_folder, cls.db)
+        cls.db = DatabaseManager(cls.out_model, verbose=False)
+        import_model(path_data_folder, cls.db)
         # database.db.close()
 
     @classmethod

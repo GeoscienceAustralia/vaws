@@ -48,53 +48,7 @@ def getGridFromZoneLoc(loc):
 dirs = ['S', 'SW', 'W', 'NW', 'N', 'NE', 'E', 'SE']
 
 
-class Zone(database.Base):
-    __tablename__ = 'zones'
-    id = Column(Integer, primary_key=True)
-    zone_name = Column(String)
-    zone_area = Column(Float)
-
-    # Cpe for roof sheeting (cladding)
-    coeff_N = Column(Float)
-    coeff_NE = Column(Float)
-    coeff_E = Column(Float)
-    coeff_SE = Column(Float)
-    coeff_S = Column(Float)
-    coeff_SW = Column(Float)
-    coeff_W = Column(Float)
-    coeff_NW = Column(Float)
-
-    # Cpe for rafter
-    struct_coeff_N = Column(Float)
-    struct_coeff_NE = Column(Float)
-    struct_coeff_E = Column(Float)
-    struct_coeff_SE = Column(Float)
-    struct_coeff_S = Column(Float)
-    struct_coeff_SW = Column(Float)
-    struct_coeff_W = Column(Float)
-    struct_coeff_NW = Column(Float)
-
-    eaves_coeff_N = Column(Float)
-    eaves_coeff_NE = Column(Float)
-    eaves_coeff_E = Column(Float)
-    eaves_coeff_SE = Column(Float)
-    eaves_coeff_S = Column(Float)
-    eaves_coeff_SW = Column(Float)
-    eaves_coeff_W = Column(Float)
-    eaves_coeff_NW = Column(Float)
-
-    leading_roof_N = Column(Integer)
-    leading_roof_NE = Column(Integer)
-    leading_roof_E = Column(Integer)
-    leading_roof_SE = Column(Integer)
-    leading_roof_S = Column(Integer)
-    leading_roof_SW = Column(Integer)
-    leading_roof_W = Column(Integer)
-    leading_roof_NW = Column(Integer)
-
-    cpi_alpha = Column(Float)
-    wall_dir = Column(Integer)
-    house_id = Column(Integer, ForeignKey('houses.id'))
+class Zone(object):
 
     def getCpeMeanForDir(self, dir_index):
         return getattr(self, 'coeff_{}'.format(dirs[dir_index]))

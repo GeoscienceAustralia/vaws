@@ -11,23 +11,23 @@ from sqlalchemy.orm import relation, backref
 import database
 
 
-class ConnectionTypeGroup(database.Base):
-    __tablename__ = 'connection_type_groups'
-    id = Column(Integer, primary_key=True)
-    group_name = Column(String)
-    distribution_order = Column(Integer)
-    distribution_direction = Column(String)
-    trigger_collapse_at = Column(Float)
-    patch_distribution = Column(Integer)
-    set_zone_to_zero = Column(Integer)
-    water_ingress_order = Column(Integer)
-    costing_id = Column(Integer, ForeignKey('damage_costings.id'))
-    house_id = Column(Integer, ForeignKey('houses.id'))
-    costing = relation('DamageCosting', uselist=False,
-                       backref=backref('conn_types'))
-
-    def __str__(self):
-        return "({})".format(self.group_name)
+class ConnectionTypeGroup(object):
+    # __tablename__ = 'connection_type_groups'
+    # id = Column(Integer, primary_key=True)
+    # group_name = Column(String)
+    # distribution_order = Column(Integer)
+    # distribution_direction = Column(String)
+    # trigger_collapse_at = Column(Float)
+    # patch_distribution = Column(Integer)
+    # set_zone_to_zero = Column(Integer)
+    # water_ingress_order = Column(Integer)
+    # costing_id = Column(Integer, ForeignKey('damage_costings.id'))
+    # house_id = Column(Integer, ForeignKey('houses.id'))
+    # costing = relation('DamageCosting', uselist=False,
+    #                    backref=backref('conn_types'))
+    #
+    # def __str__(self):
+    #     return "({})".format(self.group_name)
 
     def perc_damaged(self):
         damaged_perc = 0
@@ -36,45 +36,45 @@ class ConnectionTypeGroup(database.Base):
         return damaged_perc
 
 
-class ConnectionType(database.Base):
-    __tablename__ = 'connection_types'
-    id = Column(Integer, primary_key=True)
-    connection_type = Column(String)
-    costing_area = Column(Float)
-
-    # assigned with functions
-    strength_mean = Column(Float)
-    strength_std_dev = Column(Float)
-    deadload_mean = Column(Float)
-    deadload_std_dev = Column(Float)
-
-    grouping_id = Column(Integer, ForeignKey('connection_type_groups.id'))
-    house_id = Column(Integer, ForeignKey('houses.id'))
-    group = relation(ConnectionTypeGroup, uselist=False,
-                     backref=backref('conn_types'))
-
-    def __init__(self, conn_type, costing_area, mu_strength, sd_strength,
-                 mu_deadload, sd_deadload):
-        """
-        Args:
-            conn_type: connection type
-            costing_area: costing area
-            mu_strength: arithmetic mean of strength
-            sd_strength: arithmetic std of strength
-            mu_deadload:
-            sd_deadload:
-        """
-        self.connection_type = conn_type
-        self.costing_area = costing_area
-
-        self.strength_mean, self.strength_std_dev = \
-            compute_logarithmic_mean_stddev(mu_strength, sd_strength)
-
-        self.deadload_mean, self.deadload_std_dev = \
-            compute_logarithmic_mean_stddev(mu_deadload, sd_deadload)
-
-    def __str__(self):
-        return "({}/{})".format(self.group.group_name, self.connection_type)
+class ConnectionType(object):
+    # __tablename__ = 'connection_types'
+    # id = Column(Integer, primary_key=True)
+    # connection_type = Column(String)
+    # costing_area = Column(Float)
+    #
+    # # assigned with functions
+    # strength_mean = Column(Float)
+    # strength_std_dev = Column(Float)
+    # deadload_mean = Column(Float)
+    # deadload_std_dev = Column(Float)
+    #
+    # grouping_id = Column(Integer, ForeignKey('connection_type_groups.id'))
+    # house_id = Column(Integer, ForeignKey('houses.id'))
+    # group = relation(ConnectionTypeGroup, uselist=False,
+    #                  backref=backref('conn_types'))
+    #
+    # def __init__(self, conn_type, costing_area, mu_strength, sd_strength,
+    #              mu_deadload, sd_deadload):
+    #     """
+    #     Args:
+    #         conn_type: connection type
+    #         costing_area: costing area
+    #         mu_strength: arithmetic mean of strength
+    #         sd_strength: arithmetic std of strength
+    #         mu_deadload:
+    #         sd_deadload:
+    #     """
+    #     self.connection_type = conn_type
+    #     self.costing_area = costing_area
+    #
+    #     self.strength_mean, self.strength_std_dev = \
+    #         compute_logarithmic_mean_stddev(mu_strength, sd_strength)
+    #
+    #     self.deadload_mean, self.deadload_std_dev = \
+    #         compute_logarithmic_mean_stddev(mu_deadload, sd_deadload)
+    #
+    # def __str__(self):
+    #     return "({}/{})".format(self.group.group_name, self.connection_type)
 
     @orm.reconstructor
     def reset_results(self):
