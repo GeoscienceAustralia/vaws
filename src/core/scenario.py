@@ -13,8 +13,8 @@ import numpy as np
 import pandas as pd
 from collections import OrderedDict
 
-# import database
-import terrain
+from database import DatabaseManager, House
+import copy
 
 
 class Scenario(object):
@@ -38,9 +38,10 @@ class Scenario(object):
         self.idx_speeds = None
         self.terrain_category = None
 
-        self.db_file = None
-        self.parallel = None
         self.house_name = None
+        self._db_file = None
+        self.table_house = None
+        self.parallel = None
         self._region_name = None
         self.construction_levels = OrderedDict()
         self.fragility_thresholds = None
@@ -72,6 +73,21 @@ class Scenario(object):
         self.file_dmg_dist_by_conn = None
         self.file_rnd_parameters = None
         self.file_eff_area_by_zone = None
+
+        self.conn_by_type = dict()
+        self.connByTypeMap = dict()
+        self.connByZoneTypeMap = dict()
+        self.connByTypeGroupMap = dict()
+        self.connByIDMap = dict()
+
+        self.ctgMap = dict()
+
+        self.zoneByLocationMap = dict()
+        self.zoneByIDMap = dict()
+        self.inflZonesByConn = dict()
+        self.wallByDirMap = dict()
+        self.cached_water_costs = None
+
 
         self._wind_profiles = None
 
@@ -165,10 +181,10 @@ class Scenario(object):
 
         self.idx_speeds = range(self.wind_speed_num_steps)
 
+        self.house_name = conf.get(key, 'house_name')
         self.db_file = os.path.join(path_cfg_file, conf.get(key, 'db_file'))
 
         self.parallel = conf.getboolean(key, 'parallel')
-        self.house_name = conf.get(key, 'house_name')
         self.regional_shielding_factor = conf.getfloat(
             key, 'regional_shielding_factor')
         self.wind_dir_index = conf.get(key, 'wind_fixed_dir')
@@ -281,6 +297,102 @@ class Scenario(object):
 
         else:
             print 'output path is not assigned'
+
+    @property
+    def db_file(self):
+        return self._db_file
+
+    @db_file.setter
+    def db_file(self, db_file_name):
+
+        db = DatabaseManager(db_file_name)
+
+        db_house = db.session.query(House).filter_by(
+            house_name=self.house_name).one()
+
+        self.table_house = copy.deepcopy(db_house.__dict__)
+        entries_to_remove = [x for x in self.table_house.keys()
+                             if x.startswith('_')]
+        entries_to_remove.append('metadata')
+        for k in entries_to_remove:
+            self.table_house.pop(k, None)
+
+        for item in db_house.connections:
+            self.table_house.setdefault('connections', {})[
+                item.connection_name] = item.__dict__
+
+        for item in db_house.conn_types:
+            self.table_house.setdefault('conn_types', {})[
+                item.connection_type] = item.__dict__
+
+        for item in db_house.conn_type_groups:
+            self.table_house.setdefault('conn_type_groups', {})[
+                item.group_name] = item.__dict__
+
+        for item in db_house.costings:
+            self.table_house.setdefault('costings', {})[
+                item.costing_name] = item.__dict__
+
+        for item in db_house.cov_types:
+            self.table_house.setdefault('cov_types', {})[
+                item.name] = item.__dict__
+
+        for item in db_house.factorings:
+            self.table_house.setdefault('factorings', {})[
+                item.parent_id] = item.__dict__
+
+        for item in db_house.walls:
+            self.table_house.setdefault('walls', {})[
+                item.direction] = item.__dict__
+
+        for item in db_house.zones:
+            self.table_house.setdefault('zone', {})[
+                item.zone_name] = item.__dict__
+
+        for item in db_house.water_groups:
+            self.table_house.setdefault('water_groups', {})[
+                item.group_name] = item.__dict__
+
+        # delete _ att
+        # self.table_house = delete_keys_from_dict(self.table_house)
+
+        # connection by connection type
+        for ct in db_house.conn_types:
+            self.conn_by_type[ct.connection_type] = \
+                [c.connection_name for c in ct.connections_of_type]
+
+
+    for z in db_house.zones:
+        self.zoneByLocationMap[z.zone_name] = z
+        self.zoneByIDMap[z.id] = z
+
+    for ctg in db_house.conn_type_groups:
+        # groups start out enabled unless the order is negative
+        # (this can be overridden later by scenario flags)
+        if ctg.distribution_order >= 0:
+            ctg.enabled = True
+        else:
+            ctg.enabled = False
+        self.ctgMap[ctg.group_name] = ctg
+        self.connByTypeGroupMap[ctg.group_name] = []
+
+    for zone in db_house.zones:
+        zoneConns = {}
+        for c in zone.located_conns:
+            zoneConns[c.ctype.group.group_name] = c
+        self.connByZoneTypeMap[zone.zone_name] = zoneConns
+
+    for c in db_house.connections:
+        self.connByTypeGroupMap[c.ctype.group.group_name].append(c)
+        self.connByIDMap[c.id] = c
+        self.connByNameMap[c.connection_name] = c
+
+    for wall in db_house.walls:
+        self.wallByDirMap[wall.direction] = wall
+
+    for c in db_house.connections:
+        for infl in c.zones:
+            self.inflZonesByConn.setdefault(c, {})[infl.zone] = infl.coeff
 
     @property
     def list_conn_type_group(self):
@@ -509,6 +621,18 @@ class Scenario(object):
 
         with open(cfg_file, 'wb') as configfile:
             config.write(configfile)
+
+
+def delete_keys_from_dict(dict_):
+    for key in dict_.keys():
+        if key.startswith('_'):
+            dict_.pop(key)
+
+    for v in dict_.values():
+        if isinstance(v, dict):
+            delete_keys_from_dict(v)
+
+    return dict_
 
 
 if __name__ == '__main__':
