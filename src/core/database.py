@@ -164,16 +164,12 @@ class DatabaseManager(object):
         return list_
     '''
 
-    def get_list_conn_type(self, house_name):
-
-        s0 = select([House.id]).where(House.house_name == house_name)
-        house_id = str(self.session.query(s0).one()[0])
+    def get_list_conn_type(self):
 
         s = select([Connection.connection_name,
                     ConnectionType.connection_type,
                     ConnectionTypeGroup.group_name]).where(
-            (Connection.connection_type_id == ConnectionType.c.id) &
-            (Connection.house_id == house_id))
+            Connection.connection_type_id == ConnectionType.c.id)
 
         list_conn, list_conn_type, list_conn_type_group = set(), set(), set()
         for item in self.session.execute(s):
@@ -183,14 +179,9 @@ class DatabaseManager(object):
             list_conn_type_group.add(conn_type_group)
         return list_conn, list_conn_type, list_conn_type_group
 
-    def get_list_zone(self, house_name):
-        tb_house = Base.metadata.tables['houses']
-        tb_zone = Base.metadata.tables['zones']
+    def get_list_zone(self):
 
-        s0 = select([tb_house.c.id]).where(tb_house.c.house_name == house_name)
-        house_id = str(self.session.query(s0).one()[0])
-
-        s = select([tb_zone.c.zone_name]).where(tb_zone.c.house_id == house_id)
+        s = select([Zone.zone_name])
 
         list_zone = set()
         for item in self.session.execute(s):
@@ -198,6 +189,21 @@ class DatabaseManager(object):
             list_zone.add(zone)
 
         return list_zone
+
+    def populate_water_costs(self):
+
+        cached_water_costs = dict()
+
+        damage_names = self.session.query(
+            WaterIngressCosting.name).distinct().all()
+
+        for item in damage_names:
+            dmg_name = item[0]
+            water_ingress = self.session.query(WaterIngressCosting).filter_by(
+                name=dmg_name).order_by(WaterIngressCosting.wi).all()
+            cached_water_costs[dmg_name] = water_ingress
+
+        return cached_water_costs
 
 
 # class Terrain(Base):

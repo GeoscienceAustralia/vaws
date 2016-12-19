@@ -286,19 +286,6 @@ def import_model(path, db):
     db.drop_tables()
     db.create_tables()
     print 'created new tables...'
-    
-    # loadTerrainProfiles(base_path, db)
-    # print 'imported terrain profiles'
-    
-    # loadDebrisTypes(base_path, db)
-    # print 'imported debris types'
-    
-    # loadDebrisRegions(base_path, db)
-    # print 'imported debris regions'
-    
-    # for path, _, list_files in walk(base_path):
-
-    #    if 'house_data.csv' in list_files and 'ignore' not in path:
 
     print 'Importing House Data from path: {}'.format(path)
     house_ = loadHouseFromCSV(path, db)
