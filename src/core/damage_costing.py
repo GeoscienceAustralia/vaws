@@ -4,91 +4,132 @@
         - imported from house
         - referenced by damage module to cost damages
 """
-from sqlalchemy import Integer, String, Float, Column, ForeignKey
-from sqlalchemy.orm import relation
-import database
+import copy
 
 
-# class DamageFactoring(database.Base):
-#     __tablename__ = 'damage_factorings'
-#     parent_id = Column(Integer, ForeignKey('connection_type_groups.id'),
-#                        primary_key=True)
-#     factor_id = Column(Integer, ForeignKey('connection_type_groups.id'),
-#                        primary_key=True)
-#     house_id = Column(Integer, ForeignKey('houses.id'))
-#     parent = relation("ConnectionTypeGroup",
-#                       primaryjoin="damage_factorings.c.parent_id"
-#                                   "==connection_type_groups.c.id")
-#     factor = relation("ConnectionTypeGroup",
-#                       primaryjoin="damage_factorings.c.factor_id"
-#                                   "==connection_type_groups.c.id")
+class Costing(object):
+    def __init__(self, inst):
+        """
 
+        Args:
+            inst: instance of database.DamageCosting
+        """
+        dic_ = copy.deepcopy(inst.__dict__)
 
-class DamageCosting(object):
-    # __tablename__ = 'damage_costings'
-    # id = Column(Integer, primary_key=True)
-    # costing_name = Column(String)
-    # area = Column(Float)
-    # envelope_factor_formula_type = Column(Integer)
-    # envelope_repair_rate = Column(Float)
-    # env_coeff_1 = Column(Float)
-    # env_coeff_2 = Column(Float)
-    # env_coeff_3 = Column(Float)
-    # internal_factor_formula_type = Column(Integer)
-    # internal_repair_rate = Column(Float)
-    # int_coeff_1 = Column(Float)
-    # int_coeff_2 = Column(Float)
-    # int_coeff_3 = Column(Float)
-    # house_id = Column(Integer, ForeignKey('houses.id'))
-    #
-    # def __repr__(self):
-    #     return "<DamageCosting('%s', '%f m', '%d', '$ %f', '%f', '%f', '%f', " \
-    #            "'%d', '$ %f', '%f', '%f', '%f')>" % (
-    #         self.costing_name,
-    #         self.area,
-    #         self.envelope_factor_formula_type,
-    #         self.envelope_repair_rate,
-    #         self.env_coeff_1,
-    #         self.env_coeff_2,
-    #         self.env_coeff_3,
-    #         self.internal_factor_formula_type,
-    #         self.internal_repair_rate,
-    #         self.int_coeff_1,
-    #         self.int_coeff_2,
-    #         self.int_coeff_3)
+        self.id = dic_['id']
+        self.name = dic_['costing_name']
+        self.area = dic_['area']
 
-    def env_func1(self, x):
-        return self.env_coeff_1 * x**2 + self.env_coeff_2 * x + self.env_coeff_3
+        self.env_factor_type = dic_['envelope_factor_formula_type']
+        self.env_repair_rate = dic_['envelope_repair_rate']
+        self.int_factor_type = dic_['internal_factor_formula_type']
+        self.int_repair_rate = dic_['internal_repair_rate']
 
-    def env_func2(self, x):
+        self.env_c1 = dic_['env_coeff_1']
+        self.env_c2 = dic_['env_coeff_2']
+        self.env_c3 = dic_['env_coeff_3']
+
+        self.int_c1 = dic_['int_coeff_1']
+        self.int_c2 = dic_['int_coeff_2']
+        self.int_c3 = dic_['int_coeff_3']
+
+        if self.env_factor_type == 1:
+            self.env_repair = self.__env_func_type1
+        elif self.env_factor_type == 2:
+            self.env_repair = self.__env_func_type2
+        else:
+            raise LookupError('Invalid env_factor_type: {}'.format(
+                self.env_factor_type))
+
+        if self.int_factor_type == 1:
+            self.lining_repair = self.__lining_func_type1
+        elif self.int_factor_type == 2:
+            self.lining_repair = self.__lining_func_type2
+        else:
+            raise LookupError('Invalid int_factor_type: {}'.format(
+                self.int_factor_type))
+
+    def calculate_damage(self, x):
+        assert 0 <= x <= 1
+        return x * (self.area * self.env_repair(x) * self.env_repair_rate +
+                    self.lining_repair(x) * self.int_repair_rate)
+
+    def __env_func_type1(self, x):
+        return self.env_c1 * x ** 2 + self.env_c2 * x + self.env_c3
+
+    def __env_func_type2(self, x):
         try:
-            return self.env_coeff_1 * x**self.env_coeff_2
+            return self.env_c1 * x ** self.env_c2
         except ZeroDivisionError:
             return 0.0
 
-    def lining_func1(self, x):
-        return self.int_coeff_1 * x**2 + self.int_coeff_2 * x + self.int_coeff_3
+    def __lining_func_type1(self, x):
+        return self.int_c1 * x ** 2 + self.int_c2 * x + self.int_c3
 
-    def lining_func2(self, x):
+    def __lining_func_type2(self, x):
         try:
-            self.int_coeff_1 * x**self.int_coeff_2
+            self.int_c1 * x ** self.int_c2
         except ZeroDivisionError:
             return 0.0
 
-    def calc_lining_repair_cost(self, x):
-        f = self.lining_func1
-        if self.internal_factor_formula_type == 2:
-            f = self.lining_func2
-        lrc = x * f(x) * self.internal_repair_rate
-        return lrc
+# unit tests
+if __name__ == '__main__':
+    import unittest
+    import database
 
-    def calc_envelope_repair_cost(self, x):
-        f = self.env_func1
-        if self.envelope_factor_formula_type == 2:
-            f = self.env_func2
-        erc = x * self.area * f(x) * self.envelope_repair_rate
-        return erc
+    class MyTestCase(unittest.TestCase):
 
-    def calculate_damage(self, perc):
-        return self.calc_envelope_repair_cost(perc) + \
-               self.calc_lining_repair_cost(perc)
+        @classmethod
+        def setUpClass(cls):
+            db_file = './test_roof_sheeting2.db'
+            db_costing = database.DatabaseManager(db_file).session.query(
+                database.DamageCosting).all()
+
+            cls.costing1 = Costing(db_costing[0])
+            cls.costing2 = Costing(db_costing[4])
+
+        def test_env_func_type1(self):
+            assert self.costing1.env_factor_type == 1
+
+            area = 10.125
+            env_rate = 72.4
+            c1 = 0.3105
+            c2 = -0.894300
+            c3 = 1.601500
+
+            self.assertAlmostEqual(self.costing1.area, area)
+            self.assertAlmostEqual(self.costing1.env_repair_rate, env_rate)
+            self.assertAlmostEqual(self.costing1.env_c1, c1)
+            self.assertAlmostEqual(self.costing1.env_c2, c2)
+            self.assertAlmostEqual(self.costing1.env_c3, c3)
+
+            self.assertAlmostEqual(self.costing1.calculate_damage(0.0),
+                                   0.0)
+            self.assertAlmostEqual(self.costing1.calculate_damage(0.5),
+                                   451.5496, places=4)
+            self.assertAlmostEqual(self.costing1.calculate_damage(1.0),
+                                   746.0250, places=4)
+
+        def test_env_func_type2(self):
+            assert self.costing2.env_factor_type == 2
+
+            area = 106.4
+            env_rate = 243.72
+            c1 = 1.0514
+            c2 = -0.2271
+
+            self.assertAlmostEqual(self.costing2.area, area)
+            self.assertAlmostEqual(self.costing2.env_repair_rate, env_rate)
+            self.assertAlmostEqual(self.costing2.env_c1, c1)
+            self.assertAlmostEqual(self.costing2.env_c2, c2)
+
+            self.assertAlmostEqual(self.costing2.calculate_damage(0.0),
+                                   0.0)
+            self.assertAlmostEqual(self.costing2.calculate_damage(0.5),
+                                   15956.3916, places=4)
+            self.assertAlmostEqual(self.costing2.calculate_damage(1.0),
+                                   27264.7029, places=4)
+
+
+    suite = unittest.TestLoader().loadTestsFromTestCase(MyTestCase)
+    unittest.TextTestRunner(verbosity=2).run(suite)

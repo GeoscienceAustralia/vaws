@@ -315,6 +315,7 @@ class ConnectionType(Base):
     def __str__(self):
         return "({}/{})".format(self.group.group_name, self.connection_type)
 
+
 class DamageFactoring(Base):
     __tablename__ = 'damage_factorings'
     parent_id = Column(Integer, ForeignKey('connection_type_groups.id'),
