@@ -13,16 +13,13 @@ import numpy as np
 import pandas as pd
 from collections import OrderedDict
 
-from database import DatabaseManager, House
-import copy
-
 
 class Scenario(object):
 
     # lookup table mapping (0-7) to wind direction desc
-    dirs = ['S', 'SW', 'W', 'NW', 'N', 'NE', 'E', 'SE', 'RANDOM']
+    dirs = ['S', 'SW', 'W', 'NW', 'N', 'NE', 'E', 'SE']
 
-    terrain_cats = ['2', '2.5', '3', '5']
+    terrain_categories = ['2', '2.5', '3', '5']
     heights = [3.0, 5.0, 7.0, 10.0, 12.0, 15.0, 17.0, 20.0, 25.0, 30.0]
 
     def __init__(self, cfg_file=None, output_path=None):
@@ -37,9 +34,10 @@ class Scenario(object):
         self.speeds = None
         self.idx_speeds = None
         self.terrain_category = None
+        self._wind_profiles = None
 
         self.house_name = None
-        self._db_file = None
+        self.db_file = None
         self.table_house = None
         self.parallel = None
         self._region_name = None
@@ -74,24 +72,8 @@ class Scenario(object):
         self.file_rnd_parameters = None
         self.file_eff_area_by_zone = None
 
-        self.conn_by_type = dict()
-        self.connByTypeMap = dict()
-        self.connByZoneTypeMap = dict()
-        self.connByTypeGroupMap = dict()
-        self.connByIDMap = dict()
 
-        self.ctgMap = dict()
-
-        self.zoneByLocationMap = dict()
-        self.zoneByIDMap = dict()
-        self.inflZonesByConn = dict()
-        self.wallByDirMap = dict()
-        self.cached_water_costs = None
-
-
-        self._wind_profiles = None
-
-        # self._rnd_state = None
+        self._rnd_state = None
 
         self._list_conn = None
         self._list_conn_type = None
@@ -106,9 +88,6 @@ class Scenario(object):
             msg = 'Error: file {} not found'.format(cfg_file)
             sys.exit(msg)
         else:
-            if not os.path.exists(self.output_path):
-                os.makedirs(self.output_path)
-            print 'output directory: {}'.format(self.output_path)
             self.read_config()
 
     def __eq__(self, other):
@@ -153,12 +132,12 @@ class Scenario(object):
     #             break
     #     return key, value['mean_factor'], value['cov_factor']
 
-    def get_wind_dir_index(self):
-        if self.wind_dir_index == 8:
-            return np.random.random_integers(0, 7)
-            # return self.rnd_state.random_integers(0, 7)
-        else:
-            return self.wind_dir_index
+    # def get_wind_dir_index(self):
+    #     if self.wind_dir_index == 8:
+    #         return np.random.random_integers(0, 7)
+    #         # return self.rnd_state.random_integers(0, 7)
+    #     else:
+    #         return self.wind_dir_index
 
     def read_config(self):
 
@@ -173,6 +152,11 @@ class Scenario(object):
         self.wind_speed_min = conf.getfloat(key, 'wind_speed_min')
         self.wind_speed_max = conf.getfloat(key, 'wind_speed_max')
         self.wind_speed_num_steps = conf.getint(key, 'wind_speed_steps')
+        try:
+            self.wind_profiles = conf.get(key, 'path_wind_profiles')
+        except ConfigParser.NoOptionError:
+            self.wind_profiles = '../../data'
+
         self.terrain_category = conf.get(key, 'terrain_cat')
 
         self.speeds = np.linspace(self.wind_speed_min,
@@ -248,7 +232,6 @@ class Scenario(object):
             self.flight_time_mean = conf.getfloat(key, 'flight_time_mean')
             self.flight_time_stddev = conf.getfloat(key, 'flight_time_stddev')
 
-
         key = 'heatmap'
         try:
             self.red_v = conf.getfloat(key, 'red_V')
@@ -257,6 +240,10 @@ class Scenario(object):
             print('default value is used for heatmap')
 
         if self.output_path:
+
+            if not os.path.exists(self.output_path):
+                os.makedirs(self.output_path)
+            print 'output directory: {}'.format(self.output_path)
 
             # wind speed at pressurised failure
             self.file_house_cpi = os.path.join(self.output_path, 'house_cpi.csv')
@@ -294,105 +281,18 @@ class Scenario(object):
                                                  'random_parameters.csv')
             self.file_eff_area_by_zone = os.path.join(self.output_path,
                                                       'effective_area_by_zone.csv')
-
         else:
             print 'output path is not assigned'
 
+        self.rnd_state = self.flags['random_seed']
+
     @property
-    def db_file(self):
-        return self._db_file
+    def rnd_state(self):
+        return self._rnd_state
 
-    @db_file.setter
-    def db_file(self, db_file_name):
-
-        db = DatabaseManager(db_file_name)
-
-        db_house = db.session.query(House).filter_by(
-            house_name=self.house_name).one()
-
-        self.table_house = copy.deepcopy(db_house.__dict__)
-        entries_to_remove = [x for x in self.table_house.keys()
-                             if x.startswith('_')]
-        entries_to_remove.append('metadata')
-        for k in entries_to_remove:
-            self.table_house.pop(k, None)
-
-        for item in db_house.connections:
-            self.table_house.setdefault('connections', {})[
-                item.connection_name] = item.__dict__
-
-        for item in db_house.conn_types:
-            self.table_house.setdefault('conn_types', {})[
-                item.connection_type] = item.__dict__
-
-        for item in db_house.conn_type_groups:
-            self.table_house.setdefault('conn_type_groups', {})[
-                item.group_name] = item.__dict__
-
-        for item in db_house.costings:
-            self.table_house.setdefault('costings', {})[
-                item.costing_name] = item.__dict__
-
-        for item in db_house.cov_types:
-            self.table_house.setdefault('cov_types', {})[
-                item.name] = item.__dict__
-
-        for item in db_house.factorings:
-            self.table_house.setdefault('factorings', {})[
-                item.parent_id] = item.__dict__
-
-        for item in db_house.walls:
-            self.table_house.setdefault('walls', {})[
-                item.direction] = item.__dict__
-
-        for item in db_house.zones:
-            self.table_house.setdefault('zone', {})[
-                item.zone_name] = item.__dict__
-
-        for item in db_house.water_groups:
-            self.table_house.setdefault('water_groups', {})[
-                item.group_name] = item.__dict__
-
-        # delete _ att
-        # self.table_house = delete_keys_from_dict(self.table_house)
-
-        # connection by connection type
-        for ct in db_house.conn_types:
-            self.conn_by_type[ct.connection_type] = \
-                [c.connection_name for c in ct.connections_of_type]
-
-
-    for z in db_house.zones:
-        self.zoneByLocationMap[z.zone_name] = z
-        self.zoneByIDMap[z.id] = z
-
-    for ctg in db_house.conn_type_groups:
-        # groups start out enabled unless the order is negative
-        # (this can be overridden later by scenario flags)
-        if ctg.distribution_order >= 0:
-            ctg.enabled = True
-        else:
-            ctg.enabled = False
-        self.ctgMap[ctg.group_name] = ctg
-        self.connByTypeGroupMap[ctg.group_name] = []
-
-    for zone in db_house.zones:
-        zoneConns = {}
-        for c in zone.located_conns:
-            zoneConns[c.ctype.group.group_name] = c
-        self.connByZoneTypeMap[zone.zone_name] = zoneConns
-
-    for c in db_house.connections:
-        self.connByTypeGroupMap[c.ctype.group.group_name].append(c)
-        self.connByIDMap[c.id] = c
-        self.connByNameMap[c.connection_name] = c
-
-    for wall in db_house.walls:
-        self.wallByDirMap[wall.direction] = wall
-
-    for c in db_house.connections:
-        for infl in c.zones:
-            self.inflZonesByConn.setdefault(c, {})[infl.zone] = infl.coeff
+    @rnd_state.setter
+    def rnd_state(self, value):
+        self._rnd_state = np.random.RandomState(value)
 
     @property
     def list_conn_type_group(self):
@@ -448,21 +348,19 @@ class Scenario(object):
         return self._wind_profiles
 
     @wind_profiles.setter
-    def wind_profiles(self, path_):
+    def wind_profiles(self, path_wind_profiles):
 
-        wind_profiles = dict()
+        path_cfg_file = os.path.dirname(os.path.realpath(self.cfg_file))
+        _path = os.path.join(path_cfg_file, path_wind_profiles)
 
-        path = '/'.join(__file__.split('/')[:-1])
-        for terrain_cat in self.terrain_cats:
-            file_ = os.path.join(path,
-                                 '../../data/mzcat_terrain_' + terrain_cat + '.csv')
-            wind_profile[terrain_cat] = pd.read_csv(file_, skiprows=1,
+        self._wind_profiles = dict()
+
+        for item in self.terrain_categories:
+            file_ = os.path.join(_path, 'mzcat_terrain_{}.csv'.format(item))
+            self._wind_profiles[item] = pd.read_csv(file_,
+                                                    skiprows=1,
                                                     header=None,
                                                     index_col=0).to_dict('list')
-
-        return wind_profile
-
-
 
     @property
     def wind_dir_index(self):
@@ -656,15 +554,6 @@ if __name__ == '__main__':
             cls.scenario_filename3 = os.path.abspath(os.path.join(path_,
                                                      '../test/temp.cfg'))
 
-        def test_nocomments(self):
-            s1 = Scenario(cfg_file=self.scenario_filename1)
-            self.assertEquals(s1.wind_dir_index, 3)
-
-        # def test_equals_op(self):
-        #     s1 = loadFromCSV(self.file1)
-        #     s2 = loadFromCSV(self.file2)
-        #     self.assertNotEquals(s1, s2)
-
         def test_debrisopt(self):
             s1 = Scenario(cfg_file=self.scenario_filename1)
             # s1.storeToCSV(self.file3)
@@ -673,14 +562,8 @@ if __name__ == '__main__':
         def test_wind_directions(self):
             s = Scenario(cfg_file=self.scenario_filename1)
             s.wind_dir_index = 'Random'
-            dirs = []
-            for i in range(100):
-                dirs.append(s.get_wind_dir_index())
-            wd1 = dirs[0]
-            for wd in dirs:
-                if wd != wd1:
-                    break
-            self.assertNotEqual(wd, wd1)
+            self.assertEqual(s.wind_dir_index, 8)
+
             s.wind_dir_index = 'SW'
             self.assertEqual(s.wind_dir_index, 1)
 

@@ -492,6 +492,7 @@ class Zone(Base):
     struct_coeff_W = Column(Float)
     struct_coeff_NW = Column(Float)
 
+    # Cpe for eave
     eaves_coeff_N = Column(Float)
     eaves_coeff_NE = Column(Float)
     eaves_coeff_E = Column(Float)
@@ -501,6 +502,7 @@ class Zone(Base):
     eaves_coeff_W = Column(Float)
     eaves_coeff_NW = Column(Float)
 
+    # leading roof
     leading_roof_N = Column(Integer)
     leading_roof_NE = Column(Integer)
     leading_roof_E = Column(Integer)

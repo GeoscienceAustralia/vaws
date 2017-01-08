@@ -3,28 +3,29 @@ import sys
 import os
 import time
 import copy
-# import parmap
+import parmap
 # import itertools
 import pandas as pd
 import numpy as np
 from optparse import OptionParser
 from collections import OrderedDict
 
-import terrain
-import house
-import connection
-import zone
+#import terrain
+#import house
+#import connection
+#import zone
+from house import House
 from scenario import Scenario
 import curve
 import curve_log
 import logger
 import database
-import debris
-import wateringress
+#import debris
+#import wateringress
 import engine
 import output
-from house import zoneByLocationMap, connByZoneTypeMap, ctgMap, \
-    connByTypeGroupMap, inflZonesByConn, connByTypeMap, connByIDMap, zoneByIDMap
+#from house import zoneByLocationMap, connByZoneTypeMap, ctgMap, \
+#    connByTypeGroupMap, inflZonesByConn, connByTypeMap, connByIDMap, zoneByIDMap
 from version import VERSION_DESC
 
 
@@ -86,30 +87,21 @@ def simulate_wind_damage_to_house(cfg):
     # optionally seed random numbers
     if cfg.flags['random_seed']:
         print('random seed is set')
-        np.random.seed(42)
-        zone.seed_scipy(42)
+        # np.random.seed(42)
+        # zone.seed_scipy(42)
         engine.seed(42)
 
     # simulator main_loop
     tic = time.time()
 
-    # parmap.map(run_simulation_per_house, lines)
-    # list_house_damage = [HouseDamage(cfg, db) for id_sim in range(cfg.no_sims)]
-
     if cfg.parallel:
-        # list_results = parmap.map(run_simulation_per_house,
-        #                           range(cfg.no_sims), cfg)
-        print('Not implemented yet')
+        list_results = parmap.map(run_simulation_per_house,
+                                  range(cfg.no_sims), cfg)
     else:
-        db = database.DatabaseManager(cfg.db_file)
-        cfg.list_conn, cfg.list_conn_type, cfg.list_conn_type_group = \
-            db.get_list_conn_type(cfg.house_name)
-        cfg.list_zone = db.get_list_zone(cfg.house_name)
         list_results = []
         for id_sim in range(cfg.no_sims):
-            house_damage_, results = run_simulation_per_house(cfg, db, id_sim)
+            results = run_simulation_per_house(id_sim, cfg)
             list_results.append(results)
-        db.close()
 
     print('{}'.format(time.time()-tic))
 
@@ -269,36 +261,6 @@ def simulate_wind_damage_to_house(cfg):
 
 def run_simulation_per_house(cfg, db, id_sim):
 
-    result_buckets = dict()
-    for item in ['dmg_idx', 'debris', 'debris_nv',
-                 'debris_num', 'pressurized', 'water_ratio',
-                 'water_damage_name', 'dmg_idx_except_water',
-                 'water_ingress_cost', 'water_costing', 'speed',
-                 'wind_direction']:
-        result_buckets[item] = pd.Series(None, index=cfg.idx_speeds)
-
-    for item in ['cpi', 'wind_ort', 'profile_no', 'const_level']:
-        result_buckets[item] = None
-
-    for item in ['damage_area', 'repair_cost']:
-        result_buckets[item] = pd.DataFrame(
-            None, columns=cfg.list_conn_type_group, index=cfg.idx_speeds)
-
-    for item in ['conn_types', 'dmg_map']:
-        result_buckets[item] = pd.DataFrame(
-            None, columns=cfg.list_conn_type, index=cfg.idx_speeds)
-
-    for item in ['result_damaged', 'result_damage_distributed']:
-        result_buckets[item] = pd.DataFrame(
-            None, columns=cfg.list_conn, index=cfg.idx_speeds)
-
-    for item in cfg.list_conn:
-        result_buckets.setdefault('strength', {})[item] = None
-        result_buckets.setdefault('dead_load', {})[item] = None
-
-    for item in ['result_effective_area']:
-        result_buckets[item] = pd.DataFrame(
-            None, columns=cfg.list_zone, index=cfg.idx_speeds)
 
     house_damage = HouseDamage(cfg, db)
 
@@ -431,31 +393,35 @@ class HouseDamage(object):
 
     """
 
-    # FIXME: HouseDamage for a series of speed
+    # FIXME: HouseDamage for a suite of wind speeds
 
     # id_sim_gen = itertools.count()
 
-    def __init__(self, cfg, db, diCallback=None, mplDict=None):
+    def __init__(self, cfg, diCallback=None, mplDict=None):
+
         self.cfg = cfg
-        self.db = db
+
         self.flags = copy.deepcopy(cfg.flags)
 
         self.qz = None
-        self.Ms = 1.0
-        self.di = 0.0
-        self.di_except_water = None
-        self.prev_di = 0
-        # self.fragilities = []
-        self.profile = None
-        self.mzcat = None
-        self.cpiAt = 0
-        self.cpi = 0  # internal pressure coefficient
-        self.internally_pressurized = False
-        self.construction_level = None
-        self.water_ingress_cost = None
-        self.water_damage_name = None
-        self.water_ratio = None
-        self.water_costing = None
+        self.Ms = None
+
+
+        self.di = pd.Series(None, index=cfg.idx_speeds)
+        self.di_except_water = pd.Series(None, index=cfg.idx_speeds)
+
+        self.cpiAt = pd.Series(None, index=cfg.idx_speeds)
+        self.cpi = pd.Series(None, index=cfg.idx_speeds)
+
+        self.internally_pressurized = pd.Series(False, index=cfg.idx_speeds)
+        self.water_ingress_cost = pd.Series(None, index=cfg.idx_speeds)
+        self.water_damage_name = pd.Series(None, index=cfg.idx_speeds)
+
+        self.water_ratio = pd.Series(None, index=cfg.idx_speeds)
+        self.water_costing = pd.Series(None, index=cfg.idx_speeds)
+        self.dmg_conn_type = pd.DataFrame(None, columns=cfg.list_conn_type,
+                                          index=cfg.idx_speeds)
+
         self.dmg_map = dict()
         self.frag_levels = None
         self.wind_speeds = None
@@ -472,7 +438,7 @@ class HouseDamage(object):
         self.prevCurvePlot = None
 
         # Undefined and later added
-        self.result_wall_collapse = None
+        self.result_wall_collapse = False
 
         # self.id_sim = next(self.id_sim_gen)
 
@@ -481,8 +447,6 @@ class HouseDamage(object):
         self.wind_profile = cfg.wind_profile
         self.terrain_category = cfg.terrain_category
         self.construction_levels = cfg.construction_levels
-
-        self.house = house.queryHouseWithName(cfg.house_name, self.db)
 
         for conn_type_group in self.house.conn_type_groups:
             if conn_type_group.distribution_order >= 0:
@@ -495,12 +459,6 @@ class HouseDamage(object):
 
         # print('{}:{}'.format(self.region, cfg.region_name))
 
-        # sample new house and wind direction (if random)
-        if cfg.wind_dir_index == 8:
-            self.wind_orientation = cfg.get_wind_dir_index()
-            # print('{}'.format(house_damage.wind_orientation))
-        else:
-            self.wind_orientation = cfg.wind_dir_index
 
         self.debris_manager = None
         if cfg.flags['debris']:
@@ -642,41 +600,6 @@ class HouseDamage(object):
                 self.cpiAt = v
                 #self.result_buckets['cpi'] = v
                 # self.cfg.file_cpis.write('%d,%.3f\n' % (self.id_sim + 1, v))
-
-    def sample_construction_level(self):
-        rv = np.random.random_integers(0, 100)
-        cumprob = 0.0
-        for key, value in self.construction_levels.iteritems():
-            cumprob += value['probability'] * 100.0
-            if rv <= cumprob:
-                break
-        return key, value['mean_factor'], value['cov_factor']
-
-    def sample_house_and_wind_params(self):
-        self.set_wind_profile()
-        self.house.reset_results()
-        mean_factor = 1.0
-        cov_factor = 1.0
-        if self.flags['construction_levels']:
-            self.construction_level, mean_factor, cov_factor = \
-                self.sample_construction_level()
-
-        # print('self.construction_level: {}'.format(self.construction_level))
-        connection.assign_connection_strengths(self.house.connections,
-                                               mean_factor,
-                                               cov_factor)
-        # print('assign_connection_strength')
-        connection.assign_connection_deadloads(self.house.connections)
-        # print('assign_connection_deadloads')
-
-        zone.sample_zone_pressures(self.house.zones,
-                                   self.wind_orientation,
-                                   self.house.cpe_V,
-                                   self.house.cpe_k,
-                                   self.house.cpe_struct_V)
-        # print('sample_zone_pressures')
-        # we don't want to collapse multiple times (no need)
-        self.result_wall_collapse = False
 
     def check_house_collapse(self, wind_speed):
         if not self.result_wall_collapse:
