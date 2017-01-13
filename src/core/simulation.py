@@ -41,12 +41,36 @@ def simulate_wind_damage_to_houses(cfg):
     else:
         list_results = []
         for id_sim in range(cfg.no_sims):
-            results = run_simulation_per_house(id_sim, cfg)
-            list_results.append(results)
+            result = run_simulation_per_house(id_sim, cfg)
+            list_results.append(result)
 
     print('{}'.format(time.time()-tic))
 
-    print list_results[0]['prop_damaged']
+    # write to files
+    pd.DataFrame([x['dead_load'] for x in list_results]).to_csv(
+        cfg.file_dead_load_by_conn)
+
+    # list_results
+    # file_dead_load_by_conn
+    # 'file_strength_by_conn',
+    #
+    #
+    # 'file_dmg_by_conn',
+    #
+    # 'file_dmg_area_by_conn_grp',
+    # 'file_dmg_dist_by_conn',
+    # 'file_dmg_freq_by_conn_type',
+    # 'file_dmg_idx',
+    # 'file_dmg_map_by_conn_type',
+    # 'file_dmg_pct_by_conn_type',
+    # 'file_eff_area_by_zone',
+    # 'file_frag',
+    # 'file_house_cpi',
+    # 'file_repair_cost_by_conn_grp',
+    # 'file_rnd_parameters',
+    # 'file_water',
+    # 'file_wind_debris',
+
     return list_results
 
 
@@ -61,7 +85,8 @@ def run_simulation_per_house(id_sim, cfg):
 
     """
 
-    house_damage = HouseDamage(cfg)
+    rnd_state = np.random.RandomState(cfg.flags['random_seed'] + id_sim)
+    house_damage = HouseDamage(cfg, rnd_state)
 
     # iteration over wind speed list
     for id_speed, wind_speed in enumerate(cfg.speeds):
@@ -69,97 +94,20 @@ def run_simulation_per_house(id_sim, cfg):
         # simulate sampled house
         house_damage.run_simulation(wind_speed)
 
-        # house_damage.result_buckets['wind_direction'][id_speed] = \
-        #     cfg.dirs[house_damage.wind_orientation]
-        # house_damage.result_buckets['speed'][id_speed] = wind_speed
-        # house_damage.result_buckets['dmg_idx'][id_speed] = house_damage.di
-
-        # # collect results
-        # if cfg.flags['water_ingress']:
-        #
-        #     house_damage.result_buckets['dmg_idx_except_water'][id_speed] = \
-        #         house_damage.di_except_water
-        #
-        #     house_damage.result_buckets['water_ingress_cost'][id_speed] = \
-        #         house_damage.water_ingress_cost
-        #
-        #     house_damage.result_buckets['water_ratio'][id_speed] = \
-        #         house_damage.water_ratio
-        #
-        #     house_damage.result_buckets['water_damage_name'][id_speed] = \
-        #         house_damage.water_damage_name
-        #
-        #     house_damage.result_buckets['water_costing'][id_speed] = \
-        #         house_damage.water_costing
-        #
-        # if house_damage.cfg.flags['debris']:
-        #     house_damage.result_buckets['debris'][id_speed] = \
-        #         house_damage.debris_manager.result_dmgperc
-        #     house_damage.result_buckets['debris_nv'][id_speed] = \
-        #         house_damage.debris_manager.result_nv
-        #     house_damage.result_buckets['debris_num'][id_speed] = \
-        #         house_damage.debris_manager.result_num_items
-        """
-        # for all houses, count the number that were pressurized at
-        # this wind_speed
-        if house_damage.cpi == 0:
-            house_damage.result_buckets['pressurized'][id_speed] = False
-        else:
-            house_damage.result_buckets['pressurized'][id_speed] = True
-
-        if house_damage.cpiAt:
-            house_damage.result_buckets['cpi'] = house_damage.cpiAt
-
-        house_damage.result_buckets['conn_types'].loc[id_speed] = \
-            house_damage.damage_conn_type
-
-        house_damage.result_buckets['dmg_map'].loc[id_speed] = \
-            house_damage.dmg_map
-
-        for conn_type_group in house_damage.house.conn_type_groups:
-            str_ = conn_type_group.group_name
-            house_damage.result_buckets['damage_area'].loc[id_speed][str_] = \
-                conn_type_group.result_percent_damaged
-            house_damage.result_buckets['repair_cost'].loc[id_speed][str_] = \
-                conn_type_group.repair_cost
-
-        for conn in house_damage.house.connections:
-            str_ = conn.connection_name
-            house_damage.result_buckets['result_damaged'].loc[id_speed][str_] = \
-                conn.result_damaged
-            house_damage.result_buckets['result_damage_distributed'].loc[id_speed][str_] = \
-                conn.result_damage_distributed
-
-        for zone_ in house_damage.house.zones:
-            str_ = zone_.zone_name
-            house_damage.result_buckets['result_effective_area'].loc[id_speed][str_] = \
-                zone_.result_effective_area
-
-    house_damage.result_buckets['wind_ort'] = house_damage.wind_orientation
-    house_damage.result_buckets['profile_no'] = house_damage.profile
-    house_damage.result_buckets['const_level'] = house_damage.construction_level
-
-    for conn in house_damage.house.connections:
-        str_ = conn.connection_name
-        house_damage.result_buckets['strength'][str_] = conn.result_strength
-        house_damage.result_buckets['dead_load'][str_] = conn.result_deadload
-
-    if cfg.flags['plot_connection_damage']:
-        house_damage.plot_connection_damage(vRed=cfg.red_v,
-                                            vBlue=cfg.blue_v,
-                                            id_sim=id_sim)
-    """
-    result = copy.deepcopy(house_damage.bucket)
-
-    return result
+    return copy.deepcopy(house_damage.bucket)
 
 
 class HouseDamage(object):
 
-    def __init__(self, cfg):
+    def __init__(self, cfg, rnd_state):
+
+        assert isinstance(cfg, Scenario)
+        assert isinstance(rnd_state, np.random.RandomState)
 
         self.cfg = cfg
-        self.house = House(cfg)
+        self.rnd_state = rnd_state
+
+        self.house = House(cfg, rnd_state)
 
         self.qz = None
         self.Ms = None
@@ -280,7 +228,7 @@ class HouseDamage(object):
         if self.cfg.regional_shielding_factor <= 0.85:
             thresholds = np.array([63, 63 + 15])
             ms_dic = {0: 1.0, 1: 0.85, 2: 0.95}
-            idx = sum(thresholds <= self.cfg.rnd_state.random_integers(0, 100))
+            idx = sum(thresholds <= self.rnd_state.random_integers(0, 100))
             self.Ms = ms_dic[idx]
             wind_speed *= self.Ms / self.cfg.regional_shielding_factor
         else:

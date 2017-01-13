@@ -67,18 +67,10 @@ class Scenario(object):
         self.file_repair_cost_by_conn_grp = None
         self.file_dmg_by_conn = None
         self.file_strength_by_conn = None
-        self.file_deadload_by_conn = None
+        self.file_dead_load_by_conn = None
         self.file_dmg_dist_by_conn = None
         self.file_rnd_parameters = None
         self.file_eff_area_by_zone = None
-
-
-        self._rnd_state = None
-
-        self._list_conn = None
-        self._list_conn_type = None
-        self._list_conn_type_group = None
-        self._list_zone = None
 
         self.red_v = 54.0
         self.blue_v = 95.0
@@ -272,8 +264,8 @@ class Scenario(object):
             self.file_strength_by_conn = os.path.join(self.output_path,
                                                    'strength_by_conn.csv')
 
-            self.file_deadload_by_conn = os.path.join(self.output_path,
-                                                   'deadload_by_conn.csv')
+            self.file_dead_load_by_conn = os.path.join(self.output_path,
+                                                   'dead_load_by_conn.csv')
 
             self.file_dmg_dist_by_conn = os.path.join(self.output_path,
                                                    'dmg_dist_by_conn.csv')
@@ -283,51 +275,6 @@ class Scenario(object):
                                                       'effective_area_by_zone.csv')
         else:
             print 'output path is not assigned'
-
-        self.rnd_state = self.flags['random_seed']
-
-    @property
-    def rnd_state(self):
-        return self._rnd_state
-
-    @rnd_state.setter
-    def rnd_state(self, value):
-        self._rnd_state = np.random.RandomState(value)
-
-    @property
-    def list_conn_type_group(self):
-        return self._list_conn_type_group
-
-    @list_conn_type_group.setter
-    def list_conn_type_group(self, value):
-        assert isinstance(value, set)
-        self._list_conn_type_group = value
-
-    @property
-    def list_conn_type(self):
-        return self._list_conn_type
-
-    @list_conn_type.setter
-    def list_conn_type(self, value):
-        assert isinstance(value, set)
-        self._list_conn_type = value
-
-    @property
-    def list_conn(self):
-        return self._list_conn
-
-    @list_conn.setter
-    def list_conn(self, value):
-        assert isinstance(value, set)
-        self._list_conn = value
-
-    @property
-    def list_zone(self):
-        return self._list_zone
-
-    @list_zone.setter
-    def list_zone(self, value):
-        self._list_zone = value
 
     @property
     def region_name(self):

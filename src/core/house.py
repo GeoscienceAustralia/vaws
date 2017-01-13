@@ -9,15 +9,20 @@ from zone import Zone
 from database import House as TableHouse
 from database import DatabaseManager
 from stats import calc_big_a_b_values
+from scenario import Scenario
 
 import numpy as np
 
 
 class House(object):
 
-    def __init__(self, cfg):
+    def __init__(self, cfg, rnd_state):
+
+        assert isinstance(cfg, Scenario)
+        assert isinstance(rnd_state, np.random.RandomState)
 
         self.cfg = cfg
+        self.rnd_state = rnd_state
 
         db_house = DatabaseManager(cfg.db_file).session.query(
             TableHouse).filter_by(house_name=cfg.house_name).one()
@@ -68,7 +73,7 @@ class House(object):
                 cpe_str_cov=self.cpe_str_cov,
                 big_a=self.big_a,
                 big_b=self.big_b,
-                rnd_state=self.cfg.rnd_state)
+                rnd_state=self.rnd_state)
             self.zones.setdefault(item.id, _zone)
 
         for item in db_house.conn_type_groups:
@@ -81,9 +86,9 @@ class House(object):
                 for id_conn, _conn in _type.connections.iteritems():
                     _conn.sample_strength(mean_factor=self.str_mean_factor,
                                           cov_factor=self.str_cov_factor,
-                                          rnd_state=self.cfg.rnd_state)
+                                          rnd_state=self.rnd_state)
 
-                    _conn.sample_dead_load(rnd_state=self.cfg.rnd_state)
+                    _conn.sample_dead_load(rnd_state=self.rnd_state)
 
                     costing_area_by_group += _type.costing_area
 
@@ -117,7 +122,7 @@ class House(object):
 
         # set wind_orientation
         if self.cfg.wind_dir_index == 8:
-            self.wind_orientation = self.cfg.rnd_state.random_integers(0, 7)
+            self.wind_orientation = self.rnd_state.random_integers(0, 7)
         else:
             self.wind_orientation = self.cfg.wind_dir_index
 
@@ -131,7 +136,7 @@ class House(object):
         Returns: profile, mzcat
 
         """
-        self.profile = self.cfg.rnd_state.random_integers(1, 10)
+        self.profile = self.rnd_state.random_integers(1, 10)
         _wind_profile = self.cfg.wind_profiles[self.cfg.terrain_category][self.profile]
         self.mzcat = np.interp(self.height, self.cfg.heights, _wind_profile)
 
@@ -142,7 +147,7 @@ class House(object):
 
         """
         if self.cfg.flags['construction_levels']:
-            rv = self.cfg.rnd_state.random_integers(0, 100)
+            rv = self.rnd_state.random_integers(0, 100)
             key, value, cum_prob = None, None, 0.0
             for key, value in self.cfg.construction_levels.iteritems():
                 cum_prob += value['probability'] * 100.0
@@ -159,7 +164,6 @@ class House(object):
 # unit tests
 if __name__ == '__main__':
     import unittest
-    from scenario import Scenario
     from collections import Counter, OrderedDict
 
     class MyTestCase(unittest.TestCase):
@@ -168,8 +172,8 @@ if __name__ == '__main__':
         def setUpClass(cls):
 
             cfg = Scenario(cfg_file='../scenarios/test_roof_sheeting2.cfg')
-
-            cls.house = House(cfg)
+            rnd_state = np.random.RandomState(1)
+            cls.house = House(cfg, rnd_state)
 
         def test_set_house_wind_params(self):
 
@@ -294,8 +298,8 @@ if __name__ == '__main__':
 
             cfg = Scenario(
                 cfg_file='../scenarios/carl1_dmg_dist_off_no_wall_no_water.cfg')
-
-            house = House(cfg)
+            rnd_state = np.random.RandomState(1)
+            house = House(cfg, rnd_state=rnd_state)
 
             ref_dic = {'wallcladding': ['debris', 'wallracking', 'wallcollapse'],
                        'wallracking': 'wallcollapse',

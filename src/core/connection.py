@@ -357,6 +357,7 @@ if __name__ == '__main__':
     import unittest
     from scenario import Scenario
     from house import House
+    import numpy as np
 
     class MyTestCase(unittest.TestCase):
 
@@ -367,7 +368,8 @@ if __name__ == '__main__':
 
         def test_cal_prop_damaged(self):
 
-            house = House(self.cfg)
+            rnd_state = np.random.RandomState(1)
+            house = House(self.cfg, rnd_state=rnd_state)
             group = house.groups[1]
 
             for _conn in house.connections.itervalues():
@@ -396,7 +398,8 @@ if __name__ == '__main__':
 
         def test_cal_damage_capacity(self):
 
-            house = House(self.cfg)
+            rnd_state = np.random.RandomState(1)
+            house = House(self.cfg, rnd_state)
 
             # type 1
             house.connections[2].set_damage(20.0)
@@ -415,7 +418,8 @@ if __name__ == '__main__':
 
         def test_cal_load(self):
 
-            house = House(self.cfg)
+            rnd_state = np.random.RandomState(1)
+            house = House(self.cfg, rnd_state)
 
             # compute zone pressures
             wind_dir_index = 3
@@ -438,11 +442,12 @@ if __name__ == '__main__':
             self.assertEqual(_conn.load, None)
 
             _conn.cal_load(use_struct_pz=False)
-            self.assertAlmostEqual(_conn.load, 0.01736, places=4)
+            self.assertAlmostEqual(_conn.load, -0.01032, places=4)
 
         def test_check_damage1(self):
 
-            house = House(self.cfg)
+            rnd_state = np.random.RandomState(1)
+            house = House(self.cfg, rnd_state)
 
             # compute zone pressures
             wind_speed = 50.0
@@ -463,7 +468,8 @@ if __name__ == '__main__':
 
         def test_check_damage(self):
 
-            house = House(self.cfg)
+            rnd_state = np.random.RandomState(1)
+            house = House(self.cfg, rnd_state)
 
             # compute zone pressures
             wind_speed = 50.0
