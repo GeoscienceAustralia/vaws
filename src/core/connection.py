@@ -37,24 +37,24 @@ class Connection(object):
 
         self.strength_mean = dic_ctype['strength_mean']
         self.strength_std = dic_ctype['strength_std_dev']
-        self.deadload_mean = dic_ctype['deadload_mean']
-        self.deadload_std = dic_ctype['deadload_std_dev']
+        self.dead_load_mean = dic_ctype['deadload_mean']
+        self.dead_load_std = dic_ctype['deadload_std_dev']
 
         self.inf_zones = dict()
         for item in inst_conn.zones:
             self.inf_zones[item.zone_id] = Influence(item)
 
         self.strength = None
-        self.deadload = None
+        self.dead_load = None
 
-        self.result_failure_v = 0.0  # FIXME!!
-        self.result_failure_v_i = 0  # FIXME!!
-        self.result_failure_v_raw = 9999  # dummy value
+        # self.failure_v = 0.0  # FIXME!!
+        # self.failure_v_i = 0  # FIXME!!
+        self.failure_v_raw = 9999  # dummy value
 
-        self.result_damaged = False
-        self.result_damage_distributed = None
+        self.damaged = False
+        self.damaged_by_dist = None
 
-        self.result_load = None
+        self.load = None
 
     # def reset_connection_failure(self):
     #     self.result_failure_v = 0.0
@@ -79,7 +79,7 @@ class Connection(object):
         mu_lnx, std_lnx = compute_logarithmic_mean_stddev(mu, std)
         self.strength = sample_lognormal(mu_lnx, std_lnx, rnd_state)
 
-    def sample_deadload(self, rnd_state):
+    def sample_dead_load(self, rnd_state):
         """
 
         Args:
@@ -88,8 +88,9 @@ class Connection(object):
         Returns: sample of dead load following log normal dist.
 
         """
-        self.deadload = sample_lognormal(self.deadload_mean, self.deadload_std,
-                                         rnd_state)
+        self.dead_load = sample_lognormal(self.dead_load_mean,
+                                          self.dead_load_std,
+                                          rnd_state)
 
     def cal_load(self, use_struct_pz):
         """
@@ -102,29 +103,29 @@ class Connection(object):
 
         """
 
-        self.result_load = 0.0
-        if not self.result_damaged:
+        self.load = 0.0
+        if not self.damaged:
 
             for _inf in self.inf_zones.itervalues():
                 # if _inf.zone.effective_area > 0.0:
                 temp = _inf.coeff * _inf.zone.effective_area
 
                 if use_struct_pz:
-                    self.result_load += temp * _inf.zone.pz_struct
+                    self.load += temp * _inf.zone.pz_struct
                 else:
-                    self.result_load += temp * _inf.zone.pz
+                    self.load += temp * _inf.zone.pz
 
-            self.result_load += self.deadload
+            self.load += self.dead_load
 
     def set_damage(self, wind_speed):
-        self.result_damaged = True
-        self.result_damage_distributed = False
-        self.result_failure_v_i += 1
-        self.result_failure_v_raw = wind_speed
-        num_ = wind_speed + (
-                            self.result_failure_v_i - 1) * self.result_failure_v
-        denom_ = self.result_failure_v_i
-        self.result_failure_v = num_ / denom_
+        self.damaged = True
+        self.damaged_by_dist = False
+        # self.failure_v_i += 1
+        self.failure_v_raw = wind_speed
+        # num_ = wind_speed + (
+        #                     self.failure_v_i - 1) * self.failure_v
+        # denom_ = self.failure_v_i
+        # self.failure_v = num_ / denom_
 
 
 class ConnectionType(object):
@@ -142,8 +143,8 @@ class ConnectionType(object):
 
         self.strength_mean = dic_['strength_mean']
         self.strength_std = dic_['strength_std_dev']
-        self.deadload_mean = dic_['deadload_mean']
-        self.deadload_std = dic_['deadload_std_dev']
+        self.dead_load_mean = dic_['deadload_mean']
+        self.dead_load_std = dic_['deadload_std_dev']
         self.group_id = dic_['grouping_id']
         self.group_name = inst.group.group_name
         dic_.setdefault('group_name', self.group_name)
@@ -156,7 +157,7 @@ class ConnectionType(object):
         self.damage_capacity = None  # min wind speed at damage
         self.prop_damaged = None
 
-    def run_damage_summary(self):
+    def damage_summary(self):
         """
         compute proportion of damaged connections and damage capacity
         Returns: prop_damaged, damage_capacity
@@ -165,8 +166,8 @@ class ConnectionType(object):
         num_damaged = 0
         _value = 99999
         for _conn in self.connections.itervalues():
-            num_damaged += _conn.result_damaged
-            _value = min(_conn.result_failure_v_raw, _value)
+            num_damaged += _conn.damaged
+            _value = min(_conn.failure_v_raw, _value)
 
         try:
             self.prop_damaged = num_damaged / float(self.no_connections)
@@ -198,7 +199,7 @@ class ConnectionTypeGroup(object):
         self.water_ingress_ord = dic_['water_ingress_order']
         self.costing_id = dic_['costing_id']
         self.costing = Costing(inst.costing)
-        self.costing_area = 0.0
+        self._costing_area = None
         self.no_connections = 0
 
         self.types = dict()
@@ -218,21 +219,51 @@ class ConnectionTypeGroup(object):
 
         self._dist_tuple = None
 
-        self.damage_ratio = None
-
         self.prop_damaged = None
+        self.prop_damaged_area = None
+        self.repair_cost = None
+
+    def cal_repair_cost(self, value):
+        """
+
+        Args:
+            value: proportion of damaged area
+
+        Returns:
+
+        """
+        try:
+            self.repair_cost = self.costing.calculate_cost(value)
+        except AssertionError:
+            self.repair_cost = 0.0
+
+    @property
+    def costing_area(self):
+        return self._costing_area
+
+    @costing_area.setter
+    def costing_area(self, value):
+        self._costing_area = value
 
     def cal_prop_damaged(self):
 
         num_damaged = 0
+        area_damaged = 0.0
+
         for _type in self.types.itervalues():
             for _conn in _type.connections.itervalues():
-                num_damaged += _conn.result_damaged
+                num_damaged += _conn.damaged
+                area_damaged += _type.costing_area * _conn.damaged
 
         try:
             self.prop_damaged = num_damaged / float(self.no_connections)
         except ZeroDivisionError:
             self.prop_damaged = 0.0
+
+        try:
+            self.prop_damaged_area = area_damaged / self.costing_area
+        except ZeroDivisionError:
+            self.prop_damaged_area = 0.0
 
     @property
     def dist_tuple(self):
@@ -283,12 +314,12 @@ class ConnectionTypeGroup(object):
                     _conn.cal_load(use_struct_pz)
 
                     # if load is negative, check failure
-                    if _conn.result_load < -1.0 * _conn.strength:
+                    if _conn.load < -1.0 * _conn.strength:
 
                         _conn.set_damage(wind_speed)
 
                 # summary by connection type
-                _type.run_damage_summary()
+                _type.damage_summary()
 
 
 class Influence(object):
@@ -340,22 +371,28 @@ if __name__ == '__main__':
             group = house.groups[1]
 
             for _conn in house.connections.itervalues():
-                self.assertEqual(_conn.result_damaged, False)
+                self.assertEqual(_conn.damaged, False)
 
             for _id in [1, 4, 5, 7, 8, 11, 12]:
                 house.connections[_id].set_damage(20.0)
 
             ref_dic = {1: 4, 2: 4, 3: 2, 4: 8}
+            ref_area = {1: 0.405, 2: 0.405, 3: 0.225, 4: 0.81}
             for id_type, _type in group.types.iteritems():
                 self.assertEqual(_type.no_connections, ref_dic[id_type])
+                self.assertEqual(_type.costing_area, ref_area[id_type])
+
+            # costing area by group
+            self.assertAlmostEqual(group.costing_area, 10.17, places=2)
 
             ref_dic = {1: 0.5, 2: 0.5, 3: 0.5, 4: 0.25}
             for id_type, _type in group.types.iteritems():
-                _type.run_damage_summary()
+                _type.damage_summary()
                 self.assertEqual(_type.prop_damaged, ref_dic[id_type])
 
             group.cal_prop_damaged()
             self.assertAlmostEqual(group.prop_damaged, 0.3889, places=4)
+            self.assertAlmostEqual(group.prop_damaged_area, 0.3407, places=4)
 
         def test_cal_damage_capacity(self):
 
@@ -373,7 +410,7 @@ if __name__ == '__main__':
 
             ref_dic = {1: 20.0, 2: 30.0, 3: 45.0, 4: 9999.0}
             for id_type, _type in house.types.iteritems():
-                _type.run_damage_summary()
+                _type.damage_summary()
                 self.assertAlmostEqual(_type.damage_capacity, ref_dic[id_type])
 
         def test_cal_load(self):
@@ -397,11 +434,11 @@ if __name__ == '__main__':
             _conn = house.connections[1]
 
             # init
-            self.assertEqual(_conn.result_damaged, False)
-            self.assertEqual(_conn.result_load, None)
+            self.assertEqual(_conn.damaged, False)
+            self.assertEqual(_conn.load, None)
 
             _conn.cal_load(use_struct_pz=False)
-            self.assertAlmostEqual(_conn.result_load, 0.01736, places=4)
+            self.assertAlmostEqual(_conn.load, 0.01736, places=4)
 
         def test_check_damage1(self):
 
@@ -451,7 +488,7 @@ if __name__ == '__main__':
             ref_dic[10] = True
             for id_conn, _conn in house.connections.iteritems():
                 _conn.cal_load(use_struct_pz=False)
-                self.assertEqual(_conn.result_damaged, ref_dic[id_conn])
+                self.assertEqual(_conn.damaged, ref_dic[id_conn])
 
             ref_prop = {1: 0.0, 2: 0.0, 3: 0.0, 4: 0.125}
             ref_capacity = {1: 9999, 2: 9999, 3: 9999, 4: 50.0}

@@ -49,7 +49,7 @@ class Costing(object):
             raise LookupError('Invalid int_factor_type: {}'.format(
                 self.int_factor_type))
 
-    def calculate_damage(self, x):
+    def calculate_cost(self, x):
         assert 0 <= x <= 1
         return x * (self.area * self.env_repair(x) * self.env_repair_rate +
                     self.lining_repair(x) * self.int_repair_rate)
@@ -81,7 +81,7 @@ if __name__ == '__main__':
 
         @classmethod
         def setUpClass(cls):
-            db_file = './test_roof_sheeting2.db'
+            db_file = '../test_roof_sheeting2.db'
             db_costing = database.DatabaseManager(db_file).session.query(
                 database.DamageCosting).all()
 
@@ -103,11 +103,11 @@ if __name__ == '__main__':
             self.assertAlmostEqual(self.costing1.env_c2, c2)
             self.assertAlmostEqual(self.costing1.env_c3, c3)
 
-            self.assertAlmostEqual(self.costing1.calculate_damage(0.0),
+            self.assertAlmostEqual(self.costing1.calculate_cost(0.0),
                                    0.0)
-            self.assertAlmostEqual(self.costing1.calculate_damage(0.5),
+            self.assertAlmostEqual(self.costing1.calculate_cost(0.5),
                                    451.5496, places=4)
-            self.assertAlmostEqual(self.costing1.calculate_damage(1.0),
+            self.assertAlmostEqual(self.costing1.calculate_cost(1.0),
                                    746.0250, places=4)
 
         def test_env_func_type2(self):
@@ -123,11 +123,11 @@ if __name__ == '__main__':
             self.assertAlmostEqual(self.costing2.env_c1, c1)
             self.assertAlmostEqual(self.costing2.env_c2, c2)
 
-            self.assertAlmostEqual(self.costing2.calculate_damage(0.0),
+            self.assertAlmostEqual(self.costing2.calculate_cost(0.0),
                                    0.0)
-            self.assertAlmostEqual(self.costing2.calculate_damage(0.5),
+            self.assertAlmostEqual(self.costing2.calculate_cost(0.5),
                                    15956.3916, places=4)
-            self.assertAlmostEqual(self.costing2.calculate_damage(1.0),
+            self.assertAlmostEqual(self.costing2.calculate_cost(1.0),
                                    27264.7029, places=4)
 
 

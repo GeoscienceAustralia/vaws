@@ -50,6 +50,7 @@ class House(object):
         self.types = dict()  # dict of conn types with id
         self.connections = dict()  # dict of connections with id
         self.zones = dict()  # dict of zones with id
+        self.factors_costing = dict()  # dict of damage factoring with id
 
         # init house
         self.set_house_wind_params()
@@ -82,7 +83,7 @@ class House(object):
                                           cov_factor=self.str_cov_factor,
                                           rnd_state=self.cfg.rnd_state)
 
-                    _conn.sample_deadload(rnd_state=self.cfg.rnd_state)
+                    _conn.sample_dead_load(rnd_state=self.cfg.rnd_state)
 
                     costing_area_by_group += _type.costing_area
 
@@ -96,6 +97,11 @@ class House(object):
             _group.dist_tuple = self.rows, self.cols
 
             self.groups.setdefault(item.id, _group)
+
+        # factors to avoid double counting in computing repair cost
+        for item in db_house.factorings:
+            self.factors_costing.setdefault(
+                item.parent_id, []).append(item.factor_id)
 
     def set_house_wind_params(self):
         """
@@ -283,6 +289,39 @@ if __name__ == '__main__':
 
             for id_conn, _conn in self.house.types[1].connections.iteritems():
                 self.assertEqual(self.house.connections[id_conn], _conn)
+
+        def test_factors_costing(self):
+
+            cfg = Scenario(
+                cfg_file='../scenarios/carl1_dmg_dist_off_no_wall_no_water.cfg')
+
+            house = House(cfg)
+
+            ref_dic = {'wallcladding': ['debris', 'wallracking', 'wallcollapse'],
+                       'wallracking': 'wallcollapse',
+                       'debris': ['wallracking', 'wallcollapse'],
+                       'sheeting': ['rafter', 'batten'],
+                       'batten': ['rafter']}
+
+            for _id, values in house.factors_costing.iteritems():
+                for _id_upper in values:
+
+                    _group_name = house.groups[_id].name
+                    _upper_name = house.groups[_id_upper].name
+                    msg = 'The repair cost of {} is not included in {}'.format(
+                        _group_name, _upper_name)
+                    self.assertIn(_upper_name, ref_dic[_group_name], msg=msg)
+
+        def test_list_groups_types_conns(self):
+
+            list_groups = [x.name for x in self.house.groups.itervalues()]
+            list_types = [x.name for x in self.house.types.itervalues()]
+            list_conns = [x.name for x in self.house.connections.itervalues()]
+
+            self.assertEqual(['sheeting'], list_groups)
+            self.assertEqual(['sheetinggable', 'sheetingeave', 'sheetingcorner',
+                              'sheeting'], list_types)
+            self.assertEqual([str(x) for x in range(1, 19)], list_conns)
 
     suite = unittest.TestLoader().loadTestsFromTestCase(MyTestCase)
     unittest.TextTestRunner(verbosity=2).run(suite)
