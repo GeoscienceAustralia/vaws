@@ -5,6 +5,7 @@ dependencies:
 - cycler=0.9.0=py27_0
 - dateutil=2.4.1=py27_0
 - freetype=2.5.5=0
+- hdf5=1.8.15.1=2
 - libpng=1.6.17=0
 - matplotlib=1.5.1=np110py27_0
 - mkl=11.3.1=0
@@ -14,6 +15,7 @@ dependencies:
 - pandas=0.17.1=np110py27_0
 - pip=8.1.0=py27_0
 - python=2.7.11=0
+- pytables=3.2.2=np110py27_0
 - python-dateutil=2.4.2=py27_0
 - pyparsing=2.0.3=py27_0
 - pyqt=4.11.4=py27_1

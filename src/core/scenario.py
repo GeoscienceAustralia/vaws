@@ -54,23 +54,29 @@ class Scenario(object):
         self.flight_time_mean = None
         self.flight_time_stddev = None
 
-        self._file_dmg_freq_by_conn_type = None
+        # self._file_dmg_freq_by_conn_type = None
+        #
+        # self._file_house_cpi = None  #
+        # self._file_wind_debris = None
+        # self.file_dmg_idx = None
+        # self.file_dmg_map_by_conn_type = None
+        # self.file_frag = None
+        # self._file_water = None
+        # self.file_dmg_pct_by_conn_type = None
+        # self.file_dmg_area_by_conn_grp = None
+        # self.file_repair_cost_by_conn_grp = None
+        # self.file_dmg_by_conn = None
+        # self.file_strength_by_conn = None
+        # self.file_dead_load_by_conn = None
+        # self.file_dmg_dist_by_conn = None
+        # self.file_rnd_parameters = None
+        # self.file_eff_area_by_zone = None
 
-        self._file_house_cpi = None  #
-        self._file_wind_debris = None
-        self.file_dmg_idx = None
-        self.file_dmg_map_by_conn_type = None
-        self.file_frag = None
-        self._file_water = None
-        self.file_dmg_pct_by_conn_type = None
-        self.file_dmg_area_by_conn_grp = None
-        self.file_repair_cost_by_conn_grp = None
-        self.file_dmg_by_conn = None
-        self.file_strength_by_conn = None
-        self.file_dead_load_by_conn = None
-        self.file_dmg_dist_by_conn = None
-        self.file_rnd_parameters = None
-        self.file_eff_area_by_zone = None
+        self.file_model = None
+        self.file_group = None
+        self.file_type = None
+        self.file_conn = None
+        self.file_zone = None
 
         self.red_v = 54.0
         self.blue_v = 95.0
@@ -237,6 +243,7 @@ class Scenario(object):
                 os.makedirs(self.output_path)
             print 'output directory: {}'.format(self.output_path)
 
+            """
             # wind speed at pressurised failure
             self.file_house_cpi = os.path.join(self.output_path, 'house_cpi.csv')
 
@@ -269,10 +276,14 @@ class Scenario(object):
 
             self.file_dmg_dist_by_conn = os.path.join(self.output_path,
                                                    'dmg_dist_by_conn.csv')
-            self.file_rnd_parameters = os.path.join(self.output_path,
-                                                 'random_parameters.csv')
-            self.file_eff_area_by_zone = os.path.join(self.output_path,
-                                                      'effective_area_by_zone.csv')
+            """
+
+            self.file_model = os.path.join(self.output_path, 'results_model.h5')
+            self.file_group = os.path.join(self.output_path, 'results_group.h5')
+            self.file_type = os.path.join(self.output_path, 'results_type.h5')
+            self.file_conn = os.path.join(self.output_path, 'results_conn.h5')
+            self.file_zone = os.path.join(self.output_path, 'results_zone.h5')
+
         else:
             print 'output path is not assigned'
 

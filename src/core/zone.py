@@ -66,7 +66,7 @@ class Zone(object):
             big_b:
             rnd_state: default None
 
-        Returns:
+        Returns: cpe, cpe_str, cpe_eave
 
         """
 

@@ -46,30 +46,55 @@ def simulate_wind_damage_to_houses(cfg):
 
     print('{}'.format(time.time()-tic))
 
-    # write to files
-    pd.DataFrame([x['dead_load'] for x in list_results]).to_csv(
-        cfg.file_dead_load_by_conn)
+    # save to files
 
-    # list_results
-    # file_dead_load_by_conn
-    # 'file_strength_by_conn',
-    #
-    #
-    # 'file_dmg_by_conn',
-    #
-    # 'file_dmg_area_by_conn_grp',
-    # 'file_dmg_dist_by_conn',
-    # 'file_dmg_freq_by_conn_type',
-    # 'file_dmg_idx',
-    # 'file_dmg_map_by_conn_type',
-    # 'file_dmg_pct_by_conn_type',
-    # 'file_eff_area_by_zone',
-    # 'file_frag',
-    # 'file_house_cpi',
-    # 'file_repair_cost_by_conn_grp',
-    # 'file_rnd_parameters',
-    # 'file_water',
-    # 'file_wind_debris',
+    # record randomly generated parameters by simulation model
+    hdf = pd.HDFStore(cfg.file_model)
+    for item in ['wind_orientation', 'profile', 'construction_level', 'mzcat']:
+        ps_ = pd.Series([x[item] for x in list_results])
+        hdf.append(item, ps_, format='t')
+
+    for item in ['qz', 'Ms', 'cpi', 'cpiAt', 'collapse', 'di',
+                 'di_except_water']:
+        ps_ = pd.DataFrame([x[item] for x in list_results])
+        hdf.append(item, ps_, format='t')
+    hdf.close()
+
+    # by connection for each model
+    hdf = pd.HDFStore(cfg.file_conn)
+    for item in ['dead_load', 'strength']:
+        ps_ = pd.DataFrame([x[item] for x in list_results])
+        hdf.append(item, ps_, format='t')
+
+    for item in ['damaged', 'damaged_by_dist', 'failure_v_raw', 'load']:
+        dic_ = {key: x[item] for key, x in enumerate(list_results)}
+        hdf[item] = pd.Panel(dic_)
+    hdf.close()
+
+    # results by type for each model
+    hdf = pd.HDFStore(cfg.file_type)
+    for item in ['damage_capacity', 'prop_damaged_type']:
+        dic_ = {key: x[item] for key, x in enumerate(list_results)}
+        hdf[item] = pd.Panel(dic_)
+    hdf.close()
+
+    # results by group for each model
+    hdf = pd.HDFStore(cfg.file_group)
+    for item in ['prop_damaged_group', 'prop_damaged_area', 'repair_cost']:
+        dic_ = {key: x[item] for key, x in enumerate(list_results)}
+        hdf[item] = pd.Panel(dic_)
+    hdf.close()
+
+    # by zone for each model
+    hdf = pd.HDFStore(cfg.file_zone)
+    for item in ['effective_area', 'cpe', 'cpe_str', 'cpe_eave']:
+        ps_ = pd.DataFrame([x[item] for x in list_results])
+        hdf.append(item, ps_, format='t')
+
+    for item in ['pz', 'pz_str']:
+        dic_ = {key: x[item] for key, x in enumerate(list_results)}
+        hdf[item] = pd.Panel(dic_)
+    hdf.close()
 
     return list_results
 
@@ -87,6 +112,9 @@ def run_simulation_per_house(id_sim, cfg):
 
     rnd_state = np.random.RandomState(cfg.flags['random_seed'] + id_sim)
     house_damage = HouseDamage(cfg, rnd_state)
+
+    for item in ['profile', 'wind_orientation', 'construction_level', 'mzcat']:
+        house_damage.bucket[item] = getattr(house_damage.house, item)
 
     # iteration over wind speed list
     for id_speed, wind_speed in enumerate(cfg.speeds):
@@ -122,6 +150,7 @@ class HouseDamage(object):
         self.list_groups = [x.name for x in self.house.groups.itervalues()]
         self.list_types = [x.name for x in self.house.types.itervalues()]
         self.list_conns = [x.name for x in self.house.connections.itervalues()]
+        self.list_zones = [x.name for x in self.house.zones.itervalues()]
 
         self.init_bucket()
 
@@ -163,12 +192,12 @@ class HouseDamage(object):
             self.bucket[item] = pd.Series(None, index=self.cfg.idx_speeds)
 
         # by group
-        for item in ['prop_damaged', 'prop_damaged_area', 'repair_cost']:
+        for item in ['prop_damaged_group', 'prop_damaged_area', 'repair_cost']:
             self.bucket[item] = pd.DataFrame(
                 None, columns=self.list_groups, index=self.cfg.idx_speeds)
 
         # by type
-        for item in ['damage_capacity', 'prop_damaged']:
+        for item in ['damage_capacity', 'prop_damaged_type']:
             self.bucket[item] = pd.DataFrame(
                 None, columns=self.list_types, index=self.cfg.idx_speeds)
 
@@ -178,13 +207,17 @@ class HouseDamage(object):
                 None, columns=self.list_conns, index=self.cfg.idx_speeds)
 
         for item in self.list_conns:
-            self.bucket.setdefault('strength', {})[item] = None
-            self.bucket.setdefault('dead_load', {})[item] = None
+            for _att in ['strength', 'dead_load']:
+                self.bucket.setdefault(_att, {})[item] = None
 
         # by zone
-        # for item in ['result_effective_area']:
-        #     result_buckets[item] = pd.DataFrame(
-        #         None, columns=cfg.list_zone, index=cfg.idx_speeds)
+        for item in ['pz', 'pz_str']:
+            self.bucket[item] = pd.DataFrame(
+                None, columns=self.list_zones, index=self.cfg.idx_speeds)
+
+        for item in self.list_zones:
+            for _att in ['effective_area', 'cpe', 'cpe_str', 'cpe_eave']:
+                self.bucket.setdefault(_att, {})[item] = None
 
     def fill_bucket(self, wind_speed):
 
@@ -195,12 +228,12 @@ class HouseDamage(object):
             self.bucket[item][ispeed] = getattr(self, item)
 
         # by group
-        for item in ['prop_damaged', 'prop_damaged_area', 'repair_cost']:
+        for item in ['prop_damaged_group', 'prop_damaged_area', 'repair_cost']:
             for _value in self.house.groups.itervalues():
                 self.bucket[item][_value.name][ispeed] = getattr(_value, item)
 
         # by type
-        for item in ['damage_capacity', 'prop_damaged']:
+        for item in ['damage_capacity', 'prop_damaged_type']:
             for _value in self.house.types.itervalues():
                 self.bucket[item][_value.name][ispeed] = getattr(_value, item)
 
@@ -211,6 +244,15 @@ class HouseDamage(object):
                 self.bucket[item][_value.name][ispeed] = getattr(_value, item)
 
             for item in ['strength', 'dead_load']:
+                self.bucket[item][_value.name] = getattr(_value, item)
+
+        # by zone
+        for _value in self.house.zones.itervalues():
+
+            for item in ['pz', 'pz_str']:
+                self.bucket[item][_value.name][ispeed] = getattr(_value, item)
+
+            for item in ['effective_area', 'cpe', 'cpe_str', 'cpe_eave']:
                 self.bucket[item][_value.name] = getattr(_value, item)
 
     def calculate_qz_Ms(self, wind_speed):
@@ -260,7 +302,7 @@ class HouseDamage(object):
 
             for _group in self.house.groups.itervalues():
 
-                if 0 < _group.trigger_collapse_at <= _group.prop_damaged:
+                if 0 < _group.trigger_collapse_at <= _group.prop_damaged_group:
 
                     self.collapse = True
 

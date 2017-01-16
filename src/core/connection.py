@@ -155,12 +155,12 @@ class ConnectionType(object):
 
         self.no_connections = len(self.connections)
         self.damage_capacity = None  # min wind speed at damage
-        self.prop_damaged = None
+        self.prop_damaged_type = None
 
     def damage_summary(self):
         """
         compute proportion of damaged connections and damage capacity
-        Returns: prop_damaged, damage_capacity
+        Returns: prop_damaged_type, damage_capacity
 
         """
         num_damaged = 0
@@ -170,9 +170,9 @@ class ConnectionType(object):
             _value = min(_conn.failure_v_raw, _value)
 
         try:
-            self.prop_damaged = num_damaged / float(self.no_connections)
+            self.prop_damaged_type = num_damaged / float(self.no_connections)
         except ZeroDivisionError:
-            self.prop_damaged = 0.0
+            self.prop_damaged_type = 0.0
 
         self.damage_capacity = _value
 
@@ -219,7 +219,7 @@ class ConnectionTypeGroup(object):
 
         self._dist_tuple = None
 
-        self.prop_damaged = None
+        self.prop_damaged_group = None
         self.prop_damaged_area = None
         self.repair_cost = None
 
@@ -256,9 +256,9 @@ class ConnectionTypeGroup(object):
                 area_damaged += _type.costing_area * _conn.damaged
 
         try:
-            self.prop_damaged = num_damaged / float(self.no_connections)
+            self.prop_damaged_group = num_damaged / float(self.no_connections)
         except ZeroDivisionError:
-            self.prop_damaged = 0.0
+            self.prop_damaged_group = 0.0
 
         try:
             self.prop_damaged_area = area_damaged / self.costing_area
