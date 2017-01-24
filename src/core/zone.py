@@ -18,11 +18,13 @@ class Zone(object):
         """
         dic_ = copy.deepcopy(inst.__dict__)
         self.id = dic_['id']
-        self.name = dic_['zone_name']
+        self.name = dic_['zone_name']  # zone location
         self.area = dic_['zone_area']
 
         self.cpi_alpha = dic_['cpi_alpha']
         self.wall_dir = dic_['wall_dir']
+
+        self.grid = self.get_grid_from_zone_location()
 
         self.cpe_mean = dict()
         self.cpe_str_mean = dict()
@@ -50,7 +52,7 @@ class Zone(object):
             self.is_wall_zone = False
 
     def sample_zone_pressure(self, wind_dir_index, cpe_cov, cpe_k,
-                              cpe_str_cov, big_a, big_b, rnd_state):
+                             cpe_str_cov, big_a, big_b, rnd_state):
 
         """
         Sample external Zone Pressures for sheeting, structure and eaves Cpe,
@@ -121,26 +123,84 @@ class Zone(object):
         self.pz_str = qz * (self.cpe_str - self.cpi_alpha * cpi
                             - self.cpe_eave) * diff_shielding
 
+    @staticmethod
+    def get_zone_location_from_grid(_zone_grid):
+        """
+        Create a string location (eg 'A10') from zero based grid refs (col=0,
+        row=9)
 
-def getZoneLocFromGrid(gridCol, gridRow):
+        Args:
+            _zone_grid: tuple
+
+        Returns: string location
+
+        """
+        assert isinstance(_zone_grid, tuple)
+        return num2str(_zone_grid[0] + 1) + str(_zone_grid[1] + 1)
+
+    def get_grid_from_zone_location(self):
+        """
+        Extract 0 based grid refs from string location (eg 'A10' to 0, 9)
+        """
+        chr_part = ''
+        for i, item in enumerate(self.name):
+            try:
+                float(item)
+            except ValueError:
+                chr_part += item
+            else:
+                break
+        num_part = self.name.strip(chr_part)
+        return str2num(chr_part) - 1, int(num_part) - 1
+
+    def update_cpe_and_area(self, source_zone, source_area):
+        """
+
+        Args:
+            source_zone: source zone
+            source_area: factored area of source zone
+
+        Returns: cpe, cpe_str, effective_area
+
+        """
+
+        updated_area = self.effective_area + source_area
+
+        self.cpe = (self.effective_area * self.cpe +
+                    source_area * source_zone.cpe) / updated_area
+
+        self.cpe_str = (self.effective_area * self.cpe_str +
+                        source_area * source_zone.cpe_str) / updated_area
+
+        # update effective_area
+        self.effective_area = updated_area
+
+def str2num(s):
     """
-    Create a string location (eg 'A10') from zero based grid refs (col=0,
-    row=11)
+    s: string
+    return number
     """
-    locX = chr(ord('A') + gridCol)
-    locY = str(gridRow + 1)
-    return locX + locY
+    s = s.strip()
+    n_digit = len(s)
+    n = 0
+    for i, ch_ in enumerate(s, 1):
+        ch2num = ord(ch_.upper()) - 64  # A -> 1
+        n += ch2num*26**(n_digit-i)
+    return n
 
 
-def getGridFromZoneLoc(loc):
+def num2str(n):
     """
-    Extract 0 based grid refs from string location (eg 'A10' to 0, 11)
+    n: number
+    return string
     """
-    locCol = loc[0]
-    locRow = int(loc[1:])
-    gridCol = ord(locCol) - ord('A')
-    gridRow = locRow - 1
-    return gridCol, gridRow
+    div = n
+    string = ''
+    while div > 0:
+        module = (div-1) % 26
+        string = chr(65 + module) + string
+        div = int((div-module)/26)
+    return string
 
 
 # unit tests
@@ -165,11 +225,13 @@ if __name__ == '__main__':
             cls.rnd_state = np.random.RandomState(13)
 
         def test_zonegrid(self):
-            loc = 'N12'
-            gridCol, gridRow = getGridFromZoneLoc(loc)
-            self.assertEquals(gridRow, 11)
-            self.assertEquals(gridCol, 13)
-            self.assertEquals(getZoneLocFromGrid(gridCol, gridRow), loc)
+            _zone = Zone(self.db_house.zones[0])
+            _zone.name = 'N12'
+            _col, _row = _zone.get_grid_from_zone_location()
+            self.assertEquals(_col, 13)  # N
+            self.assertEquals(_row, 11)  # 12
+            self.assertEquals(_zone.get_zone_location_from_grid((_col, _row)),
+                              _zone.name)
 
         def test_is_wall(self):
             _zone = Zone(self.db_house.zones[0])
@@ -202,6 +264,14 @@ if __name__ == '__main__':
 
             self.assertAlmostEqual(_zone.pz, -0.08876, places=4)
             self.assertAlmostEqual(_zone.pz_str, -0.03881, places=4)
+
+        def test_num2str(self):
+            self.assertEqual(num2str(1), 'A')
+            self.assertEqual(num2str(27), 'AA')
+
+        def test_str2num(self):
+            self.assertEqual(str2num('B'), 2)
+            self.assertEqual(str2num('AB'), 28)
 
     suite = unittest.TestLoader().loadTestsFromTestCase(MyTestCase)
     unittest.TextTestRunner(verbosity=2).run(suite)

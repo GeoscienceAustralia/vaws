@@ -47,9 +47,8 @@ def simulate_wind_damage_to_houses(cfg):
     print('{}'.format(time.time()-tic))
 
     # save to files
-
     # record randomly generated parameters by simulation model
-    hdf = pd.HDFStore(cfg.file_model)
+    hdf = pd.HDFStore(cfg.file_model, mode='w')
     for item in ['wind_orientation', 'profile', 'construction_level', 'mzcat']:
         ps_ = pd.Series([x[item] for x in list_results])
         hdf.append(item, ps_, format='t')
@@ -61,32 +60,32 @@ def simulate_wind_damage_to_houses(cfg):
     hdf.close()
 
     # by connection for each model
-    hdf = pd.HDFStore(cfg.file_conn)
+    hdf = pd.HDFStore(cfg.file_conn, mode='w')
     for item in ['dead_load', 'strength']:
         ps_ = pd.DataFrame([x[item] for x in list_results])
         hdf.append(item, ps_, format='t')
 
-    for item in ['damaged', 'damaged_by_dist', 'failure_v_raw', 'load']:
+    for item in ['damaged', 'failure_v_raw', 'load']:
         dic_ = {key: x[item] for key, x in enumerate(list_results)}
         hdf[item] = pd.Panel(dic_)
     hdf.close()
 
     # results by type for each model
-    hdf = pd.HDFStore(cfg.file_type)
+    hdf = pd.HDFStore(cfg.file_type, mode='w')
     for item in ['damage_capacity', 'prop_damaged_type']:
         dic_ = {key: x[item] for key, x in enumerate(list_results)}
         hdf[item] = pd.Panel(dic_)
     hdf.close()
 
     # results by group for each model
-    hdf = pd.HDFStore(cfg.file_group)
+    hdf = pd.HDFStore(cfg.file_group, mode='w')
     for item in ['prop_damaged_group', 'prop_damaged_area', 'repair_cost']:
         dic_ = {key: x[item] for key, x in enumerate(list_results)}
         hdf[item] = pd.Panel(dic_)
     hdf.close()
 
     # by zone for each model
-    hdf = pd.HDFStore(cfg.file_zone)
+    hdf = pd.HDFStore(cfg.file_zone, mode='w')
     for item in ['effective_area', 'cpe', 'cpe_str', 'cpe_eave']:
         ps_ = pd.DataFrame([x[item] for x in list_results])
         hdf.append(item, ps_, format='t')
@@ -145,13 +144,7 @@ class HouseDamage(object):
         self.di = None
         self.di_except_water = None
 
-        self.bucket = dict()
-
-        self.list_groups = [x.name for x in self.house.groups.itervalues()]
-        self.list_types = [x.name for x in self.house.types.itervalues()]
-        self.list_conns = [x.name for x in self.house.connections.itervalues()]
-        self.list_zones = [x.name for x in self.house.zones.itervalues()]
-
+        self.bucket = None
         self.init_bucket()
 
     def run_simulation(self, wind_speed):
@@ -175,16 +168,20 @@ class HouseDamage(object):
         # check damage by connection type group
         for _group in self.house.groups.itervalues():
             _group.check_damage(wind_speed)
-
-        # redistribute by
-        # for _group in self.house.groups.itervalues():
-        #     self.redistribute_damage(_group)
+            self.distribute_damage(_group)
 
         self.check_house_collapse(wind_speed)
         self.cal_damage_index()
         self.fill_bucket(wind_speed)
 
     def init_bucket(self):
+
+        self.bucket = dict()
+
+        list_groups = [x.name for x in self.house.groups.itervalues()]
+        list_types = [x.name for x in self.house.types.itervalues()]
+        list_conns = [x.name for x in self.house.connections.itervalues()]
+        list_zones = [x.name for x in self.house.zones.itervalues()]
 
         # by wind speed
         for item in ['qz', 'Ms', 'cpi', 'cpiAt', 'collapse', 'di',
@@ -194,28 +191,28 @@ class HouseDamage(object):
         # by group
         for item in ['prop_damaged_group', 'prop_damaged_area', 'repair_cost']:
             self.bucket[item] = pd.DataFrame(
-                None, columns=self.list_groups, index=self.cfg.idx_speeds)
+                None, columns=list_groups, index=self.cfg.idx_speeds)
 
         # by type
         for item in ['damage_capacity', 'prop_damaged_type']:
             self.bucket[item] = pd.DataFrame(
-                None, columns=self.list_types, index=self.cfg.idx_speeds)
+                None, columns=list_types, index=self.cfg.idx_speeds)
 
         # by connection
-        for item in ['damaged', 'damaged_by_dist', 'failure_v_raw', 'load']:
+        for item in ['damaged', 'failure_v_raw', 'load']:
             self.bucket[item] = pd.DataFrame(
-                None, columns=self.list_conns, index=self.cfg.idx_speeds)
+                None, columns=list_conns, index=self.cfg.idx_speeds)
 
-        for item in self.list_conns:
+        for item in list_conns:
             for _att in ['strength', 'dead_load']:
                 self.bucket.setdefault(_att, {})[item] = None
 
         # by zone
         for item in ['pz', 'pz_str']:
             self.bucket[item] = pd.DataFrame(
-                None, columns=self.list_zones, index=self.cfg.idx_speeds)
+                None, columns=list_zones, index=self.cfg.idx_speeds)
 
-        for item in self.list_zones:
+        for item in list_zones:
             for _att in ['effective_area', 'cpe', 'cpe_str', 'cpe_eave']:
                 self.bucket.setdefault(_att, {})[item] = None
 
@@ -240,7 +237,7 @@ class HouseDamage(object):
         # by connection
         for _value in self.house.connections.itervalues():
 
-            for item in ['damaged', 'damaged_by_dist', 'failure_v_raw', 'load']:
+            for item in ['damaged', 'failure_v_raw', 'load']:
                 self.bucket[item][_value.name][ispeed] = getattr(_value, item)
 
             for item in ['strength', 'dead_load']:
@@ -278,7 +275,7 @@ class HouseDamage(object):
 
         self.qz = 0.6 * 1.0e-3 * (wind_speed * self.house.mzcat) ** 2
 
-    def check_pressurized_failure(self, v):
+    def check_pressurized_failure(self, wind_speed):
         if self.cfg.flags['debris']:
             print 'Not implemented'
             # self.debris_manager.run(v)
@@ -373,178 +370,97 @@ class HouseDamage(object):
 
         self.prev_di = self.di
 
-    """
-    def redistribute_damage(self, conn_type_group):
-        # setup for distribution
-        if conn_type_group.distribution_order <= 0:
-            return
+    def distribute_damage(self, group):
 
-        if conn_type_group.distribution_direction == 'col':
-            distByCol = True
-            primaryDir = self.house.cols
-            secondaryDir = self.house.rows
-        else:
-            distByCol = False
-            primaryDir = self.house.rows
-            secondaryDir = self.house.cols
+        if group.dist_dir == 'col':  # distributed over the same char.
 
-        # walk the zone grid for current group
-        # (only one conn of each group per zone)
-        for i in primaryDir:
-            for j in secondaryDir:
-                # determine zoneLocation and then zone
-                # cols + rows
-                if distByCol:
-                    zoneLoc = i
-                    zoneLoc += str(j)
+            # row: index of chr, col: index of number e.g, 0,0 : A1
+            for row, col in zip(*np.where(group.damage_grid)):
+
+                intact = np.where(~group.damage_grid[row, :])[0]
+
+                intact_left = intact[np.where(col > intact)[0]]
+                intact_right = intact[np.where(col < intact)[0]]
+
+                print '{}:{}:{}'.format(row, col, intact)
+
+                source_zone = self.house.zone_by_grid[row, col]
+
+                if intact_left.size * intact_right.size > 0:
+                    source_area = 0.5 * source_zone.effective_area
                 else:
-                    zoneLoc = j
-                    zoneLoc += str(i)
+                    source_area = source_zone.effective_area
 
-                # not all grid locations have a zone
-                # not all zones have area or connections remaining
-                # not all zones have connections of all types
-                # grab appropriate connection from zone
-                z = zoneByLocationMap[zoneLoc]
-                if (zoneLoc in house.zoneByLocationMap and
-                        z.result_effective_area and
-                        z.located_conns and
-                            conn_type_group.group_name in connByZoneTypeMap[
-                            z.zone_name] and
-                        self.cfg.flags.get('dmg_distribute_{}'.format(
-                            conn_type_group.group_name))):
-                    conn = connByZoneTypeMap[z.zone_name][
-                        conn_type_group.group_name]
+                if group.set_zone_to_zero:
+                    source_zone.effective_area = 0.0
+
+                try:
+                    target_zone = self.house.zone_by_grid[row, intact_right[0]]
+                except IndexError:
+                    pass
                 else:
-                    continue
+                    print 'zone {} is updated by zone {} with {}'.format(
+                        target_zone.name,
+                        source_zone.name,
+                        source_area)
+                    target_zone.update_cpe_and_area(source_zone, source_area)
 
-                # if that connection is (newly) damaged then redistribute
-                # load/infl/area
-                if conn.result_damaged and not conn.result_damage_distributed:
-                    # print 'Connection: {} newly damaged'.format(conn_type_group.group_name)
+                try:
+                    target_zone = self.house.zone_by_grid[row, intact_left[-1]]
+                except IndexError:
+                    pass
+                else:
+                    print 'zone {} is updated by zone {} with {}'.format(
+                        target_zone.name,
+                        source_zone.name,
+                        source_area)
+                    target_zone.update_cpe_and_area(source_zone, source_area)
 
-                    if conn_type_group.patch_distribution == 1:
-                        patchList = \
-                            self.db.qryConnectionPatchesFromDamagedConn(conn.id)
+        elif group.dist_dir == 'row':  # distributed over the same number
 
-                        for patch in patchList:
-                            patch_zone = zoneByIDMap[patch[1]]
-                            patch_conn = connByIDMap[patch[0]]
-                            curr_infl = inflZonesByConn[patch_conn].get(
-                                patch_zone, None)
-                            if curr_infl is None:
-                                # print 'discarding patch as no existing patch present: %s-->%s = %f' % (patch_conn, patch_zone, patch[2])
-                                continue
-                            # print 'patching: %s-->%s = %f' % (patch_conn, patch_zone, patch[2])
-                            inflZonesByConn[patch_conn][patch_zone] = patch[2]
-                    else:
-                        gridCol, gridRow = zone.getGridFromZoneLoc(z.zone_name)
-                        if conn.edge != 3:
-                            if distByCol:
-                                if conn.edge == 0:
-                                    k = 0.5
-                                    # search for next intact connection in + dir
-                                    value1 = self.redistribute_to_nearest_zone(
-                                        z, range(gridRow + 1,
-                                                 self.house.roof_rows),
-                                        k, conn_type_group, gridCol,
-                                        gridRow, distByCol)
-                                    if not value1:
-                                        k = 1.0
-                                    value2 = self.redistribute_to_nearest_zone(
-                                        z, reversed(range(0, gridRow)), k,
-                                        conn_type_group, gridCol, gridRow,
-                                        distByCol)
-                                    if not value2:
-                                        self.redistribute_to_nearest_zone(
-                                            z, range(gridRow + 1,
-                                                     self.house.roof_rows),
-                                            k, conn_type_group, gridCol,
-                                            gridRow, distByCol)
-                                elif conn.edge == 2:
-                                    k = 1.0
-                                    self.redistribute_to_nearest_zone(
-                                        z, range(gridRow + 1,
-                                                 self.house.roof_rows),
-                                        k, conn_type_group, gridCol, gridRow,
-                                        distByCol)
-                                elif conn.edge == 1:
-                                    k = 1.0
-                                    self.redistribute_to_nearest_zone(
-                                        z, reversed(range(0, gridRow)), k,
-                                        conn_type_group, gridCol, gridRow,
-                                        distByCol)
-                            else:
-                                if conn.edge == 0:
-                                    k = 0.5
-                                    if not self.redistribute_to_nearest_zone(
-                                            z, range(gridCol + 1,
-                                                     self.house.roof_columns),
-                                            k, conn_type_group, gridCol,
-                                            gridRow, distByCol):
-                                        k = 1.0
-                                    if not self.redistribute_to_nearest_zone(
-                                            z, reversed(range(0, gridCol)), k,
-                                            conn_type_group, gridCol, gridRow,
-                                            distByCol):
-                                        self.redistribute_to_nearest_zone(
-                                            z, range(gridCol + 1,
-                                                     self.house.roof_columns),
-                                            k, conn_type_group, gridCol,
-                                            gridRow, distByCol)
-                                elif conn.edge == 2:
-                                    k = 1.0
-                                    self.redistribute_to_nearest_zone(
-                                        z, range(gridCol + 1,
-                                                 self.house.roof_columns),
-                                        k, conn_type_group, gridCol, gridRow,
-                                        distByCol)
-                                elif conn.edge == 1:
-                                    k = 1.0
-                                    self.redistribute_to_nearest_zone(
-                                        z, reversed(range(0, gridCol)), k,
-                                        conn_type_group, gridCol, gridRow,
-                                        distByCol)
+            # row: index of chr, col: index of number e.g, 0,0 : A1
+            for row, col in zip(*np.where(group.damage_grid)):
 
-                    if conn_type_group.set_zone_to_zero > 0:
-                        z.result_effective_area = 0.0
-                    conn.result_damage_distributed = True
+                intact = np.where(~group.damage_grid[:, col])[0]
 
-                    # print '{}:{}:{}'.format(i, j, k)
+                intact_left = intact[np.where(row > intact)[0]]
+                intact_right = intact[np.where(row < intact)[0]]
 
-    @staticmethod
-    def redistribute_to_nearest_zone(zoneSrc, connRange, k, ctgroup, gridCol,
-                                     gridRow, distByCol):
-        # return intact connection found
-        # compute sampled_cpe and result_effective_area
-        for line in connRange:
+                print '{}:{}:{}'.format(row, col, intact)
 
-            if distByCol:
-                r = line
-                c = gridCol
-            else:
-                r = gridRow
-                c = line
+                source_zone = self.house.zone_by_grid[row, col]
 
-            zoneDest = zoneByLocationMap[zone.getZoneLocFromGrid(c, r)]
-            conn = connByZoneTypeMap[zoneDest.zone_name].get(ctgroup.group_name)
-            try:
-                if not conn.result_damaged and zoneDest.result_effective_area > 0:
-                    zoneDest.sampled_cpe = (
-                                           zoneDest.result_effective_area * zoneDest.sampled_cpe +
-                                           k * zoneSrc.result_effective_area * zoneSrc.sampled_cpe) / \
-                                           (
-                                           zoneDest.result_effective_area + k * zoneSrc.result_effective_area)
-                    zoneDest.result_effective_area += k * zoneSrc.result_effective_area
-                    return True
-                if conn.edge > 0:
-                    return False
-            except BaseException, error:
-                print '{}'.format(error)
-        return False
-    """
+                if intact_left.size * intact_right.size > 0:
+                    source_area = 0.5 * source_zone.effective_area
+                else:
+                    source_area = source_zone.effective_area
 
-    # def plot_connection_damage(self, vRed, vBlue, id_sim):
+                if group.set_zone_to_zero:
+                    source_zone.effective_area = 0.0
+
+                try:
+                    target_zone = self.house.zone_by_grid[intact_right[0], col]
+                except IndexError:
+                    pass
+                else:
+                    print 'zone {} is updated by zone {} with {}'.format(
+                        target_zone.name,
+                        source_zone.name,
+                        source_area)
+                    target_zone.update_cpe_and_area(source_zone, source_area)
+
+                try:
+                    target_zone = self.house.zone_by_grid[intact_left[-1], col]
+                except IndexError:
+                    pass
+                else:
+                    print 'zone {} is updated by zone {} with {}'.format(
+                        target_zone.name,
+                        source_zone.name,
+                        source_area)
+                    target_zone.update_cpe_and_area(source_zone, source_area)
+
+            # def plot_connection_damage(self, vRed, vBlue, id_sim):
     #     selected_ctg = {'sheeting', 'batten', 'rafter', 'piersgroup', 'Truss',
     #                     'wallracking'}.intersection(set(connByTypeGroupMap))
     #

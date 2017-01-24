@@ -5,6 +5,8 @@
 """
 
 import copy
+import numpy as np
+
 from zone import Zone
 from damage_costing import Costing
 from stats import compute_logarithmic_mean_stddev, \
@@ -27,7 +29,7 @@ class Connection(object):
         self.name = dic_conn['connection_name']
         self.edge = dic_conn['edge']
 
-        self.zone_id = dic_conn['zone_id']
+        self.zone_id = dic_conn['zone_id']  # zone location
 
         self.type_id = dic_ctype['id']
         self.type_name = dic_ctype['connection_type']
@@ -52,13 +54,35 @@ class Connection(object):
         self.failure_v_raw = 9999  # dummy value
 
         self.damaged = False
-        self.damaged_by_dist = None
+        # self.damaged_by_dist = None
 
         self.load = None
+
+        self._grid = None  # zero-based col, row index
+
+        # self._dist_by_col = None
+
+    @property
+    def grid(self):
+        return self._grid
+
+    @grid.setter
+    def grid(self, _tuple):
+        assert isinstance(_tuple, tuple)
+        self._grid = _tuple
 
     # def reset_connection_failure(self):
     #     self.result_failure_v = 0.0
     #     self.result_failure_v_i = 0
+
+    # @property
+    # def dist_by_col(self):
+    #     return self._dist_by_col
+    #
+    # @dist_by_col.setter
+    # def dist_by_col(self, value):
+    #     assert isinstance(value, bool)
+    #     self._dist_by_col = value
 
     def sample_strength(self, mean_factor, cov_factor, rnd_state):
         """
@@ -99,11 +123,12 @@ class Connection(object):
 
             use_struct_pz: True or False
 
-        Returns:
+        Returns: load
 
         """
 
         self.load = 0.0
+
         if not self.damaged:
 
             for _inf in self.inf_zones.itervalues():
@@ -118,8 +143,17 @@ class Connection(object):
             self.load += self.dead_load
 
     def set_damage(self, wind_speed):
+        """
+
+        Args:
+            wind_speed:
+
+        Returns:
+            damaged, failure_v_raw
+
+        """
         self.damaged = True
-        self.damaged_by_dist = False
+        # self.damaged_by_dist = False
         # self.failure_v_i += 1
         self.failure_v_raw = wind_speed
         # num_ = wind_speed + (
@@ -191,14 +225,17 @@ class ConnectionTypeGroup(object):
 
         self.id = dic_['id']
         self.name = dic_['group_name']
+
         self.dist_dir = dic_['distribution_direction']
-        self.dist_ord = dic_['distribution_order']
+        # self.dist_ord = dic_['distribution_order']
+
         self.trigger_collapse_at = dic_['trigger_collapse_at']
         self.patch_dist = dic_['patch_distribution']
         self.set_zone_to_zero = dic_['set_zone_to_zero']
         self.water_ingress_ord = dic_['water_ingress_order']
         self.costing_id = dic_['costing_id']
         self.costing = Costing(inst.costing)
+
         self._costing_area = None
         self.no_connections = 0
 
@@ -208,20 +245,48 @@ class ConnectionTypeGroup(object):
             self.types.setdefault(item.id, _type)
             self.no_connections += _type.no_connections
 
-        if self.dist_ord >= 0:
-            self.enabled = True
-        else:
-            self.enabled = False
+        # if self.dist_ord >= 0:
+        #     self.enabled = True
+        # else:
+        #     self.enabled = False
 
-        self.primary_dir = None
-        self.secondary_dir = None
-        self.dist_by_col = None
+        # self.primary_dir = None
+        # self.secondary_dir = None
+        # self.dist_by_col = None
 
-        self._dist_tuple = None
+        self.damage_grid = None  # column (chr), row (num)
+
+        # self._dist_tuple = None
 
         self.prop_damaged_group = None
         self.prop_damaged_area = None
         self.repair_cost = None
+
+    @property
+    def costing_area(self):
+        return self._costing_area
+
+    @costing_area.setter
+    def costing_area(self, value):
+        self._costing_area = value
+
+    def set_damage_grid(self, no_rows, no_cols):
+        """
+
+        Args:
+            no_rows: no. of rows
+            no_cols: no. of cols
+
+        Returns:
+
+        """
+        if self.dist_dir:
+            self.damage_grid = np.zeros(dtype=bool, shape=(no_rows, no_cols))
+        else:
+            self.damage_grid = None
+
+
+
 
     def cal_repair_cost(self, value):
         """
@@ -237,15 +302,12 @@ class ConnectionTypeGroup(object):
         except AssertionError:
             self.repair_cost = 0.0
 
-    @property
-    def costing_area(self):
-        return self._costing_area
-
-    @costing_area.setter
-    def costing_area(self, value):
-        self._costing_area = value
-
     def cal_prop_damaged(self):
+        """
+
+        Returns: prop_damaged_group, prop_damaged_area
+
+        """
 
         num_damaged = 0
         area_damaged = 0.0
@@ -265,33 +327,6 @@ class ConnectionTypeGroup(object):
         except ZeroDivisionError:
             self.prop_damaged_area = 0.0
 
-    @property
-    def dist_tuple(self):
-        return self._dist_tuple
-
-    @dist_tuple.setter
-    def dist_tuple(self, _tuple):
-        """
-
-        Args:
-            _tuple: rows, cols
-
-        Returns:
-
-        """
-        try:
-            _rows, _cols = _tuple
-        except ValueError:
-            raise ValueError("Pass an iterable with two items")
-        else:
-            if self.dist_dir == 'col':
-                self.dist_by_col = True
-                self.primary_dir = _cols
-                self.secondary_dir = _rows
-            else:
-                self.dist_by_col = False
-                self.primary_dir = _rows
-                self.secondary_dir = _cols
 
     def check_damage(self, wind_speed):
         """
@@ -305,7 +340,7 @@ class ConnectionTypeGroup(object):
         # hard coded for optimization
         use_struct_pz = self.name in self.use_struct_pz_for
 
-        if self.enabled:
+        if self.dist_dir:
 
             for _type in self.types.itervalues():
 
@@ -318,6 +353,10 @@ class ConnectionTypeGroup(object):
 
                         _conn.set_damage(wind_speed)
 
+                        print '{} on {} damaged at {}'.format(_conn.name, _conn.grid,
+                                                              wind_speed)
+                        self.damage_grid[_conn.grid] = True
+
                 # summary by connection type
                 _type.damage_summary()
 
@@ -329,6 +368,9 @@ class Influence(object):
         Args:
             inst: instance of database.Influence
         """
+
+
+
         dic_ = copy.deepcopy(inst.__dict__)
         self.coeff = dic_['coeff']
         self.conn_id = dic_['connection_id']
@@ -357,7 +399,6 @@ if __name__ == '__main__':
     import unittest
     from scenario import Scenario
     from house import House
-    import numpy as np
 
     class MyTestCase(unittest.TestCase):
 
@@ -390,10 +431,10 @@ if __name__ == '__main__':
             ref_dic = {1: 0.5, 2: 0.5, 3: 0.5, 4: 0.25}
             for id_type, _type in group.types.iteritems():
                 _type.damage_summary()
-                self.assertEqual(_type.prop_damaged, ref_dic[id_type])
+                self.assertEqual(_type.prop_damaged_type, ref_dic[id_type])
 
             group.cal_prop_damaged()
-            self.assertAlmostEqual(group.prop_damaged, 0.3889, places=4)
+            self.assertAlmostEqual(group.prop_damaged_group, 0.3889, places=4)
             self.assertAlmostEqual(group.prop_damaged_area, 0.3407, places=4)
 
         def test_cal_damage_capacity(self):
@@ -499,7 +540,7 @@ if __name__ == '__main__':
             ref_prop = {1: 0.0, 2: 0.0, 3: 0.0, 4: 0.125}
             ref_capacity = {1: 9999, 2: 9999, 3: 9999, 4: 50.0}
             for id_type, _type in group.types.iteritems():
-                self.assertAlmostEqual(_type.prop_damaged,
+                self.assertAlmostEqual(_type.prop_damaged_type,
                                        ref_prop[id_type], places=3)
                 self.assertAlmostEqual(_type.damage_capacity,
                                        ref_capacity[id_type], places=1)

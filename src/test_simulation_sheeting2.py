@@ -4,16 +4,16 @@ from __future__ import print_function
 import unittest
 import os
 import numpy as np
-import filecmp
+# import filecmp
 import pandas as pd
 
-from core.simulation import HouseDamage, simulate_wind_damage_to_house
-import core.database as database
+from core.simulation import HouseDamage, run_simulation_per_house
+# import core.database as database
 from core.scenario import Scenario
-from core import zone
-from core import engine
+# from core import zone
+# from core import engine
 
-
+"""
 def check_file_consistency(file1, file2, **kwargs):
 
     try:
@@ -304,7 +304,7 @@ class TestDistributeMultiSwitchesOn(unittest.TestCase):
 
     def test_consistency_wind_debris(self):
         consistency_wind_debris(self.path_reference, self.path_output)
-
+"""
 
 
 class TestHouseDamage(unittest.TestCase):
@@ -320,77 +320,104 @@ class TestHouseDamage(unittest.TestCase):
             cfg_file=os.path.join(path, 'scenarios/test_roof_sheeting2.cfg'),
             output_path=cls.path_output)
 
-        cfg.flags['random_seed'] = True
-        cfg.parallel = False
-        # cfg.flags['dmg_distribute'] = True
+        rnd_state = np.random.RandomState(1)
 
-        # optionally seed random numbers
-        if cfg.flags['random_seed']:
-            print('random seed is set')
-            np.random.seed(42)
-            zone.seed_scipy(42)
-            engine.seed(42)
-
-        model_db = database.DatabaseManager(cfg.db_file)
-        cfg.list_conn, cfg.list_conn_type, cfg.list_conn_type_group = \
-            model_db.get_list_conn_type(cfg.house_name)
-        cfg.list_zone = model_db.get_list_zone(cfg.house_name)
-
-        cls.cfg = cfg
-        cls.model_db = model_db
-        cls.house_damage = HouseDamage(cls.cfg, cls.model_db)
-
-    @classmethod
-    def tearDownClass(cls):
-        cls.model_db.close()
-
-    def test_random_parameters(self):
-        assert self.house_damage.construction_level == 'medium'
-        assert self.house_damage.profile == 7
+        cls.house_damage = HouseDamage(cfg, rnd_state)
 
     def test_calculate_qz(self):
 
         # default case
-        assert self.house_damage.regional_shielding_factor == 1
-        self.assertAlmostEqual(self.house_damage.mzcat, 0.955, places=3)
+        assert self.house_damage.cfg.regional_shielding_factor == 1
+        self.assertAlmostEqual(self.house_damage.house.mzcat, 0.923, places=3)
 
-        self.house_damage.calculate_qz(10.0)
-        self.assertAlmostEqual(self.house_damage.qz, 0.0547, places=3)
+        self.house_damage.calculate_qz_Ms(10.0)
+        self.assertAlmostEqual(self.house_damage.qz, 0.05117, places=3)
         self.assertAlmostEqual(self.house_damage.Ms, 1.0, places=3)
 
         # sampling mzcat
         # self.house_damage.regional_shielding_factor = 0.85
 
-        # self.house_damage.calculate_qz(10.0)
+        # self.house_damage.calculate_qz_Ms(10.0)
         # self.assertAlmostEqual(self.house_damage.Ms, 0.95, places=3)
         # self.assertAlmostEqual(self.house_damage.qz, 0.0683, places=3)
 
-    def test_dummy(self):
+    def test_distribute_damage_by_column(self):
 
-        print('{}'.format(self.house_damage.regional_shielding_factor))
+        self.house_damage.run_simulation(wind_speed=20.0)
 
-# def test_redistribute_to_nearest_zone(self):
-    #
-    #     # iteration over wind speed list
-    #     for id_speed, wind_speed in enumerate(self.cfg.speeds):
-    #
-    #         # simulate sampled house
-    #         self.house_damage.run_simulation(wind_speed)
+        sum_by_col_ref = {'A': 0.0, 'B': 0.0, 'C': 0.0}
+        for _zone in self.house_damage.house.zones.itervalues():
+            sum_by_col_ref[_zone.name[0]] += _zone.effective_area
+
+        _group = self.house_damage.house.groups[1]
+
+        self.assertEqual(_group.dist_dir, 'col')
+
+        _group.damage_grid = \
+            np.array([[True, False, False, False, False, False],
+                      [False, False, True, False, True, False],
+                      [False, False, False, False, False, True]])
+
+        self.house_damage.distribute_damage(_group)
+
+        ref_area = np.array([[0.0, 0.2025+0.405, 0.405, 0.405, 0.405, 0.2025],
+                            [0.405, 0.81+0.5*0.81, 0.0, 0.81+1.0*0.81, 0.0, 0.5*0.81],
+                            [0.405, 0.81, 0.81, 0.81, 1.0*0.401+0.81, 0.0]])
+
+        for row, col in zip(range(3), range(6)):
+            self.assertAlmostEqual(self.house_damage.house.zone_by_grid[
+                                       (row, col)].effective_area,
+                                   ref_area[row, col])
+
+        sum_by_col = {'A': 0.0, 'B': 0.0, 'C': 0.0}
+        for _zone in self.house_damage.house.zones.itervalues():
+            sum_by_col[_zone.name[0]] += _zone.effective_area
+
+        self.assertEqual(sum_by_col, sum_by_col_ref)
+
+    def test_distribute_damage_by_row(self):
+
+        self.house_damage.run_simulation(wind_speed=20.0)
+
+        _group = self.house_damage.house.groups[1]
+
+        _group.dist_dir = 'row'
+
+        ref_dic = {'A1': 0.2025, 'B1': 0.405, 'C1': 0.405,
+                   'A2': 0.405, 'B2': 0.81, 'C2': 0.81,
+                   'A3': 0.405, 'B3': 0.81, 'C3': 0.81,
+                   'A4': 0.405, 'B4': 0.81, 'C4': 0.81,
+                   'A5': 0.405, 'B5': 0.81, 'C5': 0.81,
+                   'A6': 0.2025, 'B6': 0.405, 'C6': 0.405}
+
+        for _zone in self.house_damage.house.zone_by_name.itervalues():
+            _zone.effective_area = ref_dic[_zone.name]
+
+        _group.damage_grid = \
+            np.array([[True, False, False, False, True, False],
+                      [False, False, True, False, True, False],
+                      [False, False, False, False, False, True]])
+
+        sum_by_row_ref = {0: 0.0, 1: 0.0, 2: 0.0, 3: 0.0, 4: 0.0, 5: 0.0}
+        for _zone in self.house_damage.house.zones.itervalues():
+            sum_by_row_ref[_zone.grid[1]] += _zone.effective_area
+
+        self.house_damage.distribute_damage(_group)
+
+        ref_area = np.array(
+            [[0.0, 0.405, 0.81, 0.405, 0.0, 0.2025],
+             [0.6075, 0.81, 0.0, 0.81, 0.0, 0.81],
+             [0.405, 0.81, 1.215, 0.81, 2.025, 0.0]])
+
+        for row, col in zip(range(3), range(6)):
+            print('{},{}'.format(row, col))
+            self.assertAlmostEqual(self.house_damage.house.zone_by_grid[
+                                        (row, col)].effective_area,
+                                    ref_area[row, col])
 
 
-
-
-
-
-        # for zone in house_damage.house.zones:
-        #     str_ = zone.zone_name
-        #     result_buckets['result_effective_area'].loc[id_speed][str_] = \
-        #         zone.result_effective_area
-
-
-
-
-
+        #
+        # self.house_damage
 
 if __name__ == '__main__':
     unittest.main()

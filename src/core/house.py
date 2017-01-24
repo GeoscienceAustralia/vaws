@@ -24,8 +24,10 @@ class House(object):
         self.cfg = cfg
         self.rnd_state = rnd_state
 
-        db_house = DatabaseManager(cfg.db_file).session.query(
-            TableHouse).filter_by(house_name=cfg.house_name).one()
+        _db = DatabaseManager(cfg.db_file)
+
+        db_house = _db.session.query(TableHouse).filter_by(
+            house_name=cfg.house_name).one()
 
         self.width = db_house.__dict__['width']
         self.height = db_house.__dict__['height']
@@ -49,7 +51,7 @@ class House(object):
         self.big_b = None
 
         self.cols = [chr(x) for x in range(ord('A'), ord('A') + self.roof_cols)]
-        self.rows = range(1, self.roof_rows + 1)
+        self.rows = range(1, self.roof_rows + 1)  # one base
 
         self.groups = dict()  # dict of conn type groups with id
         self.types = dict()  # dict of conn types with id
@@ -57,9 +59,16 @@ class House(object):
         self.zones = dict()  # dict of zones with id
         self.factors_costing = dict()  # dict of damage factoring with id
 
+        self.zone_by_name = dict()  # dict of zones with zone name
+        self.zone_by_grid = dict()  # dict of zones with zone loc grid in tuple
+        # self.conn_by_grid = dict()  # dict of connections with zone loc grid in tuple
+
         # init house
         self.set_house_wind_params()
         self.set_house_components(db_house)
+
+        # db session close
+        _db.close()
 
     def set_house_components(self, db_house):
         # house is consisting of connections and zones
@@ -74,21 +83,28 @@ class House(object):
                 big_a=self.big_a,
                 big_b=self.big_b,
                 rnd_state=self.rnd_state)
+
             self.zones.setdefault(item.id, _zone)
+            self.zone_by_name.setdefault(_zone.name, _zone)
+            self.zone_by_grid.setdefault(_zone.grid, _zone)
 
         for item in db_house.conn_type_groups:
             _group = ConnectionTypeGroup(item)
             costing_area_by_group = 0.0
 
             for id_type, _type in _group.types.iteritems():
+
                 self.types.setdefault(id_type, _type)
 
                 for id_conn, _conn in _type.connections.iteritems():
+
                     _conn.sample_strength(mean_factor=self.str_mean_factor,
                                           cov_factor=self.str_cov_factor,
                                           rnd_state=self.rnd_state)
 
                     _conn.sample_dead_load(rnd_state=self.rnd_state)
+
+                    # _conn.grid = self.zones[_conn.zone_id].grid
 
                     costing_area_by_group += _type.costing_area
 
@@ -99,7 +115,7 @@ class House(object):
                     self.connections.setdefault(id_conn, _conn)
 
             _group.costing_area = costing_area_by_group
-            _group.dist_tuple = self.rows, self.cols
+            _group.set_damage_grid(self.roof_cols, self.roof_rows)
 
             self.groups.setdefault(item.id, _group)
 
@@ -107,6 +123,12 @@ class House(object):
         for item in db_house.factorings:
             self.factors_costing.setdefault(
                 item.parent_id, []).append(item.factor_id)
+
+        # linking zone loc grid to connection by group
+        # for _zone_id, _zone in self.zones.iteritems():
+        #     for _conn in self.connections.itervalues():
+        #         if _conn.zone_id == _zone_id:
+        #             self.conn_by_grid.setdefault(_zone.grid, {})[_conn.group_id] = _conn
 
     def set_house_wind_params(self):
         """
@@ -160,6 +182,26 @@ class House(object):
             self.construction_level = 'medium'
             self.str_mean_factor = 1.0
             self.str_cov_factor = 1.0
+
+    # @staticmethod
+    # def string_first(value):
+    #     """
+    #     check if value starting with char otherwise re-arrange.
+    #     Args:
+    #         value: 'A12' or '12A'
+    #
+    #     Returns:
+    #
+    #     """
+    #     for i, item in enumerate(value):
+    #         try:
+    #             float(item)
+    #         except ValueError:
+    #             return value[i:] + value[:i]
+    #         else:
+    #             continue
+
+
 
 # unit tests
 if __name__ == '__main__':
@@ -271,21 +313,33 @@ if __name__ == '__main__':
                 self.assertEquals(_zone_name,
                                   self.house.zones[_conn.zone_id].name)
 
+            zone_loc_to_grid_map = {
+                'A1': (0, 0), 'A2': (0, 1), 'A3': (0, 2), 'A4': (0, 3), 'A5': (0, 4), 'A6': (0, 5),
+                'B1': (1, 0), 'B2': (1, 1), 'B3': (1, 2), 'B4': (1, 3), 'B5': (1, 4), 'B6': (1, 5),
+                'C1': (2, 0), 'C2': (2, 1), 'C3': (2, 2), 'C4': (2, 3), 'C5': (2, 4), 'C6': (2, 5)}
+
+            for _grid, _zone in self.house.zone_by_grid.iteritems():
+                self.assertEqual(_grid, zone_loc_to_grid_map[_zone.name])
+                self.assertEqual(_grid, _zone.grid)
+
+            for _name, _zone in self.house.zone_by_name.iteritems():
+                self.assertEqual(_name, _zone.name)
+
             # influence zone
             for id_conn, _conn in self.house.connections.iteritems():
                 _zone_name = conn_zone_loc_map[id_conn]
 
-                for _, _inf in _conn.inf_zones.iteritems():
+                for _name, _inf in _conn.inf_zones.iteritems():
                     self.assertEqual(_zone_name,
                                      self.house.zones[_inf.zone_id].name)
                     self.assertEqual(self.house.zones[_inf.zone_id], _inf.zone)
 
             # group.primary_dir and secondary_dir
             self.assertEqual(self.house.groups[1].dist_dir, 'col')
-            self.assertEqual(self.house.groups[1].dist_ord, 1)
-            self.assertEqual(self.house.groups[1].dist_by_col, True)
-            self.assertEqual(self.house.groups[1].primary_dir, self.house.cols)
-            self.assertEqual(self.house.groups[1].secondary_dir, self.house.rows)
+            # self.assertEqual(self.house.groups[1].dist_ord, 1)
+            # self.assertEqual(self.house.groups[1].dist_by_col, True)
+            # self.assertEqual(self.house.groups[1].primary_dir, self.house.cols)
+            # self.assertEqual(self.house.groups[1].secondary_dir, self.house.rows)
 
             # check identity
             for id_type, _type in self.house.groups[1].types.iteritems():
@@ -326,6 +380,22 @@ if __name__ == '__main__':
             self.assertEqual(['sheetinggable', 'sheetingeave', 'sheetingcorner',
                               'sheeting'], list_types)
             self.assertEqual([str(x) for x in range(1, 19)], list_conns)
+
+        # def test_conn_by_grid(self):
+        #
+        #     cfg = Scenario(cfg_file='../scenarios/carl1_dmg_dist_on_no_wall_no_debris_no_water.cfg')
+        #     rnd_state = np.random.RandomState(1)
+        #     house = House(cfg, rnd_state)
+        #
+        #     # zone loc: A1
+        #
+        #     # sheeting: 4
+        #     self.assertEqual(house.conn_by_grid[(0, 0)][4].id, 783)
+        #     self.assertEqual(house.conn_by_grid[(0, 0)][4].name, '1')
+        #
+        #     # batten: 5
+        #     self.assertEqual(house.conn_by_grid[(0, 0)][5].id, 963)
+        #     self.assertEqual(house.conn_by_grid[(0, 0)][5].name, '181')
 
     suite = unittest.TestLoader().loadTestsFromTestCase(MyTestCase)
     unittest.TextTestRunner(verbosity=2).run(suite)
