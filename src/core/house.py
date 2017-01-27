@@ -104,7 +104,7 @@ class House(object):
 
                     _conn.sample_dead_load(rnd_state=self.rnd_state)
 
-                    # _conn.grid = self.zones[_conn.zone_id].grid
+                    _conn.grid = self.zones[_conn.zone_id].grid
 
                     costing_area_by_group += _type.costing_area
 

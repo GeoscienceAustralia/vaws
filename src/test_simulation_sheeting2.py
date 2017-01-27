@@ -7,13 +7,14 @@ import numpy as np
 # import filecmp
 import pandas as pd
 
-from core.simulation import HouseDamage, run_simulation_per_house
+from core.simulation import HouseDamage, run_simulation_per_house, \
+    simulate_wind_damage_to_houses
 # import core.database as database
 from core.scenario import Scenario
 # from core import zone
 # from core import engine
 
-"""
+
 def check_file_consistency(file1, file2, **kwargs):
 
     try:
@@ -35,24 +36,21 @@ def check_file_consistency(file1, file2, **kwargs):
 
 
 def consistency_house_damage_idx(path_reference, path_output):
-    filename = 'house_dmg_idx.csv'
 
-    file1 = os.path.join(path_reference, filename)
-    file2 = os.path.join(path_output, filename)
+    file1 = os.path.join(path_reference, 'house_dmg_idx.csv')
+    file2 = os.path.join(path_output, 'results_model.h5')
 
-    identical = filecmp.cmp(file1, file2)
+    data1 = pd.read_csv(file1)
 
-    if not identical:
+    data2 = pd.read_hdf(file2, 'di')
+
+    print('comparing {} and {}'.format(file1, file2))
+    for i in range(data2.shape[0]):
+
         try:
-            data1 = pd.read_csv(file1)
-            data2 = pd.read_csv(file2)
-
-            data1 = data1.sort_values(by='speed').reset_index(drop=True)
-            data2 = data2.sort_values(by='speed').reset_index(drop=True)
-
-            pd.util.testing.assert_frame_equal(data1, data2)
+            pd.util.testing.assert_frame_equal(data1[str(i)], data2.loc[i])
         except AssertionError:
-            print('{} and {} are different'.format(file1, file2))
+            print('different at {}'.format(i))
 
 
 def consistency_house_cpi(path_reference, path_output):
@@ -197,13 +195,15 @@ def consistency_wind_debris(path_reference, path_output):
     check_file_consistency(file1, file2)
 
 
-class TestDistributeMultiSwitchesOff(unittest.TestCase):
+class TestDistributeMultiSwitchesOFF(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
 
         path = '/'.join(__file__.split('/')[:-1])
+
         cls.path_reference = os.path.join(path, 'test/output_roof_sheeting2_OFF')
+        # cls.path_reference = os.path.join(path, 'test/output_no_dist')
         cls.path_output = os.path.join(path, 'output')
 
         for the_file in os.listdir(cls.path_output):
@@ -217,46 +217,30 @@ class TestDistributeMultiSwitchesOff(unittest.TestCase):
         cfg = Scenario(cfg_file=os.path.join(path, 'scenarios/test_roof_sheeting2.cfg'),
                        output_path=cls.path_output)
 
-        # setting
         cfg.flags['random_seed'] = True
         cfg.parallel = False
-        # cfg.flags['dmg_distribute'] = False
-        components_list = ['batten', 'rafter', 'sheeting', 'wallcladding',
+
+        cfg.flags['dmg_distribute_sheeting'] = False
+        components_list = ['rafter', 'batten', 'wallcladding',
                            'wallcollapse', 'wallracking']
 
         for component in components_list:
             cfg.flags['dmg_distribute_{}'.format(component)] = False
 
-        _ = simulate_wind_damage_to_house(cfg)
+        _ = simulate_wind_damage_to_houses(cfg)
 
     def test_consistency_house_damage_idx(self):
+
         consistency_house_damage_idx(self.path_reference, self.path_output)
 
-    def test_consistency_house_cpi(self):
-        consistency_house_cpi(self.path_reference, self.path_output)
-
-    def test_consistency_house_damage(self):
-        consistency_house_damage(self.path_reference, self.path_output)
-
-    def test_consistency_fragilites(self):
-        consistency_fragilites(self.path_reference, self.path_output)
-
-    def test_consistency_houses_damaged(self):
-        consistency_houses_damaged(self.path_reference, self.path_output)
-
-    def test_consistency_wateringress(self):
-        consistency_wateringress(self.path_reference, self.path_output)
-
-    def test_consistency_wind_debris(self):
-        consistency_wind_debris(self.path_reference, self.path_output)
-
-
+"""
 class TestDistributeMultiSwitchesOn(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
 
         path = '/'.join(__file__.split('/')[:-1])
+
         cls.path_reference = os.path.join(path, 'test/output_roof_sheeting2_ON')
         # cls.path_reference = os.path.join(path, 'test/output_no_dist')
         cls.path_output = os.path.join(path, 'output')
@@ -282,30 +266,30 @@ class TestDistributeMultiSwitchesOn(unittest.TestCase):
         for component in components_list:
             cfg.flags['dmg_distribute_{}'.format(component)] = False
 
-        _ = simulate_wind_damage_to_house(cfg)
+        _ = simulate_wind_damage_to_houses(cfg)
 
     def test_consistency_house_damage_idx(self):
+
         consistency_house_damage_idx(self.path_reference, self.path_output)
 
-    def test_consistency_house_cpi(self):
-        consistency_house_cpi(self.path_reference, self.path_output)
-
-    def test_consistency_house_damage(self):
-        consistency_house_damage(self.path_reference, self.path_output)
-
-    def test_consistency_fragilites(self):
-        consistency_fragilites(self.path_reference, self.path_output)
-
-    def test_consistency_houses_damaged(self):
-        consistency_houses_damaged(self.path_reference, self.path_output)
-
-    def test_consistency_wateringress(self):
-        consistency_wateringress(self.path_reference, self.path_output)
-
-    def test_consistency_wind_debris(self):
-        consistency_wind_debris(self.path_reference, self.path_output)
+    # def test_consistency_house_cpi(self):
+    #     consistency_house_cpi(self.path_reference, self.path_output)
+    #
+    # def test_consistency_house_damage(self):
+    #     consistency_house_damage(self.path_reference, self.path_output)
+    #
+    # def test_consistency_fragilites(self):
+    #     consistency_fragilites(self.path_reference, self.path_output)
+    #
+    # def test_consistency_houses_damaged(self):
+    #     consistency_houses_damaged(self.path_reference, self.path_output)
+    #
+    # def test_consistency_wateringress(self):
+    #     consistency_wateringress(self.path_reference, self.path_output)
+    #
+    # def test_consistency_wind_debris(self):
+    #     consistency_wind_debris(self.path_reference, self.path_output)
 """
-
 
 class TestHouseDamage(unittest.TestCase):
 
@@ -413,11 +397,8 @@ class TestHouseDamage(unittest.TestCase):
             print('{},{}'.format(row, col))
             self.assertAlmostEqual(self.house_damage.house.zone_by_grid[
                                         (row, col)].effective_area,
-                                    ref_area[row, col])
+                                   ref_area[row, col])
 
-
-        #
-        # self.house_damage
 
 if __name__ == '__main__':
     unittest.main()

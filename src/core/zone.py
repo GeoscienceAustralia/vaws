@@ -6,8 +6,11 @@
         - holds runtime sampled CPE per zone.
         - calculates Cpe pressure load from wind pressure.
 """
-from stats import sample_gev
+
 import copy
+import logging
+
+from stats import sample_gev
 
 
 class Zone(object):
@@ -163,17 +166,27 @@ class Zone(object):
         Returns: cpe, cpe_str, effective_area
 
         """
+        try:
 
-        updated_area = self.effective_area + source_area
+            updated_area = self.effective_area + source_area
 
-        self.cpe = (self.effective_area * self.cpe +
-                    source_area * source_zone.cpe) / updated_area
+        except TypeError:
 
-        self.cpe_str = (self.effective_area * self.cpe_str +
-                        source_area * source_zone.cpe_str) / updated_area
+            logging.debug(
+                'skipping update because zone {} at {} has {}'.format(
+                    self.name, self.grid, self.effective_area))
 
-        # update effective_area
-        self.effective_area = updated_area
+        else:
+            self.cpe = (self.effective_area * self.cpe +
+                        source_area * source_zone.cpe) / updated_area
+
+            self.cpe_str = (self.effective_area * self.cpe_str +
+                            source_area * source_zone.cpe_str) / updated_area
+
+            # update effective_area
+            self.effective_area = updated_area
+
+
 
 def str2num(s):
     """

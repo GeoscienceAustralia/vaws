@@ -6,6 +6,7 @@
 
 import copy
 import numpy as np
+import logging
 
 from zone import Zone
 from damage_costing import Costing
@@ -133,7 +134,15 @@ class Connection(object):
 
             for _inf in self.inf_zones.itervalues():
                 # if _inf.zone.effective_area > 0.0:
-                temp = _inf.coeff * _inf.zone.effective_area
+                try:
+                    temp = _inf.coeff * _inf.zone.effective_area
+                except TypeError:
+                    temp = 0.0
+
+                    logging.debug(
+                        'zone {} at {} has {}'.format(
+                            _inf.zone.name, _inf.zone.grid,
+                            _inf.zone.effective_area))
 
                 if use_struct_pz:
                     self.load += temp * _inf.zone.pz_struct
@@ -259,7 +268,7 @@ class ConnectionTypeGroup(object):
         # self._dist_tuple = None
 
         self.prop_damaged_group = None
-        self.prop_damaged_area = None
+        self.prop_damaged_area = 0.0
         self.repair_cost = None
 
     @property
@@ -284,9 +293,6 @@ class ConnectionTypeGroup(object):
             self.damage_grid = np.zeros(dtype=bool, shape=(no_rows, no_cols))
         else:
             self.damage_grid = None
-
-
-
 
     def cal_repair_cost(self, value):
         """
@@ -327,7 +333,6 @@ class ConnectionTypeGroup(object):
         except ZeroDivisionError:
             self.prop_damaged_area = 0.0
 
-
     def check_damage(self, wind_speed):
         """
         Args:
@@ -353,8 +358,10 @@ class ConnectionTypeGroup(object):
 
                         _conn.set_damage(wind_speed)
 
-                        print '{} on {} damaged at {}'.format(_conn.name, _conn.grid,
-                                                              wind_speed)
+                        logging.debug(
+                            'conn #{} of {} at {} damaged at {:.3f}'.format(
+                                _conn.name, self.name, _conn.grid, wind_speed))
+
                         self.damage_grid[_conn.grid] = True
 
                 # summary by connection type
@@ -505,7 +512,6 @@ if __name__ == '__main__':
                                           qz,
                                           Ms,
                                           building_spacing)
-
 
         def test_check_damage(self):
 

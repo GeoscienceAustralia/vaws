@@ -1,4 +1,3 @@
-# adjust python path so we may import things from peer packages
 import sys
 import os
 import time
@@ -10,23 +9,11 @@ import numpy as np
 from optparse import OptionParser
 # # from collections import OrderedDict
 
-# import terrain
-# import house
 from house import House
-# import connection
-# from connection import calc_connection_loads
-# import zone
-# from zone import calc_zone_pressures
 from scenario import Scenario
-# import curve
-# import curve_log
-import logger
+# import logger
+import logging
 import database
-# from debris import DebrisManager
-# import debris
-# import wateringress
-# import engine
-# import output
 from version import VERSION_DESC
 
 
@@ -36,9 +23,11 @@ def simulate_wind_damage_to_houses(cfg):
     tic = time.time()
 
     if cfg.parallel:
+        logging.info('Starting simulation in parallel')
         list_results = parmap.map(run_simulation_per_house,
                                   range(cfg.no_sims), cfg)
     else:
+        logging.info('Starting simulation in serial')
         list_results = []
         for id_sim in range(cfg.no_sims):
             result = run_simulation_per_house(id_sim, cfg)
@@ -68,6 +57,8 @@ def simulate_wind_damage_to_houses(cfg):
     for item in ['damaged', 'failure_v_raw', 'load']:
         dic_ = {key: x[item] for key, x in enumerate(list_results)}
         hdf[item] = pd.Panel(dic_)
+        # hdf.put(item, pd.Panel(dic_), format='t')
+        # pd.Panel(dic_).to_hdf(hdf, key=item, format='f')
     hdf.close()
 
     # results by type for each model
@@ -86,11 +77,11 @@ def simulate_wind_damage_to_houses(cfg):
 
     # by zone for each model
     hdf = pd.HDFStore(cfg.file_zone, mode='w')
-    for item in ['effective_area', 'cpe', 'cpe_str', 'cpe_eave']:
+    for item in ['cpe_eave']:
         ps_ = pd.DataFrame([x[item] for x in list_results])
         hdf.append(item, ps_, format='t')
 
-    for item in ['pz', 'pz_str']:
+    for item in ['pz', 'pz_str', 'effective_area', 'cpe', 'cpe_str']:
         dic_ = {key: x[item] for key, x in enumerate(list_results)}
         hdf[item] = pd.Panel(dic_)
     hdf.close()
@@ -119,6 +110,8 @@ def run_simulation_per_house(id_sim, cfg):
     for id_speed, wind_speed in enumerate(cfg.speeds):
 
         # simulate sampled house
+        logging.info('model #{} at speed {:.3f}'.format(id_sim, wind_speed))
+
         house_damage.run_simulation(wind_speed)
 
     return copy.deepcopy(house_damage.bucket)
@@ -142,6 +135,7 @@ class HouseDamage(object):
         self.cpiAt = None
         self.collapse = False
         self.di = None
+        self.di_prev = None
         self.di_except_water = None
 
         self.bucket = None
@@ -167,8 +161,12 @@ class HouseDamage(object):
 
         # check damage by connection type group
         for _group in self.house.groups.itervalues():
-            _group.check_damage(wind_speed)
-            self.distribute_damage(_group)
+
+            if self.cfg.flags.get('conn_type_group_{}'.format(_group.name)):
+                _group.check_damage(wind_speed)
+
+            if self.cfg.flags.get('dmg_distribute_{}'.format(_group.name)):
+                self.distribute_damage(_group)
 
         self.check_house_collapse(wind_speed)
         self.cal_damage_index()
@@ -186,34 +184,35 @@ class HouseDamage(object):
         # by wind speed
         for item in ['qz', 'Ms', 'cpi', 'cpiAt', 'collapse', 'di',
                      'di_except_water']:
-            self.bucket[item] = pd.Series(None, index=self.cfg.idx_speeds)
+            self.bucket[item] = pd.Series(index=self.cfg.idx_speeds,
+                                          dtype=float)
 
         # by group
         for item in ['prop_damaged_group', 'prop_damaged_area', 'repair_cost']:
             self.bucket[item] = pd.DataFrame(
-                None, columns=list_groups, index=self.cfg.idx_speeds)
+                dtype=float, columns=list_groups, index=self.cfg.idx_speeds)
 
         # by type
         for item in ['damage_capacity', 'prop_damaged_type']:
             self.bucket[item] = pd.DataFrame(
-                None, columns=list_types, index=self.cfg.idx_speeds)
+                dtype=float, columns=list_types, index=self.cfg.idx_speeds)
 
         # by connection
         for item in ['damaged', 'failure_v_raw', 'load']:
             self.bucket[item] = pd.DataFrame(
-                None, columns=list_conns, index=self.cfg.idx_speeds)
+                dtype=float, columns=list_conns, index=self.cfg.idx_speeds)
 
         for item in list_conns:
             for _att in ['strength', 'dead_load']:
                 self.bucket.setdefault(_att, {})[item] = None
 
         # by zone
-        for item in ['pz', 'pz_str']:
+        for item in ['pz', 'pz_str', 'effective_area', 'cpe', 'cpe_str']:
             self.bucket[item] = pd.DataFrame(
                 None, columns=list_zones, index=self.cfg.idx_speeds)
 
         for item in list_zones:
-            for _att in ['effective_area', 'cpe', 'cpe_str', 'cpe_eave']:
+            for _att in ['cpe_eave']:
                 self.bucket.setdefault(_att, {})[item] = None
 
     def fill_bucket(self, wind_speed):
@@ -246,10 +245,10 @@ class HouseDamage(object):
         # by zone
         for _value in self.house.zones.itervalues():
 
-            for item in ['pz', 'pz_str']:
+            for item in ['pz', 'pz_str', 'effective_area', 'cpe', 'cpe_str']:
                 self.bucket[item][_value.name][ispeed] = getattr(_value, item)
 
-            for item in ['effective_area', 'cpe', 'cpe_str', 'cpe_eave']:
+            for item in ['cpe_eave']:
                 self.bucket[item][_value.name] = getattr(_value, item)
 
     def calculate_qz_Ms(self, wind_speed):
@@ -368,7 +367,7 @@ class HouseDamage(object):
         else:
             self.di = self.di_except_water
 
-        self.prev_di = self.di
+        self.di_prev = self.di
 
     def distribute_damage(self, group):
 
@@ -377,170 +376,109 @@ class HouseDamage(object):
             # row: index of chr, col: index of number e.g, 0,0 : A1
             for row, col in zip(*np.where(group.damage_grid)):
 
-                intact = np.where(~group.damage_grid[row, :])[0]
-
-                intact_left = intact[np.where(col > intact)[0]]
-                intact_right = intact[np.where(col < intact)[0]]
-
-                print '{}:{}:{}'.format(row, col, intact)
-
                 source_zone = self.house.zone_by_grid[row, col]
 
-                if intact_left.size * intact_right.size > 0:
-                    source_area = 0.5 * source_zone.effective_area
-                else:
-                    source_area = source_zone.effective_area
+                if source_zone.effective_area:
 
-                if group.set_zone_to_zero:
-                    source_zone.effective_area = 0.0
+                    intact = np.where(~group.damage_grid[row, :])[0]
 
-                try:
-                    target_zone = self.house.zone_by_grid[row, intact_right[0]]
-                except IndexError:
-                    pass
-                else:
-                    print 'zone {} is updated by zone {} with {}'.format(
-                        target_zone.name,
-                        source_zone.name,
-                        source_area)
-                    target_zone.update_cpe_and_area(source_zone, source_area)
+                    intact_left = intact[np.where(col > intact)[0]]
+                    intact_right = intact[np.where(col < intact)[0]]
 
-                try:
-                    target_zone = self.house.zone_by_grid[row, intact_left[-1]]
-                except IndexError:
-                    pass
-                else:
-                    print 'zone {} is updated by zone {} with {}'.format(
-                        target_zone.name,
-                        source_zone.name,
-                        source_area)
-                    target_zone.update_cpe_and_area(source_zone, source_area)
+                    logging.debug('rows of intact conns:{}'.format(intact))
+
+                    if intact_left.size * intact_right.size > 0:
+                        source_area = 0.5 * source_zone.effective_area
+                    else:
+                        source_area = source_zone.effective_area
+
+                    if group.set_zone_to_zero:
+                        logging.debug('zone {} at {} set to None'.format(
+                            source_zone.name, source_zone.grid))
+                        source_zone.effective_area = None
+
+                    try:
+                        target_zone = self.house.zone_by_grid[row,
+                                                              intact_right[0]]
+                    except IndexError:
+                        pass
+                    else:
+                        logging.debug(
+                            'zone {} is updated by zone {} with {:.3f}'.format(
+                                target_zone.name,
+                                source_zone.name,
+                                source_area))
+                        target_zone.update_cpe_and_area(source_zone,
+                                                        source_area)
+
+                    try:
+                        target_zone = self.house.zone_by_grid[row,
+                                                              intact_left[-1]]
+                    except IndexError:
+                        pass
+                    else:
+                        logging.debug(
+                            'zone {} is updated by zone {} with {:.3f}'.format(
+                                target_zone.name,
+                                source_zone.name,
+                                source_area))
+                        target_zone.update_cpe_and_area(source_zone,
+                                                        source_area)
 
         elif group.dist_dir == 'row':  # distributed over the same number
 
             # row: index of chr, col: index of number e.g, 0,0 : A1
             for row, col in zip(*np.where(group.damage_grid)):
 
-                intact = np.where(~group.damage_grid[:, col])[0]
-
-                intact_left = intact[np.where(row > intact)[0]]
-                intact_right = intact[np.where(row < intact)[0]]
-
-                print '{}:{}:{}'.format(row, col, intact)
-
                 source_zone = self.house.zone_by_grid[row, col]
 
-                if intact_left.size * intact_right.size > 0:
-                    source_area = 0.5 * source_zone.effective_area
-                else:
-                    source_area = source_zone.effective_area
+                if source_zone.effective_area:
 
-                if group.set_zone_to_zero:
-                    source_zone.effective_area = 0.0
+                    intact = np.where(~group.damage_grid[:, col])[0]
 
-                try:
-                    target_zone = self.house.zone_by_grid[intact_right[0], col]
-                except IndexError:
-                    pass
-                else:
-                    print 'zone {} is updated by zone {} with {}'.format(
-                        target_zone.name,
-                        source_zone.name,
-                        source_area)
-                    target_zone.update_cpe_and_area(source_zone, source_area)
+                    intact_left = intact[np.where(row > intact)[0]]
+                    intact_right = intact[np.where(row < intact)[0]]
 
-                try:
-                    target_zone = self.house.zone_by_grid[intact_left[-1], col]
-                except IndexError:
-                    pass
-                else:
-                    print 'zone {} is updated by zone {} with {}'.format(
-                        target_zone.name,
-                        source_zone.name,
-                        source_area)
-                    target_zone.update_cpe_and_area(source_zone, source_area)
+                    logging.debug('cols of intact conns:{}'.format(intact))
 
-            # def plot_connection_damage(self, vRed, vBlue, id_sim):
-    #     selected_ctg = {'sheeting', 'batten', 'rafter', 'piersgroup', 'Truss',
-    #                     'wallracking'}.intersection(set(connByTypeGroupMap))
-    #
-    #     for ctg_name in selected_ctg:
-    #         vgrid = vBlue * np.ones((self.house.roof_rows,
-    #                                  self.house.roof_columns)) + 10.0
-    #         file_name = os.path.join(self.cfg.output_path,
-    #                                  '{}_id{}'.format(ctg_name, id_sim))
-    #         for conn in connByTypeGroupMap[ctg_name]:
-    #             gridCol, gridRow = \
-    #                 zone.getGridFromZoneLoc(conn.location_zone.zone_name)
-    #             if conn.result_failure_v > 0:
-    #                 vgrid[gridRow][gridCol] = conn.result_failure_v
-    #
-    #         output.plot_damage_show(ctg_name, vgrid, self.house.roof_columns,
-    #                                 self.house.roof_rows, vRed, vBlue, file_name)
+                    if intact_left.size * intact_right.size > 0:
+                        source_area = 0.5 * source_zone.effective_area
+                    else:
+                        source_area = source_zone.effective_area
 
-            # if 'plot_wall_damage_show' in output.__dict__:
-            #     wall_major_rows = 2
-            #     wall_major_cols = self.house.roof_columns
-            #     wall_minor_rows = 2
-            #     wall_minor_cols = 8
-            #
-            #     for conn_type_group_name in ('wallcladding', 'wallcollapse'):
-            #         if ctgMap.get(ctg_name, None) is None:
-            #             continue
-            #
-            #         v_south_grid = np.ones((wall_major_rows, wall_major_cols),
-            #                                dtype=np.float32) * vBlue + 10.0
-            #         v_north_grid = np.ones((wall_major_rows, wall_major_cols),
-            #                                dtype=np.float32) * vBlue + 10.0
-            #         v_west_grid = np.ones((wall_minor_rows, wall_minor_cols),
-            #                               dtype=np.float32) * vBlue + 10.0
-            #         v_east_grid = np.ones((wall_minor_rows, wall_minor_cols),
-            #                               dtype=np.float32) * vBlue + 10.0
-            #
-            #         # construct south grid
-            #         for gridCol in range(0, wall_major_cols):
-            #             for gridRow in range(0, wall_major_rows):
-            #                 colChar = chr(ord('A')+gridCol)
-            #                 loc = 'WS%s%d' % (colChar, gridRow+1)
-            #                 conn = connByZoneTypeMap[loc].get(ctg_name)
-            #                 if conn and conn.result_failure_v > 0:
-            #                     v_south_grid[gridRow][gridCol] = \
-            #                         conn.result_failure_v
-            #
-            #         # construct north grid
-            #         for gridCol in range(0, wall_major_cols):
-            #             for gridRow in range(0, wall_major_rows):
-            #                 colChar = chr(ord('A')+gridCol)
-            #                 loc = 'WN%s%d' % (colChar, gridRow+1)
-            #                 conn = connByZoneTypeMap[loc].get(ctg_name)
-            #                 if conn and conn.result_failure_v > 0:
-            #                     v_north_grid[gridRow][gridCol] = \
-            #                         conn.result_failure_v
-            #
-            #         # construct west grid
-            #         for gridCol in range(0, wall_minor_cols):
-            #             for gridRow in range(0, wall_minor_rows):
-            #                 loc = 'WW%d%d' % (gridCol+2, gridRow+1)
-            #                 conn = connByZoneTypeMap[loc].get(ctg_name)
-            #                 if conn and conn.result_failure_v > 0:
-            #                     v_west_grid[gridRow][gridCol] = \
-            #                         conn.result_failure_v
-            #
-            #         # construct east grid
-            #         for gridCol in range(0, wall_minor_cols):
-            #             for gridRow in range(0, wall_minor_rows):
-            #                 loc = 'WE%d%d' % (gridCol+2, gridRow+1)
-            #                 conn = connByZoneTypeMap[loc].get(ctg_name)
-            #                 if conn and conn.result_failure_v > 0:
-            #                     v_east_grid[gridRow][gridCol] = \
-            #                         conn.result_failure_v
-            #
-            #         output.plot_wall_damage_show(
-            #             ctg_name,
-            #             v_south_grid, v_north_grid, v_west_grid, v_east_grid,
-            #             wall_major_cols, wall_major_rows,
-            #             wall_minor_cols, wall_minor_rows,
-            #             vRed, vBlue)
+                    if group.set_zone_to_zero:
+                        logging.debug('zone {} at {} set to None'.format(
+                            source_zone.name, source_zone.grid))
+                        source_zone.effective_area = None
+
+                    try:
+                        target_zone = self.house.zone_by_grid[intact_right[0],
+                                                              col]
+                    except IndexError:
+                        pass
+                    else:
+                        logging.debug(
+                            'zone {} is updated by zone {} with {:.3f}'.format(
+                                target_zone.name,
+                                source_zone.name,
+                                source_area))
+                        target_zone.update_cpe_and_area(source_zone,
+                                                        source_area)
+
+                    try:
+                        target_zone = self.house.zone_by_grid[intact_left[-1],
+                                                              col]
+                    except IndexError:
+                        pass
+                    else:
+                        logging.debug(
+                            'zone {} is updated by zone {} with {:.3f}'.format(
+                                target_zone.name,
+                                source_zone.name,
+                                source_area))
+                        target_zone.update_cpe_and_area(source_zone,
+                                                        source_area)
+
 
 def main():
     USAGE = ('%prog -s <scenario_file> [-m <model database file>] '
@@ -558,11 +496,11 @@ def main():
                       dest="output_folder",
                       help="folder name to store simulation results",
                       metavar="FOLDER")
-    parser.add_option("-v", "--verbose",
-                      action="store_true",
-                      dest="verbose",
-                      default=False,
-                      help="show verbose simulator output")
+    # parser.add_option("-v", "--verbose",
+    #                   action="store_true",
+    #                   dest="verbose",
+    #                   default=False,
+    #                   help="show verbose simulator output")
     parser.add_option("-i", "--import",
                       dest="data_folder",
                       help="data folder to import into model.db",
@@ -589,10 +527,17 @@ def main():
         options.output_folder = os.path.abspath(
             os.path.join(os.getcwd(), options.output_folder))
 
-    if options.verbose:
-        logger.configure(logger.LOGGING_CONSOLE)
-    else:
-        logger.configure(logger.LOGGING_NONE)
+    # if options.verbose:
+    #     logger.configure(logger.LOGGING_CONSOLE)
+    # else:
+    #     logger.configure(logger.LOGGING_NONE)
+
+    # set up logging
+    file_logger = os.path.join(options.output_folder, 'log.txt')
+    logging.basicConfig(filename=file_logger,
+                        filemode='w',
+                        level=logging.DEBUG,
+                        format='%(levelname)s %(message)s')
 
     if options.data_folder:
         db = database.DatabaseManager(options.model_database,
@@ -609,6 +554,7 @@ def main():
             print '\nERROR: Must provide a scenario file to run simulator...\n'
             parser.print_help()
 
+    logging.info('Program finished')
 
 if __name__ == '__main__':
     main()
