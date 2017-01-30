@@ -43,10 +43,10 @@ class Connection(object):
         self.dead_load_mean = dic_ctype['deadload_mean']
         self.dead_load_std = dic_ctype['deadload_std_dev']
 
-        self.influences = []
+        self.influences = dict()
         for item in inst_conn.influences:
             dic_ = copy.deepcopy(item.__dict__)
-            self.influences.append(Influence(dic_))
+            self.influences.setdefault(dic_['id'], Influence(dic_))
 
         self.strength = None
         self.dead_load = None
@@ -130,7 +130,7 @@ class Connection(object):
         if not self.damaged:
 
             if self.group_name == 'sheeting':
-                for _inf in self.influences:
+                for _inf in self.influences.itervalues():
 
                     try:
                         temp = _inf.coeff * _inf.source.area
@@ -142,10 +142,8 @@ class Connection(object):
                                 _inf.zone.name, _inf.zone.grid,
                                 _inf.zone.area))
                     except AttributeError:
-                        logging.critical('zone {} at {} has {}'.format(
-                            _inf.source, _inf.id, _inf.coeff
-                        ))
-
+                        logging.critical('zone {} at {} has {:.1f}'.format(
+                            _inf.source, _inf.id, _inf.coeff))
 
                     self.load += temp * _inf.source.pz
 
@@ -154,7 +152,7 @@ class Connection(object):
             else:
                 # inf.source.load should be pre-computed
 
-                for _inf in self.influences:
+                for _inf in self.influences.itervalues():
 
                     try:
                         self.load += _inf.coeff * _inf.source.load
@@ -184,7 +182,7 @@ class Connection(object):
         # denom_ = self.failure_v_i
         # self.failure_v = num_ / denom_
 
-    def append_influence(self, source_conn, infl_coeff):
+    def update_influence(self, source_conn, infl_coeff):
         """
 
         Args:
@@ -194,11 +192,11 @@ class Connection(object):
         Returns: load
 
         """
-
-        _dic = {'coeff': infl_coeff, 'id': source_conn.id}
-        _inf = Influence(_dic)
+        _inf = Influence({'coeff': infl_coeff, 'id': source_conn.id})
         _inf.source = source_conn
-        self.influences.append(_inf)
+        self.influences.update({_inf.id: _inf})
+        logging.debug('no. of influences of {}:{:.1f}'.format(self.name,
+                                                          len(self.influences)))
 
 
 class ConnectionType(object):
@@ -341,6 +339,9 @@ class ConnectionTypeGroup(object):
         except AssertionError:
             self.repair_cost = 0.0
 
+        logging.debug('group {}: repair_cost: {:.3f} for value {:.3f}'.format(self.name,
+                                                         self.repair_cost, value))
+
     def cal_prop_damaged(self):
         """
 
@@ -365,6 +366,9 @@ class ConnectionTypeGroup(object):
             self.prop_damaged_area = area_damaged / self.costing_area
         except ZeroDivisionError:
             self.prop_damaged_area = 0.0
+
+        logging.debug('group {}: prop damaged: {:.3f}, prop. damaged area: {:.3f}'.format(
+            self.name, self.prop_damaged_group, self.prop_damaged_area))
 
     def check_damage(self, wind_speed):
         """
@@ -401,6 +405,28 @@ class ConnectionTypeGroup(object):
 
             # summary by connection type
             _type.damage_summary()
+
+    def update_influence_target_conn(self, row, col, source_conn, infl_coeff):
+        """
+
+        Args:
+            row:
+            col:
+            source_conn:
+            infl_coeff:
+
+        Returns:
+
+        """
+
+        target_conn = self.conn_by_grid[row, col]
+
+        logging.debug(
+            'conn {} is appended by conn {} with {:.1f}'.format(
+                target_conn.name,
+                source_conn.name,
+                infl_coeff))
+        target_conn.update_influence(source_conn, infl_coeff)
 
 
 class Influence(object):

@@ -337,5 +337,5 @@ def import_model(path, db):
 
     loadStructurePatchesFromCSV(path, db)
 
-    logging.info('Database has been imported in: {}'.format(datetime.datetime.now()
-                                                     - date_run))
+    logging.info('Database has been imported in: {}'.format(
+        datetime.datetime.now() - date_run))

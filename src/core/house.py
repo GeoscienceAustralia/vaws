@@ -109,10 +109,10 @@ class House(object):
 
                     # linking connections either zones or connections
                     if _conn.group_name == 'sheeting':
-                        for _inf in _conn.influences:
+                        for _inf in _conn.influences.itervalues():
                             _inf.source = self.zones[_inf.id]
                     else:
-                        for _inf in _conn.influences:
+                        for _inf in _conn.influences.itervalues():
                             _inf.source = self.connections[_inf.id]
 
                     self.connections.setdefault(id_conn, _conn)
