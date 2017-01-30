@@ -41,7 +41,9 @@ class Zone(object):
             self.cpe_eave_mean[idx] = dic_['eaves_coeff_{}'.format(item)]
             self.is_roof_edge[idx] = dic_['leading_roof_{}'.format(item)]
 
-        self.effective_area = dic_['zone_area']  # default, later can be changed
+        #self.effective_area = dic_['zone_area']  # default, later can be changed
+
+        self.distributed = None
         self.cpe = None
         self.cpe_str = None
         self.cpe_eave = None
@@ -156,36 +158,35 @@ class Zone(object):
         num_part = self.name.strip(chr_part)
         return str2num(chr_part) - 1, int(num_part) - 1
 
-    def update_cpe_and_area(self, source_zone, source_area):
-        """
-
-        Args:
-            source_zone: source zone
-            source_area: factored area of source zone
-
-        Returns: cpe, cpe_str, effective_area
-
-        """
-        try:
-
-            updated_area = self.effective_area + source_area
-
-        except TypeError:
-
-            logging.debug(
-                'skipping update because zone {} at {} has {}'.format(
-                    self.name, self.grid, self.effective_area))
-
-        else:
-            self.cpe = (self.effective_area * self.cpe +
-                        source_area * source_zone.cpe) / updated_area
-
-            self.cpe_str = (self.effective_area * self.cpe_str +
-                            source_area * source_zone.cpe_str) / updated_area
-
-            # update effective_area
-            self.effective_area = updated_area
-
+    # def update_cpe_and_area(self, source_zone, source_area):
+    #     """
+    #
+    #     Args:
+    #         source_zone: source zone
+    #         source_area: factored area of source zone
+    #
+    #     Returns: cpe, cpe_str, effective_area
+    #
+    #     """
+    #     try:
+    #
+    #         updated_area = self.effective_area + source_area
+    #
+    #     except TypeError:
+    #
+    #         logging.debug(
+    #             'skipping update because zone {} at {} has {}'.format(
+    #                 self.name, self.grid, self.effective_area))
+    #
+    #     else:
+    #         self.cpe = (self.effective_area * self.cpe +
+    #                     source_area * source_zone.cpe) / updated_area
+    #
+    #         self.cpe_str = (self.effective_area * self.cpe_str +
+    #                         source_area * source_zone.cpe_str) / updated_area
+    #
+    #         # update effective_area
+    #         self.effective_area = updated_area
 
 
 def str2num(s):

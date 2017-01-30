@@ -4,8 +4,8 @@
         - harvest house types found within subfolders
 """
 import datetime
+import logging
 import pandas as pd
-
 from os.path import join
 
 from database import House, Patch, Connection, ConnectionTypeGroup, \
@@ -19,6 +19,8 @@ def loadStructurePatchesFromCSV(path, db):
     format is: damaged_conn, target_conn, zone, infl, zone, infl,....
     """
     fileName = join(path, 'influencefactorpatches.csv')
+    logging.info('read {}'.format(fileName))
+
     lineCount = 0
     for line in open(fileName, 'r'):
         if lineCount != 0:
@@ -49,6 +51,8 @@ def loadStructurePatchesFromCSV(path, db):
 
 def loadHouseFromCSV(path, db):
     fileName = join(path, 'house_data.csv')
+    logging.info('read {}'.format(fileName))
+
     x = pd.read_csv(fileName).iloc[0]
     house = House(house_name=x[0],
                   replace_cost=float(x[1]),
@@ -67,6 +71,8 @@ def loadHouseFromCSV(path, db):
 
 def loadConnectionTypeGroupsFromCSV(path, house, db):
     fileName = join(path, 'conn_group.csv')
+    logging.info('read {}'.format(fileName))
+
     x = pd.read_csv(fileName)
     for _, row in x.iterrows():
         tmp = ConnectionTypeGroup(
@@ -84,6 +90,8 @@ def loadConnectionTypeGroupsFromCSV(path, house, db):
 
 def loadConnectionTypesFromCSV(path, house, db):
     fileName = join(path, 'conn_type.csv')
+    logging.info('read {}'.format(fileName))
+
     x = pd.read_csv(fileName)
     for _, row in x.iterrows():
         tmp = ConnectionType(row[0],
@@ -99,6 +107,8 @@ def loadConnectionTypesFromCSV(path, house, db):
 
 def loadConnectionsFromCSV(path, house, db):
     fileName = join(path, 'connections.csv')
+    logging.info('read {}'.format(fileName))
+
     x = pd.read_csv(fileName)
     for _, row in x.iterrows():
         tmp = Connection(connection_name=row[0], edge=int(row[3]))
@@ -110,6 +120,8 @@ def loadConnectionsFromCSV(path, house, db):
 
 def loadDamageCostingsFromCSV(path, house, db):
     fileName = join(path, 'damage_costing_data.csv')
+    logging.info('read {}'.format(fileName))
+
     x = pd.read_csv(fileName)
     for _, row in x.iterrows():
         tmp = DamageCosting(
@@ -131,6 +143,8 @@ def loadDamageCostingsFromCSV(path, house, db):
 
 def loadDamageFactoringsFromCSV(path, house, db):
     fileName = join(path, 'damage_factorings.csv')
+    logging.info('read {}'.format(fileName))
+
     x = pd.read_csv(fileName)
     for _, row in x.iterrows():
         parent_id = 0
@@ -154,6 +168,8 @@ def loadDamageFactoringsFromCSV(path, house, db):
 
 def loadWaterCostingsFromCSV(path, house, db):
     fileName = join(path, 'water_ingress_costing_data.csv')
+    logging.info('read {}'.format(fileName))
+
     x = pd.read_csv(fileName)
     for _, row in x.iterrows():
         tmp = WaterIngressCosting(name=row[0],
@@ -170,6 +186,8 @@ def loadWaterCostingsFromCSV(path, house, db):
 
 def loadZoneFromCSV(path, house, db):
     fileName = join(path, 'zones.csv')
+    logging.info('read {}'.format(fileName))
+
     x = pd.read_csv(fileName)
     for _, row in x.iterrows():
         tmp = Zone(zone_name=row[0],
@@ -213,7 +231,9 @@ def loadZoneFromCSV(path, house, db):
 
 
 def loadConnectionInfluencesFromCSV(path, db):
-    fileName = join(path, 'connectionzoneinfluences.csv')
+    fileName = join(path, 'connectioninfluences.csv')
+    logging.info('read {}'.format(fileName))
+
     # input: connection_name, zone1_name, zone1_infl, (.....)
     lineCount = 0
     for line in open(fileName, 'r'):
@@ -228,13 +248,12 @@ def loadConnectionInfluencesFromCSV(path, db):
                 if col == 0:
                     parentLeft = db.get_conn_by_name(data)
                 elif (col % 2) != 0:
-                    childRight = db.get_zone_by_name(data)
+                    childRight = data
                 elif childRight is not None and parentLeft is not None:
-                    inf = Influence(coeff=float(data))
-                    inf.zone = childRight
+                    inf = Influence(id=childRight, coeff=float(data))
                     # print 'adding influence from %s to %s of %f' % (
                     # parentLeft, childRight, float(data))
-                    parentLeft.zones.append(inf)
+                    parentLeft.influences.append(inf)
                     childRight = None
         lineCount += 1
     db.session.commit()
@@ -242,6 +261,8 @@ def loadConnectionInfluencesFromCSV(path, db):
 
 def loadWallsFromCSV(path, house, db):
     fileName = join(path, 'walls.csv')
+    logging.info('read {}'.format(fileName))
+
     x = pd.read_csv(fileName)
     for _, row in x.iterrows():
         tmp = Wall(direction=int(row[0]), area=float(row[1]))
@@ -251,6 +272,8 @@ def loadWallsFromCSV(path, house, db):
 
 def loadCoverageTypesFromCSV(path, house, db):
     fileName = join(path, 'cov_types.csv')
+    logging.info('read {}'.format(fileName))
+
     x = pd.read_csv(fileName)
     for _, row in x.iterrows():
         tmp = CoverageType(name=row[0],
@@ -262,6 +285,8 @@ def loadCoverageTypesFromCSV(path, house, db):
 
 def loadCoveragesFromCSV(path, house, db):
     fileName = join(path, 'coverages.csv')
+    logging.info('read {}'.format(fileName))
+
     x = pd.read_csv(fileName)
     for _, row in x.iterrows():
         tmp = Coverage(description=row[0], area=float(row[2]))
@@ -280,14 +305,12 @@ def loadCoveragesFromCSV(path, house, db):
 def import_model(path, db):
     date_run = datetime.datetime.now()
     # print 'Current Path: %s' % (os.getcwd())
-    print 'Importing Wind Vulnerability Model Data into database' \
-          'from folder: {}'.format(path)
+    logging.info('Importing data into database from folder {}'.format(path))
     
     db.drop_tables()
     db.create_tables()
-    print 'created new tables...'
+    logging.info('create new tables')
 
-    print 'Importing House Data from path: {}'.format(path)
     house_ = loadHouseFromCSV(path, db)
 
     loadWallsFromCSV(path, house_, db)
@@ -314,5 +337,5 @@ def import_model(path, db):
 
     loadStructurePatchesFromCSV(path, db)
 
-    print 'Database has been imported in: {}'.format(datetime.datetime.now()
-                                                     - date_run)
+    logging.info('Database has been imported in: {}'.format(datetime.datetime.now()
+                                                     - date_run))

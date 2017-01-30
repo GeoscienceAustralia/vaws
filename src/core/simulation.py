@@ -81,7 +81,7 @@ def simulate_wind_damage_to_houses(cfg):
         ps_ = pd.DataFrame([x[item] for x in list_results])
         hdf.append(item, ps_, format='t')
 
-    for item in ['pz', 'pz_str', 'effective_area', 'cpe', 'cpe_str']:
+    for item in ['pz', 'pz_str', 'area', 'cpe', 'cpe_str']:
         dic_ = {key: x[item] for key, x in enumerate(list_results)}
         hdf[item] = pd.Panel(dic_)
     hdf.close()
@@ -165,7 +165,8 @@ class HouseDamage(object):
             if self.cfg.flags.get('conn_type_group_{}'.format(_group.name)):
                 _group.check_damage(wind_speed)
 
-            if self.cfg.flags.get('dmg_distribute_{}'.format(_group.name)):
+            if self.cfg.flags.get('dmg_distribute_{}'.format(_group.name)) and \
+                    _group.damaged:
                 self.distribute_damage(_group)
 
         self.check_house_collapse(wind_speed)
@@ -207,7 +208,7 @@ class HouseDamage(object):
                 self.bucket.setdefault(_att, {})[item] = None
 
         # by zone
-        for item in ['pz', 'pz_str', 'effective_area', 'cpe', 'cpe_str']:
+        for item in ['pz', 'pz_str', 'area', 'cpe', 'cpe_str']:
             self.bucket[item] = pd.DataFrame(
                 None, columns=list_zones, index=self.cfg.idx_speeds)
 
@@ -245,7 +246,7 @@ class HouseDamage(object):
         # by zone
         for _value in self.house.zones.itervalues():
 
-            for item in ['pz', 'pz_str', 'effective_area', 'cpe', 'cpe_str']:
+            for item in ['pz', 'pz_str', 'area', 'cpe', 'cpe_str']:
                 self.bucket[item][_value.name][ispeed] = getattr(_value, item)
 
             for item in ['cpe_eave']:
@@ -371,113 +372,183 @@ class HouseDamage(object):
 
     def distribute_damage(self, group):
 
-        if group.dist_dir == 'col':  # distributed over the same char.
+        if group.name == 'batten':
+
+            assert group.dist_dir == 'row'
+            # distributed over the same number
+
+            # row: index of chr, col: index of number e.g, 0,0 : A1
+            for row, col in zip(*np.where(group.damage_grid)):
+
+                source_conn = group.conn_by_grid[row, col]
+
+                intact = np.where(~group.damage_grid[:, col])[0]
+
+                intact_left = intact[np.where(row > intact)[0]]
+                intact_right = intact[np.where(row < intact)[0]]
+
+                logging.debug('cols of intact conns:{}'.format(intact))
+
+                if intact_left.size * intact_right.size > 0:
+                    infl_coeff = 0.5  # can be prop. to distance later
+                else:
+                    infl_coeff = 1.0
+
+                # logging.debug('conn {} at {} is distributed'.format(
+                #     source_conn.name, source_conn.grid))
+                # source_conn.distributed = True
+
+                try:
+                    target_conn = group.conn_by_grid[intact_right[0], col]
+                except IndexError:
+                    #logging.debug('no update from conn {}'.format(
+                    #    source_conn.name))
+                    pass
+                else:
+                    self.append_influence_to_target_conn(target_conn,
+                                                         source_conn,
+                                                         infl_coeff)
+
+                try:
+                    target_conn = group.conn_by_grid[intact_left[-1], col]
+                except IndexError:
+                    #logging.debug('no update from conn {}'.format(
+                    #    source_conn.name))
+                    pass
+                else:
+                    self.append_influence_to_target_conn(target_conn,
+                                                         source_conn,
+                                                         infl_coeff)
+
+        elif group.name == 'sheeting':
+
+            assert group.dist_dir == 'col'
+            # distributed over the same char.
 
             # row: index of chr, col: index of number e.g, 0,0 : A1
             for row, col in zip(*np.where(group.damage_grid)):
 
                 source_zone = self.house.zone_by_grid[row, col]
 
-                if source_zone.effective_area:
+                intact = np.where(~group.damage_grid[row, :])[0]
 
-                    intact = np.where(~group.damage_grid[row, :])[0]
+                intact_left = intact[np.where(col > intact)[0]]
+                intact_right = intact[np.where(col < intact)[0]]
 
-                    intact_left = intact[np.where(col > intact)[0]]
-                    intact_right = intact[np.where(col < intact)[0]]
+                logging.debug('rows of intact zones:{}'.format(intact))
 
-                    logging.debug('rows of intact conns:{}'.format(intact))
+                if intact_left.size * intact_right.size > 0:
+                    infl_coeff = 0.5
+                else:
+                    infl_coeff = 1.0
 
-                    if intact_left.size * intact_right.size > 0:
-                        source_area = 0.5 * source_zone.effective_area
-                    else:
-                        source_area = source_zone.effective_area
+                # if group.set_zone_to_zero:
+                #     logging.debug('zone {} at {} distributed'.format(
+                #         source_zone.name, source_zone.grid))
+                #     source_zone.distributed = True
 
-                    if group.set_zone_to_zero:
-                        logging.debug('zone {} at {} set to None'.format(
-                            source_zone.name, source_zone.grid))
-                        source_zone.effective_area = None
+                try:
+                    target_conn = group.conn_by_grid[row, intact_right[0]]
+                except IndexError:
+                    pass
+                    #logging.debug('no update from zone {}'.format(
+                    #    source_zone.name))
+                else:
+                    self.append_influence_to_target_conn(target_conn,
+                                                         source_zone,
+                                                         infl_coeff)
 
-                    try:
-                        target_zone = self.house.zone_by_grid[row,
-                                                              intact_right[0]]
-                    except IndexError:
-                        pass
-                    else:
-                        logging.debug(
-                            'zone {} is updated by zone {} with {:.3f}'.format(
-                                target_zone.name,
-                                source_zone.name,
-                                source_area))
-                        target_zone.update_cpe_and_area(source_zone,
-                                                        source_area)
+                try:
+                    target_conn = group.conn_by_grid[row, intact_left[-1]]
+                except IndexError:
+                    # logging.debug('no update from zone {}'.format(
+                    #     source_zone.name))
+                    pass
+                else:
+                    self.append_influence_to_target_conn(target_conn,
+                                                         source_zone,
+                                                         infl_coeff)
 
-                    try:
-                        target_zone = self.house.zone_by_grid[row,
-                                                              intact_left[-1]]
-                    except IndexError:
-                        pass
-                    else:
-                        logging.debug(
-                            'zone {} is updated by zone {} with {:.3f}'.format(
-                                target_zone.name,
-                                source_zone.name,
-                                source_area))
-                        target_zone.update_cpe_and_area(source_zone,
-                                                        source_area)
+        else:
 
-        elif group.dist_dir == 'row':  # distributed over the same number
+            try:
+                assert group.dist_dir == 'col'
+                # distributed over the same char.
+            except AssertionError:
+                logging.debug('group {} is skipped in distribution'.format(
+                    group.name))
+            else:
+                # row: index of chr, col: index of number e.g, 0,0 : A1
+                for row, col in zip(*np.where(group.damage_grid)):
 
-            # row: index of chr, col: index of number e.g, 0,0 : A1
-            for row, col in zip(*np.where(group.damage_grid)):
+                    source_conn = self.house.conn_by_grid[row, col]
 
-                source_zone = self.house.zone_by_grid[row, col]
+                    if source_conn.load:
 
-                if source_zone.effective_area:
+                        intact = np.where(~group.damage_grid[row, :])[0]
 
-                    intact = np.where(~group.damage_grid[:, col])[0]
+                        intact_left = intact[np.where(col > intact)[0]]
+                        intact_right = intact[np.where(col < intact)[0]]
 
-                    intact_left = intact[np.where(row > intact)[0]]
-                    intact_right = intact[np.where(row < intact)[0]]
+                        logging.debug('rows of intact conns:{}'.format(intact))
 
-                    logging.debug('cols of intact conns:{}'.format(intact))
+                        if intact_left.size * intact_right.size > 0:
+                            source_load = 0.5 * source_conn.load
+                        else:
+                            source_load = source_conn.load
 
-                    if intact_left.size * intact_right.size > 0:
-                        source_area = 0.5 * source_zone.effective_area
-                    else:
-                        source_area = source_zone.effective_area
+                        logging.debug('conn {} at {} set to None'.format(
+                            source_conn.name, source_conn.grid))
+                        source_conn.load = None
 
-                    if group.set_zone_to_zero:
-                        logging.debug('zone {} at {} set to None'.format(
-                            source_zone.name, source_zone.grid))
-                        source_zone.effective_area = None
+                        self.update_conn_load(row, intact_right[0], source_conn,
+                                              source_load)
 
-                    try:
-                        target_zone = self.house.zone_by_grid[intact_right[0],
-                                                              col]
-                    except IndexError:
-                        pass
-                    else:
-                        logging.debug(
-                            'zone {} is updated by zone {} with {:.3f}'.format(
-                                target_zone.name,
-                                source_zone.name,
-                                source_area))
-                        target_zone.update_cpe_and_area(source_zone,
-                                                        source_area)
+                        self.update_conn_load(row, intact_left[-1], source_conn,
+                                              source_load)
 
-                    try:
-                        target_zone = self.house.zone_by_grid[intact_left[-1],
-                                                              col]
-                    except IndexError:
-                        pass
-                    else:
-                        logging.debug(
-                            'zone {} is updated by zone {} with {:.3f}'.format(
-                                target_zone.name,
-                                source_zone.name,
-                                source_area))
-                        target_zone.update_cpe_and_area(source_zone,
-                                                        source_area)
+    def append_influence_to_target_conn(self, target_conn, source_conn,
+                                        infl_coeff):
+        """
+
+        Args:
+            row:
+            col:
+            source_conn:
+            infl_coeff:
+
+        Returns:
+
+        """
+
+        # target_conn = conn_by_grid[row, col]
+        logging.debug(
+            'conn {} is appended by conn {} with {:.3f}'.format(
+                target_conn.name,
+                source_conn.name,
+                infl_coeff))
+        target_conn.append_influence(source_conn, infl_coeff)
+
+    # def update_zone_area(self, row, col, source_zone, source_area):
+    #     """
+    #
+    #     Args:
+    #         row:
+    #         col:
+    #         source_zone:
+    #         source_area:
+    #
+    #     Returns:
+    #
+    #     """
+    #
+    #     target_zone = self.house.zone_by_grid[row, col]
+    #
+    #     logging.debug('zone {} is updated by zone {} with {:.3f}'.format(
+    #             target_zone.name,
+    #             source_zone.name,
+    #             source_area))
+    #     target_zone.update_cpe_and_area(source_zone, source_area)
 
 
 def main():
@@ -522,15 +593,10 @@ def main():
 
     if options.output_folder is None:
         options.output_folder = os.path.abspath(os.path.join(path_,
-                                                             './output'))
+                                                             '../output'))
     else:
         options.output_folder = os.path.abspath(
             os.path.join(os.getcwd(), options.output_folder))
-
-    # if options.verbose:
-    #     logger.configure(logger.LOGGING_CONSOLE)
-    # else:
-    #     logger.configure(logger.LOGGING_NONE)
 
     # set up logging
     file_logger = os.path.join(options.output_folder, 'log.txt')
@@ -540,8 +606,7 @@ def main():
                         format='%(levelname)s %(message)s')
 
     if options.data_folder:
-        db = database.DatabaseManager(options.model_database,
-                                      verbose=options.verbose)
+        db = database.DatabaseManager(options.model_database)
         import dbimport
         dbimport.import_model(options.data_folder, db)
         db.close()

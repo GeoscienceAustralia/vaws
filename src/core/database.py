@@ -162,7 +162,6 @@ class DatabaseManager(object):
         list_ = result.fetchall()
         result.close()
         return list_
-    '''
 
     def get_list_conn_type(self):
 
@@ -204,6 +203,7 @@ class DatabaseManager(object):
             cached_water_costs[dmg_name] = water_ingress
 
         return cached_water_costs
+    '''
 
 
 # class Terrain(Base):
@@ -250,7 +250,7 @@ class Connection(Base):
                      backref=backref('connections_of_type'))
     location_zone = relation('Zone', uselist=False,
                              backref=backref('located_conns'))
-    zones = relation('Influence')
+    influences = relation('Influence')
 
     def __str__(self):
         return '({} @ {})'.format(self.connection_name, self.location_zone)
@@ -391,16 +391,14 @@ class Influence(Base):
     __tablename__ = 'influences'
     connection_id = Column(Integer, ForeignKey('connections.id'),
                            primary_key=True)
-    zone_id = Column(Integer, ForeignKey('zones.id'), primary_key=True)
+    id = Column(Integer, primary_key=True)
     coeff = Column(Float)
-    zone = relation('Zone')
+    # zone = relation('Zone')
 
     def __repr__(self):
-        return "('{:d}', '{:d}', '{:f}', '{}')".format(self.connection_id,
-                                                       self.zone_id,
-                                                       self.coeff,
-                                                       'None' if not self.zone
-                                                       else self.zone.zone_name)
+        return "('{:d}', '{:d}', '{:f}')".format(self.connection_id,
+                                                       self.id,
+                                                       self.coeff)
 
 
 class WaterIngressCosting(Base):

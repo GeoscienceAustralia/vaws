@@ -43,9 +43,10 @@ class Connection(object):
         self.dead_load_mean = dic_ctype['deadload_mean']
         self.dead_load_std = dic_ctype['deadload_std_dev']
 
-        self.inf_zones = dict()
-        for item in inst_conn.zones:
-            self.inf_zones[item.zone_id] = Influence(item)
+        self.influences = []
+        for item in inst_conn.influences:
+            dic_ = copy.deepcopy(item.__dict__)
+            self.influences.append(Influence(dic_))
 
         self.strength = None
         self.dead_load = None
@@ -55,7 +56,7 @@ class Connection(object):
         self.failure_v_raw = 9999  # dummy value
 
         self.damaged = False
-        # self.damaged_by_dist = None
+        self.distributed = None
 
         self.load = None
 
@@ -117,12 +118,8 @@ class Connection(object):
                                           self.dead_load_std,
                                           rnd_state)
 
-    def cal_load(self, use_struct_pz):
+    def cal_load(self):
         """
-
-        Args:
-
-            use_struct_pz: True or False
 
         Returns: load
 
@@ -132,24 +129,41 @@ class Connection(object):
 
         if not self.damaged:
 
-            for _inf in self.inf_zones.itervalues():
-                # if _inf.zone.effective_area > 0.0:
-                try:
-                    temp = _inf.coeff * _inf.zone.effective_area
-                except TypeError:
-                    temp = 0.0
+            if self.group_name == 'sheeting':
+                for _inf in self.influences:
 
-                    logging.debug(
-                        'zone {} at {} has {}'.format(
-                            _inf.zone.name, _inf.zone.grid,
-                            _inf.zone.effective_area))
+                    try:
+                        temp = _inf.coeff * _inf.source.area
+                    except TypeError:
+                        temp = 0.0
 
-                if use_struct_pz:
-                    self.load += temp * _inf.zone.pz_struct
-                else:
-                    self.load += temp * _inf.zone.pz
+                        logging.debug(
+                            'zone {} at {} has {}'.format(
+                                _inf.zone.name, _inf.zone.grid,
+                                _inf.zone.area))
+                    except AttributeError:
+                        logging.critical('zone {} at {} has {}'.format(
+                            _inf.source, _inf.id, _inf.coeff
+                        ))
 
-            self.load += self.dead_load
+
+                    self.load += temp * _inf.source.pz
+
+                self.load += self.dead_load
+
+            else:
+                # inf.source.load should be pre-computed
+
+                for _inf in self.influences:
+
+                    try:
+                        self.load += _inf.coeff * _inf.source.load
+                    except TypeError:
+
+                        logging.debug(
+                            'conn {} at {} has {}'.format(
+                                _inf.source.name, _inf.source.grid,
+                                _inf.source.load))
 
     def set_damage(self, wind_speed):
         """
@@ -169,6 +183,22 @@ class Connection(object):
         #                     self.failure_v_i - 1) * self.failure_v
         # denom_ = self.failure_v_i
         # self.failure_v = num_ / denom_
+
+    def append_influence(self, source_conn, infl_coeff):
+        """
+
+        Args:
+            source_conn: source conn (sheeting)
+            infl_coeff:
+
+        Returns: load
+
+        """
+
+        _dic = {'coeff': infl_coeff, 'id': source_conn.id}
+        _inf = Influence(_dic)
+        _inf.source = source_conn
+        self.influences.append(_inf)
 
 
 class ConnectionType(object):
@@ -264,6 +294,9 @@ class ConnectionTypeGroup(object):
         # self.dist_by_col = None
 
         self.damage_grid = None  # column (chr), row (num)
+        self.damaged = None
+
+        self.conn_by_grid = dict()  # dict of connections with zone loc grid in tuple
 
         # self._dist_tuple = None
 
@@ -343,63 +376,62 @@ class ConnectionTypeGroup(object):
         """
 
         # hard coded for optimization
-        use_struct_pz = self.name in self.use_struct_pz_for
+        # use_struct_pz = self.name in self.use_struct_pz_for
 
-        if self.dist_dir:
+        self.damaged = False
 
-            for _type in self.types.itervalues():
+        for _type in self.types.itervalues():
 
-                for _conn in _type.connections.itervalues():
+            for _conn in _type.connections.itervalues():
 
-                    _conn.cal_load(use_struct_pz)
+                _conn.cal_load()
 
-                    # if load is negative, check failure
-                    if _conn.load < -1.0 * _conn.strength:
+                # if load is negative, check failure
+                if _conn.load < -1.0 * _conn.strength:
 
-                        _conn.set_damage(wind_speed)
+                    _conn.set_damage(wind_speed)
 
-                        logging.debug(
-                            'conn #{} of {} at {} damaged at {:.3f}'.format(
-                                _conn.name, self.name, _conn.grid, wind_speed))
+                    logging.debug(
+                        'conn {} of {} at {} damaged at {:.3f}'.format(
+                            _conn.name, self.name, _conn.grid, wind_speed))
 
-                        self.damage_grid[_conn.grid] = True
+                    self.damaged = True
 
-                # summary by connection type
-                _type.damage_summary()
+                    self.damage_grid[_conn.grid] = True
+
+            # summary by connection type
+            _type.damage_summary()
 
 
 class Influence(object):
-    def __init__(self, inst):
+    def __init__(self, dic_):
         """
 
         Args:
-            inst: instance of database.Influence
+            dic_: dictionary coeff, id, source
         """
 
-
-
-        dic_ = copy.deepcopy(inst.__dict__)
+        # dic_ = copy.deepcopy(inst.__dict__)
         self.coeff = dic_['coeff']
-        self.conn_id = dic_['connection_id']
-        self.zone_id = dic_['zone_id']
-        self._zone = None
+        self.id = dic_['id']  # source connection or zone id
+        self._source = None
 
     @property
-    def zone(self):
-        return self._zone
+    def source(self):
+        return self._source
 
-    @zone.setter
-    def zone(self, inst_zone):
+    @source.setter
+    def source(self, inst):
         """
 
         Args:
-            inst_zone: instance of Zone class
+            inst: instance of either Zone or Connection class
 
         Returns:
 
         """
-        assert isinstance(inst_zone, Zone)
-        self._zone = inst_zone
+        assert isinstance(inst, Zone) or isinstance(inst, Connection)
+        self._source = inst
 
 # unit tests
 if __name__ == '__main__':
@@ -412,37 +444,41 @@ if __name__ == '__main__':
         @classmethod
         def setUpClass(cls):
 
-            cls.cfg = Scenario(cfg_file='../scenarios/test_roof_sheeting2.cfg')
+            cls.cfg = Scenario(cfg_file='../scenarios/test_sheeting_batten.cfg')
 
         def test_cal_prop_damaged(self):
 
             rnd_state = np.random.RandomState(1)
             house = House(self.cfg, rnd_state=rnd_state)
-            group = house.groups[1]
+            group = house.groups[1]  # sheeting
 
             for _conn in house.connections.itervalues():
                 self.assertEqual(_conn.damaged, False)
 
+            # 1: sheeting gable(1): 2 - 5
+            # 2: sheeting eave(2): 7, 12, 13, 18, 19, 24, 25, 30
+            # 3: sheeting corner(3): 1, 6
+            # 4: sheeting(4): 8 - 11, 14 - 17, 20 - 23, 26 - 29
             for _id in [1, 4, 5, 7, 8, 11, 12]:
                 house.connections[_id].set_damage(20.0)
 
-            ref_dic = {1: 4, 2: 4, 3: 2, 4: 8}
+            ref_dic = {1: 4, 2: 8, 3: 2, 4: 16}
             ref_area = {1: 0.405, 2: 0.405, 3: 0.225, 4: 0.81}
             for id_type, _type in group.types.iteritems():
                 self.assertEqual(_type.no_connections, ref_dic[id_type])
                 self.assertEqual(_type.costing_area, ref_area[id_type])
 
             # costing area by group
-            self.assertAlmostEqual(group.costing_area, 10.17, places=2)
+            self.assertAlmostEqual(group.costing_area, 18.27, places=2)
 
-            ref_dic = {1: 0.5, 2: 0.5, 3: 0.5, 4: 0.25}
+            ref_dic = {1: 0.5, 2: 0.25, 3: 0.5, 4: 0.125}
             for id_type, _type in group.types.iteritems():
                 _type.damage_summary()
                 self.assertEqual(_type.prop_damaged_type, ref_dic[id_type])
 
             group.cal_prop_damaged()
-            self.assertAlmostEqual(group.prop_damaged_group, 0.3889, places=4)
-            self.assertAlmostEqual(group.prop_damaged_area, 0.3407, places=4)
+            self.assertAlmostEqual(group.prop_damaged_group, 0.2333, places=4)
+            self.assertAlmostEqual(group.prop_damaged_area, 0.1897, places=4)
 
         def test_cal_damage_capacity(self):
 
@@ -460,7 +496,7 @@ if __name__ == '__main__':
             house.connections[1].set_damage(45.0)
 
             ref_dic = {1: 20.0, 2: 30.0, 3: 45.0, 4: 9999.0}
-            for id_type, _type in house.types.iteritems():
+            for id_type, _type in house.groups[1].types.iteritems():
                 _type.damage_summary()
                 self.assertAlmostEqual(_type.damage_capacity, ref_dic[id_type])
 
@@ -489,29 +525,15 @@ if __name__ == '__main__':
             self.assertEqual(_conn.damaged, False)
             self.assertEqual(_conn.load, None)
 
-            _conn.cal_load(use_struct_pz=False)
-            self.assertAlmostEqual(_conn.load, -0.01032, places=4)
+            _conn.cal_load()
 
-        def test_check_damage1(self):
+            self.assertAlmostEqual(_conn.dead_load, 0.0130, places=4)
+            self.assertAlmostEqual(_conn.influences[0].source.effective_area,
+                                   0.2025, places=4)
+            self.assertAlmostEqual(_conn.influences[0].source.pz, -0.05651,
+                                   places=4)
 
-            rnd_state = np.random.RandomState(1)
-            house = House(self.cfg, rnd_state)
-
-            # compute zone pressures
-            wind_speed = 50.0
-            mzcat = 0.9235
-            wind_dir_index = 3
-            cpi = 0.0
-            qz = 0.6 * 1.0e-3 * (wind_speed * mzcat) ** 2
-            Ms = 1.0
-            building_spacing = 0
-
-            for _zone in house.zones.itervalues():
-                _zone.calc_zone_pressures(wind_dir_index,
-                                          cpi,
-                                          qz,
-                                          Ms,
-                                          building_spacing)
+            self.assertAlmostEqual(_conn.load, 0.00158, places=4)
 
         def test_check_damage(self):
 
@@ -537,19 +559,20 @@ if __name__ == '__main__':
             group = house.groups[1]
             group.check_damage(wind_speed=wind_speed)
 
-            ref_dic = {x: False for x in range(1, 19)}
+            ref_dic = {x: False for x in range(1, 61)}
             ref_dic[10] = True
             for id_conn, _conn in house.connections.iteritems():
-                _conn.cal_load(use_struct_pz=False)
+                _conn.cal_load()
                 self.assertEqual(_conn.damaged, ref_dic[id_conn])
 
-            ref_prop = {1: 0.0, 2: 0.0, 3: 0.0, 4: 0.125}
+            ref_prop = {1: 0.0, 2: 0.0, 3: 0.0, 4: 0.0625}
             ref_capacity = {1: 9999, 2: 9999, 3: 9999, 4: 50.0}
             for id_type, _type in group.types.iteritems():
                 self.assertAlmostEqual(_type.prop_damaged_type,
                                        ref_prop[id_type], places=3)
                 self.assertAlmostEqual(_type.damage_capacity,
                                        ref_capacity[id_type], places=1)
+
 
     suite = unittest.TestLoader().loadTestsFromTestCase(MyTestCase)
     unittest.TextTestRunner(verbosity=2).run(suite)
