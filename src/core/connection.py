@@ -129,11 +129,21 @@ class Connection(object):
 
         if not self.damaged:
 
+            logging.debug('computing load of conn {}'.format(self.name))
+
             if self.group_name == 'sheeting':
+
                 for _inf in self.influences.itervalues():
 
                     try:
-                        temp = _inf.coeff * _inf.source.area
+                        temp = _inf.coeff * _inf.source.area * _inf.source.pz
+
+                        logging.debug(
+                            'load by {}: {:.2f} x {:.3f} x {:.3f}'.format(_inf.source.name,
+                                                             _inf.coeff,
+                                                             _inf.source.area,
+                                                                     _inf.source.pz))
+
                     except TypeError:
                         temp = 0.0
 
@@ -145,23 +155,33 @@ class Connection(object):
                         logging.critical('zone {} at {} has {:.1f}'.format(
                             _inf.source, _inf.id, _inf.coeff))
 
-                    self.load += temp * _inf.source.pz
+                    self.load += temp
+
+                logging.debug('dead load: {:.3f}'.format(self.dead_load))
 
                 self.load += self.dead_load
 
             else:
-                # inf.source.load should be pre-computed
+            # inf.source.load should be pre-computed
 
                 for _inf in self.influences.itervalues():
 
                     try:
                         self.load += _inf.coeff * _inf.source.load
+
+                        logging.debug(
+                            'load by {}: {:.2f} times {:.3f}'.format(_inf.source.name,
+                                                             _inf.coeff,
+                                                             _inf.source.load))
+
                     except TypeError:
 
                         logging.debug(
                             'conn {} at {} has {}'.format(
                                 _inf.source.name, _inf.source.grid,
                                 _inf.source.load))
+
+            logging.debug('load of conn {}: {:.3f}'.format(self.name, self.load))
 
     def set_damage(self, wind_speed):
         """
@@ -195,8 +215,8 @@ class Connection(object):
         _inf = Influence({'coeff': infl_coeff, 'id': source_conn.id})
         _inf.source = source_conn
         self.influences.update({_inf.id: _inf})
-        logging.debug('no. of influences of {}:{:.1f}'.format(self.name,
-                                                          len(self.influences)))
+        # logging.debug('influences of {}:{:.2f}'.format(self.name,
+        #                                                _inf.coeff))
 
 
 class ConnectionType(object):
@@ -294,7 +314,7 @@ class ConnectionTypeGroup(object):
         self.damage_grid = None  # column (chr), row (num)
         self.damaged = None
 
-        self.conn_by_grid = dict()  # dict of connections with zone loc grid in tuple
+        self.conn_by_grid = dict()  # dict of connections with zone loc grid
 
         # self._dist_tuple = None
 
@@ -396,8 +416,8 @@ class ConnectionTypeGroup(object):
                     _conn.set_damage(wind_speed)
 
                     logging.debug(
-                        'conn {} of {} at {} damaged at {:.3f}'.format(
-                            _conn.name, self.name, _conn.grid, wind_speed))
+                        'conn {} of {} at {} damaged at {:.3f} b/c load {:.3f} > strength {:.3f}'.format(
+                            _conn.name, self.name, _conn.grid, wind_speed, _conn.load, _conn.strength))
 
                     self.damaged = True
 
@@ -422,11 +442,15 @@ class ConnectionTypeGroup(object):
         target_conn = self.conn_by_grid[row, col]
 
         logging.debug(
-            'conn {} is appended by conn {} with {:.1f}'.format(
+            'conn {} is appended by conn {} with {:.2f}'.format(
                 target_conn.name,
                 source_conn.name,
                 infl_coeff))
         target_conn.update_influence(source_conn, infl_coeff)
+
+        logging.debug('influences of {}'.format(target_conn.name))
+        for val in target_conn.influences.itervalues():
+            logging.debug('influence coeff {:.2f} by conn {}'.format(val.coeff, val.id))
 
 
 class Influence(object):

@@ -369,6 +369,12 @@ class HouseDamage(object):
 
                 source_conn = group.conn_by_grid[row, col]
 
+                # looking at influences
+                linked_conn = None
+                for val in source_conn.influences.itervalues():
+                    if val.coeff == 1.0:
+                        linked_conn = val.source
+
                 intact = np.where(~group.damage_grid[:, col])[0]
 
                 intact_left = intact[np.where(row > intact)[0]]
@@ -388,7 +394,7 @@ class HouseDamage(object):
                 try:
                     group.update_influence_target_conn(intact_right[0],
                                                        col,
-                                                       source_conn,
+                                                       linked_conn,
                                                        infl_coeff)
 
                 except IndexError:
@@ -397,9 +403,9 @@ class HouseDamage(object):
                     pass
 
                 try:
-                    group.update_influence_target_conn(intact[-1],
+                    group.update_influence_target_conn(intact_left[-1],
                                                        col,
-                                                       source_conn,
+                                                       linked_conn,
                                                        infl_coeff)
                 except IndexError:
                     #logging.debug('no update from conn {}'.format(
@@ -432,6 +438,9 @@ class HouseDamage(object):
                 #     logging.debug('zone {} at {} distributed'.format(
                 #         source_zone.name, source_zone.grid))
                 #     source_zone.distributed = True
+
+                # on
+                group.conn_by_grid[row, col].load = 0.0
 
                 try:
                     group.update_influence_target_conn(row,
