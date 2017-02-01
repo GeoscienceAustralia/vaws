@@ -402,7 +402,7 @@ class ConnectionTypeGroup(object):
         # hard coded for optimization
         # use_struct_pz = self.name in self.use_struct_pz_for
 
-        self.damaged = False
+        self.damaged = []
 
         for _type in self.types.itervalues():
 
@@ -419,12 +419,186 @@ class ConnectionTypeGroup(object):
                         'conn {} of {} at {} damaged at {:.3f} b/c load {:.3f} > strength {:.3f}'.format(
                             _conn.name, self.name, _conn.grid, wind_speed, _conn.load, _conn.strength))
 
-                    self.damaged = True
+                    if self.dist_dir == 'col':
+                        self.damaged.append(_conn.grid[0])
+
+                    elif self.dist_dir == 'row':
+                        self.damaged.append(_conn.grid[1])
 
                     self.damage_grid[_conn.grid] = True
 
             # summary by connection type
             _type.damage_summary()
+
+    def distribute_damage(self):
+
+        if self.name == 'batten':
+
+            assert self.dist_dir == 'row'
+            # distributed over the same number
+
+            # row: index of chr, col: index of number e.g, 0,0 : A1
+            # for row, col in zip(*np.where(self.damage_grid)):
+            for row, col0 in zip(*np.where(self.damage_grid[:, self.damaged])):
+
+                col = self.damaged[col0]
+
+                source_conn = self.conn_by_grid[row, col]
+
+                # looking at influences
+                linked_conn = None
+                for val in source_conn.influences.itervalues():
+                    if val.coeff == 1.0:
+                        linked_conn = val.source
+
+                intact = np.where(~self.damage_grid[:, col])[0]
+
+                intact_left = intact[np.where(row > intact)[0]]
+                intact_right = intact[np.where(row < intact)[0]]
+
+                logging.debug('cols of intact conns:{}'.format(intact))
+
+                if intact_left.size * intact_right.size > 0:
+                    infl_coeff = 0.5  # can be prop. to distance later
+                else:
+                    infl_coeff = 1.0
+
+                # logging.debug('conn {} at {} is distributed'.format(
+                #     source_conn.name, source_conn.grid))
+                # source_conn.distributed = True
+
+                try:
+                    self.update_influence_target_conn(intact_right[0],
+                                                       col,
+                                                       linked_conn,
+                                                       infl_coeff)
+
+                except IndexError:
+                    #logging.debug('no update from conn {}'.format(
+                    #    source_conn.name))
+                    pass
+
+                try:
+                    self.update_influence_target_conn(intact_left[-1],
+                                                       col,
+                                                       linked_conn,
+                                                       infl_coeff)
+                except IndexError:
+                    #logging.debug('no update from conn {}'.format(
+                    #    source_conn.name))
+                    pass
+
+        elif self.name == 'sheeting':
+
+            assert self.dist_dir == 'col'
+            # distributed over the same char.
+
+            # row: index of chr, col: index of number e.g, 0,0 : A1
+            # for row, col in zip(*np.where(group.damage_grid)):
+
+            for row0, col in zip(*np.where(self.damage_grid[self.damaged,:])):
+
+                row = self.damaged[row0]
+
+                # source_zone = self.house.zone_by_grid[row, col]
+                source_conn = self.conn_by_grid[row, col]
+
+                # looking at influences
+                linked_conn = None
+                for val in source_conn.influences.itervalues():
+                    if val.coeff == 1.0:
+                        linked_conn = val.source
+
+                intact = np.where(~self.damage_grid[row, :])[0]
+
+                intact_left = intact[np.where(col > intact)[0]]
+                intact_right = intact[np.where(col < intact)[0]]
+
+                logging.debug('rows of intact zones:{}'.format(intact))
+
+                if intact_left.size * intact_right.size > 0:
+                    infl_coeff = 0.5
+                else:
+                    infl_coeff = 1.0
+
+                # if group.set_zone_to_zero:
+                #     logging.debug('zone {} at {} distributed'.format(
+                #         source_zone.name, source_zone.grid))
+                #     source_zone.distributed = True
+
+                # on
+                self.conn_by_grid[row, col].load = 0.0
+
+                try:
+                    self.update_influence_target_conn(row,
+                                                       intact_right[0],
+                                                       linked_conn,
+                                                       infl_coeff)
+                except IndexError:
+                    pass
+                    #logging.debug('no update from zone {}'.format(
+                    #    source_zone.name))
+
+                try:
+                    self.update_influence_target_conn(row,
+                                                       intact_left[-1],
+                                                       linked_conn,
+                                                       infl_coeff)
+                except IndexError:
+                    # logging.debug('no update from zone {}'.format(
+                    #     source_zone.name))
+                    pass
+
+        else:
+
+            try:
+                assert self.dist_dir == 'col'
+                # distributed over the same char.
+            except AssertionError:
+                logging.debug('group {} is skipped in distribution'.format(
+                    self.name))
+            else:
+                # row: index of chr, col: index of number e.g, 0,0 : A1
+                for row, col in zip(*np.where(self.damage_grid)):
+
+                    source_conn = self.conn_by_grid[row, col]
+
+                    intact = np.where(~self.damage_grid[row, :])[0]
+
+                    intact_left = intact[np.where(col > intact)[0]]
+                    intact_right = intact[np.where(col < intact)[0]]
+
+                    logging.debug('rows of intact conns:{}'.format(intact))
+
+                    if intact_left.size * intact_right.size > 0:
+                        infl_coeff = 0.5
+                    else:
+                        infl_coeff = 1.0
+
+                    # if group.set_zone_to_zero:
+                    #     logging.debug('zone {} at {} distributed'.format(
+                    #         source_zone.name, source_zone.grid))
+                    #     source_zone.distributed = True
+
+                    try:
+                        self.update_influence_target_conn(row,
+                                                           intact_right[0],
+                                                           source_conn,
+                                                           infl_coeff)
+                    except IndexError:
+                        pass
+                        # logging.debug('no update from zone {}'.format(
+                        #    source_zone.name))
+
+                    try:
+                        self.update_influence_target_conn(row,
+                                                           intact_left[-1],
+                                                           source_conn,
+                                                           infl_coeff)
+                    except IndexError:
+                        # logging.debug('no update from zone {}'.format(
+                        #     source_zone.name))
+                        pass
 
     def update_influence_target_conn(self, row, col, source_conn, infl_coeff):
         """

@@ -88,8 +88,7 @@ class TestHouseDamage(unittest.TestCase):
 
                 _group.check_damage(wind_speed)
                 _group.cal_prop_damaged()
-
-                self.house_damage.distribute_damage(_group)
+                _group.distribute_damage()
 
         # compare with reference capacity
         for _id, _conn in self.house_damage.house.connections.iteritems():
