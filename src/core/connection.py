@@ -139,18 +139,13 @@ class Connection(object):
                         temp = _inf.coeff * _inf.source.area * _inf.source.pz
 
                         logging.debug(
-                            'load by {}: {:.2f} x {:.3f} x {:.3f}'.format(_inf.source.name,
-                                                             _inf.coeff,
-                                                             _inf.source.area,
-                                                                     _inf.source.pz))
+                            'load by {}: {:.2f} x {:.3f} x {:.3f}'.format(
+                                _inf.source.name, _inf.coeff, _inf.source.area,
+                                _inf.source.pz))
 
                     except TypeError:
                         temp = 0.0
 
-                        logging.debug(
-                            'zone {} at {} has {}'.format(
-                                _inf.zone.name, _inf.zone.grid,
-                                _inf.zone.area))
                     except AttributeError:
                         logging.critical('zone {} at {} has {:.1f}'.format(
                             _inf.source, _inf.id, _inf.coeff))
@@ -162,17 +157,16 @@ class Connection(object):
                 self.load += self.dead_load
 
             else:
-            # inf.source.load should be pre-computed
 
+                # inf.source.load should be pre-computed
                 for _inf in self.influences.itervalues():
 
                     try:
                         self.load += _inf.coeff * _inf.source.load
 
                         logging.debug(
-                            'load by {}: {:.2f} times {:.3f}'.format(_inf.source.name,
-                                                             _inf.coeff,
-                                                             _inf.source.load))
+                            'load by {}: {:.2f} times {:.3f}'.format(
+                                _inf.source.name, _inf.coeff, _inf.source.load))
 
                     except TypeError:
 
@@ -212,9 +206,20 @@ class Connection(object):
         Returns: load
 
         """
-        _inf = Influence({'coeff': infl_coeff, 'id': source_conn.id})
-        _inf.source = source_conn
-        self.influences.update({_inf.id: _inf})
+
+        # looking at influences
+        for _id, _infl in source_conn.influences.iteritems():
+
+            # update influence coeff
+
+            if _id in self.influences:
+                self.influences[_id].coeff += infl_coeff * _infl.coeff
+            else:
+                _infl_update = Influence({'coeff': infl_coeff * _infl.coeff,
+                                          'id': _id})
+                _infl_update.source = _infl.source
+                self.influences.update({_id: _infl_update})
+
         # logging.debug('influences of {}:{:.2f}'.format(self.name,
         #                                                _inf.coeff))
 
@@ -445,12 +450,6 @@ class ConnectionTypeGroup(object):
 
                 source_conn = self.conn_by_grid[row, col]
 
-                # looking at influences
-                linked_conn = None
-                for val in source_conn.influences.itervalues():
-                    if val.coeff == 1.0:
-                        linked_conn = val.source
-
                 intact = np.where(~self.damage_grid[:, col])[0]
 
                 intact_left = intact[np.where(row > intact)[0]]
@@ -470,7 +469,7 @@ class ConnectionTypeGroup(object):
                 try:
                     self.update_influence_target_conn(intact_right[0],
                                                        col,
-                                                       linked_conn,
+                                                       source_conn,
                                                        infl_coeff)
 
                 except IndexError:
@@ -481,12 +480,16 @@ class ConnectionTypeGroup(object):
                 try:
                     self.update_influence_target_conn(intact_left[-1],
                                                        col,
-                                                       linked_conn,
+                                                       source_conn,
                                                        infl_coeff)
                 except IndexError:
                     #logging.debug('no update from conn {}'.format(
                     #    source_conn.name))
                     pass
+
+                # empty the influence of source connection
+                source_conn.influences.clear()
+                self.conn_by_grid[row, col].load = 0.0
 
         elif self.name == 'sheeting':
 
@@ -503,11 +506,11 @@ class ConnectionTypeGroup(object):
                 # source_zone = self.house.zone_by_grid[row, col]
                 source_conn = self.conn_by_grid[row, col]
 
-                # looking at influences
-                linked_conn = None
-                for val in source_conn.influences.itervalues():
-                    if val.coeff == 1.0:
-                        linked_conn = val.source
+                # # looking at influences
+                # linked_conn = None
+                # for val in source_conn.influences.itervalues():
+                #     if val.coeff == 1.0:
+                #         linked_conn = val.source
 
                 intact = np.where(~self.damage_grid[row, :])[0]
 
@@ -526,13 +529,10 @@ class ConnectionTypeGroup(object):
                 #         source_zone.name, source_zone.grid))
                 #     source_zone.distributed = True
 
-                # on
-                self.conn_by_grid[row, col].load = 0.0
-
                 try:
                     self.update_influence_target_conn(row,
                                                        intact_right[0],
-                                                       linked_conn,
+                                                       source_conn,
                                                        infl_coeff)
                 except IndexError:
                     pass
@@ -542,12 +542,16 @@ class ConnectionTypeGroup(object):
                 try:
                     self.update_influence_target_conn(row,
                                                        intact_left[-1],
-                                                       linked_conn,
+                                                       source_conn,
                                                        infl_coeff)
                 except IndexError:
                     # logging.debug('no update from zone {}'.format(
                     #     source_zone.name))
                     pass
+
+                # empty the influence of source connection
+                source_conn.influences.clear()
+                self.conn_by_grid[row, col].load = 0.0
 
         else:
 

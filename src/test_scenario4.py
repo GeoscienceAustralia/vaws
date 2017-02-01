@@ -37,14 +37,14 @@ class TestHouseDamage(unittest.TestCase):
         conn_capacity = {40.0: [10],
                          45.0: [9, 11],
                          50.0: [8, 31],
-                         55.0: [13, 6, 25, 30],
-                         60.0: [5, 12, 7, 14],
+                         55.0: [13, 12, 6],
+                         60.0: [5, 7, 14],
                          65.0: [4, 15],
                          70.0: [3, 16],
                          75.0: [2, 17],
                          80.0: [1, 18],
                          9999: [19, 20, 21, 22, 23, 24, 26, 27, 28, 29,
-                                32, 33, 34, 35, 36]}
+                                32, 33, 34, 35, 36, 25, 30]}
 
         # change it to conn to speed
         conn_capacity2 = dict()
@@ -57,7 +57,7 @@ class TestHouseDamage(unittest.TestCase):
         wind_dir_index = 3
         Ms = 1.0
         building_spacing = 0
-        wind_speeds = np.arange(40.0, 120.0, 5.0)
+        wind_speeds = np.arange(40.0, 200.0, 5.0)
         self.house_damage.house.mzcat = 1.0
 
         # set dead_load 0.0

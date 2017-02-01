@@ -160,7 +160,9 @@ class HouseDamage(object):
                                       self.cfg.flags['diff_shielding'])
 
         # check damage by connection type group
-        for _group in self.house.groups.itervalues():
+        # sheeting first
+        for group_id in sorted(self.house.groups.iterkeys()):
+            _group = self.house.groups[group_id]
 
             if self.cfg.flags.get('conn_type_group_{}'.format(_group.name)):
                 _group.check_damage(wind_speed)
