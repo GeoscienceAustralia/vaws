@@ -1,0 +1,9 @@
+Conn type,strength_mean,strength_std dev,deadload_mean,deadload_stddev,group_name,costing_area
+sheetinggable,40,0.001,0.001,0.001,sheeting,0.405
+sheetingeave,40,0.001,0.001,0.001,sheeting,0.405
+sheetingweak,1,0.001,0.001,0.001,sheeting,0.225
+sheeting,40,0.001,0.001,0.001,sheeting,0.81
+batten,3.6,0.001,0.001,0.001,batten,0.81
+battenend,3.6,0.001,0.001,0.001,batten,0.405
+batteneave,3.6,0.001,0.001,0.001,batten,0.405
+battencorner,3.6,0.001,0.001,0.001,batten,0.225

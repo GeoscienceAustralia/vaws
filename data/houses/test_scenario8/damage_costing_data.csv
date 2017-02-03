@@ -1,0 +1,9 @@
+Name,Surface area,Envelope repair rate,Envelope factor formula type,Envelope coeff 1,Envelope coeff 2,Envelope coeff 3,Internal repair rate,Internal factor formula type,Internal coeff 1,Internal coeff 2,Internal coeff 3
+Loss of roof sheeting,10.125,72.4,1,0.3105,-0.8943,1.6015,0,1,0,0,0
+Loss of roof sheeting & purlins,116,184.23,1,0.3105,-0.8943,1.6015,0,1,0,0,0
+Loss of roof structure,116,317,1,0.3105,-0.8943,1.6015,8320.97,1,-0.4902,1.4896,0.0036
+Wall debris damage,106.4,375.37,1,0.8862,-1.6957,1.8535,0,1,0,0,0
+Loss of wall cladding,106.4,243.72,2,1.0514,-0.2271,0,0,1,0,0,0
+Wall collapse,106.4,527.16,1,0.7204,-1.465,1.7809,88164.59,1,-0.4902,1.4896,0.0036
+Wall racking,106.4,478.26,1,0.717,-1.427,1.7478,78703.12,1,-0.47,1.4712,0.0022
+Loss of guttering,146,23.6,1,0.3105,-0.8943,1.6015,0,1,0,0,0

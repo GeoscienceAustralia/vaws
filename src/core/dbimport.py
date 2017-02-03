@@ -2,6 +2,12 @@
     Import Module - import all our CSV data into a fresh database
         - should only run as part of 'packaging' process.
         - harvest house types found within subfolders
+
+# FIXME!!!
+# check no_row, no_col matches with other information
+#
+
+
 """
 import datetime
 import logging

@@ -28,7 +28,7 @@ class Connection(object):
 
         self.id = dic_conn['id']
         self.name = dic_conn['connection_name']
-        self.edge = dic_conn['edge']
+        # self.edge = dic_conn['edge']
 
         self.zone_id = dic_conn['zone_id']  # zone location
 
@@ -211,14 +211,13 @@ class Connection(object):
         for _id, _infl in source_conn.influences.iteritems():
 
             # update influence coeff
-
+            updated_coeff = infl_coeff * _infl.coeff
             if _id in self.influences:
-                self.influences[_id].coeff += infl_coeff * _infl.coeff
+                self.influences[_id].coeff += updated_coeff
             else:
-                _infl_update = Influence({'coeff': infl_coeff * _infl.coeff,
-                                          'id': _id})
-                _infl_update.source = _infl.source
-                self.influences.update({_id: _infl_update})
+                self.influences.update({_id: Influence({'coeff': updated_coeff,
+                                                        'id': _id})})
+                self.influences[_id].source = _infl.source
 
         # logging.debug('influences of {}:{:.2f}'.format(self.name,
         #                                                _inf.coeff))
@@ -364,8 +363,8 @@ class ConnectionTypeGroup(object):
         except AssertionError:
             self.repair_cost = 0.0
 
-        logging.debug('group {}: repair_cost: {:.3f} for value {:.3f}'.format(self.name,
-                                                         self.repair_cost, value))
+        logging.debug('group {}: repair_cost: {:.3f} for value {:.3f}'.format(
+            self.name, self.repair_cost, value))
 
     def cal_prop_damaged(self):
         """
@@ -437,9 +436,7 @@ class ConnectionTypeGroup(object):
 
     def distribute_damage(self):
 
-        if self.name == 'batten':
-
-            assert self.dist_dir == 'row'
+        if self.dist_dir == 'row':  # batten
             # distributed over the same number
 
             # row: index of chr, col: index of number e.g, 0,0 : A1
@@ -447,8 +444,6 @@ class ConnectionTypeGroup(object):
             for row, col0 in zip(*np.where(self.damage_grid[:, self.damaged])):
 
                 col = self.damaged[col0]
-
-                source_conn = self.conn_by_grid[row, col]
 
                 intact = np.where(~self.damage_grid[:, col])[0]
 
@@ -466,45 +461,43 @@ class ConnectionTypeGroup(object):
                 #     source_conn.name, source_conn.grid))
                 # source_conn.distributed = True
 
-                try:
-                    self.update_influence_target_conn(intact_right[0],
-                                                       col,
-                                                       source_conn,
-                                                       infl_coeff)
-
-                except IndexError:
-                    #logging.debug('no update from conn {}'.format(
-                    #    source_conn.name))
-                    pass
+                source_conn = self.conn_by_grid[row, col]
 
                 try:
-                    self.update_influence_target_conn(intact_left[-1],
-                                                       col,
-                                                       source_conn,
-                                                       infl_coeff)
+                    target_conn = self.conn_by_grid[intact_right[0], col]
                 except IndexError:
-                    #logging.debug('no update from conn {}'.format(
-                    #    source_conn.name))
                     pass
+                else:
+                    target_conn.update_influence(source_conn, infl_coeff)
+                    logging.debug('Influence of conn {} is updated: '
+                                  'conn {} with {:.2f}'.format(target_conn.name,
+                                                               source_conn.name,
+                                                               infl_coeff))
+
+                try:
+                    target_conn = self.conn_by_grid[intact_left[-1], col]
+                except IndexError:
+                    pass
+                else:
+                    target_conn.update_influence(source_conn, infl_coeff)
+                    logging.debug('Influence of conn {} is updated: '
+                                  'conn {} with {:.2f}'.format(target_conn.name,
+                                                               source_conn.name,
+                                                               infl_coeff))
 
                 # empty the influence of source connection
                 source_conn.influences.clear()
                 self.conn_by_grid[row, col].load = 0.0
 
-        elif self.name == 'sheeting':
-
-            assert self.dist_dir == 'col'
+        elif self.dist_dir == 'col':  # sheeting
             # distributed over the same char.
 
             # row: index of chr, col: index of number e.g, 0,0 : A1
             # for row, col in zip(*np.where(group.damage_grid)):
 
-            for row0, col in zip(*np.where(self.damage_grid[self.damaged,:])):
+            for row0, col in zip(*np.where(self.damage_grid[self.damaged, :])):
 
                 row = self.damaged[row0]
-
-                # source_zone = self.house.zone_by_grid[row, col]
-                source_conn = self.conn_by_grid[row, col]
 
                 # # looking at influences
                 # linked_conn = None
@@ -529,106 +522,34 @@ class ConnectionTypeGroup(object):
                 #         source_zone.name, source_zone.grid))
                 #     source_zone.distributed = True
 
-                try:
-                    self.update_influence_target_conn(row,
-                                                       intact_right[0],
-                                                       source_conn,
-                                                       infl_coeff)
-                except IndexError:
-                    pass
-                    #logging.debug('no update from zone {}'.format(
-                    #    source_zone.name))
+                # source_zone = self.house.zone_by_grid[row, col]
+                source_conn = self.conn_by_grid[row, col]
 
                 try:
-                    self.update_influence_target_conn(row,
-                                                       intact_left[-1],
-                                                       source_conn,
-                                                       infl_coeff)
+                    target_conn = self.conn_by_grid[row, intact_right[0]]
                 except IndexError:
-                    # logging.debug('no update from zone {}'.format(
-                    #     source_zone.name))
                     pass
+                else:
+                    target_conn.update_influence(source_conn, infl_coeff)
+                    logging.debug('Influence of conn {} is updated: '
+                                  'conn {} with {:.2f}'.format(target_conn.name,
+                                                               source_conn.name,
+                                                               infl_coeff))
+
+                try:
+                    target_conn = self.conn_by_grid[row, intact_left[-1]]
+                except IndexError:
+                    pass
+                else:
+                    target_conn.update_influence(source_conn, infl_coeff)
+                    logging.debug('Influence of conn {} is updated: '
+                                  'conn {} with {:.2f}'.format(target_conn.name,
+                                                               source_conn.name,
+                                                               infl_coeff))
 
                 # empty the influence of source connection
                 source_conn.influences.clear()
                 self.conn_by_grid[row, col].load = 0.0
-
-        else:
-
-            try:
-                assert self.dist_dir == 'col'
-                # distributed over the same char.
-            except AssertionError:
-                logging.debug('group {} is skipped in distribution'.format(
-                    self.name))
-            else:
-                # row: index of chr, col: index of number e.g, 0,0 : A1
-                for row, col in zip(*np.where(self.damage_grid)):
-
-                    source_conn = self.conn_by_grid[row, col]
-
-                    intact = np.where(~self.damage_grid[row, :])[0]
-
-                    intact_left = intact[np.where(col > intact)[0]]
-                    intact_right = intact[np.where(col < intact)[0]]
-
-                    logging.debug('rows of intact conns:{}'.format(intact))
-
-                    if intact_left.size * intact_right.size > 0:
-                        infl_coeff = 0.5
-                    else:
-                        infl_coeff = 1.0
-
-                    # if group.set_zone_to_zero:
-                    #     logging.debug('zone {} at {} distributed'.format(
-                    #         source_zone.name, source_zone.grid))
-                    #     source_zone.distributed = True
-
-                    try:
-                        self.update_influence_target_conn(row,
-                                                           intact_right[0],
-                                                           source_conn,
-                                                           infl_coeff)
-                    except IndexError:
-                        pass
-                        # logging.debug('no update from zone {}'.format(
-                        #    source_zone.name))
-
-                    try:
-                        self.update_influence_target_conn(row,
-                                                           intact_left[-1],
-                                                           source_conn,
-                                                           infl_coeff)
-                    except IndexError:
-                        # logging.debug('no update from zone {}'.format(
-                        #     source_zone.name))
-                        pass
-
-    def update_influence_target_conn(self, row, col, source_conn, infl_coeff):
-        """
-
-        Args:
-            row:
-            col:
-            source_conn:
-            infl_coeff:
-
-        Returns:
-
-        """
-
-        target_conn = self.conn_by_grid[row, col]
-
-        logging.debug(
-            'conn {} is appended by conn {} with {:.2f}'.format(
-                target_conn.name,
-                source_conn.name,
-                infl_coeff))
-        target_conn.update_influence(source_conn, infl_coeff)
-
-        logging.debug('influences of {}'.format(target_conn.name))
-        for val in target_conn.influences.itervalues():
-            logging.debug('influence coeff {:.2f} by conn {}'.format(val.coeff, val.id))
 
 
 class Influence(object):
@@ -756,9 +677,9 @@ if __name__ == '__main__':
             _conn.cal_load()
 
             self.assertAlmostEqual(_conn.dead_load, 0.0130, places=4)
-            self.assertAlmostEqual(_conn.influences[0].source.effective_area,
+            self.assertAlmostEqual(_conn.influences[1].source.area,
                                    0.2025, places=4)
-            self.assertAlmostEqual(_conn.influences[0].source.pz, -0.05651,
+            self.assertAlmostEqual(_conn.influences[1].source.pz, -0.05651,
                                    places=4)
 
             self.assertAlmostEqual(_conn.load, 0.00158, places=4)
