@@ -24,6 +24,7 @@ dependencies:
 - readline=6.2=2
 - scipy=0.16.1=np110py27_1
 - setuptools=20.2.2=py27_0
+- shapely=1.5.13=py27_0
 - sip=4.16.9=py27_0
 - six=1.10.0=py27_0
 - sqlalchemy=1.0.12=py27_0

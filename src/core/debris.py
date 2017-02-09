@@ -10,170 +10,157 @@ Debris Module - adapted from JDH Consulting and Martin's work
     - handle collisions (impact)
 """
 import numpy as np
+from shapely.geometry import Point
 import math
-from sqlalchemy import String, Float, Column
 
-import gendebrissrc
 import curve
 import engine
-import database
 from rect import Rect, Point
 
 # lookup table mapping (0-7) to wind direction desc
 # dirs = ['S', 'SW', 'W', 'NW', 'N', 'NE', 'E', 'SE', 'Random']
 
+# FIXME!!! mapping wind direciton to facing wall will provided as an input
 # lookup table mapping wind direction (1-8) to list of front facing wall
 # directions
-facing = {1: [1], 2: [1, 3], 3: [3], 4: [3, 5], 5: [5], 6: [5, 7], 7: [7],
-          8: [1, 7]}
+# facing = {1: [1], 2: [1, 3], 3: [3], 4: [3, 5], 5: [5], 6: [5, 7], 7: [7],
+#           8: [1, 7]}
+
 
 # lookup table for source render colors
-src_cols = ('y', 'm', 'c', 'g', 'b', 'k')
+# src_cols = ('y', 'm', 'c', 'g', 'b', 'k')
 
 
-class DebrisType(object):
-    def __init__(self, typeid, cdav, ratio, mass_mean, mass_stddev, fa_mean,
-                 fa_stddev, plot_shape):
-        self.typeid = typeid  # 0 for compact, 1 for rod, 2 for sheet
-        self.cdav = cdav
-        self.ratio = ratio
-        self.mass_mean = mass_mean
-        self.mass_stddev = mass_stddev
-        self.fa_mean = fa_mean
-        self.fa_stddev = fa_stddev
-        self.plot_shape = plot_shape
+# class DebrisItem(object):
+#     def __init__(self, col, shape):
+#         self.col = col
+#         self.shape = shape
 
 
-def qryDebrisRegions(db):
-    return db.session.query(DebrisRegion).all()
+# class DebrisSource(object):
+#     def __init__(self, x, y, col):
+#         self.yord = float(y)
+#         self.xord = float(x)
+#         self.col = col
 
 
-def qryDebrisRegionByName(n, db):
-    try:
-        return db.session.query(DebrisRegion).filter_by(name=n).one()
-    except:
-        return None
-
-
-class DebrisItem(object):
-    def __init__(self, col, shape):
-        self.col = col
-        self.shape = shape
-
-
-class DebrisSource(object):
-    def __init__(self, x, y, col):
-        self.yord = float(y)
-        self.xord = float(x)
-        self.col = col
-
-
-class DebrisManager(object):
+class Debris(object):
     def __init__(self,
-                 db,
-                 house_inst,
-                 region_name,
-                 wind_min=30.0,
-                 wind_max=150.0,
-                 wind_steps=40,
-                 staggered_sources=False,
-                 debris_radius=100.0,
-                 debris_angle=45.0,
-                 debris_extension=0,
-                 building_spacing=20.0,
-                 source_items=100,
-                 flighttime_mean=2.0,
-                 flighttime_stddev=0.8):
+                 cfg,
+                 rnd_state):
 
-        self.debris_radius = debris_radius
-        self.debris_angle = debris_angle
-        self.debris_extension = debris_extension
-        self.building_spacing = building_spacing
-        self.source_items = source_items
-        self.flighttime_mean = flighttime_mean
-        self.flighttime_stddev = flighttime_stddev
-        self.wind_incr = (wind_max - wind_min) / float(wind_steps)
-        # self.source_items = source_items
-        self.sources = []
-        self.region = qryDebrisRegionByName(region_name, db)
-        self.house = house_inst
+        self.debris_radius = cfg.debris_radius
+        self.debris_angle = cfg.debris_angle
+        self.debris_extension = cfg.debris_extension
+        self.building_spacing = cfg.building_spacing
+        self.no_source_items = cfg.source_items
+        self.flight_time_mu = cfg.flighttime_mu  # mean of log x
+        self.flight_time_std = cfg.flighttime_std  # std of log x
+        # self.wind_incr = (wind_max - wind_min) / float(wind_steps)
+        self.source_items = cfg.source_items
+        self.sources = list()
 
         # added
-        self.wind_dir_index = None
-        self.front_facing_walls = None
-        self.footprint_rect = None
-        self.result_breached = None
-        self.result_dmgperc = None
-        self.result_nv = None
-        self.result_breached = None
-        self.result_num_items = None
-        self.result_scores = None
-        self.result_dmgperc = None
-        self.result_items = None
+        # self.wind_dir_index = None
+        # self.front_facing_walls = None
+        # self.footprint_rect = None
+        # self.result_breached = None
+        # self.result_dmgperc = None
+        # self.result_nv = None
+        # self.result_breached = None
+        # self.result_num_items = None
+        # self.result_scores = None
+        # self.result_dmgperc = None
+        # self.result_items = None
 
-        if staggered_sources:
-            posarr = gendebrissrc.genStaggered(debris_radius, debris_angle,
-                                               building_spacing, False)
+        # FIXME !! NO VALUE is assigned to restrict_yord
+        # generate grid
+        self.create_sources(cfg.debris_radius,
+                               cfg.debris_angle,
+                               cfg.building_spacing,
+                               cfg.flags['debris_staggered_sources'])
+
+    def create_sources(self, radius, angle, spacing, flag_staggered,
+                 restrict_yord=False):
+
+        """
+
+        Args:
+            radius:
+            angle:
+            spacing:
+            flag_staggered:
+            restrict_yord:
+
+        Returns:
+
+        """
+        xord = spacing
+        yord = 0
+        yordlim = radius / 6.0
+
+        if flag_staggered:
+            while xord <= radius:
+                yordmax = xord * math.tan(math.radians(angle) / 2.0)
+                if restrict_yord:
+                    yordmax = min(yordlim, yordmax)
+
+                if xord / spacing % 2:
+                    self.sources.append(Point(xord, yord))
+                    yord += spacing
+                    while yord <= yordmax:
+                        self.sources.append(Point(xord, yord))
+                        self.sources.append(Point(xord, -yord))
+                        yord += spacing
+                else:
+                    yord += spacing / 2
+                    while yord <= yordmax:
+                        self.sources.append(Point(xord, yord))
+                        self.sources.append(Point(xord, -yord))
+                        yord += spacing
+
+                yord = 0
+                xord += spacing
+
         else:
-            posarr = gendebrissrc.genGrid(debris_radius, debris_angle,
-                                          building_spacing, False)
+            while xord <= radius:
+                self.sources.append(Point(xord, yord))
+                yordmax = xord * math.tan(math.radians(angle) / 2.0)
 
-        isrc = 0
-        for pos in posarr:
-            offset = pos[1] / building_spacing
-            if offset < 0:
-                offset *= 2
-            col = src_cols[int(offset) % 6]
-            src = DebrisSource(pos[0], pos[1], col)
-            self.sources.append(src)
-            isrc += 1
+                if restrict_yord:
+                    yordmax = min(yordmax, yordlim)
 
-        if region_name == 'Capital_city':
-            self.dt_compact = DebrisType(0, 0.65, self.region.cr,
-                                         self.region.cmm, self.region.cmc,
-                                         self.region.cfm, self.region.cfc,
-                                         'o')
-            self.dt_sheet = DebrisType(1, 0.9, self.region.pr, self.region.pmm,
-                                       self.region.pmc, self.region.pfm,
-                                       self.region.pfc, 's')
-            self.dt_rod = DebrisType(2, 0.8, self.region.rr, self.region.rmm,
-                                     self.region.rmc,
-                                     self.region.rfm, self.region.rfc, 'd')
-        else:
-            self.dt_compact = DebrisType(0, 0.65, self.region.cr,
-                                         self.region.cmm, self.region.cmc,
-                                         self.region.cfm, self.region.cfc, 'o')
-            self.dt_sheet = DebrisType(1, 0.9, self.region.pr, self.region.pmm,
-                                       self.region.pmc, self.region.pfm,
-                                       self.region.pfc, 's')
-            self.dt_rod = DebrisType(2, 0.8, self.region.rr, self.region.rmm,
-                                     self.region.rmc, self.region.rfm,
-                                     self.region.rfc, 'd')
+                while yord <= yordmax - spacing:
+                    yord += spacing
+                    self.sources.append(Point(xord, yord))
+                    self.sources.append(Point(xord, -yord))
+                yord = 0
+                xord += spacing
 
-    def set_wind_direction_index(self, wind_dir_index):
-        self.wind_dir_index = wind_dir_index
-
-        # determine front facing walls
-        self.front_facing_walls = []
-        for fw in facing[wind_dir_index + 1]:
-            wall = self.house.getWallByDirection(fw)
-            self.front_facing_walls.append(wall)
-
-        # calculate footprint rect from wind_direction and house dimension
-        rect = None
-        if wind_dir_index in [0, 4]:
-            rect = Rect(self.house.width, self.house.length, 0,
-                        self.debris_extension)
-        elif wind_dir_index in [2, 6]:
-            rect = Rect(self.house.length, self.house.width, 0,
-                        self.debris_extension)
-        elif wind_dir_index in [1, 5]:
-            rect = Rect(self.house.length, self.house.width, 45.0,
-                        self.debris_extension)
-        elif wind_dir_index in [3, 7]:
-            rect = Rect(self.house.length, self.house.width, -45.0,
-                        self.debris_extension)
-        self.footprint_rect = rect
+    def set_footprint_polygon(self, wind_dir_index):
+        # self.wind_dir_index = wind_dir_index
+        #
+        # # determine front facing walls
+        # self.front_facing_walls = []
+        # for fw in facing[wind_dir_index + 1]:
+        #     wall = self.house.getWallByDirection(fw)
+        #     self.front_facing_walls.append(wall)
+        #
+        # # calculate footprint rect from wind_direction and house dimension
+        # rect = None
+        # if wind_dir_index in [0, 4]:
+        #     rect = Rect(self.house.width, self.house.length, 0,
+        #                 self.debris_extension)
+        # elif wind_dir_index in [2, 6]:
+        #     rect = Rect(self.house.length, self.house.width, 0,
+        #                 self.debris_extension)
+        # elif wind_dir_index in [1, 5]:
+        #     rect = Rect(self.house.length, self.house.width, 45.0,
+        #                 self.debris_extension)
+        # elif wind_dir_index in [3, 7]:
+        #     rect = Rect(self.house.length, self.house.width, -45.0,
+        #                 self.debris_extension)
+        # self.footprint_rect = rect
 
     def run(self, wind_speed, verbose=False):
         """ Returns several results as data members
@@ -185,18 +172,15 @@ class DebrisManager(object):
         self.result_items = []
 
         # A = [self.region.beta, self.region.alpha]
-
-        mean_prev = curve.single_exponential_given_V(self.region.beta,
-                                                     self.region.alpha,
-                                                     wind_speed - self.wind_incr)
-        mean_now = curve.single_exponential_given_V(self.region.beta,
-                                                    self.region.alpha,
-                                                    wind_speed)
-        mean_delta = mean_now - mean_prev
+        # estimate difference of loss ratio
+        # read from pdf of vulnerability
 
         # determine how many items each source will have
+        mean_delta = None
         item_mean = int(mean_delta * self.source_items)
-        if item_mean > 0:
+        # item_mean can be computed using the pdf rather than the difference.
+
+        if item_mean:
 
             # sample a poisson for each source
             num_itemsarr = np.random.poisson(item_mean, size=len(self.sources))
@@ -348,42 +332,53 @@ class DebrisManager(object):
 # unit tests
 if __name__ == '__main__':
     import unittest
-    import house
-
-    model_db = database.DatabaseManager('../model.db', verbose=False)
+    # import house
 
     class MyTestCase(unittest.TestCase):
-        def test_debris_types(self):
-            expectednames = ['Compact', 'Sheet', 'Rod']
-            expectedcdavs = [0.65, 0.9, 0.8]
-            i = 0
-            for dt in model_db.qryDebrisTypes():
-                self.assertEquals(dt[0], expectednames[i])
-                self.assertAlmostEquals(dt[1], expectedcdavs[i])
-                i += 1
+        # def test_debris_types(self):
+        #     expectednames = ['Compact', 'Sheet', 'Rod']
+        #     expectedcdavs = [0.65, 0.9, 0.8]
+        #     i = 0
+        #     for dt in model_db.qryDebrisTypes():
+        #         self.assertEquals(dt[0], expectednames[i])
+        #         self.assertAlmostEquals(dt[1], expectedcdavs[i])
+        #         i += 1
+        #
+        # def test_debris_regions(self):
+        #     expectednames = ['Capital_city', 'Tropical_town']
+        #     expectedalphas = [0.1585, 0.103040002286434]
+        #     i = 0
+        #     for r in qryDebrisRegions(model_db):
+        #         self.assertEquals(r.name, expectednames[i])
+        #         self.assertAlmostEquals(r.alpha, expectedalphas[i])
+        #         self.assertTrue(r.cr < r.rr)
+        #         self.assertTrue(r.rr < r.pr)
+        #         i += 1
+        #     self.assertEquals(qryDebrisRegionByName('Foobar', model_db), None)
+        #     self.assertNotEquals(qryDebrisRegionByName('Capital_city', model_db), None)
+        #
+        # def test_with_render(self):
+        #     # this is the minimum case
+        #     house_inst = house.queryHouseWithName('Group 4 House', model_db)
+        #     region_name = 'Capital_city'
+        #     v = 55.0
+        #     mgr = DebrisManager(model_db, house_inst, region_name)
+        #     mgr.set_wind_direction_index(1)
+        #     mgr.run(v, True)
+        #     mgr.render(v)
 
-        def test_debris_regions(self):
-            expectednames = ['Capital_city', 'Tropical_town']
-            expectedalphas = [0.1585, 0.103040002286434]
-            i = 0
-            for r in qryDebrisRegions(model_db):
-                self.assertEquals(r.name, expectednames[i])
-                self.assertAlmostEquals(r.alpha, expectedalphas[i])
-                self.assertTrue(r.cr < r.rr)
-                self.assertTrue(r.rr < r.pr)
-                i += 1
-            self.assertEquals(qryDebrisRegionByName('Foobar', model_db), None)
-            self.assertNotEquals(qryDebrisRegionByName('Capital_city', model_db), None)
-
-        def test_with_render(self):
-            # this is the minimum case
-            house_inst = house.queryHouseWithName('Group 4 House', model_db)
-            region_name = 'Capital_city'
-            v = 55.0
-            mgr = DebrisManager(model_db, house_inst, region_name)
-            mgr.set_wind_direction_index(1)
-            mgr.run(v, True)
-            mgr.render(v)
+        # def test_grid(self):
+        #     self.assertEquals(len(Debris.create_sources(100.0, 45.0, 20.0, False)), 13)
+        #
+        # def test_staggered(self):
+        #     self.assertEquals(len(Debris.sources(100.0, 45.0, 20.0, True)), 15)
+        #
+        # def test_plot(self):
+        #     from matplotlib.pyplot import show, scatter
+        #     sources = Debris.generate_debris_source(100.0, 45.0, 20.0, True)
+        #     a = np.array(sources)
+        #     scatter(a[:, 0], a[:, 1], s=50)
+        #     show()
 
 
     suite = unittest.TestLoader().loadTestsFromTestCase(MyTestCase)

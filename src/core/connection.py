@@ -10,8 +10,8 @@ import logging
 
 from zone import Zone
 from damage_costing import Costing
-from stats import compute_logarithmic_mean_stddev, \
-    compute_arithmetic_mean_stddev, sample_lognormal
+from stats import compute_arithmetic_mean_stddev, sample_lognormal, \
+    sample_lognorm_given_mean_stddev
 
 
 class Connection(object):
@@ -102,8 +102,7 @@ class Connection(object):
         mu *= mean_factor
         std *= cov_factor
 
-        mu_lnx, std_lnx = compute_logarithmic_mean_stddev(mu, std)
-        self.strength = sample_lognormal(mu_lnx, std_lnx, rnd_state)
+        self.strength = sample_lognorm_given_mean_stddev(mu, std, rnd_state)
 
     def sample_dead_load(self, rnd_state):
         """

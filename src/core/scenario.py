@@ -13,6 +13,7 @@ import numpy as np
 import pandas as pd
 from collections import OrderedDict
 
+from stats import compute_logarithmic_mean_stddev
 
 class Scenario(object):
 
@@ -35,6 +36,8 @@ class Scenario(object):
         self.idx_speeds = None
         self.terrain_category = None
         self._wind_profiles = None
+        self._debris_regions = None
+        self._debris_types = None
 
         self.house_name = None
         self.db_file = None
@@ -51,8 +54,8 @@ class Scenario(object):
         self.debris_radius = None
         self.debris_angle = None
         self.debris_extension = None
-        self.flight_time_mean = None
-        self.flight_time_stddev = None
+        self.flight_time_mu = None
+        self.flight_time_std = None
 
         # self._file_dmg_freq_by_conn_type = None
         #
@@ -222,13 +225,27 @@ class Scenario(object):
 
         key = 'debris'
         if self.flags[key]:
+
+            try:
+                self.debris_regions = conf.get(key, 'file_debris_regions')
+            except ConfigParser.NoOptionError:
+                self.debris_regions = '../../data/debris_regions.csv'
+
+            try:
+                self.debris_types = conf.get(key, 'file_debris_types')
+            except ConfigParser.NoOptionError:
+                self.debris_types = '../../data/debris_types.csv'
+
             self.source_items = conf.getint(key, 'source_items')
             self.building_spacing = conf.getfloat(key, 'building_spacing')
             self.debris_radius = conf.getfloat(key, 'debris_radius')
             self.debris_angle = conf.getfloat(key, 'debris_angle')
             self.debris_extension = conf.getfloat(key, 'debris_extension')
-            self.flight_time_mean = conf.getfloat(key, 'flight_time_mean')
-            self.flight_time_stddev = conf.getfloat(key, 'flight_time_stddev')
+            flight_time_mean = conf.getfloat(key, 'flight_time_mean')
+            flight_time_stddev = conf.getfloat(key, 'flight_time_stddev')
+            self.flight_time_mu, self.flight_time_std = \
+                compute_logarithmic_mean_stddev(flight_time_mean,
+                                                flight_time_stddev)
 
         key = 'heatmap'
         try:
@@ -319,6 +336,41 @@ class Scenario(object):
                                                     skiprows=1,
                                                     header=None,
                                                     index_col=0).to_dict('list')
+
+    @property
+    def debris_regions(self):
+        return self._debris_regions
+
+    @debris_regions.setter
+    def debris_regions(self, file_debris_regions):
+
+        path_cfg_file = os.path.dirname(os.path.realpath(self.cfg_file))
+        file_ = os.path.join(path_cfg_file, file_debris_regions)
+        self._debris_regions = pd.read_csv(file_, index_col=0).to_dict('index')
+
+    @property
+    def debris_types(self):
+        return self._debris_types
+
+    @debris_types.setter
+    def debris_types(self, file_debris_types):
+
+        path_cfg_file = os.path.dirname(os.path.realpath(self.cfg_file))
+        file_ = os.path.join(path_cfg_file, file_debris_types)
+
+        self._debris_types = pd.read_csv(file_, index_col=0).to_dict('index')
+
+        for key in self._debris_types:
+
+            tmp = self.debris_regions[self.region_name]
+            self._debris_types.setdefault(key, {})['ratio'] = tmp['{}_ratio'.format(key)]
+
+            for item in ['frontalarea', 'mass']:
+                _mean = tmp['{0}_{1}_mean'.format(key, item)]
+                _std = tmp['{0}_{1}_stddev'.format(key, item)]
+                mu_lnx, std_lnx = compute_logarithmic_mean_stddev(_mean, _std)
+                self._debris_types.setdefault(key, {})['{}_mu'.format(item)] = mu_lnx
+                self._debris_types.setdefault(key, {})['{}_std'.format(item)] = std_lnx
 
     @property
     def wind_dir_index(self):

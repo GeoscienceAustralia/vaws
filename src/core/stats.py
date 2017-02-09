@@ -2,14 +2,14 @@ from math import log, exp, sqrt, gamma, copysign
 from scipy.stats import genextreme
 
 
-def sample_lognormal(mu_lnx, std_lnx, rnd_state):
+def sample_lognormal(mu_lnx, std_lnx, rnd_state, size=None):
     """
 
     Returns: sample of dead load following log normal dist.
     Note that mean and/or std can be zero for some components
     """
     try:
-        return rnd_state.lognormal(mu_lnx, std_lnx)
+        return rnd_state.lognormal(mu_lnx, std_lnx, size)
     except ValueError:
         return 0.0
 
@@ -109,6 +109,22 @@ def compute_logarithmic_mean_stddev(m, stddev):
         return 0.0, 0.0
     else:
         return mu, std
+
+
+def sample_lognorm_given_mean_stddev(m, stddev, rnd_state, size=None):
+    """
+    generate rv following lognorm dist
+    Args:
+        m: mean of x
+        stddev: std of x
+        rnd_state
+        size: size of rv (default: 1)
+
+    Returns:
+
+    """
+    mu_, std_ = compute_logarithmic_mean_stddev(m, stddev)
+    return sample_lognormal(mu_, std_, rnd_state, size)
 
 
 def compute_arithmetic_mean_stddev(m, stddev):
