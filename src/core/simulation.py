@@ -21,7 +21,7 @@ import logger
 import database
 import debris
 import wateringress
-import engine
+import engine_alt as engine
 import output
 from house import zoneByLocationMap, connByZoneTypeMap, ctgMap, \
     connByTypeGroupMap, inflZonesByConn, connByTypeMap, connByIDMap, zoneByIDMap

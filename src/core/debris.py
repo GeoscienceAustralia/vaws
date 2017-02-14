@@ -15,7 +15,7 @@ from sqlalchemy import String, Float, Column
 
 import gendebrissrc
 import curve
-import engine
+import engine_alt as engine
 import database
 from rect import Rect, Point
 
@@ -287,7 +287,7 @@ class DebrisManager(object):
     def gather_results(self):
         """ Calculate total area of envelope damaged, as a percentage
         """
-        area = 0
+        area = 0.0
         wall_area = self.house.getWallArea()
         for wall in self.front_facing_walls:
             for cov in wall.coverages:
