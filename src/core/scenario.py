@@ -14,12 +14,12 @@ import pandas as pd
 from collections import OrderedDict
 
 from stats import compute_logarithmic_mean_stddev
+from debris import Debris
 
 class Scenario(object):
 
     # lookup table mapping (0-7) to wind direction desc
     dirs = ['S', 'SW', 'W', 'NW', 'N', 'NE', 'E', 'SE']
-
     terrain_categories = ['2', '2.5', '3', '5']
     heights = [3.0, 5.0, 7.0, 10.0, 12.0, 15.0, 17.0, 20.0, 25.0, 30.0]
 
@@ -56,6 +56,7 @@ class Scenario(object):
         self.debris_extension = None
         self.flight_time_mu = None
         self.flight_time_std = None
+        self.debris_sources = None
 
         # self._file_dmg_freq_by_conn_type = None
         #
@@ -246,6 +247,11 @@ class Scenario(object):
             self.flight_time_mu, self.flight_time_std = \
                 compute_logarithmic_mean_stddev(flight_time_mean,
                                                 flight_time_stddev)
+
+            self.debris_sources = Debris.create_sources(self.debris_radius,
+                                                        self.debris_angle,
+                                                        self.building_spacing,
+                                                        self.flags['debris_staggered_sources'])
 
         key = 'heatmap'
         try:
@@ -506,6 +512,7 @@ class Scenario(object):
         config.set(key, 'building_spacing', self.building_spacing)
         config.set(key, 'debris_radius', self.debris_radius)
         config.set(key, 'debris_angle', self.debris_angle)
+        # FIXME!!! DO NOT KNOW WHAT debris_extension DOES
         config.set(key, 'debris_extension', self.debris_extension)
         config.set(key, 'flight_time_mean', self.flight_time_mean)
         config.set(key, 'flight_time_stddev', self.flight_time_stddev)

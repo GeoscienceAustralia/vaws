@@ -13,12 +13,6 @@ import numpy as np
 from shapely.geometry import Point
 import math
 
-import curve
-import engine
-from rect import Rect, Point
-
-# lookup table mapping (0-7) to wind direction desc
-# dirs = ['S', 'SW', 'W', 'NW', 'N', 'NE', 'E', 'SE', 'Random']
 
 # FIXME!!! mapping wind direciton to facing wall will provided as an input
 # lookup table mapping wind direction (1-8) to list of front facing wall
@@ -27,37 +21,10 @@ from rect import Rect, Point
 #           8: [1, 7]}
 
 
-# lookup table for source render colors
-# src_cols = ('y', 'm', 'c', 'g', 'b', 'k')
-
-
-# class DebrisItem(object):
-#     def __init__(self, col, shape):
-#         self.col = col
-#         self.shape = shape
-
-
-# class DebrisSource(object):
-#     def __init__(self, x, y, col):
-#         self.yord = float(y)
-#         self.xord = float(x)
-#         self.col = col
-
-
 class Debris(object):
-    def __init__(self,
-                 cfg,
-                 rnd_state):
+    def __init__(self, cfg):
 
-        self.debris_radius = cfg.debris_radius
-        self.debris_angle = cfg.debris_angle
-        self.debris_extension = cfg.debris_extension
-        self.building_spacing = cfg.building_spacing
-        self.no_source_items = cfg.source_items
-        self.flight_time_mu = cfg.flighttime_mu  # mean of log x
-        self.flight_time_std = cfg.flighttime_std  # std of log x
-        # self.wind_incr = (wind_max - wind_min) / float(wind_steps)
-        self.source_items = cfg.source_items
+        self.cfg = cfg
         self.sources = list()
 
         # added
@@ -75,69 +42,60 @@ class Debris(object):
 
         # FIXME !! NO VALUE is assigned to restrict_yord
         # generate grid
-        self.create_sources(cfg.debris_radius,
-                               cfg.debris_angle,
-                               cfg.building_spacing,
-                               cfg.flags['debris_staggered_sources'])
 
-    def create_sources(self, radius, angle, spacing, flag_staggered,
-                 restrict_yord=False):
+    @staticmethod
+    def create_sources(debris_radius, debris_angle, building_spacing,
+                       flag_staggered, restrict_y_cord=False):
 
-        """
+        x_cord = building_spacing
+        y_cord = 0
+        y_cord_lim = debris_radius / 6.0
 
-        Args:
-            radius:
-            angle:
-            spacing:
-            flag_staggered:
-            restrict_yord:
-
-        Returns:
-
-        """
-        xord = spacing
-        yord = 0
-        yordlim = radius / 6.0
-
+        sources = list()
         if flag_staggered:
-            while xord <= radius:
-                yordmax = xord * math.tan(math.radians(angle) / 2.0)
-                if restrict_yord:
-                    yordmax = min(yordlim, yordmax)
+            while x_cord <= debris_radius:
+                y_cord_max = x_cord * math.tan(math.radians(debris_angle)/2.0)
 
-                if xord / spacing % 2:
-                    self.sources.append(Point(xord, yord))
-                    yord += spacing
-                    while yord <= yordmax:
-                        self.sources.append(Point(xord, yord))
-                        self.sources.append(Point(xord, -yord))
-                        yord += spacing
+                if restrict_y_cord:
+                    y_cord_max = min(y_cord_lim, y_cord_max)
+
+                if x_cord / building_spacing % 2:
+                    sources.append(Point(x_cord, y_cord))
+                    y_cord += building_spacing
+                    while y_cord <= y_cord_max:
+                        sources.append(Point(x_cord, y_cord))
+                        sources.append(Point(x_cord, -y_cord))
+                        y_cord += building_spacing
                 else:
-                    yord += spacing / 2
-                    while yord <= yordmax:
-                        self.sources.append(Point(xord, yord))
-                        self.sources.append(Point(xord, -yord))
-                        yord += spacing
+                    y_cord += building_spacing / 2
+                    while y_cord <= y_cord_max:
+                        sources.append(Point(x_cord, y_cord))
+                        sources.append(Point(x_cord, -y_cord))
+                        y_cord += building_spacing
 
-                yord = 0
-                xord += spacing
+                y_cord = 0
+                x_cord += building_spacing
 
         else:
-            while xord <= radius:
-                self.sources.append(Point(xord, yord))
-                yordmax = xord * math.tan(math.radians(angle) / 2.0)
+            while x_cord <= debris_radius:
+                sources.append(Point(x_cord, y_cord))
+                y_cord_max = x_cord * math.tan(math.radians(debris_angle) / 2.0)
 
-                if restrict_yord:
-                    yordmax = min(yordmax, yordlim)
+                if restrict_y_cord:
+                    y_cord_max = min(y_cord_max, y_cord_lim)
 
-                while yord <= yordmax - spacing:
-                    yord += spacing
-                    self.sources.append(Point(xord, yord))
-                    self.sources.append(Point(xord, -yord))
-                yord = 0
-                xord += spacing
+                while y_cord <= y_cord_max - building_spacing:
+                    y_cord += building_spacing
+                    sources.append(Point(x_cord, y_cord))
+                    sources.append(Point(x_cord, -y_cord))
+                y_cord = 0
+                x_cord += building_spacing
+
+        return sources
 
     def set_footprint_polygon(self, wind_dir_index):
+
+        pass
         # self.wind_dir_index = wind_dir_index
         #
         # # determine front facing walls
@@ -162,7 +120,7 @@ class Debris(object):
         #                 self.debris_extension)
         # self.footprint_rect = rect
 
-    def run(self, wind_speed, verbose=False):
+    def run(self, wind_speed, rnd_state):
         """ Returns several results as data members
         """
         self.result_nv = 0
@@ -177,34 +135,34 @@ class Debris(object):
 
         # determine how many items each source will have
         mean_delta = None
-        item_mean = int(mean_delta * self.source_items)
+        no_item_mean = int(mean_delta * self.source_items)
         # item_mean can be computed using the pdf rather than the difference.
 
-        if item_mean:
+        # sample a poisson for each source
+        no_item_by_source = rnd_state.poisson(no_item_mean,
+                                              size=len(self.sources))
 
-            # sample a poisson for each source
-            num_itemsarr = np.random.poisson(item_mean, size=len(self.sources))
+        # loop through sources
+        item_index = 0
+        for i, no_item, source in enumerate(zip(no_item_by_source,
+                                                self.sources)):
+            rnd_state.choice(self.cfg.debris_types.keys(),
+                             size=no_item,
+                             replace=True)
 
-            # determine how many item buckets we need
-            self.result_num_items = num_itemsarr.sum()
-            self.result_scores = np.zeros(self.result_num_items)
+            if num_source_items > 0:
+                self.result_nv += self.run_source(self.sources[src_index],
+                                                  wind_speed,
+                                                  num_source_items,
+                                                  item_index,
+                                                  self.result_items,
+                                                  self.result_scores,
+                                                  verbose)
+                item_index += num_source_items
 
-            # loop through sources
-            item_index = 0
-            for src_index, num_source_items in enumerate(num_itemsarr):
-                if num_source_items > 0:
-                    self.result_nv += self.run_source(self.sources[src_index],
-                                                      wind_speed,
-                                                      num_source_items,
-                                                      item_index,
-                                                      self.result_items,
-                                                      self.result_scores,
-                                                      verbose)
-                    item_index += num_source_items
-
-            # process results if we have any items falling within our footprint.
-            if self.result_nv > 0:
-                self.check_impacts()
+        # process results if we have any items falling within our footprint.
+        if self.result_nv > 0:
+            self.check_impacts()
 
         self.gather_results()
 
@@ -332,9 +290,18 @@ class Debris(object):
 # unit tests
 if __name__ == '__main__':
     import unittest
-    # import house
+    import os
+    import matplotlib.pyplot as plt
+    from scenario import Scenario
 
     class MyTestCase(unittest.TestCase):
+
+        @classmethod
+        def setUpClass(cls):
+            path = '/'.join(__file__.split('/')[:-1])
+            cfg_file = os.path.join(path, '../scenarios/test_scenario7.cfg')
+            cls.cfg = Scenario(cfg_file=cfg_file)
+
         # def test_debris_types(self):
         #     expectednames = ['Compact', 'Sheet', 'Rod']
         #     expectedcdavs = [0.65, 0.9, 0.8]
@@ -367,10 +334,38 @@ if __name__ == '__main__':
         #     mgr.run(v, True)
         #     mgr.render(v)
 
-        # def test_grid(self):
-        #     self.assertEquals(len(Debris.create_sources(100.0, 45.0, 20.0, False)), 13)
-        #
-        # def test_staggered(self):
+        def test_create_sources(self):
+
+            self.cfg.debris_radius = 100.0
+            self.cfg.debris_angle = 45.0
+            self.cfg.building_spacing = 20.0
+            self.cfg.flags['debris_staggered_sources'] = False
+
+            sources1 = Debris.create_sources(self.cfg.debris_radius,
+                                            self.cfg.debris_angle,
+                                            self.cfg.building_spacing,
+                                            False)
+            self.assertEquals(len(sources1), 13)
+
+            plt.figure()
+            for source in sources1:
+                plt.scatter(source.x, source.y)
+            plt.show()
+
+            # staggered source
+            sources2 = Debris.create_sources(self.cfg.debris_radius,
+                                            self.cfg.debris_angle,
+                                            self.cfg.building_spacing,
+                                            True)
+
+            self.assertEquals(len(sources2), 15)
+
+            plt.figure()
+            for source in sources2:
+                plt.scatter(source.x, source.y)
+            plt.show()
+
+                # def test_staggered(self):
         #     self.assertEquals(len(Debris.sources(100.0, 45.0, 20.0, True)), 15)
         #
         # def test_plot(self):

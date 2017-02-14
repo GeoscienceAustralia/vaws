@@ -16,7 +16,7 @@ from os.path import join
 
 from database import House, Patch, Connection, ConnectionTypeGroup, \
     ConnectionType, DamageFactoring, DamageCosting, Influence, \
-    WaterIngressCosting, Wall, Coverage, CoverageType, Zone
+    WaterIngressCosting, Wall, Coverage, CoverageType, Zone, Footprint
 
 
 def loadStructurePatchesFromCSV(path, db):
@@ -265,6 +265,19 @@ def loadConnectionInfluencesFromCSV(path, db):
     db.session.commit()
 
 
+def loadFootprintFromCSV(path, house, db):
+    fileName = join(path, 'footprint.csv')
+    logging.info('read {}'.format(fileName))
+
+    tmp = pd.read_csv(fileName, skiprows=1, header=None)
+    for _id, line in tmp.iterrows():
+        inst = Footprint(id=int(_id + 1),
+                         x_coord=float(line[0]),
+                         y_coord=float(line[1]))
+        house.footprint.append(inst)
+    db.session.commit()
+
+
 def loadWallsFromCSV(path, house, db):
     fileName = join(path, 'walls.csv')
     logging.info('read {}'.format(fileName))
@@ -338,6 +351,8 @@ def import_model(path, db):
     loadZoneFromCSV(path, house_, db)
 
     loadConnectionsFromCSV(path, house_, db)
+
+    loadFootprintFromCSV(path, house_, db)
 
     loadConnectionInfluencesFromCSV(path, db)
 

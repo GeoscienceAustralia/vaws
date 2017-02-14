@@ -220,6 +220,14 @@ class DatabaseManager(object):
 #     cdav = Column(Float)
 
 
+class Footprint(Base):
+    __tablename__ = 'footprint'
+    id = Column(Integer, primary_key=True)
+    x_coord = Column(Float)
+    y_coord = Column(Float)
+    house_id = Column(Integer, ForeignKey('houses.id'))
+
+
 class Patch(Base):
     __tablename__ = 'patches'
     damaged_connection_id = Column(Integer,
@@ -542,6 +550,7 @@ class House(Base):
                             order_by=ConnectionTypeGroup.water_ingress_order)
     zones = relation(Zone)
     connections = relation(Connection)
+    footprint = relation(Footprint)
 
     def __repr__(self):
         return '({}, ${:.2f})'.format(self.house_name, self.replace_cost)
