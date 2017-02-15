@@ -14,7 +14,8 @@ from core import damage, scenario, house, version, terrain, database, debris, st
 from mixins import PersistSizePosMixin, setupTable, finiTable 
 
 myapp = None
-    
+db = None
+
 def scenarioDICallback(V, di, percLoops):
     myapp.statusProgressBar.setValue(percLoops)
     QApplication.processEvents()
@@ -41,7 +42,7 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
         
         windowTitle = version.VERSION_DESC
         self.setWindowTitle(unicode(windowTitle))
-        self.ui.houseName.addItems(numpy.array(house.queryHouses())[:,0])
+        self.ui.houseName.addItems(numpy.array(house.queryHouses(db))[:,0])
         self.ui.houseName.setCurrentIndex(-1)
         self.ui.buildingSpacing.addItems(('20', '40'))
         self.ui.terrainCategory.addItems(('2', '2.5', '3', '5'))
@@ -146,7 +147,7 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
     def showConnectionViewer(self):
         if self.selected_conn is not None:
             from gui import connection as gui_conn
-            patches = database.db.qryConnectionPatchesFromDamagedConn(self.selected_conn.id)  
+            patches = db.qryConnectionPatchesFromDamagedConn(self.selected_conn.id)
             dlg = gui_conn.ConnectionViewer(self.selected_conn, patches, self.house_results)    
             dlg.exec_()
         
@@ -182,7 +183,7 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
             
     def updateGlobalData(self):
         # load up debris types
-        debrisTypes = database.db.qryDebrisTypes()
+        debrisTypes = db.qryDebrisTypes()
         setupTable(self.ui.debrisTypes, debrisTypes)
         irow = 0
         for dt in debrisTypes:
@@ -192,7 +193,7 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
         finiTable(self.ui.debrisTypes)
        
         # load up debris regions
-        debrisRegions = debris.qryDebrisRegions()
+        debrisRegions = debris.qryDebrisRegions(db)
         setupTable(self.ui.debrisRegions, debrisRegions)
         irow = 0
         for dr in debrisRegions:
@@ -873,19 +874,22 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
         
 def run_gui(dbpath='../model.db'):
     logger.configure(logger.LOGGING_NONE)
-    database.configure(dbpath)
+    global db
+    db = database.configure(dbpath)
     app = QApplication(sys.argv)
     app.setOrganizationName("Geoscience Australia")
     app.setOrganizationDomain("ga.gov.au")
     app.setApplicationName("WindSim")    
     img = QPixmap()
-    if not img.load("gui/images/splash/splash.png"):
+    if not img.load("/home/u53337/vaws/src/gui/images/splash/splash.png"):
         raise Exception('Could not load splash image')
     global myapp
     myapp = MyForm(img)
     myapp.show()
     sys.exit(app.exec_())
  
+if __name__ == '__main__':
+    run_gui()
 
 
 

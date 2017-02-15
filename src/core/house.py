@@ -211,10 +211,10 @@ class House(database.Base):
                 return wall
         raise LookupError('Invalid wind_dir: {:d}'.format(wind_dir))
 
-# def queryHouses(db):
-#     return db.session.query(House.house_name,
-#                             House.replace_cost,
-#                             House.height).all()
+def queryHouses(db):
+    return db.session.query(House.house_name,
+                            House.replace_cost,
+                            House.height).all()
 
 
 def queryHouseWithName(hn, db):

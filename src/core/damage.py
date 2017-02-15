@@ -23,6 +23,7 @@ import house
 from house import zoneByLocationMap, connByZoneTypeMap, ctgMap, \
     connByTypeGroupMap, inflZonesByConn, connByTypeMap, connByIDMap, zoneByIDMap
 
+from gui.output import plot_fitted_curve, plot_wall_damage_show
 
 class CurvePlot(object):
     def __init__(self, coeff, method, xmin, xmax, label='_nolegend_', col='b'):
@@ -37,10 +38,10 @@ class CurvePlot(object):
         col = 'r' if faint else 'b'
         if self.method == 'lognormal':
             obs = curve_log.generate_observations(self.coeff, self.x_arr)
-            output.plot_fitted_curve(self.x_arr, obs, self.label, alpha, col)
+            plot_fitted_curve(self.x_arr, obs, self.label, alpha, col)
         else:
             obs = curve.generate_observations(self.coeff, self.x_arr)
-            output.plot_fitted_curve(self.x_arr, obs, self.label, alpha, col)
+            plot_fitted_curve(self.x_arr, obs, self.label, alpha, col)
 
     def plot_frag(self, faint=False):
         alpha = 0.3 if faint else 1.0
@@ -815,7 +816,7 @@ class WindDamageSimulator(object):
                             v_east_grid[gridRow][gridCol] = \
                                 conn.result_failure_v
 
-                output.plot_wall_damage_show(
+                plot_wall_damage_show(
                     ctg_name,
                     v_south_grid, v_north_grid, v_west_grid, v_east_grid,
                     wall_major_cols, wall_major_rows,
