@@ -1,6 +1,7 @@
 name: windtunnel
 channels:
 - groakat
+- IOOS
 dependencies:
 - cycler=0.9.0=py27_0
 - dateutil=2.4.1=py27_0
@@ -73,6 +74,9 @@ dependencies:
 
 # added for testing
 - coverage=4.2=py27_0  
+
+# added for shaeply plot
+- IOOS::descartes=1.0.2=py27_0
 
 - pip:
   - parmap==1.2.3

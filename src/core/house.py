@@ -5,6 +5,7 @@
 """
 
 import numpy as np
+from shapely.geometry import Polygon
 
 from connection import ConnectionTypeGroup
 from zone import Zone
@@ -38,6 +39,7 @@ class House(object):
         self.cpe_str_cov = db_house.__dict__['cpe_struct_V']
         self.cpe_k = db_house.__dict__['cpe_k']
 
+        self.footprint = None
         self.roof_rows = db_house.__dict__['roof_rows']
         self.roof_cols = db_house.__dict__['roof_columns']
 
@@ -58,6 +60,7 @@ class House(object):
         self.connections = dict()  # dict of connections with id
         self.zones = dict()  # dict of zones with id
         self.factors_costing = dict()  # dict of damage factoring with id
+        self.walls = dict()
 
         self.zone_by_name = dict()  # dict of zones with zone name
         self.zone_by_grid = dict()  # dict of zones with zone loc grid in tuple
@@ -133,6 +136,11 @@ class House(object):
         #     for _conn in self.connections.itervalues():
         #         if _conn.zone_id == _zone_id:
         #             self.conn_by_grid.setdefault(_zone.grid, {})[_conn.group_id] = _conn
+
+        points = list()
+        for item in db_house.footprint:
+            points.append((item.x_coord, item.y_coord))
+        self.footprint = Polygon(points)
 
     def set_house_wind_params(self):
         """
