@@ -92,6 +92,8 @@ class House(object):
 
         for item in db_house.conn_type_groups:
             _group = ConnectionTypeGroup(item)
+            _group.set_damage_grid(self.roof_cols, self.roof_rows)
+
             costing_area_by_group = 0.0
 
             for id_type, _type in _group.types.iteritems():
@@ -107,7 +109,7 @@ class House(object):
                     _conn.sample_dead_load(rnd_state=self.rnd_state)
 
                     _conn.grid = self.zones[_conn.zone_id].grid
-
+                    _group.damage_grid[_conn.grid] = 0  # set default
                     costing_area_by_group += _type.costing_area
 
                     # linking connections either zones or connections
@@ -122,7 +124,6 @@ class House(object):
                     _group.conn_by_grid.setdefault(_conn.grid, _conn)
 
             _group.costing_area = costing_area_by_group
-            _group.set_damage_grid(self.roof_cols, self.roof_rows)
 
             self.groups.setdefault(item.id, _group)
 

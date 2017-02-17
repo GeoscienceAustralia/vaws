@@ -315,6 +315,7 @@ class ConnectionTypeGroup(object):
         # self.dist_by_col = None
 
         self.damage_grid = None  # column (chr), row (num)
+        # negative: no connection, 0: Intact,  1: Failed
         self.damaged = None
 
         self.conn_by_grid = dict()  # dict of connections with zone loc grid
@@ -344,7 +345,7 @@ class ConnectionTypeGroup(object):
 
         """
         if self.dist_dir:
-            self.damage_grid = np.zeros(dtype=bool, shape=(no_rows, no_cols))
+            self.damage_grid = -1 * np.ones(dtype=int, shape=(no_rows, no_cols))
         else:
             self.damage_grid = None
 
@@ -405,7 +406,7 @@ class ConnectionTypeGroup(object):
         # hard coded for optimization
         # use_struct_pz = self.name in self.use_struct_pz_for
 
-        self.damaged = []
+        self.damaged = list()
 
         for _type in self.types.itervalues():
 
@@ -428,7 +429,7 @@ class ConnectionTypeGroup(object):
                     elif self.dist_dir == 'row':
                         self.damaged.append(_conn.grid[1])
 
-                    self.damage_grid[_conn.grid] = True
+                    self.damage_grid[_conn.grid] = 1
 
             # summary by connection type
             _type.damage_summary()
@@ -440,11 +441,11 @@ class ConnectionTypeGroup(object):
 
             # row: index of chr, col: index of number e.g, 0,0 : A1
             # for row, col in zip(*np.where(self.damage_grid)):
-            for row, col0 in zip(*np.where(self.damage_grid[:, self.damaged])):
+            for row, col0 in zip(*np.where(self.damage_grid[:, self.damaged]>0)):
 
                 col = self.damaged[col0]
 
-                intact = np.where(~self.damage_grid[:, col])[0]
+                intact = np.where(-self.damage_grid[:, col] == 0)[0]
 
                 intact_left = intact[np.where(row > intact)[0]]
                 intact_right = intact[np.where(row < intact)[0]]
@@ -494,7 +495,7 @@ class ConnectionTypeGroup(object):
             # row: index of chr, col: index of number e.g, 0,0 : A1
             # for row, col in zip(*np.where(group.damage_grid)):
 
-            for row0, col in zip(*np.where(self.damage_grid[self.damaged, :])):
+            for row0, col in zip(*np.where(self.damage_grid[self.damaged, :]>0)):
 
                 row = self.damaged[row0]
 
@@ -504,7 +505,7 @@ class ConnectionTypeGroup(object):
                 #     if val.coeff == 1.0:
                 #         linked_conn = val.source
 
-                intact = np.where(~self.damage_grid[row, :])[0]
+                intact = np.where(-self.damage_grid[row, :]==0)[0]
 
                 intact_left = intact[np.where(col > intact)[0]]
                 intact_right = intact[np.where(col < intact)[0]]

@@ -303,6 +303,7 @@ class TestScenario5(unittest.TestCase):
         simulation(self.house_damage, conn_capacity,
                    wind_speeds=np.arange(40.0, 120, 5.0))
 
+
 class TestScenario6(unittest.TestCase):
 
     @classmethod
@@ -327,21 +328,14 @@ class TestScenario6(unittest.TestCase):
     def test_damage_sheeting_batten(self):
 
         # ref data 5
-        conn_capacity = {40.0: [],
-                         45.0: [],
-                         50.0: [31, 28],
-                         55.0: [25],
-                         60.0: [19],
-                         65.0: [22, 34],
-                         70.0: [24],
-                         75.0: [30],
-                         80.0: [36],
-                         90.0: [32, 27, 29],
-                         95.0: [26, 23],
-                         100.0: [35, 20],
-                         115.0: [33],
-                         9999: range(1, 19)}
-        conn_capacity[9999].append(21)
+        conn_capacity = {9999: range(1, 48),
+                         40.0: [41, 43],
+                         75.0: [42],
+                         80.0: [40, 44],
+                         100.0: [18, 12, 13, 10, 11],
+                         105.0: [17, 9, 14],
+                         110.0: [8, 15, 16],
+                         115.0: [7]}
 
         simulation(self.house_damage, conn_capacity,
                    wind_speeds=np.arange(40.0, 120, 5.0))
@@ -654,6 +648,6 @@ class TestScenario14(unittest.TestCase):
                    wind_speeds=np.arange(40.0, 120, 1.0))
 
 if __name__ == '__main__':
-    suite = unittest.TestLoader().loadTestsFromTestCase(TestScenario6)
-    unittest.TextTestRunner(verbosity=2).run(suite)
-    # unittest.main(verbosity=2)
+    #suite = unittest.TestLoader().loadTestsFromTestCase(TestScenario6)
+    #unittest.TextTestRunner(verbosity=2).run(suite)
+    unittest.main(verbosity=2)
