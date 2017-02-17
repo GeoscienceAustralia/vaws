@@ -234,27 +234,27 @@ class Debris(object):
             param1 = self.param1_by_type[debris_type_str]
             param2 = self.param2_by_type[debris_type_str]
 
-        mass = rnd_state.lognormal(debris['mass_mu'], debris['mass_std'])
+            mass = rnd_state.lognormal(debris['mass_mu'], debris['mass_std'])
 
-        fa = rnd_state.lognormal(debris['frontalarea_mu'],
-                                 debris['frontalarea_std'])
+            frontal_area = rnd_state.lognormal(debris['frontalarea_mu'],
+                                               debris['frontalarea_std'])
 
-        flight_time = rnd_state.lognormal(self.cfg.flight_time_mu,
-                                          self.cfg.flight_time_std)
+            flight_time = rnd_state.lognormal(self.cfg.flight_time_mu,
+                                              self.cfg.flight_time_std)
 
-        c_t = 9.81 * flight_time / wind_speed
-        c_k = 1.2 * wind_speed * wind_speed / (2 * 9.81 * mass / fa)
-        c_kt = c_k * c_t
+            c_t = 9.81 * flight_time / wind_speed
+            c_k = 1.2 * wind_speed * wind_speed / (2 * 9.81 * mass / fa)
+            c_kt = c_k * c_t
 
-        flight_distance = math.pow(wind_speed, 2) / 9.81 / c_k * (
-            param1 * math.pow(c_kt, 2) + param2 * c_kt)
+            flight_distance = math.pow(wind_speed, 2) / 9.81 / c_k * (
+                param1 * math.pow(c_kt, 2) + param2 * c_kt)
 
-        item_momentum = self.debris_trajectory(debris['cdav'],
-                                               fa,
-                                               flight_distance,
-                                               mass,
-                                               rnd_state,
-                                               wind_speed)
+            item_momentum = self.debris_trajectory(debris['cdav'],
+                                                   frontal_area,
+                                                   flight_distance,
+                                                   mass,
+                                                   rnd_state,
+                                                   wind_speed)
 
 
 
@@ -298,8 +298,8 @@ class Debris(object):
         # calculate um/vs, ratio of hor. vel. of debris to local wind speed
         rho_a = 1.2  # air density
         param_b = math.sqrt(rho_a * cdav * fa / mass)
-
         _mean = 1 - math.exp(-param_b * math.sqrt(flight_distance))
+
         try:
             dispersion = max(1.0 / _mean, 1.0 / (1.0 - _mean)) + 3.0
         except ZeroDivisionError:
@@ -390,7 +390,7 @@ if __name__ == '__main__':
         @classmethod
         def setUpClass(cls):
             path = '/'.join(__file__.split('/')[:-1])
-            cfg_file = os.path.join(path, '../scenarios/test_roof_sheeting2.cfg')
+            cfg_file = os.path.join(path, '../../scenarios/test_roof_sheeting2.cfg')
             cls.cfg = Scenario(cfg_file=cfg_file)
 
             cls.footprint_inst = Polygon([(-6.5, 4.0), (6.5, 4.0), (6.5, -4.0),
@@ -539,6 +539,7 @@ if __name__ == '__main__':
             plt.show()
 
         def test_footprint_non_rect(self):
+            """ Not working yet """
 
             footprint_inst = Polygon([(-6.5, 4.0), (6.5, 4.0), (6.5, 0.0), (0.0, 0.0),
                                       (0.0, -4.0), (-6.5, -4.0), (-6.5, 4.0)])
@@ -557,7 +558,12 @@ if __name__ == '__main__':
             plt.title('Wind direction: 0')
             plt.show()
 
-
+        def test_contains(self):
+            rect = Polygon([(-15, 4), (15, 4), (15, -4), (-15, -4)])
+            self.assertTrue(rect.contains(Point(0, 0)))
+            self.assertFalse(rect.contains(Point(-100, -1.56)))
+            self.assertFalse(rect.contains(Point(10.88, 4.514)))
+            self.assertFalse(rect.contains(Point(7.773, 12.66)))
 
     suite = unittest.TestLoader().loadTestsFromTestCase(MyTestCase)
     unittest.TextTestRunner(verbosity=2).run(suite)

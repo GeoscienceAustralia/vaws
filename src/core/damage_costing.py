@@ -76,12 +76,14 @@ class Costing(object):
 if __name__ == '__main__':
     import unittest
     import database
+    import os
 
     class MyTestCase(unittest.TestCase):
 
         @classmethod
         def setUpClass(cls):
-            db_file = '../test_roof_sheeting2.db'
+            path = '/'.join(__file__.split('/')[:-1])
+            db_file = os.path.join(path, '../../dbs/test_roof_sheeting2.db')
             db_costing = database.DatabaseManager(db_file).session.query(
                 database.DamageCosting).all()
 

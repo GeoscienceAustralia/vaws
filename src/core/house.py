@@ -137,10 +137,11 @@ class House(object):
         #         if _conn.zone_id == _zone_id:
         #             self.conn_by_grid.setdefault(_zone.grid, {})[_conn.group_id] = _conn
 
-        points = list()
-        for item in db_house.footprint:
-            points.append((item.x_coord, item.y_coord))
-        self.footprint = Polygon(points)
+        if self.cfg.flags['debris']:
+            points = list()
+            for item in db_house.footprint:
+                points.append((item.x_coord, item.y_coord))
+            self.footprint = Polygon(points)
 
     def set_house_wind_params(self):
         """
@@ -218,14 +219,16 @@ class House(object):
 # unit tests
 if __name__ == '__main__':
     import unittest
+    import os
     from collections import Counter, OrderedDict
 
     class MyTestCase(unittest.TestCase):
 
         @classmethod
         def setUpClass(cls):
-
-            cfg = Scenario(cfg_file='../scenarios/test_sheeting_batten.cfg')
+            path = '/'.join(__file__.split('/')[:-1])
+            cfg_file = os.path.join(path, '../../scenarios/test_sheeting_batten.cfg')
+            cfg = Scenario(cfg_file=cfg_file)
             rnd_state = np.random.RandomState(1)
             cls.house = House(cfg, rnd_state)
 
@@ -369,11 +372,11 @@ if __name__ == '__main__':
             for id_conn, _conn in self.house.connections.iteritems():
 
                 if _conn.group_name == 'sheeting':
-                    for _inf in _conn.influences:
+                    for _inf in _conn.influences.itervalues():
                         self.assertEqual(_inf.id, _inf.source.id)
                         self.assertEqual(self.house.zones[_inf.id], _inf.source)
                 else:
-                    for _inf in _conn.influences:
+                    for _inf in _conn.influences.itervalues():
                         self.assertEqual(_inf.id, _inf.source.id)
                         self.assertEqual(self.house.connections[_inf.id], _inf.source)
 

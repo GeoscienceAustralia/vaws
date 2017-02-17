@@ -43,11 +43,11 @@ def loadStructurePatchesFromCSV(path, db):
                 elif col == 1:
                     targetConn = db.get_conn_by_name(data)
                 elif (col % 2) == 0:
-                    zone = db.get_zone_by_name(data)
-                elif damagedConn is not None and targetConn is not None and zone is not None:
+                    conn = db.get_conn_by_name(data)
+                elif damagedConn is not None and targetConn is not None and conn is not None:
                     ins = Patch(damaged_connection_id=damagedConn.id,
                                 target_connection_id=targetConn.id,
-                                zone_id=zone.id,
+                                conn_id=conn.id,
                                 coeff=float(data))
                     db.session.add(ins)
                     zone = None

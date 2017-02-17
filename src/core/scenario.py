@@ -157,7 +157,7 @@ class Scenario(object):
         try:
             self.wind_profiles = conf.get(key, 'path_wind_profiles')
         except ConfigParser.NoOptionError:
-            self.wind_profiles = '../../data'
+            self.wind_profiles = '../data'
 
         self.terrain_category = conf.get(key, 'terrain_cat')
 
@@ -230,12 +230,12 @@ class Scenario(object):
             try:
                 self.debris_regions = conf.get(key, 'file_debris_regions')
             except ConfigParser.NoOptionError:
-                self.debris_regions = '../../data/debris_regions.csv'
+                self.debris_regions = '../data/debris_regions.csv'
 
             try:
                 self.debris_types = conf.get(key, 'file_debris_types')
             except ConfigParser.NoOptionError:
-                self.debris_types = '../../data/debris_types.csv'
+                self.debris_types = '../data/debris_types.csv'
 
             self.source_items = conf.getint(key, 'source_items')
             self.building_spacing = conf.getfloat(key, 'building_spacing')

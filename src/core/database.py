@@ -236,8 +236,8 @@ class Patch(Base):
     target_connection_id = Column(Integer,
                                   ForeignKey('connections.id'),
                                   primary_key=True)
-    zone_id = Column(Integer,
-                     ForeignKey('zones.id'),
+    conn_id = Column(Integer,
+                     ForeignKey('connections.id'),
                      primary_key=True)
     coeff = Column(Float)
 

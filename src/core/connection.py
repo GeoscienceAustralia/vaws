@@ -584,6 +584,7 @@ class Influence(object):
 # unit tests
 if __name__ == '__main__':
     import unittest
+    import os
     from scenario import Scenario
     from house import House
 
@@ -592,7 +593,9 @@ if __name__ == '__main__':
         @classmethod
         def setUpClass(cls):
 
-            cls.cfg = Scenario(cfg_file='../scenarios/test_sheeting_batten.cfg')
+            path = '/'.join(__file__.split('/')[:-1])
+            cfg_file = os.path.join(path, '../../scenarios/test_sheeting_batten.cfg')
+            cls.cfg = Scenario(cfg_file=cfg_file)
 
         def test_cal_prop_damaged(self):
 

@@ -221,6 +221,7 @@ def num2str(n):
 
 if __name__ == '__main__':
     import unittest
+    import os
 
     from database import DatabaseManager
     from database import House as TableHouse
@@ -231,7 +232,8 @@ if __name__ == '__main__':
         @classmethod
         def setUpClass(cls):
 
-            db_file = '../test_roof_sheeting2.db'
+            path = '/'.join(__file__.split('/')[:-1])
+            db_file = os.path.join(path, '../../dbs/test_roof_sheeting2.db')
             house_name = 'Test2'
 
             cls.db_house = DatabaseManager(db_file).session.query(

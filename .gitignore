@@ -7,6 +7,9 @@ outputs/
 
 # os x specific
 .DS_Store
+*.ipynb
+*.png
+*.coverage
 
 # pycharm
 .idea

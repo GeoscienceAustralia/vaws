@@ -401,8 +401,8 @@ def main():
     path_, _ = os.path.split(sys.argv[0])
 
     if options.output_folder is None:
-        options.output_folder = os.path.abspath(os.path.join(path_,
-                                                             '../output'))
+        options.output_folder = os.path.abspath(
+            os.path.join(path_, '../../outputs/output'))
     else:
         options.output_folder = os.path.abspath(
             os.path.join(os.getcwd(), options.output_folder))
