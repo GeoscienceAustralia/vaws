@@ -52,8 +52,8 @@ class House(object):
         self.big_a = None
         self.big_b = None
 
-        self.cols = [chr(x) for x in range(ord('A'), ord('A') + self.roof_cols)]
-        self.rows = range(1, self.roof_rows + 1)  # one base
+        # self.cols = [chr(x) for x in range(ord('A'), ord('A') + self.roof_cols)]
+        # self.rows = range(1, self.roof_rows + 1)  # one base
 
         self.groups = dict()  # dict of conn type groups with id
         self.types = dict()  # dict of conn types with id
@@ -73,7 +73,7 @@ class House(object):
         _db.close()
 
     def set_house_components(self, db_house):
-        # house is consisting of connections and zones
+        # house is consisting of connections, zones, and walls
 
         for item in db_house.zones:
             _zone = Zone(item)
@@ -131,6 +131,9 @@ class House(object):
         for item in db_house.factorings:
             self.factors_costing.setdefault(
                 item.parent_id, []).append(item.factor_id)
+
+        # for item in db_house.walls:
+
 
         # linking zone loc grid to connection by group
         # for _zone_id, _zone in self.zones.iteritems():

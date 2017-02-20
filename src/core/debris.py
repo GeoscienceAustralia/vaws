@@ -30,7 +30,7 @@ class Debris(object):
     def __init__(self, cfg):
 
         self.cfg = cfg
-        self.num_impacts = None
+        self.no_impacts = None
 
         self._footprint = None
 
@@ -59,36 +59,36 @@ class Debris(object):
         stretch = 20.0  # FIXME!! HARD-CODED
 
         angle = {0: 90.0, 4: 90.0,    # S, N
+                 1: 45.0, 5: 45.0,    # SW, NE
                  2: 0.0, 6: 0.0,      # E, W
-                 1: 45.0, 5: 45.0,  # SW, NE
-                 3: -45.0, 7: -45.0}    # SE, NW
+                 3: -45.0, 7: -45.0}  # SE, NW
 
         rotated = rotate(polygon_inst, angle[wind_dir_index])
-        points = [(_x-stretch, _y) for _x, _y in rotated.exterior.coords]
+        points = [(_x - stretch, _y) for _x, _y in rotated.exterior.coords]
         self._footprint = cascaded_union([rotated,
                                           Polygon(points)]).convex_hull
 
-    @staticmethod
-    def get_angle(x_coord, y_coord):
-        """
-        compute anlge (in degrees) between a vector and unit vector (-1, 0)
-        Args:
-            x_coord:
-            y_coord:
-
-        Returns:
-        """
-
-        v0 = np.array([x_coord, y_coord])
-        v1 = np.array([-1.0, 0.0])
-        angle = np.math.atan2(np.linalg.det([v0, v1]), np.dot(v0, v1))
-        return np.degrees(angle)
+    # @staticmethod
+    # def get_angle(x_coord, y_coord):
+    #     """
+    #     compute anlge (in degrees) between a vector and unit vector (-1, 0)
+    #     Args:
+    #         x_coord:
+    #         y_coord:
+    #
+    #     Returns:
+    #     """
+    #
+    #     v0 = np.array([x_coord, y_coord])
+    #     v1 = np.array([-1.0, 0.0])
+    #     angle = np.math.atan2(np.linalg.det([v0, v1]), np.dot(v0, v1))
+    #     return np.degrees(angle)
 
     def run(self, wind_speed, rnd_state):
         """ Returns several results as data members
         """
 
-        self.num_impacts = 0  # average number of impacts on the bldg footprint
+        self.no_impacts = 0  # average number of impacts on the bldg footprint
 
         no_item_mean = self.cal_number_of_debris_items(wind_speed)
 
@@ -103,15 +103,8 @@ class Debris(object):
                                            size=no_item, replace=True)
 
             for _debris_type in list_debris:
-                self.generate_debris_item(wind_speed,
-                                          source,
-                                          _debris_type)
-
-                #     if abs(X) < self.cfg.building_spacing:
-                #         if self.footprint_rect.contains(Point(X, Y)):
-                #             nv += 1
-                #     scores[i] = momentum
-                # return nv
+                self.generate_debris_item(wind_speed, source, _debris_type,
+                                          rnd_state)
 
         # process results if we have any items falling within our footprint.
         if self.result_nv > 0:
@@ -219,6 +212,7 @@ class Debris(object):
         Args:
             wind_speed:
             source:
+            debris_type_str:
             rnd_state:
 
         Returns:
@@ -228,8 +222,7 @@ class Debris(object):
         try:
             debris = self.cfg.debris_types[debris_type_str]
         except KeyError:
-            print '{} is not found in the defined debris types'.format(
-                debris_type_str)
+            print '{} is not found in the debris types'.format(debris_type_str)
         else:
             param1 = self.param1_by_type[debris_type_str]
             param2 = self.param2_by_type[debris_type_str]
@@ -243,7 +236,7 @@ class Debris(object):
                                               self.cfg.flight_time_std)
 
             c_t = 9.81 * flight_time / wind_speed
-            c_k = 1.2 * wind_speed * wind_speed / (2 * 9.81 * mass / fa)
+            c_k = 1.2 * wind_speed * wind_speed/(2 * 9.81 * mass / frontal_area)
             c_kt = c_k * c_t
 
             flight_distance = math.pow(wind_speed, 2) / 9.81 / c_k * (
@@ -253,51 +246,48 @@ class Debris(object):
                                                    frontal_area,
                                                    flight_distance,
                                                    mass,
-                                                   rnd_state,
-                                                   wind_speed)
+                                                   wind_speed,
+                                                   rnd_state)
 
+            # Sample Impact Location
+            sigma_x = flight_distance / 3.0
+            sigma_y = flight_distance / 12.0
+            rho_xy = 1.0
 
+            cov_matrix = [[sigma_x * sigma_x, rho_xy * sigma_x * sigma_y],
+                          [rho_xy * sigma_x * sigma_y, sigma_y * sigma_y]]
 
+            # try:
+            x, y = rnd_state.multivariate_normal(mean=[0.0, 0.0],
+                                                 cov=cov_matrix)
+            # except RuntimeWarning:
+            # print('cov_matrix: {}'.format(cov_matrix))
 
+            pt_debris = Point(source.x - flight_distance + x, source.y + y)
 
-        # Sample Impact Location
-        sigma_x = flight_distance / 3.0
-        sigma_y = flight_distance / 12.0
-        rho_xy = 1.0
-
-        cov_matrix = [[sigma_x * sigma_x, rho_xy * sigma_x * sigma_y],
-                      [rho_xy * sigma_x * sigma_y, sigma_y * sigma_y]]
-
-        # try:
-        x, y = rnd_state.multivariate_normal(mean=[0.0, 0.0], cov=cov_matrix)
-        # except RuntimeWarning:
-        # print('cov_matrix: {}'.format(cov_matrix))
-
-        pt_debris = Point(source.x - flight_distance + x, source.y + y)
-
-        if self.footprint.contains(pt_debris) or \
-                self.footprint.touches(pt_debris):
-            self.num_impacts += 1
+            if self.footprint.contains(pt_debris) or \
+                    self.footprint.touches(pt_debris):
+                self.no_impacts += 1
 
     @staticmethod
-    def debris_trajectory(cdav, fa, flight_distance, mass, rnd_state,
-                          wind_speed):
+    def debris_trajectory(cdav, frontal_area, flight_distance, mass,
+                          wind_speed, rnd_state):
         """
 
         Args:
             cdav: average drag coefficient
-            fa: frontal area
+            frontal_area:
             flight_distance:
             mass:
-            rnd_state:
             wind_speed:
+            rnd_state:
 
         Returns:
 
         """
         # calculate um/vs, ratio of hor. vel. of debris to local wind speed
         rho_a = 1.2  # air density
-        param_b = math.sqrt(rho_a * cdav * fa / mass)
+        param_b = math.sqrt(rho_a * cdav * frontal_area / mass)
         _mean = 1 - math.exp(-param_b * math.sqrt(flight_distance))
 
         try:
@@ -308,9 +298,7 @@ class Debris(object):
 
         beta_a = _mean * dispersion
         beta_b = dispersion * (1.0 - _mean)
-        item_momentum = mass * wind_speed * rnd_state.beta(beta_a, beta_b)
-
-        return item_momentum
+        return mass * wind_speed * rnd_state.beta(beta_a, beta_b)
 
     @staticmethod
     def create_sources(radius, angle, bldg_spacing, flag_staggered,

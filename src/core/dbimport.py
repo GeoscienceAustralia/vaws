@@ -32,7 +32,6 @@ def loadStructurePatchesFromCSV(path, db):
         if lineCount != 0:
             damagedConn = None
             targetConn = None
-            zone = None
             line = line.rstrip()
             fields = line.strip().split(",")
             for col, data in enumerate(fields):
@@ -50,7 +49,6 @@ def loadStructurePatchesFromCSV(path, db):
                                 conn_id=conn.id,
                                 coeff=float(data))
                     db.session.add(ins)
-                    zone = None
         lineCount += 1
     db.session.commit()
 

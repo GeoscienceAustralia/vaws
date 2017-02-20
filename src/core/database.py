@@ -401,12 +401,11 @@ class Influence(Base):
                            primary_key=True)
     id = Column(Integer, primary_key=True)
     coeff = Column(Float)
-    # zone = relation('Zone')
 
     def __repr__(self):
         return "('{:d}', '{:d}', '{:f}')".format(self.connection_id,
-                                                       self.id,
-                                                       self.coeff)
+                                                 self.id,
+                                                 self.coeff)
 
 
 class WaterIngressCosting(Base):

@@ -61,7 +61,7 @@ def simulation(house_damage, conn_capacity, wind_speeds):
         except KeyError:
             print('conn #{} is not found'.format(_id))
         except AssertionError:
-            print('conn #{}: {} is different from {}'.format(
+            print('conn #{} fails at {} not {}'.format(
                 _id, _conn.failure_v_raw, conn_capacity2[_id]))
 
 
@@ -325,20 +325,18 @@ class TestScenario6(unittest.TestCase):
                             level=logging.DEBUG,
                             format='%(levelname)s %(message)s')
 
-    def test_damage_sheeting_batten(self):
+    def test_damage_sheeting_batten_rafter(self):
 
-        # ref data 5
-        conn_capacity = {9999: range(1, 48),
-                         40.0: [41, 43],
-                         75.0: [42],
-                         80.0: [40, 44],
-                         100.0: [18, 12, 13, 10, 11],
-                         105.0: [17, 9, 14],
-                         110.0: [8, 15, 16],
-                         115.0: [7]}
+        conn_capacity = {40.0: [41, 43],
+                         70.0: [42],
+                         75.0: [40, 44],
+                         90.0: [46],
+                         95.0: [45],
+                         9999: range(1, 40)}
+        conn_capacity[9999].append(47)
 
         simulation(self.house_damage, conn_capacity,
-                   wind_speeds=np.arange(40.0, 120, 5.0))
+                   wind_speeds=np.arange(40.0, 100.0, 5.0))
 
 
 class TestScenario7(unittest.TestCase):
@@ -648,6 +646,6 @@ class TestScenario14(unittest.TestCase):
                    wind_speeds=np.arange(40.0, 120, 1.0))
 
 if __name__ == '__main__':
-    #suite = unittest.TestLoader().loadTestsFromTestCase(TestScenario6)
-    #unittest.TextTestRunner(verbosity=2).run(suite)
-    unittest.main(verbosity=2)
+    suite = unittest.TestLoader().loadTestsFromTestCase(TestScenario6)
+    unittest.TextTestRunner(verbosity=2).run(suite)
+    # unittest.main(verbosity=2)
