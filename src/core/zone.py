@@ -7,25 +7,26 @@
         - calculates Cpe pressure load from wind pressure.
 """
 
-import copy
 import logging
 
 from stats import sample_gev
 
 
 class Zone(object):
-    def __init__(self, inst):
+    def __init__(self,
+                 zone_name=None):
         """
         Args:
-            inst: instance of database.Zone
+            zone_name
+            zone_area
         """
-        dic_ = copy.deepcopy(inst.__dict__)
-        self.id = dic_['id']
-        self.name = dic_['zone_name']  # zone location
-        self.area = dic_['zone_area']
 
-        self.cpi_alpha = dic_['cpi_alpha']
-        self.wall_dir = dic_['wall_dir']
+        assert isinstance(zone_name, str)
+        self.name = zone_name
+
+        self.area = None
+        self.cpi_alpha = None
+        self.wall_dir = None  # FIXME!!! NOT SURE IF IT IS USED OR NOT
 
         self.grid = self.get_grid_from_zone_location()
 
@@ -33,15 +34,6 @@ class Zone(object):
         self.cpe_str_mean = dict()
         self.cpe_eave_mean = dict()
         self.is_roof_edge = dict()
-
-        directions = ['S', 'SW', 'W', 'NW', 'N', 'NE', 'E', 'SE']
-        for idx, item in enumerate(directions):
-            self.cpe_mean[idx] = dic_['coeff_{}'.format(item)]
-            self.cpe_str_mean[idx] = dic_['struct_coeff_{}'.format(item)]
-            self.cpe_eave_mean[idx] = dic_['eaves_coeff_{}'.format(item)]
-            self.is_roof_edge[idx] = dic_['leading_roof_{}'.format(item)]
-
-        #self.effective_area = dic_['zone_area']  # default, later can be changed
 
         self.distributed = None
         self.cpe = None
@@ -158,36 +150,6 @@ class Zone(object):
         num_part = self.name.strip(chr_part)
         return str2num(chr_part) - 1, int(num_part) - 1
 
-    # def update_cpe_and_area(self, source_zone, source_area):
-    #     """
-    #
-    #     Args:
-    #         source_zone: source zone
-    #         source_area: factored area of source zone
-    #
-    #     Returns: cpe, cpe_str, effective_area
-    #
-    #     """
-    #     try:
-    #
-    #         updated_area = self.effective_area + source_area
-    #
-    #     except TypeError:
-    #
-    #         logging.debug(
-    #             'skipping update because zone {} at {} has {}'.format(
-    #                 self.name, self.grid, self.effective_area))
-    #
-    #     else:
-    #         self.cpe = (self.effective_area * self.cpe +
-    #                     source_area * source_zone.cpe) / updated_area
-    #
-    #         self.cpe_str = (self.effective_area * self.cpe_str +
-    #                         source_area * source_zone.cpe_str) / updated_area
-    #
-    #         # update effective_area
-    #         self.effective_area = updated_area
-
 
 def str2num(s):
     """
@@ -223,63 +185,60 @@ if __name__ == '__main__':
     import unittest
     import os
 
-    from database import DatabaseManager
-    from database import House as TableHouse
     import numpy as np
 
     class MyTestCase(unittest.TestCase):
 
         @classmethod
         def setUpClass(cls):
+            cls.zone = Zone(zone_name='N12',
+                            zone_area=0.2025)
+            cls.zone.cpi_alpha = 0.0
 
-            path = '/'.join(__file__.split('/')[:-1])
-            db_file = os.path.join(path, '../../dbs/test_roof_sheeting2.db')
-            house_name = 'Test2'
+            for idx in range(8):
+                cls.zone.cpe_mean[idx] = -0.1
+                cls.zone.cpe_str_mean[idx] = -0.05
+                cls.zone.cpe_eave_mean[idx] = 0.0
+                cls.zone.is_roof_edge[idx] = 1
 
-            cls.db_house = DatabaseManager(db_file).session.query(
-                TableHouse).filter_by(house_name=house_name).one()
-            cls.rnd_state = np.random.RandomState(13)
+            cls.rnd_state = np.random.RandomState(seed=13)
 
-        def test_zonegrid(self):
-            _zone = Zone(self.db_house.zones[0])
-            _zone.name = 'N12'
-            _col, _row = _zone.get_grid_from_zone_location()
+        def test_get_grid(self):
+            _col, _row = self.zone.get_grid_from_zone_location()
             self.assertEquals(_col, 13)  # N
             self.assertEquals(_row, 11)  # 12
-            self.assertEquals(_zone.get_zone_location_from_grid((_col, _row)),
-                              _zone.name)
+            self.assertEquals(self.zone.get_zone_location_from_grid((_col, _row)),
+                              self.zone.name)
 
         def test_is_wall(self):
-            _zone = Zone(self.db_house.zones[0])
-            self.assertEqual(_zone.is_wall_zone, False)
+            self.assertEqual(self.zone.is_wall_zone, False)
 
         def test_calc_zone_pressures(self):
 
-            _zone = Zone(self.db_house.zones[0])
-            _zone.sample_zone_pressure(wind_dir_index=3,
-                                       cpe_cov=self.db_house.__dict__['cpe_V'],
-                                       cpe_k=self.db_house.__dict__['cpe_k'],
-                                       cpe_str_cov=self.db_house.__dict__['cpe_struct_V'],
-                                       big_a=0.486,
-                                       big_b=1.145,
-                                       rnd_state=self.rnd_state)
+            self.zone.sample_zone_pressure(wind_dir_index=3,
+                                           cpe_cov=0.12,
+                                           cpe_k=0.1,
+                                           cpe_str_cov=0.07,
+                                           big_a=0.486,
+                                           big_b=1.145,
+                                           rnd_state=self.rnd_state)
 
-            self.assertAlmostEqual(_zone.cpe, -0.1084, places=4)
-            self.assertAlmostEqual(_zone.cpe_eave, 0.0000, places=4)
-            self.assertAlmostEqual(_zone.cpe_str, -0.0474, places=4)
+            self.assertAlmostEqual(self.zone.cpe, -0.1084, places=4)
+            self.assertAlmostEqual(self.zone.cpe_eave, 0.0000, places=4)
+            self.assertAlmostEqual(self.zone.cpe_str, -0.0474, places=4)
 
             wind_speed = 40.0
             mzcat = 0.9235
             qz = 0.6 * 1.0e-3 * (wind_speed * mzcat) ** 2
 
-            _zone.calc_zone_pressures(wind_dir_index=3,
-                                      cpi=0.0,
-                                      qz=qz,
-                                      Ms=1.0,
-                                      building_spacing=0)
+            self.zone.calc_zone_pressures(wind_dir_index=3,
+                                          cpi=0.0,
+                                          qz=qz,
+                                          Ms=1.0,
+                                          building_spacing=0)
 
-            self.assertAlmostEqual(_zone.pz, -0.08876, places=4)
-            self.assertAlmostEqual(_zone.pz_str, -0.03881, places=4)
+            self.assertAlmostEqual(self.zone.pz, -0.08876, places=4)
+            self.assertAlmostEqual(self.zone.pz_str, -0.03881, places=4)
 
         def test_num2str(self):
             self.assertEqual(num2str(1), 'A')

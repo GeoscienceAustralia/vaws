@@ -23,6 +23,17 @@ class Scenario(object):
     terrain_categories = ['2', '2.5', '3', '5']
     heights = [3.0, 5.0, 7.0, 10.0, 12.0, 15.0, 17.0, 20.0, 25.0, 30.0]
 
+    house_attributes = ['replace_cost', 'height', 'cpe_cov', 'cpe_k',
+                        'cpe_str_cov', 'length', 'width', 'roof_cols',
+                        'roof_rows']
+    zone_attributes = ['area', 'cpi_alpha', 'wall_dir']
+    group_attributes = ['dist_order', 'dist_dir', 'damage_scenario',
+                        'trigger_collapse_at', 'patch_dist',
+                        'set_zone_to_zero', 'water_ingress_order']
+    type_attributes = ['costing_area', 'dead_load_mean', 'dead_load_std',
+                       'group_name', 'strength_mean', 'strength_std']
+    conn_attributes = ['edge', 'type_name', 'zone_loc']
+
     def __init__(self, cfg_file=None, output_path=None):
 
         self.cfg_file = cfg_file
@@ -40,7 +51,7 @@ class Scenario(object):
         self._debris_types = None
 
         self.house_name = None
-        self.db_file = None
+        self.path_datafile = None
         self.table_house = None
         self.parallel = None
         self._region_name = None
@@ -76,11 +87,25 @@ class Scenario(object):
         # self.file_rnd_parameters = None
         # self.file_eff_area_by_zone = None
 
-        self.file_model = None
-        self.file_group = None
-        self.file_type = None
-        self.file_conn = None
-        self.file_zone = None
+        # house data
+        self.df_house = None
+        self.df_zones = None
+        self.df_zones_cpe_mean = None
+        self.df_zones_cpe_eave_mean = None
+        self.df_zones_cpe_str_mean = None
+        self.df_zones_edge = None
+
+        self.df_groups = None
+        self.df_types = None
+        self.df_conns = None
+
+        self.dic_influences = None
+
+        self.outfile_model = None
+        self.outfile_group = None
+        self.outfile_type = None
+        self.outfile_conn = None
+        self.outfile_zone = None
 
         self.red_v = 54.0
         self.blue_v = 95.0
@@ -125,22 +150,6 @@ class Scenario(object):
             ['probability', 'mean_factor', 'cov_factor'],
             [prob, mf, cf]))
 
-    # def sampleConstructionLevel(self):
-    #     rv = np.random.random_integers(0, 100)
-    #     cumprob = 0.0
-    #     for key, value in self.construction_levels.iteritems():
-    #         cumprob += value['probability'] * 100.0
-    #         if rv <= cumprob:
-    #             break
-    #     return key, value['mean_factor'], value['cov_factor']
-
-    # def get_wind_dir_index(self):
-    #     if self.wind_dir_index == 8:
-    #         return np.random.random_integers(0, 7)
-    #         # return self.rnd_state.random_integers(0, 7)
-    #     else:
-    #         return self.wind_dir_index
-
     def read_config(self):
 
         conf = ConfigParser.ConfigParser()
@@ -168,7 +177,42 @@ class Scenario(object):
         self.idx_speeds = range(self.wind_speed_num_steps)
 
         self.house_name = conf.get(key, 'house_name')
-        self.db_file = os.path.join(path_cfg_file, conf.get(key, 'db_file'))
+        self.path_datafile = os.path.join(path_cfg_file,
+                                          conf.get(key, 'path_datafile'))
+        # house data files
+
+        file_house = os.path.join(self.path_datafile, 'house_data.csv')
+        file_zones = os.path.join(self.path_datafile, 'zones.csv')
+        file_zones_cpe_mean = os.path.join(self.path_datafile,
+                                                'zones_cpe_mean.csv')
+        file_zones_cpe_str_mean = os.path.join(self.path_datafile,
+                                                    'zones_cpe_str_mean.csv')
+        file_zones_cpe_eave_mean = os.path.join(self.path_datafile,
+                                                     'zones_cpe_eave_mean.csv')
+        file_zones_edge = os.path.join(self.path_datafile,
+                                            'zones_edge.csv')
+
+        self.df_house = pd.read_csv(file_house)
+        self.df_zones = pd.read_csv(file_zones, index_col='name')
+        self.df_zones_cpe_mean = pd.read_csv(file_zones_cpe_mean,
+                                             index_col='name')
+        self.df_zones_cpe_str_mean = pd.read_csv(file_zones_cpe_str_mean,
+                                                 index_col='name')
+        self.df_zones_cpe_eave_mean = pd.read_csv(file_zones_cpe_eave_mean,
+                                                  index_col='name')
+        self.df_zones_edge = pd.read_csv(file_zones_edge,
+                                         index_col='name')
+
+        file_groups = os.path.join(self.path_datafile, 'conn_groups.csv')
+        file_types = os.path.join(self.path_datafile, 'conn_types.csv')
+        file_conns = os.path.join(self.path_datafile, 'connections.csv')
+
+        self.df_groups = pd.read_csv(file_groups, index_col='group_name')
+        self.df_types = pd.read_csv(file_types, index_col='type_name')
+        self.df_conns = pd.read_csv(file_conns, index_col='conn_name')
+
+        file_influences = os.path.join(self.path_datafile, 'influences.csv')
+        self.dic_influences = self.read_influences(file_influences)
 
         self.parallel = conf.getboolean(key, 'parallel')
         self.regional_shielding_factor = conf.getfloat(
@@ -301,14 +345,47 @@ class Scenario(object):
                                                    'dmg_dist_by_conn.csv')
             """
 
-            self.file_model = os.path.join(self.output_path, 'results_model.h5')
-            self.file_group = os.path.join(self.output_path, 'results_group.h5')
-            self.file_type = os.path.join(self.output_path, 'results_type.h5')
-            self.file_conn = os.path.join(self.output_path, 'results_conn.h5')
-            self.file_zone = os.path.join(self.output_path, 'results_zone.h5')
+            self.outfile_model = os.path.join(self.output_path, 'results_model.h5')
+            self.outfile_group = os.path.join(self.output_path, 'results_group.h5')
+            self.outfile_type = os.path.join(self.output_path, 'results_type.h5')
+            self.outfile_conn = os.path.join(self.output_path, 'results_conn.h5')
+            self.outfile_zone = os.path.join(self.output_path, 'results_zone.h5')
 
         else:
             print 'output path is not assigned'
+
+    @staticmethod
+    def read_influences(filename):
+        """
+
+        Args:
+            filename: influences.csv
+            connection_name, zone1_name, zone1_infl, (.....)
+        Returns: dictionary
+
+        """
+        _dic = dict()
+        with open(filename, 'r') as f:
+            next(f)  # skip the first line
+            for line in f:
+                key = None
+                sub_key = None
+                fields = line.strip().rstrip(',').split(',')
+                for i, value in enumerate(fields):
+                    if i == 0:
+                        try:
+                            key = int(value)
+                        except ValueError:
+                            key = value
+                    elif i % 2:
+                        try:
+                            sub_key = int(value)
+                        except ValueError:
+                            sub_key = value
+                    elif key and sub_key:
+                        _dic.setdefault(key, {})[sub_key] = float(value)
+
+        return _dic
 
     @property
     def region_name(self):
@@ -481,7 +558,7 @@ class Scenario(object):
 
         key = 'main'
         config.add_section(key)
-        config.set(key, 'db_file', self.db_file)
+        config.set(key, 'path_datafile', self.path_datafile)
         config.set(key, 'parallel', self.parallel)
         config.set(key, 'no_simulations', self.no_sims)
         config.set(key, 'wind_speed_min', self.wind_speed_min)

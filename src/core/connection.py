@@ -4,7 +4,6 @@
         - imported from '../data/houses/subfolder'
 """
 
-import copy
 import numpy as np
 import logging
 
@@ -15,38 +14,31 @@ from stats import compute_arithmetic_mean_stddev, sample_lognormal, \
 
 
 class Connection(object):
-    def __init__(self, inst_conn, dic_ctype):
+    def __init__(self,
+                 conn_name=None):
         """
 
         Args:
-            inst_conn: instance of database.Connection
-            dic_ctype: dictionary of database.ConnectionType
-
+            name:
+            type_name:
+            zone_loc:
         """
 
-        dic_conn = copy.deepcopy(inst_conn.__dict__)
+        assert isinstance(conn_name, int)
 
-        self.id = dic_conn['id']
-        self.name = dic_conn['connection_name']
-        # self.edge = dic_conn['edge']
+        self.name = conn_name
 
-        self.zone_id = dic_conn['zone_id']  # zone location
+        self.edge = None
+        self.type_name = None
+        self.zone_loc = None
 
-        self.type_id = dic_ctype['id']
-        self.type_name = dic_ctype['connection_type']
+        self._group_name = None
+        self._strength_mean = None
+        self._strength_std = None
+        self._dead_load_mean = None
+        self._dead_load_std = None
 
-        self.group_id = dic_ctype['grouping_id']
-        self.group_name = dic_ctype['group_name']
-
-        self.strength_mean = dic_ctype['strength_mean']
-        self.strength_std = dic_ctype['strength_std_dev']
-        self.dead_load_mean = dic_ctype['deadload_mean']
-        self.dead_load_std = dic_ctype['deadload_std_dev']
-
-        self.influences = dict()
-        for item in inst_conn.influences:
-            dic_ = copy.deepcopy(item.__dict__)
-            self.influences.setdefault(dic_['id'], Influence(dic_))
+        self._influences = None
 
         self.strength = None
         self.dead_load = None
@@ -65,6 +57,42 @@ class Connection(object):
         # self._dist_by_col = None
 
     @property
+    def strength_mean(self):
+        return self._strength_mean
+
+    @strength_mean.setter
+    def strength_mean(self, value):
+        assert isinstance(value, float)
+        self._strength_mean = value
+
+    @property
+    def strength_std(self):
+        return self._strength_std
+
+    @strength_std.setter
+    def strength_std(self, value):
+        assert isinstance(value, float)
+        self._strength_std = value
+
+    @property
+    def dead_load_mean(self):
+        return self._dead_load_mean
+
+    @dead_load_mean.setter
+    def dead_load_mean(self, value):
+        assert isinstance(value, float)
+        self._dead_load_mean = value
+
+    @property
+    def dead_load_std(self):
+        return self._dead_load_std
+
+    @dead_load_std.setter
+    def dead_load_std(self, value):
+        assert isinstance(value, float)
+        self._dead_load_std = value
+
+    @property
     def grid(self):
         return self._grid
 
@@ -73,18 +101,27 @@ class Connection(object):
         assert isinstance(_tuple, tuple)
         self._grid = _tuple
 
-    # def reset_connection_failure(self):
-    #     self.result_failure_v = 0.0
-    #     self.result_failure_v_i = 0
+    @property
+    def group_name(self):
+        return self._group_name
 
-    # @property
-    # def dist_by_col(self):
-    #     return self._dist_by_col
-    #
-    # @dist_by_col.setter
-    # def dist_by_col(self, value):
-    #     assert isinstance(value, bool)
-    #     self._dist_by_col = value
+    @group_name.setter
+    def group_name(self, value):
+        assert isinstance(value, str)
+        self._group_name = value
+
+    @property
+    def influences(self):
+        return self._influences
+
+    @influences.setter
+    def influences(self, _dic):
+        assert isinstance(_dic, dict)
+
+        self._influences = dict()
+        for key, value in _dic.iteritems():
+            self._influences[key] = Influence(infl_name=key,
+                                              infl_coeff=value)
 
     def sample_strength(self, mean_factor, cov_factor, rnd_state):
         """
@@ -223,33 +260,54 @@ class Connection(object):
 
 
 class ConnectionType(object):
-    def __init__(self, inst):
+    def __init__(self, type_name=None):
         """
 
         Args:
             inst: instance of database.ConnectionType
         """
-        dic_ = copy.deepcopy(inst.__dict__)
 
-        self.id = dic_['id']
-        self.name = dic_['connection_type']
-        self.costing_area = dic_['costing_area']
+        self.name = type_name
 
-        self.strength_mean = dic_['strength_mean']
-        self.strength_std = dic_['strength_std_dev']
-        self.dead_load_mean = dic_['deadload_mean']
-        self.dead_load_std = dic_['deadload_std_dev']
-        self.group_id = dic_['grouping_id']
-        self.group_name = inst.group.group_name
-        dic_.setdefault('group_name', self.group_name)
+        self.costing_area = None
+        self.dead_load_mean = None
+        self.dead_load_std = None
+        self.group_name = None
+        self.strength_mean = None
+        self.strength_std = None
 
-        self.connections = dict()
-        for item in inst.connections_of_type:
-            self.connections.setdefault(item.id, Connection(item, dic_))
+        self._connections = None
+        self.no_connections = None
 
-        self.no_connections = len(self.connections)
         self.damage_capacity = None  # min wind speed at damage
         self.prop_damaged_type = None
+
+    @property
+    def connections(self):
+        return self._connections
+
+    @connections.setter
+    def connections(self, _dic):
+
+        assert isinstance(_dic, dict)
+
+        self._connections = dict()
+
+        for key, value in _dic.iteritems():
+
+            _conn = Connection(conn_name=key)
+
+            for att in ['edge', 'type_name', 'zone_loc']:
+                setattr(_conn, att, value[att])
+
+            _conn.strength_mean = self.strength_mean
+            _conn.strength_std = self.strength_std
+            _conn.dead_load_mean = self.dead_load_mean
+            _conn.dead_load_std = self.dead_load_std
+
+            self._connections[key] = _conn
+
+        self.no_connections = len(self._connections)
 
     def damage_summary(self):
         """
@@ -275,35 +333,34 @@ class ConnectionTypeGroup(object):
 
     use_struct_pz_for = ['rafter', 'piersgroup', 'wallracking']
 
-    def __init__(self, inst):
+    def __init__(self,
+                 group_name=None):
         """
 
         Args:
             inst: instance of database.ConnectionTypeGroup
         """
-        dic_ = copy.deepcopy(inst.__dict__)
 
-        self.id = dic_['id']
-        self.name = dic_['group_name']
+        self.name = group_name
 
-        self.dist_dir = dic_['distribution_direction']
-        # self.dist_ord = dic_['distribution_order']
-
-        self.trigger_collapse_at = dic_['trigger_collapse_at']
-        self.patch_dist = dic_['patch_distribution']
-        self.set_zone_to_zero = dic_['set_zone_to_zero']
-        self.water_ingress_ord = dic_['water_ingress_order']
-        self.costing_id = dic_['costing_id']
-        self.costing = Costing(inst.costing)
+        self.dist_order = None
+        self.dist_dir = None
+        self.damage_scenario = None
+        self.trigger_collapse_at = None
+        self.patch_dist = None
+        self.set_zone_to_zero = None
+        self.water_ingress_order = None
+        # self.costing_id = None
+        # self.costing = Costing(inst.costing)
 
         self._costing_area = None
-        self.no_connections = 0
+        self.no_connections = None
 
-        self.types = dict()
-        for item in inst.conn_types:
-            _type = ConnectionType(item)
-            self.types.setdefault(item.id, _type)
-            self.no_connections += _type.no_connections
+        self._types = None
+        # for item in inst.conn_types:
+        #     _type = ConnectionType(item)
+        #     self.types.setdefault(item.id, _type)
+        #     self.no_connections += _type.no_connections
 
         # if self.dist_ord >= 0:
         #     self.enabled = True
@@ -314,7 +371,7 @@ class ConnectionTypeGroup(object):
         # self.secondary_dir = None
         # self.dist_by_col = None
 
-        self.damage_grid = None  # column (chr), row (num)
+        self._damage_grid = None  # column (chr), row (num)
         # negative: no connection, 0: Intact,  1: Failed
         self.damaged = None
 
@@ -327,27 +384,47 @@ class ConnectionTypeGroup(object):
         self.repair_cost = None
 
     @property
+    def types(self):
+        return self._types
+
+    @types.setter
+    def types(self, _dic):
+
+        assert isinstance(_dic, dict)
+
+        self._types = dict()
+        for key, value in _dic.iteritems():
+            _type = ConnectionType(type_name=key)
+
+            for att in ['costing_area', 'dead_load_mean', 'dead_load_std',
+                        'group_name', 'strength_mean', 'strength_std']:
+                setattr(_type, att, value[att])
+
+            self._types[key] = _type
+
+    @property
     def costing_area(self):
         return self._costing_area
 
     @costing_area.setter
     def costing_area(self, value):
+        assert isinstance(value, float)
         self._costing_area = value
 
-    def set_damage_grid(self, no_rows, no_cols):
-        """
+    @property
+    def damage_grid(self):
+        return self._damage_grid
 
-        Args:
-            no_rows: no. of rows
-            no_cols: no. of cols
+    @damage_grid.setter
+    def damage_grid(self, _tuple):
 
-        Returns:
+        assert isinstance(_tuple, tuple)
+        no_rows, no_cols = _tuple
 
-        """
         if self.dist_dir:
-            self.damage_grid = -1 * np.ones(dtype=int, shape=(no_rows, no_cols))
+            self._damage_grid = -1 * np.ones(dtype=int, shape=(no_rows, no_cols))
         else:
-            self.damage_grid = None
+            self._damage_grid = None
 
     def cal_repair_cost(self, value):
         """
@@ -554,16 +631,18 @@ class ConnectionTypeGroup(object):
 
 
 class Influence(object):
-    def __init__(self, dic_):
+    def __init__(self,
+                 infl_name=None,
+                 infl_coeff=None):
         """
 
         Args:
-            dic_: dictionary coeff, id, source
+            infl_name:
+            infl_coeff:
         """
 
-        # dic_ = copy.deepcopy(inst.__dict__)
-        self.coeff = dic_['coeff']
-        self.id = dic_['id']  # source connection or zone id
+        self.coeff = infl_coeff
+        self.name = infl_name  # source connection or zone id
         self._source = None
 
     @property

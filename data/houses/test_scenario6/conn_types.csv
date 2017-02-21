@@ -1,4 +1,4 @@
-Conn type,strength_mean,strength_std dev,deadload_mean,deadload_stddev,group_name,costing_area
+type_name,strength_mean,strength_std,dead_load_mean,dead_load_std,group_name,costing_area
 sheetinggable,4.62,0.001,0.001,0.001,sheeting,0.405
 sheetingeave,4.62,0.001,0.001,0.001,sheeting,0.405
 sheetingcorner,4.62,0.001,0.001,0.001,sheeting,0.225

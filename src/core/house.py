@@ -4,13 +4,14 @@
         - imported from '../data/houses/subfolder' (so we need python constr)
 """
 
+import os
 import numpy as np
+import logging
+import pandas as pd
 from shapely.geometry import Polygon
 
 from connection import ConnectionTypeGroup
 from zone import Zone
-from database import House as TableHouse
-from database import DatabaseManager
 from stats import calc_big_a_b_values
 from scenario import Scenario
 
@@ -25,23 +26,18 @@ class House(object):
         self.cfg = cfg
         self.rnd_state = rnd_state
 
-        _db = DatabaseManager(cfg.db_file)
+        self.width = None
+        self.height = None
+        self.length = None
+        self.replace_cost = None
 
-        db_house = _db.session.query(TableHouse).filter_by(
-            house_name=cfg.house_name).one()
-
-        self.width = db_house.__dict__['width']
-        self.height = db_house.__dict__['height']
-        self.length = db_house.__dict__['length']
-        self.replace_cost = db_house.__dict__['replace_cost']
-
-        self.cpe_cov = db_house.__dict__['cpe_V']
-        self.cpe_str_cov = db_house.__dict__['cpe_struct_V']
-        self.cpe_k = db_house.__dict__['cpe_k']
+        self.cpe_cov = None
+        self.cpe_str_cov = None
+        self.cpe_k = None
 
         self.footprint = None
-        self.roof_rows = db_house.__dict__['roof_rows']
-        self.roof_cols = db_house.__dict__['roof_columns']
+        self.roof_rows = None
+        self.roof_cols = None
 
         self.wind_orientation = None  # 0 to 7
         self.construction_level = None
@@ -52,31 +48,45 @@ class House(object):
         self.big_a = None
         self.big_b = None
 
-        # self.cols = [chr(x) for x in range(ord('A'), ord('A') + self.roof_cols)]
-        # self.rows = range(1, self.roof_rows + 1)  # one base
-
         self.groups = dict()  # dict of conn type groups with id
         self.types = dict()  # dict of conn types with id
         self.connections = dict()  # dict of connections with id
         self.zones = dict()  # dict of zones with id
         self.factors_costing = dict()  # dict of damage factoring with id
         self.walls = dict()
+        self.patches = dict()
 
         self.zone_by_name = dict()  # dict of zones with zone name
         self.zone_by_grid = dict()  # dict of zones with zone loc grid in tuple
 
         # init house
-        self.set_house_wind_params()
-        self.set_house_components(db_house)
+        self.read_house_data()
 
-        # db session close
-        _db.close()
-
-    def set_house_components(self, db_house):
         # house is consisting of connections, zones, and walls
+        self.set_house_wind_params()
+        self.set_zones()
+        self.set_connections()
 
-        for item in db_house.zones:
-            _zone = Zone(item)
+    def read_house_data(self):
+
+        for att in self.cfg.house_attributes:
+            setattr(self, att, self.cfg.df_house.loc[0, att])
+
+    def set_zones(self):
+
+        for zone_name, item in self.cfg.df_zones.iterrows():
+
+            _zone = Zone(zone_name=zone_name)
+
+            for att in self.cfg.zone_attributes:
+                    setattr(_zone, att, self.cfg.df_zones.loc[zone_name, att])
+
+            for idx, _dir in enumerate(self.cfg.dirs):
+                _zone.cpe_mean[idx] = self.cfg.df_zones_cpe_mean.loc[_zone.name, _dir]
+                _zone.cpe_str_mean[idx] = self.cfg.df_zones_cpe_str_mean.loc[_zone.name, _dir]
+                _zone.cpe_eave_mean[idx] = self.cfg.df_zones_cpe_eave_mean.loc[_zone.name, _dir]
+                _zone.is_roof_edge[idx] = self.cfg.df_zones_edge.loc[_zone.name, _dir]
+
             _zone.sample_zone_pressure(
                 wind_dir_index=self.wind_orientation,
                 cpe_cov=self.cpe_cov,
@@ -86,9 +96,74 @@ class House(object):
                 big_b=self.big_b,
                 rnd_state=self.rnd_state)
 
-            self.zones.setdefault(item.id, _zone)
-            self.zone_by_name.setdefault(_zone.name, _zone)
-            self.zone_by_grid.setdefault(_zone.grid, _zone)
+            self.zones[_zone.name] = _zone
+            self.zone_by_grid[_zone.grid] = _zone
+
+    def set_connections(self):
+
+        for group_name, item in self.cfg.df_groups.iterrows():
+
+            _group = ConnectionTypeGroup(group_name=group_name)
+
+            for att in self.cfg.group_attributes:
+                setattr(_group, att, item[att])
+
+            _group.damage_grid = (self.roof_cols, self.roof_rows)
+            costing_area_by_group = 0.0
+            _group.no_connections = 0
+
+            df_selected_group = self.cfg.df_types.loc[
+                self.cfg.df_types['group_name'] == group_name]
+            _group.types = df_selected_group.to_dict('index')
+
+            # linking with connections
+            for type_name, _type in _group.types.iteritems():
+
+                df_selected_type = self.cfg.df_conns.loc[
+                    self.cfg.df_conns['type_name'] == type_name]
+
+                _type.connections = df_selected_type.to_dict('index')
+                _group.no_connections += _type.no_connections
+
+                # linking with connections
+                for conn_name, _conn in _type.connections.iteritems():
+
+                    self.connections[conn_name] = _conn
+
+                    _conn.sample_strength(mean_factor=self.str_mean_factor,
+                                          cov_factor=self.str_cov_factor,
+                                          rnd_state=self.rnd_state)
+
+                    _conn.sample_dead_load(rnd_state=self.rnd_state)
+
+                    _conn.group_name = group_name
+                    _conn.grid = self.zones[_conn.zone_loc].grid
+                    _conn.influences = self.cfg.dic_influences[_conn.name]
+
+                    _group.damage_grid[_conn.grid] = 0  # set default
+                    costing_area_by_group += _type.costing_area
+
+                    # linking connections either zones or connections
+                    if _conn.group_name == 'sheeting':
+                        for _inf in _conn.influences.itervalues():
+                            _inf.source = self.zones[_inf.name]
+                    else:
+                        for _inf in _conn.influences.itervalues():
+                            _inf.source = self.connections[_inf.name]
+
+                self.types[type_name] = _type
+
+            _group.costing_area = costing_area_by_group
+            self.groups[group_name] = _group
+
+        if self.cfg.flags['debris']:
+            points = list()
+            for item in self.cfg.df_footprint:
+                points.append((item.x_coord, item.y_coord))
+            self.footprint = Polygon(points)
+
+    def XXXX_set_house_components(self, db_house):
+
 
         for item in db_house.conn_type_groups:
             _group = ConnectionTypeGroup(item)
@@ -141,11 +216,6 @@ class House(object):
         #         if _conn.zone_id == _zone_id:
         #             self.conn_by_grid.setdefault(_zone.grid, {})[_conn.group_id] = _conn
 
-        if self.cfg.flags['debris']:
-            points = list()
-            for item in db_house.footprint:
-                points.append((item.x_coord, item.y_coord))
-            self.footprint = Polygon(points)
 
     def set_house_wind_params(self):
         """
@@ -200,7 +270,7 @@ class House(object):
             self.str_mean_factor = 1.0
             self.str_cov_factor = 1.0
 
-    # @staticmethod
+            # @staticmethod
     # def string_first(value):
     #     """
     #     check if value starting with char otherwise re-arrange.
@@ -302,40 +372,40 @@ if __name__ == '__main__':
             self.assertEquals(len(self.house.connections), 60)
 
             # sheeting
-            self.assertEquals(len(self.house.groups[1].types[1].connections), 4)
-            self.assertEqual(self.house.groups[1].types[1].no_connections, 4)
+            self.assertEquals(len(self.house.groups['sheeting'].types['sheetinggable'].connections), 4)
+            self.assertEqual(self.house.groups['sheeting'].types['sheetinggable'].no_connections, 4)
 
-            self.assertEquals(len(self.house.groups[1].types[2].connections), 8)
-            self.assertEqual(self.house.groups[1].types[2].no_connections, 8)
+            self.assertEquals(len(self.house.groups['sheeting'].types['sheetingeave'].connections), 8)
+            self.assertEqual(self.house.groups['sheeting'].types['sheetingeave'].no_connections, 8)
 
-            self.assertEquals(len(self.house.groups[1].types[3].connections), 2)
-            self.assertEqual(self.house.groups[1].types[3].no_connections, 2)
+            self.assertEquals(len(self.house.groups['sheeting'].types['sheetingcorner'].connections), 2)
+            self.assertEqual(self.house.groups['sheeting'].types['sheetingcorner'].no_connections, 2)
 
-            self.assertEquals(len(self.house.groups[1].types[4].connections), 16)
-            self.assertEqual(self.house.groups[1].types[4].no_connections, 16)
+            self.assertEquals(len(self.house.groups['sheeting'].types['sheeting'].connections), 16)
+            self.assertEqual(self.house.groups['sheeting'].types['sheeting'].no_connections, 16)
 
-            self.assertEqual(self.house.groups[1].no_connections, 30)
+            self.assertEqual(self.house.groups['sheeting'].no_connections, 30)
 
             # batten
-            self.assertEquals(len(self.house.groups[2].types[5].connections), 12)
-            self.assertEqual(self.house.groups[2].types[5].no_connections, 12)
+            self.assertEquals(len(self.house.groups['batten'].types['batten'].connections), 12)
+            self.assertEqual(self.house.groups['batten'].types['batten'].no_connections, 12)
 
-            self.assertEquals(len(self.house.groups[2].types[6].connections), 8)
-            self.assertEqual(self.house.groups[2].types[6].no_connections, 8)
+            self.assertEquals(len(self.house.groups['batten'].types['battenend'].connections), 8)
+            self.assertEqual(self.house.groups['batten'].types['battenend'].no_connections, 8)
 
-            self.assertEquals(len(self.house.groups[2].types[7].connections), 6)
-            self.assertEqual(self.house.groups[2].types[7].no_connections, 6)
+            self.assertEquals(len(self.house.groups['batten'].types['batteneave'].connections), 6)
+            self.assertEqual(self.house.groups['batten'].types['batteneave'].no_connections, 6)
 
-            self.assertEquals(len(self.house.groups[2].types[8].connections), 4)
-            self.assertEqual(self.house.groups[2].types[8].no_connections, 4)
+            self.assertEquals(len(self.house.groups['batten'].types['battencorner'].connections), 4)
+            self.assertEqual(self.house.groups['batten'].types['battencorner'].no_connections, 4)
 
-            self.assertEqual(self.house.groups[1].no_connections, 30)
+            self.assertEqual(self.house.groups['batten'].no_connections, 30)
 
             # costing area by group
-            self.assertAlmostEqual(self.house.groups[1].costing_area,
+            self.assertAlmostEqual(self.house.groups['sheeting'].costing_area,
                                    18.27, places=2)
 
-            self.assertAlmostEqual(self.house.groups[2].costing_area,
+            self.assertAlmostEqual(self.house.groups['batten'].costing_area,
                                    16.29, places=2)
             # zone
             conn_zone_loc_map = {
@@ -356,7 +426,7 @@ if __name__ == '__main__':
                 _zone_name = conn_zone_loc_map[id_conn]
 
                 self.assertEquals(_zone_name,
-                                  self.house.zones[_conn.zone_id].name)
+                                  self.house.zones[_conn.zone_loc].name)
 
             zone_loc_to_grid_map = {
                 'A1': (0, 0), 'A2': (0, 1), 'A3': (0, 2), 'A4': (0, 3), 'A5': (0, 4), 'A6': (0, 5),
@@ -377,16 +447,16 @@ if __name__ == '__main__':
 
                 if _conn.group_name == 'sheeting':
                     for _inf in _conn.influences.itervalues():
-                        self.assertEqual(_inf.id, _inf.source.id)
-                        self.assertEqual(self.house.zones[_inf.id], _inf.source)
+                        self.assertEqual(_inf.name, _inf.source.name)
+                        self.assertEqual(self.house.zones[_inf.name], _inf.source)
                 else:
                     for _inf in _conn.influences.itervalues():
-                        self.assertEqual(_inf.id, _inf.source.id)
-                        self.assertEqual(self.house.connections[_inf.id], _inf.source)
+                        self.assertEqual(_inf.name, _inf.source.name)
+                        self.assertEqual(self.house.connections[_inf.name], _inf.source)
 
             # group.primary_dir and secondary_dir
-            self.assertEqual(self.house.groups[1].dist_dir, 'col')
-            self.assertEqual(self.house.groups[2].dist_dir, 'row')
+            self.assertEqual(self.house.groups['sheeting'].dist_dir, 'col')
+            self.assertEqual(self.house.groups['batten'].dist_dir, 'row')
 
             # self.assertEqual(self.house.groups[1].dist_ord, 1)
             # self.assertEqual(self.house.groups[1].dist_by_col, True)
@@ -394,10 +464,10 @@ if __name__ == '__main__':
             # self.assertEqual(self.house.groups[1].secondary_dir, self.house.rows)
 
             # check identity
-            for id_type, _type in self.house.groups[1].types.iteritems():
+            for id_type, _type in self.house.groups['sheeting'].types.iteritems():
                 self.assertEqual(self.house.types[id_type], _type)
 
-            for id_conn, _conn in self.house.types[1].connections.iteritems():
+            for id_conn, _conn in self.house.types['sheeting'].connections.iteritems():
                 self.assertEqual(self.house.connections[id_conn], _conn)
 
         # def test_factors_costing(self):
@@ -424,15 +494,15 @@ if __name__ == '__main__':
 
         def test_list_groups_types_conns(self):
 
-            list_groups = [x.name for x in self.house.groups.itervalues()]
-            list_types = [x.name for x in self.house.types.itervalues()]
-            list_conns = [x.name for x in self.house.connections.itervalues()]
+            _groups = {x.name for x in self.house.groups.itervalues()}
+            _types = {x.name for x in self.house.types.itervalues()}
+            _conns = {x.name for x in self.house.connections.itervalues()}
 
-            self.assertEqual(['sheeting', 'batten'], list_groups)
-            self.assertEqual(['sheetinggable', 'sheetingeave', 'sheetingcorner',
-                              'sheeting', 'batten', 'battenend', 'batteneave',
-                              'battencorner'], list_types)
-            self.assertEqual([str(x) for x in range(1, 61)], list_conns)
+            self.assertEqual({'sheeting', 'batten'}, _groups)
+            self.assertEqual(
+                {'sheetinggable', 'sheetingeave', 'sheetingcorner', 'sheeting',
+                 'batten', 'battenend', 'batteneave', 'battencorner'}, _types)
+            self.assertEqual(set(range(1, 61)), _conns)
 
         '''
         # def test_conn_by_grid(self):
@@ -451,5 +521,6 @@ if __name__ == '__main__':
         #     self.assertEqual(house.conn_by_grid[(0, 0)][5].id, 963)
         #     self.assertEqual(house.conn_by_grid[(0, 0)][5].name, '181')
         '''
+
     suite = unittest.TestLoader().loadTestsFromTestCase(MyTestCase)
     unittest.TextTestRunner(verbosity=2).run(suite)
