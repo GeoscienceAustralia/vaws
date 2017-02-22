@@ -1,17 +1,25 @@
 from math import log, exp, sqrt, gamma, copysign
 from scipy.stats import genextreme
+from numpy import isclose
 
 
-def sample_lognormal(mu_lnx, std_lnx, rnd_state, size=None):
+def sample_lognormal(mu_lnx, std_lnx, rnd_state):
     """
+    draw a sample from a lognormal distribution with mu, std of logarithmic x
+    If std is zero, just return exp(mu_lnx)
 
-    Returns: sample of dead load following log normal dist.
-    Note that mean and/or std can be zero for some components
+    Args:
+        mu_lnx: mean of log x
+        std_lnx: std of log x
+        rnd_state: numpy.random.RandomState
+
+    Returns:
+
     """
     try:
-        return rnd_state.lognormal(mu_lnx, std_lnx, size)
-    except ValueError:
-        return 0.0
+        return rnd_state.lognormal(mu_lnx, std_lnx)
+    except ValueError:  # no sampling
+        return exp(mu_lnx)
 
 
 def sample_gev(mean_est, cov_est, big_a, big_b, shape_k, rnd_state=None):
@@ -95,23 +103,28 @@ def compute_logarithmic_mean_stddev(m, stddev):
         m: arithmetic mean of x
         stddev: arithmetic standard deviation of x
 
+        mu = 2*log(m) - 0.5*log(v + m**2)
+        std = sqrt(log(V/m**2 +1))
+
+        if m is zero, then return -999, 0.0
+
     Returns: mean and std of log x
 
-    mu = 2*log(m) - 0.5*log(v + m**2)
-
     """
+    assert m >= 0.0
+    assert stddev >= 0.0
 
-    try:
+    if m:
         mu = 2 * log(m) - 0.5 * log(stddev**2.0 + m**2.0)
         std = sqrt(log(stddev**2.0 / m**2.0 + 1))
-    except ValueError as e:
-        print '{}: zero returned for mu, std'.format(e)
-        return 0.0, 0.0
     else:
-        return mu, std
+        mu = -999
+        std = 0.0
+
+    return mu, std
 
 
-def sample_lognorm_given_mean_stddev(m, stddev, rnd_state, size=None):
+def sample_lognorm_given_mean_stddev(m, stddev, rnd_state):
     """
     generate rv following lognorm dist
     Args:
@@ -124,7 +137,7 @@ def sample_lognorm_given_mean_stddev(m, stddev, rnd_state, size=None):
 
     """
     mu_, std_ = compute_logarithmic_mean_stddev(m, stddev)
-    return sample_lognormal(mu_, std_, rnd_state, size)
+    return sample_lognormal(mu_, std_, rnd_state)
 
 
 def compute_arithmetic_mean_stddev(m, stddev):
@@ -156,7 +169,7 @@ if __name__ == '__main__':
             self.assertAlmostEqual(std, 0.4724, places=4)
 
             mu, std = compute_logarithmic_mean_stddev(0.0, 0.0)
-            self.assertAlmostEqual(mu, 0.0, places=4)
+            self.assertAlmostEqual(mu, -999, places=4)
             self.assertAlmostEqual(std, 0.0, places=4)
 
             m, stddev = 70.0, 14.0
@@ -172,6 +185,24 @@ if __name__ == '__main__':
             mu, std = compute_arithmetic_mean_stddev(0.0, 0.0)
             self.assertAlmostEqual(mu, 1.0, places=4)
             self.assertAlmostEqual(std, 0.0, places=4)
+
+        def test_sample_logrnormal(self):
+            rnd_state = np.random.RandomState(1)
+
+            # zero mean and std
+            mu, std = compute_logarithmic_mean_stddev(0.0, 0.0)
+            self.assertAlmostEqual(sample_lognormal(mu, std, rnd_state), 0.0,
+                                   places=2)
+
+            # zero std
+            mu, std = compute_logarithmic_mean_stddev(1.0, 0.0)
+            self.assertAlmostEqual(sample_lognormal(mu, std, rnd_state), 1.0,
+                                   places=2)
+
+            # zero std
+            mu, std = compute_logarithmic_mean_stddev(4.0, 0.0)
+            self.assertAlmostEqual(sample_lognormal(mu, std, rnd_state), 4.0,
+                                   places=2)
 
         def test_calc_big_a_b_values(self):
             big_a, big_b = calc_big_a_b_values(shape_k=0.1)

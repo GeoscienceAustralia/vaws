@@ -18,7 +18,6 @@ class Zone(object):
         """
         Args:
             zone_name
-            zone_area
         """
 
         assert isinstance(zone_name, str)
@@ -183,7 +182,6 @@ def num2str(n):
 
 if __name__ == '__main__':
     import unittest
-    import os
 
     import numpy as np
 
@@ -191,8 +189,9 @@ if __name__ == '__main__':
 
         @classmethod
         def setUpClass(cls):
-            cls.zone = Zone(zone_name='N12',
-                            zone_area=0.2025)
+            cls.zone = Zone(zone_name='N12')
+
+            cls.zone.area = 0.2025
             cls.zone.cpi_alpha = 0.0
 
             for idx in range(8):
@@ -204,10 +203,10 @@ if __name__ == '__main__':
             cls.rnd_state = np.random.RandomState(seed=13)
 
         def test_get_grid(self):
-            _col, _row = self.zone.get_grid_from_zone_location()
-            self.assertEquals(_col, 13)  # N
-            self.assertEquals(_row, 11)  # 12
-            self.assertEquals(self.zone.get_zone_location_from_grid((_col, _row)),
+            col, row = self.zone.get_grid_from_zone_location()
+            self.assertEquals(col, 13)  # N
+            self.assertEquals(row, 11)  # 12
+            self.assertEquals(self.zone.get_zone_location_from_grid((col, row)),
                               self.zone.name)
 
         def test_is_wall(self):

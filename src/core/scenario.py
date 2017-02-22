@@ -16,6 +16,7 @@ from collections import OrderedDict
 from stats import compute_logarithmic_mean_stddev
 from debris import Debris
 
+
 class Scenario(object):
 
     # lookup table mapping (0-7) to wind direction desc
@@ -69,24 +70,6 @@ class Scenario(object):
         self.flight_time_std = None
         self.debris_sources = None
 
-        # self._file_dmg_freq_by_conn_type = None
-        #
-        # self._file_house_cpi = None  #
-        # self._file_wind_debris = None
-        # self.file_dmg_idx = None
-        # self.file_dmg_map_by_conn_type = None
-        # self.file_frag = None
-        # self._file_water = None
-        # self.file_dmg_pct_by_conn_type = None
-        # self.file_dmg_area_by_conn_grp = None
-        # self.file_repair_cost_by_conn_grp = None
-        # self.file_dmg_by_conn = None
-        # self.file_strength_by_conn = None
-        # self.file_dead_load_by_conn = None
-        # self.file_dmg_dist_by_conn = None
-        # self.file_rnd_parameters = None
-        # self.file_eff_area_by_zone = None
-
         # house data
         self.df_house = None
         self.df_zones = None
@@ -100,6 +83,8 @@ class Scenario(object):
         self.df_conns = None
 
         self.dic_influences = None
+        self.dic_damage_factorings = None
+        self.dic_patches = None
 
         self.outfile_model = None
         self.outfile_group = None
@@ -209,10 +194,29 @@ class Scenario(object):
 
         self.df_groups = pd.read_csv(file_groups, index_col='group_name')
         self.df_types = pd.read_csv(file_types, index_col='type_name')
+
+        # change arithmetic mean, std to logarithmic mean, std
+        self.df_types['lognormal_strength'] = self.df_types.apply(
+            lambda row: compute_logarithmic_mean_stddev(row['strength_mean'],
+                                                        row['strength_std']),
+            axis=1)
+
+        self.df_types['lognormal_dead_load'] = self.df_types.apply(
+            lambda row: compute_logarithmic_mean_stddev(row['dead_load_mean'],
+                                                        row['dead_load_std']),
+            axis=1)
+
         self.df_conns = pd.read_csv(file_conns, index_col='conn_name')
 
         file_influences = os.path.join(self.path_datafile, 'influences.csv')
         self.dic_influences = self.read_influences(file_influences)
+
+        file_damage_factorings = os.path.join(self.path_datafile, 'damage_factorings.csv')
+        self.dic_damage_factorings = \
+            self.read_damage_factorings(file_damage_factorings)
+
+        file_influence_patches = os.path.join(self.path_datafile, 'influence_patches.csv')
+        self.dic_influence_patches = self.read_influences(file_influence_patches)
 
         self.parallel = conf.getboolean(key, 'parallel')
         self.regional_shielding_factor = conf.getfloat(
@@ -355,6 +359,25 @@ class Scenario(object):
             print 'output path is not assigned'
 
     @staticmethod
+    def read_damage_factorings(filename):
+        """
+
+        Args:
+            filename: influences.csv
+            connection_name, zone1_name, zone1_infl, (.....)
+        Returns: dictionary
+
+        """
+        _dic = dict()
+        with open(filename, 'r') as f:
+            next(f)  # skip the first line
+            for line in f:
+                fields = line.strip().rstrip(',').split(',')
+                _dic.setdefault(fields[0], []).append(fields[1])
+
+        return _dic
+
+    @staticmethod
     def read_influences(filename):
         """
 
@@ -384,6 +407,36 @@ class Scenario(object):
                             sub_key = value
                     elif key and sub_key:
                         _dic.setdefault(key, {})[sub_key] = float(value)
+
+        return _dic
+
+    @staticmethod
+    def read_influence_patches(filename):
+        """
+
+        Args:
+            filename: influence_patches.csv
+            damaged_conn, target_conn, conn_name, conn_infl, (.....)
+        Returns: dictionary
+
+        """
+        _dic = dict()
+        with open(filename, 'r') as f:
+            next(f)  # skip the first line
+            for line in f:
+                damaged_conn = None
+                target_conn = None
+                sub_key = None
+                fields = line.strip().rstrip(',').split(',')
+                for i, value in enumerate(fields):
+                    if i == 0:
+                        damaged_conn = int(value)
+                    elif i == 1:
+                        target_conn = int(value)
+                    elif i % 2 == 0:
+                        sub_key = int(value)
+                    elif damaged_conn and target_conn and sub_key:
+                        _dic.setdefault(damaged_conn, {}).setdefault(target_conn, {})[sub_key] = float(value)
 
         return _dic
 
@@ -466,91 +519,6 @@ class Scenario(object):
         except ValueError:
             print('8(i.e., RANDOM) is set for wind_dir_index by default')
             self._wind_dir_index = 8
-
-    @property
-    def file_house_cpi(self):
-        return self._file_house_cpi
-
-    @file_house_cpi.setter
-    def file_house_cpi(self, file_name):
-        self._file_house_cpi = open(file_name, 'w')
-        self._file_house_cpi.write('Simulated House #, Cpi Changed At\n')
-        self._file_house_cpi.close()
-        self._file_house_cpi = open(file_name, 'a')
-
-    @property
-    def file_wind_debris(self):
-        return self._file_wind_debris
-
-    @file_wind_debris.setter
-    def file_wind_debris(self, file_name):
-        self._file_wind_debris = open(file_name, 'w')
-        header = ('Wind Speed(m/s),% Houses Internally Pressurized,'
-                  '% Debris Damage Mean\n')
-        self._file_wind_debris.write(header)
-        self._file_wind_debris.close()
-        self._file_wind_debris = open(file_name, 'a')
-
-    @property
-    def file_dmg_freq_by_conn_type(self):
-        return self._file_dmg_freq_by_conn_type
-
-    @file_dmg_freq_by_conn_type.setter
-    def file_dmg_freq_by_conn_type(self, file_name):
-        self._file_dmg_freq_by_conn_type = open(file_name, 'w')
-        self._file_dmg_freq_by_conn_type.write('Number of Damaged Houses\n')
-        self._file_dmg_freq_by_conn_type.write('Num Houses,{:d}\n'.format(self.no_sims))
-        self._file_dmg_freq_by_conn_type.write('Wind Direction,{}\n'.format(
-            self.dirs[self.wind_dir_index]))
-        self._file_dmg_freq_by_conn_type.close()
-        self._file_dmg_freq_by_conn_type = open(file_name, 'a')
-
-    @property
-    def file_water(self):
-        return self._file_water
-
-    @file_water.setter
-    def file_water(self, file_name):
-        self._file_water = open(file_name, 'w')
-        header_ = ('V,Envelope DI,Water Damage,Damage Scenario,'
-                   'Water Damage Cost,WaterCosting\n')
-        self._file_water.write(header_)
-        self._file_water.close()
-        self._file_water = open(file_name, 'a')
-
-    '''
-    # used by main.pyw
-
-    def setOpt_SampleSeed(self, b=True):
-        self.flags['random_seed'] = b
-
-    def setOpt_DmgDistribute(self, b=True):
-        self.flags['dmg_distribute'] = b
-
-    def setOpt_DmgPlotVuln(self, b=True):
-        self.flags['dmg_plot_vuln'] = b
-
-    def setOpt_DmgPlotFragility(self, b=True):
-        self.flags['dmg_plot_fragility'] = b
-
-    def setOpt_Debris(self, b=True):
-        self.flags['debris'] = b
-
-    def setOpt_DebrisStaggeredSources(self, b=True):
-        self.flags['debris_staggered_sources'] = b
-
-    def setOpt_DiffShielding(self, b=True):
-        self.flags['diff_shielding'] = b
-
-    def setOpt_ConstructionLevels(self, b=True):
-        self.flags['construction_levels'] = b
-
-    def setOpt_WaterIngress(self, b=True):
-        self.flags['water_ingress'] = b
-
-    def setOpt_VulnFitLog(self, b=True):
-        self.flags['vul_fit_log'] = b
-    '''
 
     def storeToCSV(self, cfg_file):
 
