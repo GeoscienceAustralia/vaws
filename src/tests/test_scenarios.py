@@ -5,8 +5,8 @@ import unittest
 import os
 import numpy as np
 
-from core.simulation import HouseDamage
-from core.scenario import Scenario
+from vaws.simulation import HouseDamage
+from vaws.scenario import Scenario
 import logging
 
 

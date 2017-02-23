@@ -1,6 +1,6 @@
 from house_ui import Ui_Dialog
 import mixins 
-from core import scenario
+from vaws import scenario
 
 from PyQt4.QtCore import *
 from PyQt4.QtGui import *
@@ -47,7 +47,7 @@ class HouseViewer(QDialog, Ui_Dialog, mixins.PersistSizePosMixin):
         
 if __name__ == '__main__':
     import sys
-    from core import database
+    from vaws import database
     database.configure()
     s = scenario.Scenario(20, 40.0, 120.0, 60.0, '2')
     s.setHouseName('Group 4 House')

@@ -2,7 +2,7 @@ from zone_ui import Ui_Dialog
 import mixins 
 from PyQt4.QtCore import *
 from PyQt4.QtGui import *
-from core import scenario, house, zone
+from vaws import scenario, house, zone
 
 
 class ZoneBrowser(QDialog, Ui_Dialog, mixins.PersistSizePosMixin):
@@ -165,7 +165,7 @@ class ZoneBrowser(QDialog, Ui_Dialog, mixins.PersistSizePosMixin):
         
 if __name__ == '__main__':
     import sys
-    from core import database
+    from vaws import database
     database.configure()
     s = scenario.Scenario(20, 40.0, 120.0, 60.0, '2')
     s.setHouseName('Group 4 House')

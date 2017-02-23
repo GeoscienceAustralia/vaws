@@ -2,7 +2,7 @@ from connection_ui import Ui_Dialog
 import mixins 
 from PyQt4.QtCore import *
 from PyQt4.QtGui import *
-from core import damage, house, scenario
+from vaws import damage, house, scenario
 
 class ConnectionViewer(QDialog, Ui_Dialog, mixins.PersistSizePosMixin):
     def __init__(self, model_conn, model_patches, house_results, parent=None):
@@ -80,7 +80,7 @@ class ConnectionViewer(QDialog, Ui_Dialog, mixins.PersistSizePosMixin):
         
 if __name__ == '__main__':
     import sys
-    from core import database
+    from vaws import database
     database.configure()
     s = scenario.Scenario(20, 40.0, 120.0, 60.0, '2')
     s.setHouseName('Group 4 House')

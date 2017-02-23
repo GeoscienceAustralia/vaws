@@ -4,8 +4,8 @@ import unittest
 import os
 import filecmp
 
-from core.database import DatabaseManager
-from core.dbimport import import_model
+from vaws.database import DatabaseManager
+from vaws.dbimport import import_model
 
 
 class TestDBimport(unittest.TestCase):

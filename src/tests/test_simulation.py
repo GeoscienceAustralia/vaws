@@ -8,8 +8,8 @@ import filecmp
 import pandas as pd
 import matplotlib.pyplot as plt
 
-from core.simulation import simulate_wind_damage_to_house
-from core.scenario import Scenario
+from vaws.simulation import simulate_wind_damage_to_house
+from vaws.scenario import Scenario
 
 
 def check_file_consistency(file1, file2, **kwargs):

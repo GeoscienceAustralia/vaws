@@ -7,12 +7,12 @@ import numpy as np
 # import filecmp
 import pandas as pd
 
-from core.simulation import HouseDamage, run_simulation_per_house, \
+from vaws.simulation import HouseDamage, run_simulation_per_house, \
     simulate_wind_damage_to_houses
-# import core.database as database
-from core.scenario import Scenario
-# from core import zone
-# from core import engine
+# import vaws.database as database
+from vaws.scenario import Scenario
+# from vaws import zone
+# from vaws import engine
 
 
 def check_file_consistency(file1, file2, **kwargs):
