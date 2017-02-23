@@ -66,6 +66,9 @@ def simulation(house_damage, conn_capacity, wind_speeds):
 
 
 class TestScenario1(unittest.TestCase):
+    """
+    validate computed loads at selected connections
+    """
 
     @classmethod
     def setUpClass(cls):
@@ -79,20 +82,20 @@ class TestScenario1(unittest.TestCase):
 
         cls.house_damage = HouseDamage(cfg, seed=0)
 
-        # set up logging
-        file_logger = os.path.join(cls.path_output, 'log_test1.txt')
-        cls.logger = logging.getLogger('myapp')
-        hdlr = logging.FileHandler(file_logger, mode='w')
-        formatter = logging.Formatter('%(asctime)s %(levelname)s %(message)s')
-        hdlr.setFormatter(formatter)
-        cls.logger.addHandler(hdlr)
-        cls.logger.setLevel(logging.DEBUG)
+        # # set up logging
+        # file_logger = os.path.join(cls.path_output, 'log_test1.txt')
+        # cls.logger = logging.getLogger('myapp')
+        # hdlr = logging.FileHandler(file_logger, mode='w')
+        # formatter = logging.Formatter('%(asctime)s %(levelname)s %(message)s')
+        # hdlr.setFormatter(formatter)
+        # cls.logger.addHandler(hdlr)
+        # cls.logger.setLevel(logging.DEBUG)
 
-    @classmethod
-    def tearDown(cls):
-        handlers = cls.logger.handlers[:]
-        for handler in handlers:
-            handler.close()
+    # @classmethod
+    # def tearDown(cls):
+    #     handlers = cls.logger.handlers[:]
+    #     for handler in handlers:
+    #         handler.close()
 
     def test_conn_load(self):
 
@@ -120,11 +123,11 @@ class TestScenario1(unittest.TestCase):
 
         for _conn in self.house_damage.house.connections.itervalues():
 
-            _conn.dead_load = 0.000
             _conn.cal_load()
 
             try:
-                self.assertAlmostEqual(ref_load[_conn.name], _conn.load, places=3)
+                self.assertAlmostEqual(ref_load[_conn.name], _conn.load,
+                                       places=3)
             except KeyError:
                 pass
             except AssertionError:
@@ -133,6 +136,9 @@ class TestScenario1(unittest.TestCase):
 
 
 class TestScenario2(unittest.TestCase):
+    """
+    validate the sequence of sheeting failures
+    """
 
     @classmethod
     def setUpClass(cls):
@@ -146,20 +152,20 @@ class TestScenario2(unittest.TestCase):
 
         cls.house_damage = HouseDamage(cfg, seed=0)
 
-        # set up logging
-        file_logger = os.path.join(cls.path_output, 'log_test2.txt')
-        cls.logger = logging.getLogger('myapp')
-        hdlr = logging.FileHandler(file_logger, mode='w')
-        formatter = logging.Formatter('%(asctime)s %(levelname)s %(message)s')
-        hdlr.setFormatter(formatter)
-        cls.logger.addHandler(hdlr)
-        cls.logger.setLevel(logging.DEBUG)
+        # # set up logging
+        # file_logger = os.path.join(cls.path_output, 'log_test2.txt')
+        # cls.logger = logging.getLogger('myapp')
+        # hdlr = logging.FileHandler(file_logger, mode='w')
+        # formatter = logging.Formatter('%(asctime)s %(levelname)s %(message)s')
+        # hdlr.setFormatter(formatter)
+        # cls.logger.addHandler(hdlr)
+        # cls.logger.setLevel(logging.DEBUG)
 
-    @classmethod
-    def tearDown(cls):
-        handlers = cls.logger.handlers[:]
-        for handler in handlers:
-            handler.close()
+    # @classmethod
+    # def tearDown(cls):
+    #     handlers = cls.logger.handlers[:]
+    #     for handler in handlers:
+    #         handler.close()
 
     def test_damage_sheeting(self):
 
@@ -174,7 +180,7 @@ class TestScenario2(unittest.TestCase):
                          80.0: [18, 1]}
 
         simulation(self.house_damage, conn_capacity,
-                   wind_speeds=np.arange(40.0, 120, 5.0))
+                   wind_speeds=np.arange(40.0, 120, 1.0))
 
 
 class TestScenario3(unittest.TestCase):
@@ -639,6 +645,6 @@ class TestScenario14(unittest.TestCase):
                    wind_speeds=np.arange(40.0, 120, 1.0))
 
 if __name__ == '__main__':
-    #suite = unittest.TestLoader().loadTestsFromTestCase(TestScenario10)
-    #unittest.TextTestRunner(verbosity=2).run(suite)
-    unittest.main(verbosity=2)
+    suite = unittest.TestLoader().loadTestsFromTestCase(TestScenario2)
+    unittest.TextTestRunner(verbosity=2).run(suite)
+    #unittest.main(verbosity=2)
