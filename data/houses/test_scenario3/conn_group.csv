@@ -1,3 +1,0 @@
-Connection Group, Distribution Order,Distribution Direction,Damage Scenario Name,TriggerCollapseAt,PatchDistribution,SetZoneToZero,WaterIngressOrder
-sheeting,1,col,Loss of roof sheeting,0,0,1,6
-batten,2,row,Loss of roof sheeting & purlins,0,0,0,7

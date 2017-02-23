@@ -142,6 +142,7 @@ class House(object):
 
                     _group.damage_grid[_conn.grid] = 0  # intact
                     costing_area_by_group += _type.costing_area
+                    _group.conn_by_grid[_conn.grid] = _conn
 
                     # linking connections either zones or connections
                     if _conn.group_name == 'sheeting':
@@ -405,10 +406,7 @@ if __name__ == '__main__':
             self.assertEqual(self.house.groups['sheeting'].dist_dir, 'col')
             self.assertEqual(self.house.groups['batten'].dist_dir, 'row')
 
-            # self.assertEqual(self.house.groups[1].dist_ord, 1)
-            # self.assertEqual(self.house.groups[1].dist_by_col, True)
-            # self.assertEqual(self.house.groups[1].primary_dir, self.house.cols)
-            # self.assertEqual(self.house.groups[1].secondary_dir, self.house.rows)
+            self.assertEqual(self.house.groups['sheeting'].dist_order, 1)
 
             # check identity
             for id_type, _type in self.house.groups['sheeting'].types.iteritems():
@@ -450,22 +448,6 @@ if __name__ == '__main__':
                               'sheeting', 'batten', 'battenend', 'batteneave',
                               'battencorner'}, _types)
             self.assertEqual(set(range(1, 61)), _conns)
-
-        # def test_conn_by_grid(self):
-        #
-        #     cfg = Scenario(cfg_file='../scenarios/carl1_dmg_dist_on_no_wall_no_debris_no_water.cfg')
-        #     rnd_state = np.random.RandomState(1)
-        #     house = House(cfg, rnd_state)
-        #
-        #     # zone loc: A1
-        #
-        #     # sheeting: 4
-        #     self.assertEqual(house.conn_by_grid[(0, 0)][4].id, 783)
-        #     self.assertEqual(house.conn_by_grid[(0, 0)][4].name, '1')
-        #
-        #     # batten: 5
-        #     self.assertEqual(house.conn_by_grid[(0, 0)][5].id, 963)
-        #     self.assertEqual(house.conn_by_grid[(0, 0)][5].name, '181')
 
     suite = unittest.TestLoader().loadTestsFromTestCase(MyTestCase)
     unittest.TextTestRunner(verbosity=2).run(suite)

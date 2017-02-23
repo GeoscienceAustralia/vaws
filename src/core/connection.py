@@ -52,8 +52,6 @@ class Connection(object):
 
         self._grid = None  # zero-based col, row index
 
-        # self._dist_by_col = None
-
     @property
     def lognormal_strength(self):
         return self._lognormal_strength
@@ -231,8 +229,8 @@ class Connection(object):
             if _id in self.influences:
                 self.influences[_id].coeff += updated_coeff
             else:
-                self.influences.update({_id: Influence({'coeff': updated_coeff,
-                                                        'id': _id})})
+                self.influences.update(
+                    {_id: Influence(infl_coeff=updated_coeff, infl_name=_id)})
                 self.influences[_id].source = _infl.source
 
         # logging.debug('influences of {}:{:.2f}'.format(self.name,

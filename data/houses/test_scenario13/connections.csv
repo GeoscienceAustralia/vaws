@@ -1,4 +1,4 @@
-conn_name,conn_type,zone-loc,edge
+conn_name,type_name,zone_loc,edge
 1,sheetinggable,A1,2
 2,sheeting,B1,2
 3,sheeting,C1,2
