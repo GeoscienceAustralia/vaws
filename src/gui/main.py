@@ -14,7 +14,6 @@ from core import damage, scenario, house, version, terrain, database, debris, st
 from mixins import PersistSizePosMixin, setupTable, finiTable 
 
 myapp = None
-db = None
 
 def scenarioDICallback(V, di, percLoops):
     myapp.statusProgressBar.setValue(percLoops)
@@ -872,10 +871,8 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
                     fig.canvas.draw()
                     plt.show()    
         
-def run_gui(dbpath='../model.db'):
+def run_gui():
     logger.configure(logger.LOGGING_NONE)
-    global db
-    db = database.configure(dbpath)
     app = QApplication(sys.argv)
     app.setOrganizationName("Geoscience Australia")
     app.setOrganizationDomain("ga.gov.au")

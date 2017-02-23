@@ -20,8 +20,6 @@ import debris
 import wateringress
 import engine
 import house
-from house import zoneByLocationMap, connByZoneTypeMap, ctgMap, \
-    connByTypeGroupMap, inflZonesByConn, connByTypeMap, connByIDMap, zoneByIDMap
 
 from gui.output import plot_fitted_curve, plot_wall_damage_show
 

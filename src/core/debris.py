@@ -15,13 +15,6 @@ from shapely.geometry import Point, Polygon, LineString
 from shapely.affinity import rotate
 from shapely.ops import cascaded_union
 
-# FIXME!!! mapping wind direciton to facing wall will provided as an input
-# lookup table mapping wind direction (1-8) to list of front facing wall
-# directions
-# facing = {1: [1], 2: [1, 3], 3: [3], 4: [3, 5], 5: [5], 6: [5, 7], 7: [7],
-#           8: [1, 7]}
-
-
 class Debris(object):
 
     param1_by_type = {'Compact': 0.2060, 'Sheet': 0.072, 'Rod': 0.0723}

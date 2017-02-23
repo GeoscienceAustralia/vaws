@@ -10,4 +10,4 @@ if hasattr(sys, "frozen"):
 	import customboot
 	
 if __name__ == '__main__':
-	gui.main.run_gui('./src/model.db')
+	gui.main.run_gui()
