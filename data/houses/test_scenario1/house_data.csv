@@ -1,2 +1,2 @@
-Name,Replace_Cost,Height,cpe_coeff_V,cpe_shape_K,structure_cpe_coeff_V,length,Width,RoofColumns,RoofRows
+Name,replace_cost,height,cpe_cov,cpe_k,cpe_str_cov,length,width,roof_cols,roof_rows
 Test1,3357.6,4.5,0.12,0.1,0.07,4.05,4.5,5,6

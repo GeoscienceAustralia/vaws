@@ -1,0 +1,2 @@
+group_name,dist_order,dist_dir,damage_scenario,trigger_collapse_at,patch_dist,set_zone_to_zero,water_ingress_order
+sheeting,1,col,Loss of roof sheeting,0,0,1,6

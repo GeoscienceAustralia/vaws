@@ -37,7 +37,7 @@ def simulation(house_damage, conn_capacity, wind_speeds):
         for _zone in house_damage.house.zones.itervalues():
             # _zone.cpe = -0.1
             # _zone.cpi_alpha = 0.0
-            _zone.cpe = _zone.cpe_mean[0]
+            _zone.cpe = _zone.cpe_mean[wind_dir_index]
 
             _zone.calc_zone_pressures(wind_dir_index,
                                       cpi,
@@ -124,12 +124,12 @@ class TestScenario1(unittest.TestCase):
             _conn.cal_load()
 
             try:
-                self.assertAlmostEqual(ref_load[_conn.id], _conn.load, places=3)
+                self.assertAlmostEqual(ref_load[_conn.name], _conn.load, places=3)
             except KeyError:
                 pass
             except AssertionError:
                 print('{} is different from {} for conn #{}'.format(
-                    ref_load[_conn.id], _conn.load, _conn.id))
+                    ref_load[_conn.name], _conn.load, _conn.id))
 
 
 class TestScenario2(unittest.TestCase):
@@ -387,10 +387,9 @@ class TestScenario8(unittest.TestCase):
         cls.path_output = os.path.join(path, 'output')
 
         cfg = Scenario(
-            cfg_file=os.path.join(path, '../../scenarios/test_scenario7.cfg'),
+            cfg_file=os.path.join(path, '../../scenarios/test_scenario8.cfg'),
             output_path=cls.path_output)
 
-        cfg.db_file = os.path.join(path, '../../dbs/test_scenario8.db')
         cls.house_damage = HouseDamage(cfg, seed=0)
 
         # set up logging
@@ -427,10 +426,9 @@ class TestScenario9(unittest.TestCase):
         cls.path_output = os.path.join(path, 'output')
 
         cfg = Scenario(
-            cfg_file=os.path.join(path, '../../scenarios/test_scenario7.cfg'),
+            cfg_file=os.path.join(path, '../../scenarios/test_scenario9.cfg'),
             output_path=cls.path_output)
 
-        cfg.db_file = os.path.join(path, '../../dbs/test_scenario9.db')
         cls.house_damage = HouseDamage(cfg, seed=0)
 
         # set up logging
@@ -465,10 +463,9 @@ class TestScenario10(unittest.TestCase):
         cls.path_output = os.path.join(path, 'output')
 
         cfg = Scenario(
-            cfg_file=os.path.join(path, '../../scenarios/test_scenario7.cfg'),
+            cfg_file=os.path.join(path, '../../scenarios/test_scenario10.cfg'),
             output_path=cls.path_output)
 
-        cfg.db_file = os.path.join(path, '../../dbs/test_scenario10.db')
         cls.house_damage = HouseDamage(cfg, seed=0)
 
         # set up logging
@@ -504,7 +501,6 @@ class TestScenario11(unittest.TestCase):
             cfg_file=os.path.join(path, '../../scenarios/test_scenario11.cfg'),
             output_path=cls.path_output)
 
-        cfg.db_file = os.path.join(path, '../../dbs/test_scenario11.db')
         cls.house_damage = HouseDamage(cfg, seed=0)
 
         # set up logging
@@ -539,10 +535,9 @@ class TestScenario12(unittest.TestCase):
         cls.path_output = os.path.join(path, 'output')
 
         cfg = Scenario(
-            cfg_file=os.path.join(path, '../../scenarios/test_scenario11.cfg'),
+            cfg_file=os.path.join(path, '../../scenarios/test_scenario12.cfg'),
             output_path=cls.path_output)
 
-        cfg.db_file = os.path.join(path, '../../dbs/test_scenario12.db')
         cls.house_damage = HouseDamage(cfg, seed=0)
 
         # set up logging
@@ -578,10 +573,9 @@ class TestScenario13(unittest.TestCase):
         cls.path_output = os.path.join(path, 'output')
 
         cfg = Scenario(
-            cfg_file=os.path.join(path, '../../scenarios/test_scenario11.cfg'),
+            cfg_file=os.path.join(path, '../../scenarios/test_scenario13.cfg'),
             output_path=cls.path_output)
 
-        cfg.db_file = os.path.join(path, '../../dbs/test_scenario13.db')
         cls.house_damage = HouseDamage(cfg, seed=0)
 
         # set up logging
@@ -616,10 +610,9 @@ class TestScenario14(unittest.TestCase):
         cls.path_output = os.path.join(path, 'output')
 
         cfg = Scenario(
-            cfg_file=os.path.join(path, '../../scenarios/test_scenario11.cfg'),
+            cfg_file=os.path.join(path, '../../scenarios/test_scenario14.cfg'),
             output_path=cls.path_output)
 
-        cfg.db_file = os.path.join(path, '../../dbs/test_scenario14.db')
         cls.house_damage = HouseDamage(cfg, seed=0)
 
         # set up logging
@@ -646,6 +639,6 @@ class TestScenario14(unittest.TestCase):
                    wind_speeds=np.arange(40.0, 120, 1.0))
 
 if __name__ == '__main__':
-    suite = unittest.TestLoader().loadTestsFromTestCase(TestScenario6)
-    unittest.TextTestRunner(verbosity=2).run(suite)
-    # unittest.main(verbosity=2)
+    #suite = unittest.TestLoader().loadTestsFromTestCase(TestScenario10)
+    #unittest.TextTestRunner(verbosity=2).run(suite)
+    unittest.main(verbosity=2)

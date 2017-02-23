@@ -1,5 +1,0 @@
-Conn type,strength_mean,strength_std dev,deadload_mean,deadload_stddev,group_name,costing_area
-sheetinggable,1.54,0.001,0.001,0.001,sheeting,0.405
-sheetingeave,4.62,0.001,0.001,0.001,sheeting,0.405
-sheetingcorner,2.31,0.001,0.001,0.001,sheeting,0.225
-sheeting,2.695,0.001,0.001,0.001,sheeting,0.81
