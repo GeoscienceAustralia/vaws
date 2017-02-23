@@ -22,7 +22,7 @@ from PyQt4.QtGui import QSizePolicy, QLabel, QLineEdit, QVBoxLayout, QWidget
 from PyQt4.QtCore import QSize, QString
 
 from matplotlib.backends.backend_qt4agg import FigureCanvasQTAgg as Canvas
-from matplotlib.backends.backend_qt4agg import NavigationToolbar2QTAgg as NavigationToolbar
+from matplotlib.backends.backend_qt4agg import NavigationToolbar2QT as NavigationToolbar
 from matplotlib.figure import Figure
 
 from matplotlib import rcParams

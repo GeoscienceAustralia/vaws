@@ -4,7 +4,7 @@ echo "Running some sims"
 
 for i in {1..1}
 do
-	python damage.py -s ../scenarios/carl1.csv --verbose
+	python simulation.py -s ../../scenarios/test_scenario1.cfg -o ../../outputs/output
 	echo $i
 done
 

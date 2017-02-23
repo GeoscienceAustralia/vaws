@@ -1,7 +1,8 @@
 '''
     output.py - output module, postprocess and plot display engine
 '''
-from matplotlib import cm, mpl
+from matplotlib import cm
+import matplotlib as mpl
 from vaws import version, zone, house
 mplDict = None
         
