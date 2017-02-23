@@ -9,8 +9,8 @@ from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.interfaces import PoolListener
 from stats import compute_logarithmic_mean_stddev
 
-# import sys
-# import os
+import sys
+import os
 
 Base = declarative_base()
 
@@ -23,19 +23,19 @@ class ForeignKeysListener(PoolListener):
             print 'row: ', row
 
 
-# def configure(db_file=None, verbose=False, flag_make=False):
-#
-#     if not db_file:
-#         path_, _ = os.path.split(os.path.abspath(__file__))
-#         db_file = os.path.abspath(os.path.join(path_, '../model.db'))
-#
-#     if not (flag_make or os.path.exists(db_file)):
-#         msg = 'Error: database file {} not found'.format(db_file)
-#         sys.exit(msg)
-#
-#     print 'model db is loaded from or created to : {}'.format(db_file)
-#
-#     return DatabaseManager(db_file, verbose)
+def configure(db_file=None, verbose=False, flag_make=False):
+
+    if not db_file:
+        path_, _ = os.path.split(os.path.abspath(__file__))
+        db_file = os.path.abspath(os.path.join(path_, '../model.db'))
+
+    if not (flag_make or os.path.exists(db_file)):
+        msg = 'Error: database file {} not found'.format(db_file)
+        sys.exit(msg)
+
+    print 'model db is loaded from or created to : {}'.format(db_file)
+
+    return DatabaseManager(db_file, verbose)
 
 
 # def _add_process_guards(engine):
