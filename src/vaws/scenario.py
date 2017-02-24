@@ -19,9 +19,9 @@ from debris import Debris
 
 class Scenario(object):
 
-    # lookup table mapping (0-7) to wind direction desc
-    dirs = ['S', 'SW', 'W', 'NW', 'N', 'NE', 'E', 'SE']
-    terrain_categories = ['2', '2.5', '3', '5']
+    # lookup table mapping (0-7) to wind direction (8: random)
+    wind_dir = ['S', 'SW', 'W', 'NW', 'N', 'NE', 'E', 'SE']
+    terrain_categories = ['2', '2.5', '3', 'non_cyclonic']
     heights = [3.0, 5.0, 7.0, 10.0, 12.0, 15.0, 17.0, 20.0, 25.0, 30.0]
 
     house_attributes = ['replace_cost', 'height', 'cpe_cov', 'cpe_k',
@@ -38,6 +38,7 @@ class Scenario(object):
     def __init__(self, cfg_file=None, output_path=None):
 
         self.cfg_file = cfg_file
+        self.path_cfg = os.path.dirname(os.path.realpath(cfg_file))
         self.output_path = output_path
 
         self.no_sims = None
@@ -47,7 +48,7 @@ class Scenario(object):
         self.speeds = None
         self.idx_speeds = None
         self.terrain_category = None
-        self._wind_profiles = None
+        self.wind_profile = None
         self._debris_regions = None
         self._debris_types = None
 
@@ -81,6 +82,8 @@ class Scenario(object):
         self.df_groups = None
         self.df_types = None
         self.df_conns = None
+
+        self.df_damage_costing = None
 
         self.dic_influences = None
         self.dic_damage_factorings = None
@@ -141,28 +144,25 @@ class Scenario(object):
         conf.optionxform = str
         conf.read(self.cfg_file)
 
-        path_cfg_file = os.path.dirname(os.path.realpath(self.cfg_file))
-
         key = 'main'
         self.no_sims = conf.getint(key, 'no_simulations')
         self.wind_speed_min = conf.getfloat(key, 'wind_speed_min')
         self.wind_speed_max = conf.getfloat(key, 'wind_speed_max')
         self.wind_speed_num_steps = conf.getint(key, 'wind_speed_steps')
-        try:
-            self.wind_profiles = conf.get(key, 'path_wind_profiles')
-        except ConfigParser.NoOptionError:
-            self.wind_profiles = '../data'
-
         self.terrain_category = conf.get(key, 'terrain_cat')
 
-        self.speeds = np.linspace(self.wind_speed_min,
-                                  self.wind_speed_max,
-                                  self.wind_speed_num_steps)
+        try:
+            path_wind_profiles = conf.get(key, 'path_wind_profiles')
+        except ConfigParser.NoOptionError:
+            path_wind_profiles = '../data/gust_envelope_profiles'
+        self.set_wind_profile(path_wind_profiles)
+
+        self.speeds = np.linspace(start=self.wind_speed_min,
+                                  stop=self.wind_speed_max,
+                                  num=self.wind_speed_num_steps)
 
         self.idx_speeds = range(self.wind_speed_num_steps)
-
-        self.house_name = conf.get(key, 'house_name')
-        self.path_datafile = os.path.join(path_cfg_file,
+        self.path_datafile = os.path.join(self.path_cfg,
                                           conf.get(key, 'path_datafile'))
         # house data files
 
@@ -178,15 +178,28 @@ class Scenario(object):
                                             'zones_edge.csv')
 
         self.df_house = pd.read_csv(file_house)
-        self.df_zones = pd.read_csv(file_zones, index_col='name')
+        self.df_zones = pd.read_csv(file_zones, index_col='name',
+                                    dtype={'cpi_alpha': float,
+                                           'area': float,
+                                           'wall_dir': int})
+
+        names_ = ['name'] + range(8)
         self.df_zones_cpe_mean = pd.read_csv(file_zones_cpe_mean,
-                                             index_col='name')
+                                             names=names_,
+                                             index_col='name',
+                                             skiprows=1)
         self.df_zones_cpe_str_mean = pd.read_csv(file_zones_cpe_str_mean,
-                                                 index_col='name')
+                                                 names=names_,
+                                                 index_col='name',
+                                                 skiprows=1)
         self.df_zones_cpe_eave_mean = pd.read_csv(file_zones_cpe_eave_mean,
-                                                  index_col='name')
+                                                  names=names_,
+                                                  index_col='name',
+                                                  skiprows=1)
         self.df_zones_edge = pd.read_csv(file_zones_edge,
-                                         index_col='name')
+                                         names=names_,
+                                         index_col='name',
+                                         skiprows=1)
 
         file_groups = os.path.join(self.path_datafile, 'conn_groups.csv')
         file_types = os.path.join(self.path_datafile, 'conn_types.csv')
@@ -194,6 +207,14 @@ class Scenario(object):
 
         self.df_groups = pd.read_csv(file_groups, index_col='group_name')
         self.df_types = pd.read_csv(file_types, index_col='type_name')
+
+        file_damage_costing = os.path.join(self.path_datafile,
+                                           'damage_costing_data.csv')
+        try:
+            self.df_damage_costing = pd.read_csv(file_damage_costing,
+                                             index_col='name')
+        except ValueError:
+            print('Error in reading {}'.format(file_damage_costing))
 
         # change arithmetic mean, std to logarithmic mean, std
         self.df_types['lognormal_strength'] = self.df_types.apply(
@@ -207,6 +228,8 @@ class Scenario(object):
             axis=1)
 
         self.df_conns = pd.read_csv(file_conns, index_col='conn_name')
+        self.df_conns['group_name'] = self.df_types.loc[
+            self.df_conns['type_name'], 'group_name'].values
 
         file_influences = os.path.join(self.path_datafile, 'influences.csv')
         self.dic_influences = self.read_influences(file_influences)
@@ -454,24 +477,21 @@ class Scenario(object):
         else:
             self._region_name = value
 
-    @property
-    def wind_profiles(self):
-        return self._wind_profiles
+    def set_wind_profile(self, path_wind_profiles):
 
-    @wind_profiles.setter
-    def wind_profiles(self, path_wind_profiles):
+        _path = os.path.join(self.path_cfg, path_wind_profiles)
 
-        path_cfg_file = os.path.dirname(os.path.realpath(self.cfg_file))
-        _path = os.path.join(path_cfg_file, path_wind_profiles)
+        try:
+            float(self.terrain_category)
+        except ValueError:
+            _file = 'non_cyclonic.csv'
+        else:
+            _file = 'cyclonic_terrain_cat{}.csv'.format(self.terrain_category)
 
-        self._wind_profiles = dict()
-
-        for item in self.terrain_categories:
-            file_ = os.path.join(_path, 'mzcat_terrain_{}.csv'.format(item))
-            self._wind_profiles[item] = pd.read_csv(file_,
-                                                    skiprows=1,
-                                                    header=None,
-                                                    index_col=0).to_dict('list')
+        self.wind_profile = pd.read_csv(os.path.join(_path, _file),
+                                        skiprows=1,
+                                        header=None,
+                                        index_col=0).to_dict('list')
 
     @property
     def debris_regions(self):
@@ -515,7 +535,7 @@ class Scenario(object):
     @wind_dir_index.setter
     def wind_dir_index(self, wind_dir_str):
         try:
-            self._wind_dir_index = Scenario.dirs.index(wind_dir_str.upper())
+            self._wind_dir_index = Scenario.wind_dir.index(wind_dir_str.upper())
         except ValueError:
             print('8(i.e., RANDOM) is set for wind_dir_index by default')
             self._wind_dir_index = 8
@@ -599,61 +619,58 @@ if __name__ == '__main__':
 
     import unittest
 
-    path_, _ = os.path.split(os.path.abspath(__file__))
+    path = '/'.join(__file__.split('/')[:-1])
 
     class MyTestCase(unittest.TestCase):
 
         @classmethod
         def setUpClass(cls):
 
-            cls.output_path = './output'
-            cls.scenario_filename1 = os.path.abspath(os.path.join(path_,
-                                                     '../scenarios/carl1.cfg'))
+            # cls.output_path = './output'
+            scenario_filename1 = os.path.abspath(
+                os.path.join(path, '../../scenarios/test_scenario1.cfg'))
 
-            cls.scenario_filename2 = os.path.abspath(os.path.join(path_,
-                                                     '../scenarios/carl2.cfg'))
+            cls.cfg = Scenario(cfg_file=scenario_filename1)
 
-            cls.scenario_filename3 = os.path.abspath(os.path.join(path_,
-                                                     '../test/temp.cfg'))
+            # cls.scenario_filename3 = os.path.abspath(os.path.join(path,
+            #                                          '../../scenarios/test.cfg'))
 
-        def test_debrisopt(self):
-            s1 = Scenario(cfg_file=self.scenario_filename1)
+        def test_debris(self):
             # s1.storeToCSV(self.file3)
-            self.assertEquals(s1.flags['debris'], True)
+            self.assertEquals(self.cfg.flags['debris'], False)
 
         def test_wind_directions(self):
-            s = Scenario(cfg_file=self.scenario_filename1)
-            s.wind_dir_index = 'Random'
-            self.assertEqual(s.wind_dir_index, 8)
+            self.cfg.wind_dir_index = 'Random'
+            self.assertEqual(self.cfg.wind_dir_index, 8)
 
-            s.wind_dir_index = 'SW'
-            self.assertEqual(s.wind_dir_index, 1)
+            self.cfg.wind_dir_index = 'SW'
+            self.assertEqual(self.cfg.wind_dir_index, 1)
 
-        def test_wateringress(self):
-            s1 = Scenario(cfg_file=self.scenario_filename1)
-            self.assertTrue(s1.flags['water_ingress'])
-            s1.flags['water_ingress'] = False
-            self.assertFalse(s1.flags['water_ingress'])
+        def test_water_ingress(self):
+            self.assertFalse(self.cfg.flags['water_ingress'])
+            self.cfg.flags['water_ingress'] = True
+            self.assertTrue(self.cfg.flags['water_ingress'])
 
         def test_ctgenables(self):
-            s = Scenario(cfg_file=self.scenario_filename1)
-            self.assertTrue(s.flags['conn_type_group_{}'.format('rafter')])
-            s.setOptCTGEnabled('batten', False)
-            self.assertFalse(s.flags['conn_type_group_{}'.format('batten')])
+            self.assertTrue(
+                self.cfg.flags['conn_type_group_{}'.format('sheeting')])
+            self.cfg.setOptCTGEnabled('batten', False)
+            self.assertFalse(
+                self.cfg.flags['conn_type_group_{}'.format('batten')])
 
-            s.storeToCSV(self.scenario_filename3)
-            s2 = Scenario(cfg_file=self.scenario_filename3)
-            self.assertFalse(s2.flags['conn_type_group_{}'.format('batten')])
-            self.assertTrue(s2.flags['conn_type_group_{}'.format('sheeting')])
+            # s.storeToCSV(self.scenario_filename3)
+            # s2 = Scenario(cfg_file=self.scenario_filename3)
+            # self.assertFalse(s2.flags['conn_type_group_{}'.format('batten')])
+            # self.assertTrue(s2.flags['conn_type_group_{}'.format('sheeting')])
 
-        def test_construction_levels(self):
-            s1 = Scenario(cfg_file=self.scenario_filename1)
-            s1.setConstructionLevel('low', 0.33, 0.42, 0.78)
+        # def test_construction_levels(self):
+        #     s1 = Scenario(cfg_file=self.scenario_filename1)
+        #     s1.setConstructionLevel('low', 0.33, 0.42, 0.78)
 
-            s1.storeToCSV(self.scenario_filename3)
-            s = Scenario(cfg_file=self.scenario_filename3)
-            self.assertAlmostEquals(
-                s.construction_levels['low']['mean_factor'], 0.42)
+            # s1.storeToCSV(self.scenario_filename3)
+            # s = Scenario(cfg_file=self.scenario_filename3)
+            # self.assertAlmostEquals(
+            #     s.construction_levels['low']['mean_factor'], 0.42)
 
 
     suite = unittest.TestLoader().loadTestsFromTestCase(MyTestCase)

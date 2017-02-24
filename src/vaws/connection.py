@@ -17,26 +17,29 @@ from stats import compute_arithmetic_mean_stddev, sample_lognormal, \
 
 
 class Connection(object):
-    def __init__(self,
-                 conn_name=None):
+    def __init__(self, conn_name=None, **kwargs):
         """
 
         Args:
-            name:
+            conn_name:
         """
 
         assert isinstance(conn_name, int)
         self.name = conn_name
 
-        self.edge = None
-        self.type_name = None
-        self.zone_loc = None
+        default_attr = {'edge': None,
+                        'type_name': None,
+                        'zone_loc': None,
+                        'group_name': None}
 
-        self._group_name = None
+        default_attr.update(kwargs)
+        for key, value in default_attr.iteritems():
+            setattr(self, key, value)
+
         self._lognormal_strength = None
         self._lognormal_dead_load = None
-
         self._influences = None
+        self._grid = None  # zero-based col, row index
 
         self.strength = None
         self.dead_load = None
@@ -49,8 +52,6 @@ class Connection(object):
         self.distributed = None
 
         self.load = None
-
-        self._grid = None  # zero-based col, row index
 
     @property
     def lognormal_strength(self):
@@ -79,14 +80,14 @@ class Connection(object):
         assert isinstance(_tuple, tuple)
         self._grid = _tuple
 
-    @property
-    def group_name(self):
-        return self._group_name
-
-    @group_name.setter
-    def group_name(self, value):
-        assert isinstance(value, str)
-        self._group_name = value
+    # @property
+    # def group_name(self):
+    #     return self._group_name
+    #
+    # @group_name.setter
+    # def group_name(self, value):
+    #     assert isinstance(value, str)
+    #     self._group_name = value
 
     @property
     def influences(self):
@@ -238,19 +239,22 @@ class Connection(object):
 
 
 class ConnectionType(object):
-    def __init__(self, type_name=None):
+    def __init__(self, type_name=None, **kwargs):
         """
 
         Args:
-            inst: instance of database.ConnectionType
         """
-
+        assert isinstance(type_name, str)
         self.name = type_name
 
-        self.costing_area = None
-        self.lognormal_dead_load = None
-        self.lognormal_strength = None
-        self.group_name = None
+        default_attr = {'costing_area': None,
+                        'lognormal_dead_load': None,
+                        'lognormal_strength': None,
+                        'group_name': None}
+
+        default_attr.update(kwargs)
+        for key, value in default_attr.iteritems():
+            setattr(self, key, value)
 
         self._connections = None
         self.no_connections = None
@@ -268,14 +272,9 @@ class ConnectionType(object):
         assert isinstance(_dic, dict)
 
         self._connections = dict()
-
         for key, value in _dic.iteritems():
 
-            _conn = Connection(conn_name=key)
-
-            for att in ['edge', 'type_name', 'zone_loc']:
-                setattr(_conn, att, value[att])
-
+            _conn = Connection(conn_name=key, **value)
             _conn.lognormal_strength = self.lognormal_strength
             _conn.lognormal_dead_load = self.lognormal_dead_load
 
@@ -307,8 +306,7 @@ class ConnectionTypeGroup(object):
 
     use_struct_pz_for = ['rafter', 'piersgroup', 'wallracking']
 
-    def __init__(self,
-                 group_name=None):
+    def __init__(self, group_name=None, **kwargs):
         """
 
         Args:
@@ -317,13 +315,18 @@ class ConnectionTypeGroup(object):
 
         self.name = group_name
 
-        self.dist_order = None
-        self.dist_dir = None
-        self.damage_scenario = None
-        self.trigger_collapse_at = None
-        self.patch_dist = None
-        self.set_zone_to_zero = None
-        self.water_ingress_order = None
+        default_attr = {'dist_order': 1.0,
+                        'dist_dir': 0.0,
+                        'damage_scenario': 0,
+                        'trigger_collapse_at': dict(),
+                        'patch_dist': dict(),
+                        'set_zone_to_zero': dict(),
+                        'water_ingress_order': None}
+
+        default_attr.update(kwargs)
+        for key, value in default_attr.iteritems():
+            setattr(self, key, value)
+
         # self.costing_id = None
         # self.costing = Costing(inst.costing)
 
@@ -368,12 +371,7 @@ class ConnectionTypeGroup(object):
 
         self._types = dict()
         for key, value in _dic.iteritems():
-            _type = ConnectionType(type_name=key)
-
-            for att in ['costing_area', 'group_name', 'lognormal_strength',
-                        'lognormal_dead_load']:
-                setattr(_type, att, value[att])
-
+            _type = ConnectionType(type_name=key, **value)
             self._types[key] = _type
 
     @property

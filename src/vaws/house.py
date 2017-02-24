@@ -76,16 +76,17 @@ class House(object):
 
         for zone_name, item in self.cfg.df_zones.iterrows():
 
-            _zone = Zone(zone_name=zone_name)
+            dic_zone = item.to_dict()
+            dic_zone['cpe_mean'] = self.cfg.df_zones_cpe_mean.loc[
+                zone_name].to_dict()
+            dic_zone['cpe_str_mean'] = self.cfg.df_zones_cpe_str_mean.loc[
+                zone_name].to_dict()
+            dic_zone['cpe_eave_mean'] = self.cfg.df_zones_cpe_eave_mean.loc[
+                zone_name].to_dict()
+            dic_zone['is_roof_edge'] = self.cfg.df_zones_edge.loc[
+                zone_name].to_dict()
 
-            for att in self.cfg.zone_attributes:
-                setattr(_zone, att,  item[att])
-
-            for idx, _dir in enumerate(self.cfg.dirs):
-                _zone.cpe_mean[idx] = self.cfg.df_zones_cpe_mean.loc[zone_name, _dir]
-                _zone.cpe_str_mean[idx] = self.cfg.df_zones_cpe_str_mean.loc[zone_name, _dir]
-                _zone.cpe_eave_mean[idx] = self.cfg.df_zones_cpe_eave_mean.loc[zone_name, _dir]
-                _zone.is_roof_edge[idx] = self.cfg.df_zones_edge.loc[zone_name, _dir]
+            _zone = Zone(zone_name=zone_name, **dic_zone)
 
             _zone.sample_zone_pressure(
                 wind_dir_index=self.wind_orientation,
@@ -103,10 +104,7 @@ class House(object):
 
         for group_name, item in self.cfg.df_groups.iterrows():
 
-            _group = ConnectionTypeGroup(group_name=group_name)
-
-            for att in self.cfg.group_attributes:
-                setattr(_group, att, item[att])
+            _group = ConnectionTypeGroup(group_name=group_name, **item)
 
             _group.damage_grid = self.roof_cols, self.roof_rows
             costing_area_by_group = 0.0
@@ -133,10 +131,8 @@ class House(object):
                     _conn.sample_strength(mean_factor=self.str_mean_factor,
                                           cov_factor=self.str_cov_factor,
                                           rnd_state=self.rnd_state)
-
                     _conn.sample_dead_load(rnd_state=self.rnd_state)
 
-                    _conn.group_name = group_name
                     _conn.grid = self.zones[_conn.zone_loc].grid
                     _conn.influences = self.cfg.dic_influences[_conn.name]
 
@@ -194,7 +190,7 @@ class House(object):
 
         """
         self.profile = self.rnd_state.random_integers(1, 10)
-        _wind_profile = self.cfg.wind_profiles[self.cfg.terrain_category][self.profile]
+        _wind_profile = self.cfg.wind_profile[self.profile]
         self.mzcat = np.interp(self.height, self.cfg.heights, _wind_profile)
 
     def set_construction_level(self):

@@ -35,8 +35,7 @@ def simulation(house_damage, conn_capacity, wind_speeds):
         house_damage.calculate_qz_Ms(wind_speed)
 
         for _zone in house_damage.house.zones.itervalues():
-            # _zone.cpe = -0.1
-            # _zone.cpi_alpha = 0.0
+
             _zone.cpe = _zone.cpe_mean[wind_dir_index]
 
             _zone.calc_zone_pressures(wind_dir_index,
@@ -108,10 +107,7 @@ class TestScenario1(unittest.TestCase):
 
         for _zone in self.house_damage.house.zones.itervalues():
 
-            # _zone.cpe = -0.1
-            _zone.cpi_alpha = 0.0
             _zone.cpe = _zone.cpe_mean[0]
-
             _zone.calc_zone_pressures(wind_dir_index,
                                       cpi,
                                       qz,
@@ -645,6 +641,6 @@ class TestScenario14(unittest.TestCase):
                    wind_speeds=np.arange(40.0, 120, 1.0))
 
 if __name__ == '__main__':
-    suite = unittest.TestLoader().loadTestsFromTestCase(TestScenario2)
+    suite = unittest.TestLoader().loadTestsFromTestCase(TestScenario9)
     unittest.TextTestRunner(verbosity=2).run(suite)
     #unittest.main(verbosity=2)

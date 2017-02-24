@@ -7,7 +7,19 @@ group_string = 'group_name,dist_order,dist_dir,damage_scenario,trigger_collapse_
 type_string = 'type_name,strength_mean,strength_std,dead_load_mean,dead_load_std,group_name,costing_area'
 conn_string = 'conn_name,type_name,zone_loc,edge'
 house_string = 'name,replace_cost,height,cpe_cov,cpe_k,cpe_str_cov,length,width,roof_cols,roof_rows'
+damage_string = 'name,surface_area,envelope_repair_rate,envelope_factor_formula_type,envelope_coeff1,envelope_coeff2,envelope coeff3,internal_repair_rate,internal_factor_formula_type,internal_coeff1,internal_coeff2,internal_coeff3'
 
+dic_file_list = {'conn_group.csv': 'conn_groups.csv',
+                 'conn_type.csv': 'conn_types.csv',
+                 'connections.csv': 'connections.csv',
+                 'house_data.csv': 'house_data.csv',
+                 'damage_costing_data.csv': 'damage_costing.csv'}
+
+dic_string = {'conn_group.csv': group_string,
+              'conn_type.csv': type_string,
+              'connections.csv': conn_string,
+              'house_data.csv': house_string,
+              'damage_costing_data.csv': damage_string}
 
 def change_header(path_, filename, name_string, new_filename):
 
@@ -20,6 +32,12 @@ def change_header(path_, filename, name_string, new_filename):
     else:
         tmp.to_csv(os.path.join(path_, new_filename), index=False)
 
+def change_header_by_dir(path_):
+
+    for old_file, new_file in dic_file_list.iteritems():
+        change_header(path_, old_file, dic_string[old_file], new_file)
+
+
 path_ = '/Users/hyeuk/Projects/windtunnel/data/houses/test_scenario3'
 
 num_list = range(4, 15)
@@ -27,19 +45,7 @@ num_list.pop(2)
 
 for i in num_list:
     path_ = './test_scenario' + str(i)
-    dic_file_list = {'conn_group.csv': 'conn_groups.csv',
-                     'conn_type.csv': 'conn_types.csv',
-                     'connections.csv': 'connections.csv',
-                     'house_data.csv': 'house_data.csv'}
-
-    dic_string = {'conn_group.csv': group_string,
-                     'conn_type.csv': type_string,
-                     'connections.csv': conn_string,
-                     'house_data.csv': house_string}
-
-    for old_file, new_file in dic_file_list.iteritems():
-        change_header(path_, old_file, dic_string[old_file], new_file)
-
+    change_header_by_dir(path_)
 
 # zones.csv
 

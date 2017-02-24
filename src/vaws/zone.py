@@ -13,8 +13,7 @@ from stats import sample_gev
 
 
 class Zone(object):
-    def __init__(self,
-                 zone_name=None):
+    def __init__(self, zone_name=None, **kwargs):
         """
         Args:
             zone_name
@@ -23,16 +22,19 @@ class Zone(object):
         assert isinstance(zone_name, str)
         self.name = zone_name
 
-        self.area = None
-        self.cpi_alpha = None
-        self.wall_dir = None  # FIXME!!! NOT SURE IF IT IS USED OR NOT
+        default_attr = {'area': 1.0,
+                        'cpi_alpha': 0.0,
+                        'wall_dir': 0,
+                        'cpe_mean': dict(),
+                        'cpe_str_mean': dict(),
+                        'cpe_eave_mean': dict(),
+                        'is_roof_edge': dict()}
+
+        default_attr.update(kwargs)
+        for key, value in default_attr.iteritems():
+            setattr(self, key, value)
 
         self.grid = self.get_grid_from_zone_location()
-
-        self.cpe_mean = dict()
-        self.cpe_str_mean = dict()
-        self.cpe_eave_mean = dict()
-        self.is_roof_edge = dict()
 
         self.distributed = None
         self.cpe = None
