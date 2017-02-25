@@ -49,21 +49,21 @@ class Scenario(object):
         self.idx_speeds = None
         self.terrain_category = None
         self.wind_profile = None
-        self._debris_regions = None
-        self._debris_types = None
+        self.debris_regions = None
+        self.debris_types = None
 
         self.house_name = None
         self.path_datafile = None
         self.table_house = None
         self.parallel = None
-        self._region_name = None
+        self.region_name = None
         self.construction_levels = OrderedDict()
         self.fragility_thresholds = None
 
         self.source_items = None
         self.regional_shielding_factor = None
         self.building_spacing = None
-        self._wind_dir_index = None
+        self.wind_dir_index = None
         self.debris_radius = None
         self.debris_angle = None
         self.debris_extension = None
@@ -83,11 +83,11 @@ class Scenario(object):
         self.df_types = None
         self.df_conns = None
 
-        self.df_damage_costing = None
-
         self.dic_influences = None
+        self.dic_influence_patches = None
+
+        self.df_damage_costing = None
         self.dic_damage_factorings = None
-        self.dic_patches = None
 
         self.outfile_model = None
         self.outfile_group = None
@@ -145,107 +145,30 @@ class Scenario(object):
         conf.read(self.cfg_file)
 
         key = 'main'
+        self.parallel = conf.getboolean(key, 'parallel')
         self.no_sims = conf.getint(key, 'no_simulations')
+
         self.wind_speed_min = conf.getfloat(key, 'wind_speed_min')
         self.wind_speed_max = conf.getfloat(key, 'wind_speed_max')
         self.wind_speed_num_steps = conf.getint(key, 'wind_speed_steps')
-        self.terrain_category = conf.get(key, 'terrain_cat')
+        self.speeds = np.linspace(start=self.wind_speed_min,
+                                  stop=self.wind_speed_max,
+                                  num=self.wind_speed_num_steps)
+        self.idx_speeds = range(self.wind_speed_num_steps)
+        self.set_wind_dir_index(conf.get(key, 'wind_fixed_dir'))
+        self.regional_shielding_factor = conf.getfloat(
+            key, 'regional_shielding_factor')
 
+        self.set_terrain_category(conf.get(key, 'terrain_cat'))
         try:
             path_wind_profiles = conf.get(key, 'path_wind_profiles')
         except ConfigParser.NoOptionError:
             path_wind_profiles = '../data/gust_envelope_profiles'
         self.set_wind_profile(path_wind_profiles)
 
-        self.speeds = np.linspace(start=self.wind_speed_min,
-                                  stop=self.wind_speed_max,
-                                  num=self.wind_speed_num_steps)
-
-        self.idx_speeds = range(self.wind_speed_num_steps)
         self.path_datafile = os.path.join(self.path_cfg,
                                           conf.get(key, 'path_datafile'))
-        # house data files
-
-        file_house = os.path.join(self.path_datafile, 'house_data.csv')
-        file_zones = os.path.join(self.path_datafile, 'zones.csv')
-        file_zones_cpe_mean = os.path.join(self.path_datafile,
-                                                'zones_cpe_mean.csv')
-        file_zones_cpe_str_mean = os.path.join(self.path_datafile,
-                                                    'zones_cpe_str_mean.csv')
-        file_zones_cpe_eave_mean = os.path.join(self.path_datafile,
-                                                     'zones_cpe_eave_mean.csv')
-        file_zones_edge = os.path.join(self.path_datafile,
-                                            'zones_edge.csv')
-
-        self.df_house = pd.read_csv(file_house)
-        self.df_zones = pd.read_csv(file_zones, index_col='name',
-                                    dtype={'cpi_alpha': float,
-                                           'area': float,
-                                           'wall_dir': int})
-
-        names_ = ['name'] + range(8)
-        self.df_zones_cpe_mean = pd.read_csv(file_zones_cpe_mean,
-                                             names=names_,
-                                             index_col='name',
-                                             skiprows=1)
-        self.df_zones_cpe_str_mean = pd.read_csv(file_zones_cpe_str_mean,
-                                                 names=names_,
-                                                 index_col='name',
-                                                 skiprows=1)
-        self.df_zones_cpe_eave_mean = pd.read_csv(file_zones_cpe_eave_mean,
-                                                  names=names_,
-                                                  index_col='name',
-                                                  skiprows=1)
-        self.df_zones_edge = pd.read_csv(file_zones_edge,
-                                         names=names_,
-                                         index_col='name',
-                                         skiprows=1)
-
-        file_groups = os.path.join(self.path_datafile, 'conn_groups.csv')
-        file_types = os.path.join(self.path_datafile, 'conn_types.csv')
-        file_conns = os.path.join(self.path_datafile, 'connections.csv')
-
-        self.df_groups = pd.read_csv(file_groups, index_col='group_name')
-        self.df_types = pd.read_csv(file_types, index_col='type_name')
-
-        file_damage_costing = os.path.join(self.path_datafile,
-                                           'damage_costing_data.csv')
-        try:
-            self.df_damage_costing = pd.read_csv(file_damage_costing,
-                                             index_col='name')
-        except ValueError:
-            print('Error in reading {}'.format(file_damage_costing))
-
-        # change arithmetic mean, std to logarithmic mean, std
-        self.df_types['lognormal_strength'] = self.df_types.apply(
-            lambda row: compute_logarithmic_mean_stddev(row['strength_mean'],
-                                                        row['strength_std']),
-            axis=1)
-
-        self.df_types['lognormal_dead_load'] = self.df_types.apply(
-            lambda row: compute_logarithmic_mean_stddev(row['dead_load_mean'],
-                                                        row['dead_load_std']),
-            axis=1)
-
-        self.df_conns = pd.read_csv(file_conns, index_col='conn_name')
-        self.df_conns['group_name'] = self.df_types.loc[
-            self.df_conns['type_name'], 'group_name'].values
-
-        file_influences = os.path.join(self.path_datafile, 'influences.csv')
-        self.dic_influences = self.read_influences(file_influences)
-
-        file_damage_factorings = os.path.join(self.path_datafile, 'damage_factorings.csv')
-        self.dic_damage_factorings = \
-            self.read_damage_factorings(file_damage_factorings)
-
-        file_influence_patches = os.path.join(self.path_datafile, 'influence_patches.csv')
-        self.dic_influence_patches = self.read_influences(file_influence_patches)
-
-        self.parallel = conf.getboolean(key, 'parallel')
-        self.regional_shielding_factor = conf.getfloat(
-            key, 'regional_shielding_factor')
-        self.wind_dir_index = conf.get(key, 'wind_fixed_dir')
-        self.region_name = conf.get(key, 'region_name')
+        self.read_house_data()
 
         key = 'options'
         for sub_key, value in conf.items('options'):
@@ -291,23 +214,15 @@ class Scenario(object):
             thresholds = [0.15, 0.45, 0.6, 0.9]
             print('default fragility thresholds is used')
 
-        self.fragility_thresholds = pd.DataFrame(thresholds, index=states,
-                                              columns=['threshold'])
+        self.fragility_thresholds = pd.DataFrame(thresholds,
+                                                 index=states,
+                                                 columns=['threshold'])
         self.fragility_thresholds['color'] = ['b', 'g', 'y', 'r']
 
         key = 'debris'
         if self.flags[key]:
 
-            try:
-                self.debris_regions = conf.get(key, 'file_debris_regions')
-            except ConfigParser.NoOptionError:
-                self.debris_regions = '../data/debris_regions.csv'
-
-            try:
-                self.debris_types = conf.get(key, 'file_debris_types')
-            except ConfigParser.NoOptionError:
-                self.debris_types = '../data/debris_types.csv'
-
+            self.set_region_name(conf.get(key, 'region_name'))
             self.source_items = conf.getint(key, 'source_items')
             self.building_spacing = conf.getfloat(key, 'building_spacing')
             self.debris_radius = conf.getfloat(key, 'debris_radius')
@@ -324,6 +239,17 @@ class Scenario(object):
                                                         self.building_spacing,
                                                         self.flags['debris_staggered_sources'])
 
+            try:
+                path_debris = conf.get(key, 'path_debris')
+            except ConfigParser.NoOptionError:
+                path_debris = '../data/debris'
+
+            file_debris_regions = os.path.join(self.path_cfg, path_debris,
+                                               'debris_regions.csv')
+            file_debris_types = os.path.join(self.path_cfg, path_debris,
+                                             'debris_types.csv')
+            self.set_debris_types(file_debris_types, file_debris_regions)
+
         key = 'heatmap'
         try:
             self.red_v = conf.getfloat(key, 'red_V')
@@ -337,41 +263,6 @@ class Scenario(object):
                 os.makedirs(self.output_path)
             print 'output directory: {}'.format(self.output_path)
 
-            """
-            # wind speed at pressurised failure
-            self.file_house_cpi = os.path.join(self.output_path, 'house_cpi.csv')
-
-            # failure frequency by connection type with wind speed ?
-            # previously houses_damaged_at_v.csv
-            self.file_dmg_freq_by_conn_type = os.path.join(self.output_path,
-                                                        'dmg_freq_by_conn_type.csv')
-            # previously houses_damage_map.csv
-            self.file_dmg_map_by_conn_type = os.path.join(self.output_path,
-                                                       'dmg_map_by_conn_type.csv')
-            self.file_frag = os.path.join(self.output_path, 'fragilities.csv')
-            self.file_water = os.path.join(self.output_path, 'wateringress.csv')
-            # previously house_damage.csv
-            self.file_dmg_pct_by_conn_type = os.path.join(self.output_path,
-                                                       'dmg_pct_by_conn_type.csv')
-            self.file_wind_debris = os.path.join(self.output_path, 'wind_debris.csv')
-            self.file_dmg_idx = os.path.join(self.output_path, 'house_dmg_idx.csv')
-
-            self.file_dmg_area_by_conn_grp = os.path.join(self.output_path,
-                                                       'dmg_area_by_conn_grp.csv')
-            self.file_repair_cost_by_conn_grp = os.path.join(self.output_path,
-                                                          'repair_cost_by_conn_grp.csv')
-            self.file_dmg_by_conn = os.path.join(self.output_path, 'dmg_by_conn.csv')
-
-            self.file_strength_by_conn = os.path.join(self.output_path,
-                                                   'strength_by_conn.csv')
-
-            self.file_dead_load_by_conn = os.path.join(self.output_path,
-                                                   'dead_load_by_conn.csv')
-
-            self.file_dmg_dist_by_conn = os.path.join(self.output_path,
-                                                   'dmg_dist_by_conn.csv')
-            """
-
             self.outfile_model = os.path.join(self.output_path, 'results_model.h5')
             self.outfile_group = os.path.join(self.output_path, 'results_group.h5')
             self.outfile_type = os.path.join(self.output_path, 'results_type.h5')
@@ -380,6 +271,81 @@ class Scenario(object):
 
         else:
             print 'output path is not assigned'
+
+    def read_house_data(self):
+
+        # house data files
+        file_house = os.path.join(self.path_datafile, 'house_data.csv')
+        file_zones = os.path.join(self.path_datafile, 'zones.csv')
+        file_zones_cpe_mean = os.path.join(self.path_datafile,
+                                           'zones_cpe_mean.csv')
+        file_zones_cpe_str_mean = os.path.join(self.path_datafile,
+                                               'zones_cpe_str_mean.csv')
+        file_zones_cpe_eave_mean = os.path.join(self.path_datafile,
+                                                'zones_cpe_eave_mean.csv')
+        file_zones_edge = os.path.join(self.path_datafile,
+                                       'zones_edge.csv')
+
+        file_groups = os.path.join(self.path_datafile, 'conn_groups.csv')
+        file_types = os.path.join(self.path_datafile, 'conn_types.csv')
+        file_conns = os.path.join(self.path_datafile, 'connections.csv')
+        file_damage_costing = os.path.join(self.path_datafile,
+                                           'damage_costing_data.csv')
+
+        file_influences = os.path.join(self.path_datafile, 'influences.csv')
+        file_influence_patches = os.path.join(self.path_datafile,
+                                              'influence_patches.csv')
+        file_damage_factorings = os.path.join(self.path_datafile,
+                                              'damage_factorings.csv')
+
+        self.df_house = pd.read_csv(file_house)
+        self.df_zones = pd.read_csv(file_zones, index_col='name',
+                                    dtype={'cpi_alpha': float,
+                                           'area': float,
+                                           'wall_dir': int})
+        names_ = ['name'] + range(8)
+        self.df_zones_cpe_mean = pd.read_csv(file_zones_cpe_mean,
+                                             names=names_,
+                                             index_col='name',
+                                             skiprows=1)
+        self.df_zones_cpe_str_mean = pd.read_csv(file_zones_cpe_str_mean,
+                                                 names=names_,
+                                                 index_col='name',
+                                                 skiprows=1)
+        self.df_zones_cpe_eave_mean = pd.read_csv(file_zones_cpe_eave_mean,
+                                                  names=names_,
+                                                  index_col='name',
+                                                  skiprows=1)
+        self.df_zones_edge = pd.read_csv(file_zones_edge,
+                                         names=names_,
+                                         index_col='name',
+                                         skiprows=1)
+
+        self.df_groups = pd.read_csv(file_groups, index_col='group_name')
+        self.df_types = pd.read_csv(file_types, index_col='type_name')
+
+        # change arithmetic mean, std to logarithmic mean, std
+        self.df_types['lognormal_strength'] = self.df_types.apply(
+            lambda row: compute_logarithmic_mean_stddev(row['strength_mean'],
+                                                        row['strength_std']),
+            axis=1)
+
+        self.df_types['lognormal_dead_load'] = self.df_types.apply(
+            lambda row: compute_logarithmic_mean_stddev(row['dead_load_mean'],
+                                                        row['dead_load_std']),
+            axis=1)
+
+        self.df_conns = pd.read_csv(file_conns, index_col='conn_name')
+        self.df_conns['group_name'] = self.df_types.loc[
+            self.df_conns['type_name'], 'group_name'].values
+
+        self.dic_influences = self.read_influences(file_influences)
+        self.dic_damage_factorings = self.read_damage_factorings(
+            file_damage_factorings)
+        self.dic_influence_patches = self.read_influence_patches(
+            file_influence_patches)
+        self.df_damage_costing = pd.read_csv(file_damage_costing,
+                                             index_col='name')
 
     @staticmethod
     def read_damage_factorings(filename):
@@ -457,25 +423,28 @@ class Scenario(object):
                     elif i == 1:
                         target_conn = int(value)
                     elif i % 2 == 0:
-                        sub_key = int(value)
+                        sub_key = value
                     elif damaged_conn and target_conn and sub_key:
                         _dic.setdefault(damaged_conn, {}).setdefault(target_conn, {})[sub_key] = float(value)
 
         return _dic
 
-    @property
-    def region_name(self):
-        return self._region_name
-
-    @region_name.setter
-    def region_name(self, value):
+    def set_region_name(self, value):
         try:
             assert value in ['Capital_city', 'Tropical_town']
         except AssertionError:
-            self._region_name = 'Capital_city'
+            self.region_name = 'Capital_city'
             print('Capital_city is set for region_name by default')
         else:
-            self._region_name = value
+            self.region_name = value
+
+    def set_terrain_category(self, value):
+        try:
+            assert value in ['2', '2.5', '3', 'non_cyclonic']
+        except AssertionError:
+            print('Invalid terrain category: {}'.format(value))
+        else:
+            self.terrain_category = value
 
     def set_wind_profile(self, path_wind_profiles):
 
@@ -493,52 +462,29 @@ class Scenario(object):
                                         header=None,
                                         index_col=0).to_dict('list')
 
-    @property
-    def debris_regions(self):
-        return self._debris_regions
+    def set_debris_types(self, file_debris_types, file_debris_regions):
 
-    @debris_regions.setter
-    def debris_regions(self, file_debris_regions):
+        self.debris_types = pd.read_csv(file_debris_types, index_col=0).to_dict('index')
+        self.debris_regions = pd.read_csv(file_debris_regions, index_col=0).to_dict('index')[self.region_name]
 
-        path_cfg_file = os.path.dirname(os.path.realpath(self.cfg_file))
-        file_ = os.path.join(path_cfg_file, file_debris_regions)
-        self._debris_regions = pd.read_csv(file_, index_col=0).to_dict('index')
+        for key in self.debris_types:
 
-    @property
-    def debris_types(self):
-        return self._debris_types
-
-    @debris_types.setter
-    def debris_types(self, file_debris_types):
-
-        path_cfg_file = os.path.dirname(os.path.realpath(self.cfg_file))
-        file_ = os.path.join(path_cfg_file, file_debris_types)
-
-        self._debris_types = pd.read_csv(file_, index_col=0).to_dict('index')
-
-        for key in self._debris_types:
-
-            tmp = self.debris_regions[self.region_name]
-            self._debris_types.setdefault(key, {})['ratio'] = tmp['{}_ratio'.format(key)]
+            self.debris_types.setdefault(key, {})['ratio'] = \
+                self.debris_regions['{}_ratio'.format(key)]
 
             for item in ['frontalarea', 'mass']:
-                _mean = tmp['{0}_{1}_mean'.format(key, item)]
-                _std = tmp['{0}_{1}_stddev'.format(key, item)]
+                _mean = self.debris_regions['{0}_{1}_mean'.format(key, item)]
+                _std = self.debris_regions['{0}_{1}_stddev'.format(key, item)]
                 mu_lnx, std_lnx = compute_logarithmic_mean_stddev(_mean, _std)
-                self._debris_types.setdefault(key, {})['{}_mu'.format(item)] = mu_lnx
-                self._debris_types.setdefault(key, {})['{}_std'.format(item)] = std_lnx
+                self.debris_types.setdefault(key, {})['{}_mu'.format(item)] = mu_lnx
+                self.debris_types.setdefault(key, {})['{}_std'.format(item)] = std_lnx
 
-    @property
-    def wind_dir_index(self):
-        return self._wind_dir_index
-
-    @wind_dir_index.setter
-    def wind_dir_index(self, wind_dir_str):
+    def set_wind_dir_index(self, wind_dir_str):
         try:
-            self._wind_dir_index = Scenario.wind_dir.index(wind_dir_str.upper())
+            self.wind_dir_index = Scenario.wind_dir.index(wind_dir_str.upper())
         except ValueError:
             print('8(i.e., RANDOM) is set for wind_dir_index by default')
-            self._wind_dir_index = 8
+            self.wind_dir_index = 8
 
     def storeToCSV(self, cfg_file):
 
@@ -640,10 +586,10 @@ if __name__ == '__main__':
             self.assertEquals(self.cfg.flags['debris'], False)
 
         def test_wind_directions(self):
-            self.cfg.wind_dir_index = 'Random'
+            self.cfg.set_wind_dir_index('Random')
             self.assertEqual(self.cfg.wind_dir_index, 8)
 
-            self.cfg.wind_dir_index = 'SW'
+            self.cfg.set_wind_dir_index('SW')
             self.assertEqual(self.cfg.wind_dir_index, 1)
 
         def test_water_ingress(self):

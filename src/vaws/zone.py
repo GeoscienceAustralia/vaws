@@ -22,13 +22,13 @@ class Zone(object):
         assert isinstance(zone_name, str)
         self.name = zone_name
 
-        default_attr = {'area': 1.0,
-                        'cpi_alpha': 0.0,
-                        'wall_dir': 0,
-                        'cpe_mean': dict(),
-                        'cpe_str_mean': dict(),
-                        'cpe_eave_mean': dict(),
-                        'is_roof_edge': dict()}
+        default_attr = dict(area=None,
+                            cpi_alpha=None,
+                            wall_dir=None,
+                            cpe_mean=dict(),
+                            cpe_str_mean=dict(),
+                            cpe_eave_mean=dict(),
+                            is_roof_edge=dict())
 
         default_attr.update(kwargs)
         for key, value in default_attr.iteritems():

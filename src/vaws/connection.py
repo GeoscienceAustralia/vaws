@@ -27,10 +27,10 @@ class Connection(object):
         assert isinstance(conn_name, int)
         self.name = conn_name
 
-        default_attr = {'edge': None,
-                        'type_name': None,
-                        'zone_loc': None,
-                        'group_name': None}
+        default_attr = dict(edge=None,
+                            type_name=None,
+                            zone_loc=None,
+                            group_name=None)
 
         default_attr.update(kwargs)
         for key, value in default_attr.iteritems():
