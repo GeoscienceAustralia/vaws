@@ -89,11 +89,11 @@ class Scenario(object):
         self.df_damage_costing = None
         self.dic_damage_factorings = None
 
-        self.outfile_model = None
-        self.outfile_group = None
-        self.outfile_type = None
-        self.outfile_conn = None
-        self.outfile_zone = None
+        self.file_model = None
+        self.file_group = None
+        self.file_type = None
+        self.file_conn = None
+        self.file_zone = None
 
         self.red_v = 54.0
         self.blue_v = 95.0
@@ -263,11 +263,11 @@ class Scenario(object):
                 os.makedirs(self.output_path)
             print 'output directory: {}'.format(self.output_path)
 
-            self.outfile_model = os.path.join(self.output_path, 'results_model.h5')
-            self.outfile_group = os.path.join(self.output_path, 'results_group.h5')
-            self.outfile_type = os.path.join(self.output_path, 'results_type.h5')
-            self.outfile_conn = os.path.join(self.output_path, 'results_conn.h5')
-            self.outfile_zone = os.path.join(self.output_path, 'results_zone.h5')
+            self.file_model = os.path.join(self.output_path, 'results_model.h5')
+            self.file_group = os.path.join(self.output_path, 'results_group.h5')
+            self.file_type = os.path.join(self.output_path, 'results_type.h5')
+            self.file_conn = os.path.join(self.output_path, 'results_conn.h5')
+            self.file_zone = os.path.join(self.output_path, 'results_zone.h5')
 
         else:
             print 'output path is not assigned'

@@ -9,6 +9,7 @@ import numpy as np
 import logging
 import pandas as pd
 from shapely.geometry import Polygon
+from collections import OrderedDict
 
 from connection import ConnectionTypeGroup
 from zone import Zone
@@ -48,7 +49,7 @@ class House(object):
         self.big_a = None
         self.big_b = None
 
-        self.groups = dict()  # ordered dict of conn type groups
+        self.groups = OrderedDict()  # ordered dict of conn type groups
         self.types = dict()  # dict of conn types with id
         self.connections = dict()  # dict of connections with id
         self.zones = dict()  # dict of zones with id

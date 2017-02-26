@@ -160,17 +160,15 @@ class HouseDamage(object):
                                       self.cfg.flags['diff_shielding'])
 
         # check damage by connection type group
-        # sheeting first
-        for group_id in sorted(self.house.groups.iterkeys()):
-            _group = self.house.groups[group_id]
+        for _group in self.house.groups.itervalues():
 
             if self.cfg.flags.get('conn_type_group_{}'.format(_group.name)):
                 _group.check_damage(wind_speed)
                 _group.cal_prop_damaged()
 
-            if _group.damaged and self.cfg.flags.get('dmg_distribute_{}'.format(
-                    _group.name)):
-                _group.distribute_damage()
+                if _group.damaged and self.cfg.flags.get('dmg_distribute_{}'.format(
+                        _group.name)):
+                    _group.distribute_damage()
 
         self.check_house_collapse(wind_speed)
         self.cal_damage_index()
