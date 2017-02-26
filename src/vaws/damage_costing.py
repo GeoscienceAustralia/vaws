@@ -4,94 +4,166 @@
         - imported from house
         - referenced by damage module to cost damages
 """
-import copy
+from math import pow
 
 
 class Costing(object):
-    def __init__(self, inst):
+
+    dic_repair = {1: 'func_type1', 2: 'func_type2'}
+
+    def __init__(self, costing_name=None, **kwargs):
         """
 
         Args:
-            inst: instance of database.DamageCosting
+            costing_name: str
+            **kwargs:
         """
-        dic_ = copy.deepcopy(inst.__dict__)
 
-        self.id = dic_['id']
-        self.name = dic_['costing_name']
-        self.area = dic_['area']
+        assert isinstance(costing_name, str)
+        self.name = costing_name
 
-        self.env_factor_type = dic_['envelope_factor_formula_type']
-        self.env_repair_rate = dic_['envelope_repair_rate']
-        self.int_factor_type = dic_['internal_factor_formula_type']
-        self.int_repair_rate = dic_['internal_repair_rate']
+        self.surface_area = None
+        self.envelope_repair_rate = None
+        self.envelope_factor_formula_type = None
+        self.envelope_coeff1 = None
+        self.envelope_coeff2 = None
+        self.envelope_coeff3 = None
+        self.internal_repair_rate = None
+        self.internal_factor_formula_type = None
+        self.internal_coeff1 = None
+        self.internal_coeff2 = None
+        self.internal_coeff3 = None
 
-        self.env_c1 = dic_['env_coeff_1']
-        self.env_c2 = dic_['env_coeff_2']
-        self.env_c3 = dic_['env_coeff_3']
+        default_attr = dict(surface_area=None,
+                            envelope_repair_rate=None,
+                            envelope_factor_formula_type=None,
+                            envelope_coeff1=None,
+                            envelope_coeff2=None,
+                            envelope_coeff3=None,
+                            internal_repair_rate=None,
+                            internal_factor_formula_type=None,
+                            internal_coeff1=None,
+                            internal_coeff2=None,
+                            internal_coeff3=None)
 
-        self.int_c1 = dic_['int_coeff_1']
-        self.int_c2 = dic_['int_coeff_2']
-        self.int_c3 = dic_['int_coeff_3']
+        default_attr.update(kwargs)
+        for key, value in default_attr.iteritems():
+            setattr(self, key, value)
 
-        if self.env_factor_type == 1:
-            self.env_repair = self.__env_func_type1
-        elif self.env_factor_type == 2:
-            self.env_repair = self.__env_func_type2
-        else:
-            raise LookupError('Invalid env_factor_type: {}'.format(
-                self.env_factor_type))
+        assert isinstance(self.surface_area, float)
+        assert isinstance(self.envelope_repair_rate, float)
+        try:
+            assert isinstance(self.envelope_factor_formula_type, int)
+        except AssertionError:
+            try:
+                self.envelope_factor_formula_type = int(self.envelope_factor_formula_type)
+            except ValueError:
+                print('Invalid envelope_factor_formula_type: {}'.format(
+                    self.envelope_factor_formula_type))
 
-        if self.int_factor_type == 1:
-            self.lining_repair = self.__lining_func_type1
-        elif self.int_factor_type == 2:
-            self.lining_repair = self.__lining_func_type2
-        else:
-            raise LookupError('Invalid int_factor_type: {}'.format(
-                self.int_factor_type))
+        assert isinstance(self.envelope_coeff1, float)
+        assert isinstance(self.envelope_coeff2, float)
+        assert isinstance(self.envelope_coeff3, float)
+
+        try:
+            assert isinstance(self.internal_factor_formula_type, int)
+        except AssertionError:
+            try:
+                self.internal_factor_formula_type = int(self.internal_factor_formula_type)
+            except ValueError:
+                print('Invalid internal_factor_formula_type: {}'.format(
+                    self.internal_factor_formula_type))
+
+        assert isinstance(self.internal_repair_rate, float)
+        assert isinstance(self.internal_coeff1, float)
+        assert isinstance(self.internal_coeff2, float)
+        assert isinstance(self.internal_coeff3, float)
+
+        try:
+            self.envelope_repair = getattr(self, Costing.dic_repair[
+                self.envelope_factor_formula_type])
+        except KeyError:
+            print('Invalid envelope_factor_formula_type: {}'.format(
+                self.envelope_factor_formula_type))
+
+        try:
+            self.internal_repair = getattr(self, Costing.dic_repair[
+                self.internal_factor_formula_type])
+        except KeyError:
+            print('Invalid internal_factor_formula_type: {}'.format(
+                self.internal_factor_formula_type))
 
     def calculate_cost(self, x):
-        assert 0 <= x <= 1
-        return x * (self.area * self.env_repair(x) * self.env_repair_rate +
-                    self.lining_repair(x) * self.int_repair_rate)
+        assert 0.0 <= x <= 1.0
+        envelop_costing = self.envelope_repair(x,
+                                               self.envelope_coeff1,
+                                               self.envelope_coeff2,
+                                               self.envelope_coeff3)
+        internal_costing = self.internal_repair(x,
+                                                self.internal_coeff1,
+                                                self.internal_coeff2,
+                                                self.internal_coeff3)
+        return x * (self.surface_area * envelop_costing *
+                    self.envelope_repair_rate +
+                    internal_costing * self.internal_repair_rate)
 
-    def __env_func_type1(self, x):
-        return self.env_c1 * x ** 2 + self.env_c2 * x + self.env_c3
+    @staticmethod
+    def func_type1(x, c1, c2, c3):
+        """
 
-    def __env_func_type2(self, x):
+        Args:
+            x: damage ratio between 0 and 1
+            c1: coefficients
+            c2:
+            c3:
+
+        Returns: c1*x**2 + c2*x + c3
+
+        """
+        return c1 * pow(x, 2) + c2 * x + c3
+
+    @staticmethod
+    def func_type2(x, c1, c2, c3):
+        """
+
+        Args:
+            x: damage ratio between 0 and 1
+            c1: coefficients
+            c2:
+            c3:
+
+        Returns: c1*x**c2
+
+        """
         try:
-            return self.env_c1 * x ** self.env_c2
-        except ZeroDivisionError:
-            return 0.0
-
-    def __lining_func_type1(self, x):
-        return self.int_c1 * x ** 2 + self.int_c2 * x + self.int_c3
-
-    def __lining_func_type2(self, x):
-        try:
-            self.int_c1 * x ** self.int_c2
-        except ZeroDivisionError:
+            return c1 * pow(x, c2)
+        except ValueError:
             return 0.0
 
 # unit tests
 if __name__ == '__main__':
     import unittest
-    import database
+    import pandas as pd
     import os
 
-    class MyTestCase(unittest.TestCase):
 
+    class MyTestCase(unittest.TestCase):
         @classmethod
         def setUpClass(cls):
             path = '/'.join(__file__.split('/')[:-1])
-            db_file = os.path.join(path, '../../dbs/test_roof_sheeting2.db')
-            db_costing = database.DatabaseManager(db_file).session.query(
-                database.DamageCosting).all()
-
-            cls.costing1 = Costing(db_costing[0])
-            cls.costing2 = Costing(db_costing[4])
+            filename = 'test_roof_sheeting2/damage_costing_data.csv'
+            df_costing = pd.read_csv(os.path.join(path, '../../data/houses/',
+                                                  filename))
+            adic = df_costing.loc[0].to_dict()
+            cls.costing1 = Costing(costing_name=adic['name'],
+                                   **adic)
+            adic = df_costing.loc[4].to_dict()
+            cls.costing2 = Costing(costing_name=adic['name'],
+                                   **adic)
 
         def test_env_func_type1(self):
-            assert self.costing1.env_factor_type == 1
+            assert self.costing1.envelope_factor_formula_type == 1
+            assert self.costing1.internal_factor_formula_type == 1
 
             area = 10.125
             env_rate = 72.4
@@ -99,11 +171,11 @@ if __name__ == '__main__':
             c2 = -0.894300
             c3 = 1.601500
 
-            self.assertAlmostEqual(self.costing1.area, area)
-            self.assertAlmostEqual(self.costing1.env_repair_rate, env_rate)
-            self.assertAlmostEqual(self.costing1.env_c1, c1)
-            self.assertAlmostEqual(self.costing1.env_c2, c2)
-            self.assertAlmostEqual(self.costing1.env_c3, c3)
+            self.assertAlmostEqual(self.costing1.surface_area, area)
+            self.assertAlmostEqual(self.costing1.envelope_repair_rate, env_rate)
+            self.assertAlmostEqual(self.costing1.envelope_coeff1, c1)
+            self.assertAlmostEqual(self.costing1.envelope_coeff2, c2)
+            self.assertAlmostEqual(self.costing1.envelope_coeff3, c3)
 
             self.assertAlmostEqual(self.costing1.calculate_cost(0.0),
                                    0.0)
@@ -113,17 +185,20 @@ if __name__ == '__main__':
                                    746.0250, places=4)
 
         def test_env_func_type2(self):
-            assert self.costing2.env_factor_type == 2
+            assert self.costing2.envelope_factor_formula_type == 2
+            assert self.costing2.internal_factor_formula_type == 1
 
             area = 106.4
             env_rate = 243.72
             c1 = 1.0514
             c2 = -0.2271
+            c3 = 0.0
 
-            self.assertAlmostEqual(self.costing2.area, area)
-            self.assertAlmostEqual(self.costing2.env_repair_rate, env_rate)
-            self.assertAlmostEqual(self.costing2.env_c1, c1)
-            self.assertAlmostEqual(self.costing2.env_c2, c2)
+            self.assertAlmostEqual(self.costing2.surface_area, area)
+            self.assertAlmostEqual(self.costing2.envelope_repair_rate, env_rate)
+            self.assertAlmostEqual(self.costing2.envelope_coeff1, c1)
+            self.assertAlmostEqual(self.costing2.envelope_coeff2, c2)
+            self.assertAlmostEqual(self.costing2.envelope_coeff3, c3)
 
             self.assertAlmostEqual(self.costing2.calculate_cost(0.0),
                                    0.0)

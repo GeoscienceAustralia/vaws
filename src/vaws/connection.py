@@ -315,23 +315,29 @@ class ConnectionTypeGroup(object):
 
         self.name = group_name
 
-        default_attr = {'dist_order': 1.0,
-                        'dist_dir': 0.0,
-                        'damage_scenario': 0,
-                        'trigger_collapse_at': dict(),
-                        'patch_dist': dict(),
-                        'set_zone_to_zero': dict(),
-                        'water_ingress_order': None}
+        self.dist_order = None
+        self.dist_dir = None
+        self.damage_scenario = None
+        self.trigger_collapse_at = None
+        self.patch_dist = None
+        self.set_zone_to_zero = None
+        self.water_ingress_order = None
+
+        default_attr = {'dist_order': self.dist_order,
+                        'dist_dir': self.dist_dir,
+                        'damage_scenario': self.damage_scenario,
+                        'trigger_collapse_at': self.trigger_collapse_at,
+                        'patch_dist': self.patch_dist,
+                        'set_zone_to_zero': self.set_zone_to_zero,
+                        'water_ingress_order': self.water_ingress_order}
 
         default_attr.update(kwargs)
         for key, value in default_attr.iteritems():
             setattr(self, key, value)
 
-        # self.costing_id = None
-        # self.costing = Costing(inst.costing)
-
+        self._costing = None
         self._costing_area = None
-        self.no_connections = None
+        self._no_connections = 0
 
         self._types = None
         # for item in inst.conn_types:
@@ -350,15 +356,24 @@ class ConnectionTypeGroup(object):
 
         self._damage_grid = None  # column (chr), row (num)
         # negative: no connection, 0: Intact,  1: Failed
-        self.damaged = None
 
-        self.conn_by_grid = dict()  # dict of connections with zone loc grid
+        self._conn_by_grid = dict()  # dict of connections with zone loc grid
 
         # self._dist_tuple = None
 
+        self.damaged = None
         self.prop_damaged_group = None
         self.prop_damaged_area = 0.0
         self.repair_cost = None
+
+    @property
+    def no_connections(self):
+        return self._no_connections
+
+    @no_connections.setter
+    def no_connections(self, value):
+        assert isinstance(value, int)
+        self._no_connections += value
 
     @property
     def types(self):
@@ -384,6 +399,16 @@ class ConnectionTypeGroup(object):
         self._costing_area = value
 
     @property
+    def costing(self):
+        return self._costing
+
+    @costing.setter
+    def costing(self, value):
+        assert isinstance(value, dict)
+        self._costing = Costing(costing_name=self.damage_scenario,
+                                **value)
+
+    @property
     def damage_grid(self):
         return self._damage_grid
 
@@ -397,6 +422,18 @@ class ConnectionTypeGroup(object):
             self._damage_grid = -1 * np.ones(dtype=int, shape=(no_rows, no_cols))
         else:
             self._damage_grid = None
+
+    @property
+    def conn_by_grid(self):
+        return self._conn_by_grid
+
+    @conn_by_grid.setter
+    def conn_by_grid(self, _tuple):
+
+        assert isinstance(_tuple, tuple)
+        _conn_grid, _conn = _tuple
+
+        self._conn_by_grid[_conn_grid] = _conn
 
     def cal_repair_cost(self, value):
         """

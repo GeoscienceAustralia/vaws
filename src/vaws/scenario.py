@@ -344,8 +344,7 @@ class Scenario(object):
             file_damage_factorings)
         self.dic_influence_patches = self.read_influence_patches(
             file_influence_patches)
-        self.df_damage_costing = pd.read_csv(file_damage_costing,
-                                             index_col='name')
+        self.df_damage_costing = pd.read_csv(file_damage_costing)
 
     @staticmethod
     def read_damage_factorings(filename):

@@ -48,7 +48,7 @@ class House(object):
         self.big_a = None
         self.big_b = None
 
-        self.groups = dict()  # dict of conn type groups with id
+        self.groups = dict()  # ordered dict of conn type groups
         self.types = dict()  # dict of conn types with id
         self.connections = dict()  # dict of connections with id
         self.zones = dict()  # dict of zones with id
@@ -107,8 +107,11 @@ class House(object):
             _group = ConnectionTypeGroup(group_name=group_name, **item)
 
             _group.damage_grid = self.roof_cols, self.roof_rows
+            idx_costing = self.cfg.df_damage_costing[
+                self.cfg.df_damage_costing['name'] ==
+                _group.damage_scenario].index.tolist()[0]
+            _group.costing = self.cfg.df_damage_costing.loc[idx_costing].to_dict()
             costing_area_by_group = 0.0
-            _group.no_connections = 0
 
             df_selected_types = self.cfg.df_types.loc[
                 self.cfg.df_types['group_name'] == group_name]
@@ -121,7 +124,7 @@ class House(object):
                     self.cfg.df_conns['type_name'] == type_name]
 
                 _type.connections = df_selected_conns.to_dict('index')
-                _group.no_connections += _type.no_connections
+                _group.no_connections = _type.no_connections
 
                 # linking with connections
                 for conn_name, _conn in _type.connections.iteritems():
@@ -138,7 +141,7 @@ class House(object):
 
                     _group.damage_grid[_conn.grid] = 0  # intact
                     costing_area_by_group += _type.costing_area
-                    _group.conn_by_grid[_conn.grid] = _conn
+                    _group.conn_by_grid = _conn.grid, _conn
 
                     # linking connections either zones or connections
                     if _conn.group_name == 'sheeting':
