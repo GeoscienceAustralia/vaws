@@ -301,20 +301,18 @@ class TestHouseDamage(unittest.TestCase):
         cls.path_output = os.path.join(path, 'output')
 
         cfg = Scenario(
-            cfg_file=os.path.join(path, 'scenarios/test_sheeting_batten.cfg'),
+            cfg_file=os.path.join(path, '../../scenarios/test_sheeting_batten.cfg'),
             output_path=cls.path_output)
 
-        rnd_state = np.random.RandomState(1)
-
-        cls.house_damage = HouseDamage(cfg, rnd_state)
+        cls.house_damage = HouseDamage(cfg, seed=1)
 
     def test_distribute_damage_by_row(self):
 
         # each time check whether the sum of effective area is the same
         ref_area = dict()
         for _zone in self.house_damage.house.zones.itervalues():
-            ref_area.setdefault(_zone.name[0], []).append(_zone.effective_area)
-            ref_area.setdefault(_zone.name[1], []).append(_zone.effective_area)
+            ref_area.setdefault(_zone.name[0], []).append(_zone.area)
+            ref_area.setdefault(_zone.name[1], []).append(_zone.area)
 
         for key, value in ref_area.iteritems():
             ref_area[key] = np.array(value).sum()
@@ -322,15 +320,14 @@ class TestHouseDamage(unittest.TestCase):
         # # iteration over wind speed list
         for id_speed, wind_speed in enumerate(self.house_damage.cfg.speeds):
 
-            print('wind speed: {}'.format(wind_speed))
             # simulate sampled house
             self.house_damage.run_simulation(wind_speed)
 
             # check effective area
             area = dict()
             for _zone in self.house_damage.house.zones.itervalues():
-                area.setdefault(_zone.name[0], []).append(_zone.effective_area)
-                area.setdefault(_zone.name[1], []).append(_zone.effective_area)
+                area.setdefault(_zone.name[0], []).append(_zone.area)
+                area.setdefault(_zone.name[1], []).append(_zone.area)
 
             for key, value in area.iteritems():
                 sum_area = np.array(value).sum()
