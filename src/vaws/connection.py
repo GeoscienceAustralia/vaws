@@ -27,10 +27,15 @@ class Connection(object):
         assert isinstance(conn_name, int)
         self.name = conn_name
 
-        default_attr = dict(edge=None,
-                            type_name=None,
-                            zone_loc=None,
-                            group_name=None)
+        self.edge = None
+        self.type_name = None
+        self.zone_loc = None
+        self.group_name = None
+
+        default_attr = dict(edge=self.edge,
+                            type_name=self.type_name,
+                            zone_loc=self.zone_loc,
+                            group_name=self.group_name)
 
         default_attr.update(kwargs)
         for key, value in default_attr.iteritems():
@@ -247,10 +252,15 @@ class ConnectionType(object):
         assert isinstance(type_name, str)
         self.name = type_name
 
-        default_attr = {'costing_area': None,
-                        'lognormal_dead_load': None,
-                        'lognormal_strength': None,
-                        'group_name': None}
+        self.costing_area = None
+        self.lognormal_dead_load = None
+        self.lognormal_strength = None
+        self.group_name = None
+
+        default_attr = {'costing_area': self.costing_area,
+                        'lognormal_dead_load': self.lognormal_dead_load,
+                        'lognormal_strength': self.lognormal_strength,
+                        'group_name': self.group_name}
 
         default_attr.update(kwargs)
         for key, value in default_attr.iteritems():
