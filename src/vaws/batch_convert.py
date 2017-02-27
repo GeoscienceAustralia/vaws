@@ -13,7 +13,7 @@ dic_file_list = {'conn_group.csv': 'conn_groups.csv',
                  'conn_type.csv': 'conn_types.csv',
                  'connections.csv': 'connections.csv',
                  'house_data.csv': 'house_data.csv',
-                 'damage_costing_data.csv': 'damage_costing.csv'}
+                 'damage_costing_data.csv': 'damage_costing_data.csv'}
 
 dic_string = {'conn_group.csv': group_string,
               'conn_type.csv': type_string,
