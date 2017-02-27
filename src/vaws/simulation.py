@@ -324,9 +324,16 @@ class HouseDamage(object):
         """
 
         # factor costing
-        for source_id, target_list in self.house.factors_costing.iteritems():
+        dic_damaged_area_final = dict()
+        for source_id, target_list in self.cfg.dic_damage_factorings.iteritems():
+            dic_damaged_area_final[source_id] = self.house.groups[source_id].prop_damaged_area
             for target_id in target_list:
-                self.house.groups[source_id].prop_damaged_area -= self.house.groups[target_id].prop_damaged_area
+                dic_damaged_area_final[source_id] -= self.house.groups[target_id].prop_damaged_area
+
+        # assign value
+        for source_id in self.cfg.dic_damage_factorings:
+            self.house.groups[source_id].prop_damaged_area = \
+                dic_damaged_area_final[source_id]
 
         # calculate repair cost
         repair_cost = 0.0
