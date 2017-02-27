@@ -1,4 +1,4 @@
-* connection name - zone location
+* connection name and zone location
 
 |zone| A | B | C |
 |:-:|:----:|:---:|:---:|
@@ -9,11 +9,28 @@
 |2| 2 | 8 | 14 |
 |1| 1 | 7 | 13 |
 
-* connection type 
-	- sheeting gable (1): 2, 3, 4, 5
-	- sheeting eave (2): 7, 12, 13, 18
-	- sheeting corner (3): 1, 6
-	- sheeting (4): 8-11, 14-17
+* 
+
+|conn| type | strength | Cpe |
+|:-:|:----:|:---:|:---:|
+|1| corner | 2.31| -0.1|
+|2| gable| 1.54| -0.1|
+|3| gable| 1.54| -0.1|
+|4| gable| 1.54| -0.1|
+|5| gable| 1.54| -1|
+|6| corner| 2.31| -7|
+|7| eave| 4.62| -0.1|
+|8| sheeting| 2.695| -0.1|
+|9| sheeting| 2.695| -1|
+|10| sheeting| 2.695| -3.5|
+|11| sheeting| 2.695| -1|
+|12| eave| 4.62| -0.1|
+|13| eave| 4.62| -7|
+|14| sheeting| 2.695| -1|
+|15| sheeting| 2.695| -0.1|
+|16| sheeting| 2.695| -0.1|
+|17|sheeting|2.695|-0.1|
+|18| eave| 4.62| -0.1|
 
 * connection - zone influence
 	- 1:1 relation
