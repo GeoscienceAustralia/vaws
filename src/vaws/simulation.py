@@ -13,7 +13,6 @@ from house import House
 from scenario import Scenario
 # import logger
 import logging
-import database
 from version import VERSION_DESC
 
 
@@ -279,7 +278,10 @@ class HouseDamage(object):
 
     def check_pressurized_failure(self, wind_speed):
         if self.cfg.flags['debris']:
-            print 'Not implemented'
+            logging.debug('debris model is not yet implemented in '
+                          'check_pressurized_failure')
+            self.cpi = 0.0
+            self.cpiAt = 0.0
             # self.debris_manager.run(v)
             # if self.cpi == 0 and self.debris_manager.get_breached():
             #     self.cpi = 0.7
@@ -419,19 +421,13 @@ def main():
                         level=logging.DEBUG,
                         format='%(levelname)s %(message)s')
 
-    if options.data_folder:
-        db = database.DatabaseManager(options.model_database)
-        import dbimport
-        dbimport.import_model(options.data_folder, db)
-        db.close()
+    if options.scenario_filename:
+        conf = Scenario(cfg_file=options.scenario_filename,
+                        output_path=options.output_folder)
+        _ = simulate_wind_damage_to_houses(conf)
     else:
-        if options.scenario_filename:
-            conf = Scenario(cfg_file=options.scenario_filename,
-                            output_path=options.output_folder)
-            _ = simulate_wind_damage_to_houses(conf)
-        else:
-            print '\nERROR: Must provide a scenario file to run simulator...\n'
-            parser.print_help()
+        print '\nERROR: Must provide a scenario file to run simulator...\n'
+        parser.print_help()
 
     logging.info('Program finished')
 

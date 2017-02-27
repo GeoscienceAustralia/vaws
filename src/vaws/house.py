@@ -161,8 +161,8 @@ class House(object):
 
         if self.cfg.flags['debris']:
             points = list()
-            for item in self.cfg.df_footprint:
-                points.append((item.x_coord, item.y_coord))
+            for _, item in self.cfg.df_footprint.iterrows():
+                points.append((item[0], item[1]))
             self.footprint = Polygon(points)
 
     def set_house_wind_params(self):

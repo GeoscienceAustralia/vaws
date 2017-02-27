@@ -88,6 +88,7 @@ class Scenario(object):
 
         self.df_damage_costing = None
         self.dic_damage_factorings = None
+        self.df_footprint = None
 
         self.file_model = None
         self.file_group = None
@@ -168,11 +169,12 @@ class Scenario(object):
 
         self.path_datafile = os.path.join(self.path_cfg,
                                           conf.get(key, 'path_datafile'))
-        self.read_house_data()
 
         key = 'options'
         for sub_key, value in conf.items('options'):
             self.flags[sub_key] = conf.getboolean(key, sub_key)
+
+        self.read_house_data()
 
         key = 'construction_levels'
         if self.flags[key]:
@@ -297,6 +299,7 @@ class Scenario(object):
                                               'influence_patches.csv')
         file_damage_factorings = os.path.join(self.path_datafile,
                                               'damage_factorings.csv')
+        file_footprint = os.path.join(self.path_datafile, 'footprint.csv')
 
         self.df_house = pd.read_csv(file_house)
         self.df_zones = pd.read_csv(file_zones, index_col='name',
@@ -345,6 +348,11 @@ class Scenario(object):
         self.dic_influence_patches = self.read_influence_patches(
             file_influence_patches)
         self.df_damage_costing = pd.read_csv(file_damage_costing)
+
+        if self.flags['debris']:
+            self.df_footprint = pd.read_csv(file_footprint,
+                                            skiprows=1,
+                                            header=None)
 
     @staticmethod
     def read_damage_factorings(filename):
