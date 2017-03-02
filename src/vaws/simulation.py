@@ -3,15 +3,12 @@ import os
 import time
 import copy
 import parmap
-# import itertools
 import pandas as pd
 import numpy as np
 from optparse import OptionParser
-# # from collections import OrderedDict
 
 from house import House
 from scenario import Scenario
-# import logger
 import logging
 from version import VERSION_DESC
 
@@ -367,7 +364,7 @@ class HouseDamage(object):
         self.di_prev = self.di
 
 
-def main():
+def process_commandline():
     USAGE = ('%prog -s <scenario_file> [-m <model database file>] '
              '[-o <output_folder>]')
     parser = OptionParser(usage=USAGE, version=VERSION_DESC)
@@ -375,33 +372,16 @@ def main():
                       dest="scenario_filename",
                       help="read scenario description from FILE",
                       metavar="FILE")
-    parser.add_option("-m", "--model",
-                      dest="model_database",
-                      help="Use Model Database from FILE",
-                      metavar="FILE")
     parser.add_option("-o", "--output",
                       dest="output_folder",
                       help="folder name to store simulation results",
                       metavar="FOLDER")
-    # parser.add_option("-v", "--verbose",
-    #                   action="store_true",
-    #                   dest="verbose",
-    #                   default=False,
-    #                   help="show verbose simulator output")
-    parser.add_option("-i", "--import",
-                      dest="data_folder",
-                      help="data folder to import into model.db",
-                      metavar="FOLDER")
-    parser.add_option("--plot_vuln",
-                      action="store_true",
-                      dest="plot_vuln",
-                      default=False,
-                      help="show vulnerability plot")
-    parser.add_option("--plot_frag",
-                      action="store_true",
-                      dest="plot_frag",
-                      default=False,
-                      help="show fragility plot")
+
+    return parser
+
+
+def main():
+    parser = process_commandline()
 
     (options, args) = parser.parse_args()
 

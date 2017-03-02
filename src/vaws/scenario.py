@@ -8,6 +8,7 @@
 """
 import os
 import sys
+import logging
 import ConfigParser
 import numpy as np
 import pandas as pd
@@ -41,9 +42,11 @@ class Scenario(object):
         self.path_cfg = os.path.dirname(os.path.realpath(cfg_file))
         self.output_path = output_path
 
+        self.values = dict()
+
         self.no_sims = None
-        self.wind_speed_min = None
-        self.wind_speed_max = None
+        self.wind_speed_min = 0.0
+        self.wind_speed_max = 0.0
         self.wind_speed_num_steps = None
         self.speeds = None
         self.idx_speeds = None
@@ -52,7 +55,6 @@ class Scenario(object):
         self.debris_regions = None
         self.debris_types = None
 
-        self.house_name = None
         self.path_datafile = None
         self.table_house = None
         self.parallel = None
@@ -64,11 +66,13 @@ class Scenario(object):
         self.regional_shielding_factor = None
         self.building_spacing = None
         self.wind_dir_index = None
-        self.debris_radius = None
-        self.debris_angle = None
-        self.debris_extension = None
-        self.flight_time_mu = None
-        self.flight_time_std = None
+        self.debris_radius = 0.0
+        self.debris_angle = 0.0
+        self.debris_extension = 0.0
+        self.flight_time_mean = 0.0
+        self.flight_time_stddev = 0.0
+        self.flight_time_mu = 0.0
+        self.flight_time_std = 0.0
         self.debris_sources = None
 
         # house data
@@ -113,13 +117,25 @@ class Scenario(object):
     def __ne__(self, other):
         return not self.__eq__(other)
 
-    # def updateModel(self):
-    #     for ctg in self.house.conn_type_groups:
-    #         if ctg.distribution_order >= 0:
-    #             ctg_name = 'ctg_{}'.format(ctg.group_name)
-    #             ctg.enabled = self.flags.get(ctg_name, True)
-    #         else:
-    #             ctg.enabled = False
+    def get_flag(self, flag_name):
+        return self.flags.get(flag_name, 0)
+
+    def set_flag(self, flag_name, flag_value):
+        self.flags[flag_name] = flag_value
+
+    def get_value(self, name, default=''):
+        return self.values.get(name, default)
+
+    def set_value(self, name, value):
+        self.values[name] = value
+
+    @staticmethod
+    def conf_float(conf, key, option, default):
+        value = conf.get(key, option)
+        if value:
+            return float(value)
+        else:
+            return default
 
     def setOptCTGEnabled(self, ctg_name, opt):
         key_name = 'conn_type_group_{}'.format(ctg_name)
@@ -146,6 +162,7 @@ class Scenario(object):
         conf.read(self.cfg_file)
 
         key = 'main'
+        self.values['house_name'] = conf.get(key, 'house_name')
         self.parallel = conf.getboolean(key, 'parallel')
         self.no_sims = conf.getint(key, 'no_simulations')
 
@@ -205,7 +222,7 @@ class Scenario(object):
             self.construction_levels['medium']['cov_factor'] = 0.58
             self.construction_levels['high']['cov_factor'] = 0.58
 
-            print('default construction level distribution is used')
+            logging.info('default construction level distribution is used')
 
         key = 'fragility_thresholds'
         if conf.has_section(key):
@@ -229,12 +246,11 @@ class Scenario(object):
             self.building_spacing = conf.getfloat(key, 'building_spacing')
             self.debris_radius = conf.getfloat(key, 'debris_radius')
             self.debris_angle = conf.getfloat(key, 'debris_angle')
-            self.debris_extension = conf.getfloat(key, 'debris_extension')
-            flight_time_mean = conf.getfloat(key, 'flight_time_mean')
-            flight_time_stddev = conf.getfloat(key, 'flight_time_stddev')
-            self.flight_time_mu, self.flight_time_std = \
-                compute_logarithmic_mean_stddev(flight_time_mean,
-                                                flight_time_stddev)
+            self.debris_extension = self.conf_float(conf, key, 'debris_extension', 0.0)
+            self.flight_time_mean = self.conf_float(conf, key, 'flight_time_mean', 0.0)
+            self.flight_time_stddev = self.conf_float(conf, key, 'flight_time_stddev', 0.0)
+
+            self.compute_logarithmic_mean_stddev()
 
             self.debris_sources = Debris.create_sources(self.debris_radius,
                                                         self.debris_angle,
@@ -273,6 +289,10 @@ class Scenario(object):
 
         else:
             print 'output path is not assigned'
+
+    def compute_logarithmic_mean_stddev(self):
+        self.flight_time_mu, self.flight_time_std = compute_logarithmic_mean_stddev(self.flight_time_mean,
+                                                                                    self.flight_time_stddev)
 
     def read_house_data(self):
 
@@ -506,7 +526,7 @@ class Scenario(object):
         config.set(key, 'wind_speed_max', self.wind_speed_max)
         config.set(key, 'wind_speed_steps', self.wind_speed_num_steps)
         config.set(key, 'terrain_cat', self.terrain_category)
-        config.set(key, 'house_name', self.house_name)
+        config.set(key, 'house_name', self.values['house_name'])
         config.set(key, 'regional_shielding_factor',
                    self.regional_shielding_factor)
         config.set(key, 'wind_fixed_dir', type(self).dirs[self.wind_dir_index])
