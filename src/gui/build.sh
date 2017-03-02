@@ -3,15 +3,15 @@
 echo Building GUI files...
 
 rm -f *_ui.py
-./clean.sh
+#./clean.sh
 
 echo Building UI
 cd ui
-pyuic4.bat main.ui > ../main_ui.py
-pyuic4.bat house.ui > ../house_ui.py
-pyuic4.bat connection_type.ui > ../connection_type_ui.py
-pyuic4.bat zone.ui > ../zone_ui.py
-pyuic4.bat connection.ui > ../connection_ui.py
+pyuic4 main.ui > ../main_ui.py
+pyuic4 house.ui > ../house_ui.py
+pyuic4 connection_type.ui > ../connection_type_ui.py
+pyuic4 zone.ui > ../zone_ui.py
+pyuic4 connection.ui > ../connection_ui.py
 
 echo Building resources
 cd ..

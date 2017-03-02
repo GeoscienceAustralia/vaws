@@ -882,7 +882,7 @@ def run_gui():
         if options.output_folder is None:
             path_, _ = os.path.split(sys.argv[0])
             options.output_folder = os.path.abspath(
-                os.path.join(path_, '../output'))
+                os.path.join(path_, '../outputs/output'))
         else:
             options.output_folder = os.path.abspath(
                 os.path.join(os.getcwd(), options.output_folder))
@@ -902,7 +902,10 @@ def run_gui():
         app.setOrganizationDomain("ga.gov.au")
         app.setApplicationName("WindSim")
         img = QPixmap()
-        if not img.load("/home/u53337/vaws/src/gui/images/splash/splash.png"):
+
+        path_ = '/'.join(__file__.split('/')[:-1])
+        img_file = os.path.join(path_, 'images/splash/splash.png')
+        if not img.load(img_file):
             raise Exception('Could not load splash image')
         global myapp
         myapp = MyForm(img, init_scenario=conf)

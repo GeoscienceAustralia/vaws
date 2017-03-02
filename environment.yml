@@ -19,14 +19,14 @@ dependencies:
 - pytables=3.2.2=np110py27_0
 - python-dateutil=2.4.2=py27_0
 - pyparsing=2.0.3=py27_0
-- pyqt=4.11.4=py27_1
+- pyqt=4.11.4=py27_4
 - pytz=2015.7=py27_0
 - qt=4.8.7=1
 - readline=6.2=2
 - scipy=0.16.1=np110py27_1
 - setuptools=20.2.2=py27_0
 - shapely=1.5.13=py27_0
-- sip=4.16.9=py27_0
+- sip=4.18=py27_0
 - six=1.10.0=py27_0
 - sqlalchemy=1.0.12=py27_0
 - sqlite=3.9.2=0

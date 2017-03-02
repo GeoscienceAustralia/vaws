@@ -274,6 +274,10 @@ class HouseDamage(object):
         self.qz = 0.6 * 1.0e-3 * (wind_speed * self.house.mzcat) ** 2
 
     def check_pressurized_failure(self, wind_speed):
+
+        self.cpi = 0.0
+        self.cpiAt = 0.0
+
         if self.cfg.flags['debris']:
             logging.debug('debris model is not yet implemented in '
                           'check_pressurized_failure')
@@ -283,9 +287,6 @@ class HouseDamage(object):
             # if self.cpi == 0 and self.debris_manager.get_breached():
             #     self.cpi = 0.7
             #     self.cpiAt = v
-        else:
-            self.cpi = 0.0
-            self.cpiAt = 0.0
 
     def check_house_collapse(self, wind_speed):
         """
@@ -365,8 +366,7 @@ class HouseDamage(object):
 
 
 def process_commandline():
-    USAGE = ('%prog -s <scenario_file> [-m <model database file>] '
-             '[-o <output_folder>]')
+    USAGE = ('%prog -s <scenario_file> [-o <output_folder>]')
     parser = OptionParser(usage=USAGE, version=VERSION_DESC)
     parser.add_option("-s", "--scenario",
                       dest="scenario_filename",
@@ -376,7 +376,6 @@ def process_commandline():
                       dest="output_folder",
                       help="folder name to store simulation results",
                       metavar="FOLDER")
-
     return parser
 
 
@@ -394,12 +393,12 @@ def main():
         options.output_folder = os.path.abspath(
             os.path.join(os.getcwd(), options.output_folder))
 
-    # set up logging
-    file_logger = os.path.join(options.output_folder, 'log.txt')
-    logging.basicConfig(filename=file_logger,
-                        filemode='w',
-                        level=logging.DEBUG,
-                        format='%(levelname)s %(message)s')
+    if options.verbose:
+        file_logger = os.path.join(options.output_folder, 'log.txt')
+        logging.basicConfig(filename=file_logger,
+                            filemode='w',
+                            level=logging.DEBUG,
+                            format='%(levelname)s %(message)s')
 
     if options.scenario_filename:
         conf = Scenario(cfg_file=options.scenario_filename,

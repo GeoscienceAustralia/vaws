@@ -1,10 +1,6 @@
 """
-    Connection Module - reference storage Connections
-        - loaded from database
-        - imported from '../data/houses/subfolder'
+    Connection Module -
 
-    FIXME!!!!! NEED TO CLARIFY MEAN, STD whether it's arithmetic or logarithmic
-    and how to deal with zero value
 """
 
 import numpy as np
@@ -85,15 +81,6 @@ class Connection(object):
         assert isinstance(_tuple, tuple)
         self._grid = _tuple
 
-    # @property
-    # def group_name(self):
-    #     return self._group_name
-    #
-    # @group_name.setter
-    # def group_name(self, value):
-    #     assert isinstance(value, str)
-    #     self._group_name = value
-
     @property
     def influences(self):
         return self._influences
@@ -118,8 +105,7 @@ class Connection(object):
         Returns: sample of strength following log normal dist.
 
         """
-        mu, std = compute_arithmetic_mean_stddev(self.lognormal_strength[0],
-                                                 self.lognormal_strength[1])
+        mu, std = compute_arithmetic_mean_stddev(*self.lognormal_strength)
         mu *= mean_factor
         std *= cov_factor
 
@@ -134,9 +120,8 @@ class Connection(object):
         Returns: sample of dead load following log normal dist.
 
         """
-        self.dead_load = sample_lognormal(self.lognormal_dead_load[0],
-                                          self.lognormal_dead_load[1],
-                                          rnd_state)
+        self.dead_load = sample_lognormal(*(self.lognormal_dead_load +
+                                            (rnd_state,)))
 
     def cal_load(self):
         """
@@ -155,6 +140,7 @@ class Connection(object):
 
                 for _inf in self.influences.itervalues():
 
+                    temp = 0.0
                     try:
                         temp = _inf.coeff * _inf.source.area * _inf.source.pz
 
@@ -164,7 +150,7 @@ class Connection(object):
                                 _inf.source.pz))
 
                     except TypeError:
-                        temp = 0.0
+                        pass
 
                     except AttributeError:
                         logging.critical('zone {} at {} has {:.1f}'.format(
@@ -194,6 +180,10 @@ class Connection(object):
                             'conn {} at {} has {}'.format(
                                 _inf.source.name, _inf.source.grid,
                                 _inf.source.load))
+
+                self.load += self.dead_load
+
+                logging.debug('dead load: {:.3f}'.format(self.dead_load))
 
             logging.debug('load of conn {}: {:.3f}'.format(self.name, self.load))
 
@@ -553,10 +543,6 @@ class ConnectionTypeGroup(object):
                 else:
                     infl_coeff = 1.0
 
-                # logging.debug('conn {} at {} is distributed'.format(
-                #     source_conn.name, source_conn.grid))
-                # source_conn.distributed = True
-
                 source_conn = self.conn_by_grid[row, col]
 
                 try:
@@ -585,7 +571,7 @@ class ConnectionTypeGroup(object):
                 source_conn.influences.clear()
                 self.conn_by_grid[row, col].load = 0.0
 
-        elif self.dist_dir == 'col':  # sheeting
+        elif self.dist_dir == 'col' and self.patch_dist:  # rafter
             # distributed over the same char.
 
             # row: index of chr, col: index of number e.g, 0,0 : A1
@@ -620,6 +606,58 @@ class ConnectionTypeGroup(object):
                 #     source_zone.distributed = True
 
                 # source_zone = self.house.zone_by_grid[row, col]
+                source_conn = self.conn_by_grid[row, col]
+
+                try:
+                    target_conn = self.conn_by_grid[row, intact_right[0]]
+                except IndexError:
+                    pass
+                else:
+                    target_conn.update_influence(source_conn, infl_coeff)
+                    logging.debug('Influence of conn {} is updated: '
+                                  'conn {} with {:.2f}'.format(target_conn.name,
+                                                               source_conn.name,
+                                                               infl_coeff))
+
+                try:
+                    target_conn = self.conn_by_grid[row, intact_left[-1]]
+                except IndexError:
+                    pass
+                else:
+                    target_conn.update_influence(source_conn, infl_coeff)
+                    logging.debug('Influence of conn {} is updated: '
+                                  'conn {} with {:.2f}'.format(target_conn.name,
+                                                               source_conn.name,
+                                                               infl_coeff))
+
+                # empty the influence of source connection
+                source_conn.influences.clear()
+                self.conn_by_grid[row, col].load = 0.0
+
+        elif self.dist_dir == 'col' and self.patch_dist == 0:  # sheeting
+
+            # distributed over the same char.
+
+            # row: index of chr, col: index of number e.g, 0,0 : A1
+            # for row, col in zip(*np.where(group.damage_grid)):
+
+            for row0, col in zip(
+                    *np.where(self.damage_grid[self.damaged, :] > 0)):
+
+                row = self.damaged[row0]
+
+                intact = np.where(-self.damage_grid[row, :] == 0)[0]
+
+                intact_left = intact[np.where(col > intact)[0]]
+                intact_right = intact[np.where(col < intact)[0]]
+
+                logging.debug('rows of intact zones:{}'.format(intact))
+
+                if intact_left.size * intact_right.size > 0:
+                    infl_coeff = 0.5
+                else:
+                    infl_coeff = 1.0
+
                 source_conn = self.conn_by_grid[row, col]
 
                 try:

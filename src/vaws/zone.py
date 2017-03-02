@@ -22,13 +22,21 @@ class Zone(object):
         assert isinstance(zone_name, str)
         self.name = zone_name
 
-        default_attr = dict(area=None,
-                            cpi_alpha=None,
-                            wall_dir=None,
-                            cpe_mean=dict(),
-                            cpe_str_mean=dict(),
-                            cpe_eave_mean=dict(),
-                            is_roof_edge=dict())
+        self.area = None
+        self.cpi_alpha = None
+        self.wall_dir = None
+        self.cpe_mean = dict()
+        self.cpe_str_mean = dict()
+        self.cpe_eave_mean = dict()
+        self.is_roof_edge = dict()
+
+        default_attr = dict(area=self.area,
+                            cpi_alpha=self.cpi_alpha,
+                            wall_dir=self.wall_dir,
+                            cpe_mean=self.cpe_mean,
+                            cpe_str_mean=self.cpe_str_mean,
+                            cpe_eave_mean=self.cpe_eave_mean,
+                            is_roof_edge=self.is_roof_edge)
 
         default_attr.update(kwargs)
         for key, value in default_attr.iteritems():
@@ -58,7 +66,7 @@ class Zone(object):
         zone areas for load calculations.
 
         Args:
-            wind_dir_index:
+            wind_dir_index: 0 to 7
             cpe_cov: cov of dist. of CPE for sheeting and batten
             cpe_k: shape parameter of dist. of CPE
             cpe_str_cov: cov. of dist of CPE for rafter
