@@ -85,6 +85,15 @@ def simulate_wind_damage_to_houses(cfg):
     return list_results
 
 
+def run_timed_simulation(cfg):
+    # simulator main_loop
+    tic = time.time()
+
+    results = simulate_wind_damage_to_houses(cfg)
+
+    return time.time()-tic, results
+
+
 def run_simulation_per_house(id_sim, cfg):
     """
 
