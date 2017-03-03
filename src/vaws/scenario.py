@@ -446,13 +446,24 @@ class Scenario(object):
                 fields = line.strip().rstrip(',').split(',')
                 for i, value in enumerate(fields):
                     if i == 0:
-                        damaged_conn = int(value)
+                        try:
+                            damaged_conn = int(value)
+                        except ValueError:
+                            damaged_conn = value
                     elif i == 1:
-                        target_conn = int(value)
+                        try:
+                            target_conn = int(value)
+                        except ValueError:
+                            target_conn = value
                     elif i % 2 == 0:
-                        sub_key = value
+                        try:
+                            sub_key = int(value)
+                        except ValueError:
+                            sub_key = value
                     elif damaged_conn and target_conn and sub_key:
-                        _dic.setdefault(damaged_conn, {}).setdefault(target_conn, {})[sub_key] = float(value)
+                        _dic.setdefault(damaged_conn, {}
+                                        ).setdefault(target_conn, {}
+                                                     )[sub_key] = float(value)
 
         return _dic
 

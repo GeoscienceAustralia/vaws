@@ -13,6 +13,11 @@ class MyTestCase(unittest.TestCase):
         self.assertAlmostEqual(mu, -0.1116, places=4)
         self.assertAlmostEqual(std, 0.4724, places=4)
 
+        _tuple = 1.0, 0.5
+        mu, std = compute_logarithmic_mean_stddev(*_tuple)
+        self.assertAlmostEqual(mu, -0.1116, places=4)
+        self.assertAlmostEqual(std, 0.4724, places=4)
+
         mu, std = compute_logarithmic_mean_stddev(0.0, 0.0)
         self.assertAlmostEqual(mu, -999, places=4)
         self.assertAlmostEqual(std, 0.0, places=4)
@@ -93,7 +98,8 @@ class MyTestCase(unittest.TestCase):
 
         plt.figure()
         plt.hist(rv_list)
-        plt.show()
+        plt.pause(1.0)
+        plt.close()
 
     def test_gev_calc2(self):
         mean_est, cov_est, shape_k = -0.95, 0.07, 0.1
@@ -113,7 +119,8 @@ class MyTestCase(unittest.TestCase):
 
         plt.figure()
         plt.hist(rv_list)
-        plt.show()
+        plt.pause(1.0)
+        plt.close()
 
 
 if __name__ == '__main__':

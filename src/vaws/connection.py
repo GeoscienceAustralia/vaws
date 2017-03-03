@@ -13,6 +13,9 @@ from stats import compute_arithmetic_mean_stddev, sample_lognormal, \
 
 
 class Connection(object):
+
+    use_struct_pz_for = ['rafter', 'piersgroup', 'wallracking']
+
     def __init__(self, conn_name=None, **kwargs):
         """
 
@@ -40,6 +43,7 @@ class Connection(object):
         self._lognormal_strength = None
         self._lognormal_dead_load = None
         self._influences = None
+        self._influence_patch = None
         self._grid = None  # zero-based col, row index
 
         self.strength = None
@@ -94,6 +98,15 @@ class Connection(object):
             self._influences[key] = Influence(infl_name=key,
                                               infl_coeff=value)
 
+    @property
+    def influence_patch(self):
+        return self._influence_patch
+
+    @influence_patch.setter
+    def influence_patch(self, _dic):
+        assert isinstance(_dic, dict)
+        self._influence_patch = _dic
+
     def sample_strength(self, mean_factor, cov_factor, rnd_state):
         """
 
@@ -136,56 +149,33 @@ class Connection(object):
 
             logging.debug('computing load of conn {}'.format(self.name))
 
-            if self.group_name == 'sheeting':
+            for _inf in self.influences.itervalues():
 
-                for _inf in self.influences.itervalues():
+                try:
 
-                    temp = 0.0
-                    try:
-                        temp = _inf.coeff * _inf.source.area * _inf.source.pz
+                    temp = _inf.coeff * _inf.source.area * _inf.source.pressure
 
-                        logging.debug(
-                            'load by {}: {:.2f} x {:.3f} x {:.3f}'.format(
-                                _inf.source.name, _inf.coeff, _inf.source.area,
-                                _inf.source.pz))
+                    # if self.group_name in self.use_struct_pz_for:
+                    #     temp = _inf.coeff * _inf.source.area * _inf.source.pz_str
 
-                    except TypeError:
-                        pass
+                    logging.debug(
+                        'load by {}: {:.2f} x {:.3f} x {:.3f}'.format(
+                            _inf.source.name, _inf.coeff, _inf.source.area,
+                            _inf.source.pressure))
 
-                    except AttributeError:
-                        logging.critical('zone {} at {} has {:.1f}'.format(
-                            _inf.source, _inf.id, _inf.coeff))
+                except AttributeError:
 
-                    self.load += temp
+                    temp = _inf.coeff * _inf.source.load
 
-                logging.debug('dead load: {:.3f}'.format(self.dead_load))
+                    logging.debug(
+                        'load by {}: {:.2f} times {:.3f}'.format(
+                            _inf.source.name, _inf.coeff, _inf.source.load))
 
-                self.load += self.dead_load
+                self.load += temp
 
-            else:
+            logging.debug('dead load: {:.3f}'.format(self.dead_load))
 
-                # inf.source.load should be pre-computed
-                for _inf in self.influences.itervalues():
-
-                    try:
-                        self.load += _inf.coeff * _inf.source.load
-
-                        logging.debug(
-                            'load by {}: {:.2f} times {:.3f}'.format(
-                                _inf.source.name, _inf.coeff, _inf.source.load))
-
-                    except TypeError:
-
-                        logging.debug(
-                            'conn {} at {} has {}'.format(
-                                _inf.source.name, _inf.source.grid,
-                                _inf.source.load))
-
-                self.load += self.dead_load
-
-                logging.debug('dead load: {:.3f}'.format(self.dead_load))
-
-            logging.debug('load of conn {}: {:.3f}'.format(self.name, self.load))
+            self.load += self.dead_load
 
     def set_damage(self, wind_speed):
         """
@@ -304,8 +294,6 @@ class ConnectionType(object):
 
 class ConnectionTypeGroup(object):
 
-    use_struct_pz_for = ['rafter', 'piersgroup', 'wallracking']
-
     def __init__(self, group_name=None, **kwargs):
         """
 
@@ -358,6 +346,7 @@ class ConnectionTypeGroup(object):
         # negative: no connection, 0: Intact,  1: Failed
 
         self._conn_by_grid = dict()  # dict of connections with zone loc grid
+        self._conn_by_name = dict()  # dict of connections with conn name
 
         # self._dist_tuple = None
 
@@ -435,6 +424,18 @@ class ConnectionTypeGroup(object):
 
         self._conn_by_grid[_conn_grid] = _conn
 
+    @property
+    def conn_by_name(self):
+        return self._conn_by_name
+
+    @conn_by_name.setter
+    def conn_by_name(self, _tuple):
+
+        assert isinstance(_tuple, tuple)
+        _conn_name, _conn = _tuple
+
+        self._conn_by_name[_conn_name] = _conn
+
     def cal_repair_cost(self, value):
         """
 
@@ -449,7 +450,7 @@ class ConnectionTypeGroup(object):
         except AssertionError:
             self.repair_cost = 0.0
 
-        logging.debug('group {}: repair_cost: {:.3f} for value {:.3f}'.format(
+        logging.debug('group {}: repair_cost: {:.3f} for {:.3f}'.format(
             self.name, self.repair_cost, value))
 
     def cal_prop_damaged(self):
@@ -582,57 +583,21 @@ class ConnectionTypeGroup(object):
 
                 row = self.damaged[row0]
 
-                # # looking at influences
-                # linked_conn = None
-                # for val in source_conn.influences.itervalues():
-                #     if val.coeff == 1.0:
-                #         linked_conn = val.source
-
-                intact = np.where(-self.damage_grid[row, :] == 0)[0]
-
-                intact_left = intact[np.where(col > intact)[0]]
-                intact_right = intact[np.where(col < intact)[0]]
-
-                logging.debug('rows of intact zones:{}'.format(intact))
-
-                if intact_left.size * intact_right.size > 0:
-                    infl_coeff = 0.5
-                else:
-                    infl_coeff = 1.0
-
-                # if group.set_zone_to_zero:
-                #     logging.debug('zone {} at {} distributed'.format(
-                #         source_zone.name, source_zone.grid))
-                #     source_zone.distributed = True
-
-                # source_zone = self.house.zone_by_grid[row, col]
                 source_conn = self.conn_by_grid[row, col]
 
-                try:
-                    target_conn = self.conn_by_grid[row, intact_right[0]]
-                except IndexError:
-                    pass
-                else:
-                    target_conn.update_influence(source_conn, infl_coeff)
-                    logging.debug('Influence of conn {} is updated: '
-                                  'conn {} with {:.2f}'.format(target_conn.name,
-                                                               source_conn.name,
-                                                               infl_coeff))
+                for target_name, infl_dic in source_conn.influence_patch.iteritems():
 
-                try:
-                    target_conn = self.conn_by_grid[row, intact_left[-1]]
-                except IndexError:
-                    pass
-                else:
-                    target_conn.update_influence(source_conn, infl_coeff)
-                    logging.debug('Influence of conn {} is updated: '
-                                  'conn {} with {:.2f}'.format(target_conn.name,
-                                                               source_conn.name,
-                                                               infl_coeff))
+                    target_conn = self.conn_by_name[target_name]
 
-                # empty the influence of source connection
-                source_conn.influences.clear()
-                self.conn_by_grid[row, col].load = 0.0
+                    for key, value in infl_dic.iteritems():
+                        try:
+                            target_conn.influences[key].coeff = value
+                        except KeyError:
+                            logging.error('{} not found in the influences {}'.
+                                          format(key, target_name))
+
+                    logging.debug('Influence of conn {} is updated by conn {}'
+                                  .format(target_name, source_conn.name))
 
         elif self.dist_dir == 'col' and self.patch_dist == 0:  # sheeting
 

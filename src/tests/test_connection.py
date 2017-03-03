@@ -96,25 +96,27 @@ class MyTestCase(unittest.TestCase):
 
         self.assertAlmostEqual(_zone.cpi_alpha, 0.0, places=2)
         self.assertAlmostEqual(_zone.cpe_mean[0], -1.25, places=2)
+        self.assertAlmostEqual(_zone.cpe_eave_mean[0], 0.7, places=2)
+        self.assertAlmostEqual(_zone.cpe_str_mean[0], 0.0, places=2)
         self.assertAlmostEqual(house.zones['A1'].area, 0.2025, places=4)
 
         # pz = qz * (cpe - cpi_alpha * cpi) * diff_shielding
-        self.assertAlmostEqual(house.zones['A1'].pz, -1.0234, places=4)
+        #self.assertAlmostEqual(house.zones['A1'].pressure, -1.0234, places=4)
 
         _conn = house.connections[1]
 
         # init
         self.assertEqual(_conn.damaged, False)
         self.assertEqual(_conn.load, None)
-        self.assertAlmostEqual(_conn.dead_load, 0.0130, places=4)
+        self.assertAlmostEqual(_conn.dead_load, 0.01013, places=4)
         _conn.cal_load()
 
         # load = influence.pz * influence.coeff * influence.area + dead_load
         self.assertAlmostEqual(_conn.influences['A1'].source.area, 0.2025,
                                places=4)
-        self.assertAlmostEqual(_conn.influences['A1'].source.pz, -1.0234,
+        self.assertAlmostEqual(_conn.influences['A1'].source.pressure, -0.7485,
                                places=4)
-        self.assertAlmostEqual(_conn.load, -0.1942, places=4)
+        self.assertAlmostEqual(_conn.load, -0.1414, places=4)
 
     def test_check_damage(self):
 
@@ -133,12 +135,16 @@ class MyTestCase(unittest.TestCase):
         # compute pz using constant cpe
         for _zone in house.zones.itervalues():
             _zone.cpe = _zone.cpe_mean[0]
+            _zone.cpe_eave = _zone.cpe_eave_mean[0]
+            _zone.cpe_str = _zone.cpe_str_mean[0]
             _zone.calc_zone_pressures(wind_dir_index,
                                       cpi,
                                       qz,
                                       Ms,
                                       building_spacing)
-            self.assertAlmostEqual(_zone.pz, qz * _zone.cpe_mean[0], places=4)
+            ref_value = qz * (_zone.cpe_mean[0] + _zone.cpe_str_mean[0]
+                              - _zone.cpe_eave_mean[0])
+            self.assertAlmostEqual(_zone.pressure, ref_value, places=4)
 
         # compute dead_load and strength using constant values
         for _conn in house.connections.itervalues():
@@ -163,7 +169,7 @@ class MyTestCase(unittest.TestCase):
         group.check_damage(wind_speed=wind_speed)
 
         ref_dic = {x: False for x in range(1, 61)}
-        for i in [8, 14, 20, 26]:
+        for i in [2, 8, 14, 20, 26]:
             ref_dic[i] = True
 
         for id_conn, _conn in house.connections.iteritems():
@@ -173,15 +179,15 @@ class MyTestCase(unittest.TestCase):
                 print '{}: {} vs {}'.format(_conn.name, _conn.damaged,
                                             ref_dic[id_conn])
 
-        ref_prop = {'sheetinggable': 0.0, 'sheetingeave': 0.0,
+        ref_prop = {'sheetinggable': 0.25, 'sheetingeave': 0.0,
                     'sheetingcorner': 0.0, 'sheeting': 0.25}
-        ref_capacity = {'sheetinggable': 9999, 'sheetingeave': 9999,
+        ref_capacity = {'sheetinggable': 75.0, 'sheetingeave': 9999,
                         'sheetingcorner': 9999, 'sheeting': 75.0}
         for id_type, _type in group.types.iteritems():
             self.assertAlmostEqual(_type.prop_damaged_type,
                                    ref_prop[id_type], places=3)
             self.assertAlmostEqual(_type.damage_capacity,
-                                   ref_capacity[id_type], places=1)
+                                  ref_capacity[id_type], places=1)
 
 if __name__ == '__main__':
     unittest.main()

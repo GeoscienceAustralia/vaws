@@ -4,10 +4,7 @@
         - imported from '../data/houses/subfolder' (so we need python constr)
 """
 
-import os
 import numpy as np
-import logging
-import pandas as pd
 from shapely.geometry import Polygon
 from collections import OrderedDict
 
@@ -89,7 +86,7 @@ class House(object):
 
             _zone = Zone(zone_name=zone_name, **dic_zone)
 
-            _zone.sample_zone_pressure(
+            _zone.sample_zone_cpe(
                 wind_dir_index=self.wind_orientation,
                 cpe_cov=self.cpe_cov,
                 cpe_k=self.cpe_k,
@@ -140,16 +137,20 @@ class House(object):
                     _conn.grid = self.zones[_conn.zone_loc].grid
                     _conn.influences = self.cfg.dic_influences[_conn.name]
 
+                    if _conn.name in self.cfg.dic_influence_patches:
+                        _conn.influence_patch = \
+                            self.cfg.dic_influence_patches[_conn.name]
+
                     _group.damage_grid[_conn.grid] = 0  # intact
                     costing_area_by_group += _type.costing_area
                     _group.conn_by_grid = _conn.grid, _conn
+                    _group.conn_by_name = _conn.name, _conn
 
-                    # linking connections either zones or connections
-                    if _conn.group_name == 'sheeting':
-                        for _inf in _conn.influences.itervalues():
+                    # linking connections either zones or connections\
+                    for _inf in _conn.influences.itervalues():
+                        try:
                             _inf.source = self.zones[_inf.name]
-                    else:
-                        for _inf in _conn.influences.itervalues():
+                        except KeyError:
                             _inf.source = self.connections[_inf.name]
 
                 self.types[type_name] = _type

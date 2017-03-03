@@ -81,7 +81,9 @@ class MyTestCase(unittest.TestCase):
         plt.figure()
         for source in sources1:
             plt.scatter(source.x, source.y)
-        plt.show()
+        # plt.show()
+        plt.pause(1.0)
+        plt.close()
 
         # staggered source
         sources2 = Debris.create_sources(self.cfg.debris_radius,
@@ -94,7 +96,9 @@ class MyTestCase(unittest.TestCase):
         plt.figure()
         for source in sources2:
             plt.scatter(source.x, source.y)
-        plt.show()
+        # plt.show()
+        plt.pause(1.0)
+        plt.close()
 
     def test_footprint04(self):
 
@@ -110,7 +114,9 @@ class MyTestCase(unittest.TestCase):
         ax.set_xlim([-40, 20])
         ax.set_ylim([-20, 20])
         plt.title('Wind direction: 0')
-        plt.show()
+        # plt.show()
+        plt.pause(1.0)
+        plt.close()
 
     def test_footprint15(self):
 
@@ -126,7 +132,9 @@ class MyTestCase(unittest.TestCase):
         ax.set_xlim([-40, 20])
         ax.set_ylim([-20, 20])
         plt.title('Wind direction: 1')
-        plt.show()
+        # plt.show()
+        plt.pause(1.0)
+        plt.close()
 
     def test_footprint26(self):
 
@@ -142,7 +150,9 @@ class MyTestCase(unittest.TestCase):
         ax.set_xlim([-40, 20])
         ax.set_ylim([-20, 20])
         plt.title('Wind direction: 2')
-        plt.show()
+        # plt.show()
+        plt.pause(1.0)
+        plt.close()
 
     def test_footprint37(self):
 
@@ -158,7 +168,9 @@ class MyTestCase(unittest.TestCase):
         ax.set_xlim([-40, 20])
         ax.set_ylim([-20, 20])
         plt.title('Wind direction: 3')
-        plt.show()
+        # plt.show()
+        plt.pause(1.0)
+        plt.close()
 
     def test_footprint_non_rect(self):
         """ Not working yet """
@@ -179,7 +191,9 @@ class MyTestCase(unittest.TestCase):
         ax.set_xlim([-40, 20])
         ax.set_ylim([-20, 20])
         plt.title('Wind direction: 0')
-        plt.show()
+        # plt.show()
+        plt.pause(1.0)
+        plt.close()
 
     def test_contains(self):
         rect = Polygon([(-15, 4), (15, 4), (15, -4), (-15, -4)])
