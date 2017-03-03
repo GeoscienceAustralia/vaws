@@ -20,7 +20,7 @@ def simulation(house_damage, conn_capacity, wind_speeds):
 
     # compute zone pressures
     cpi = 0.0
-    wind_dir_index = 3
+    wind_dir_index = 0
     Ms = 1.0
     building_spacing = 0
     house_damage.house.mzcat = 1.0
@@ -37,6 +37,8 @@ def simulation(house_damage, conn_capacity, wind_speeds):
         for _zone in house_damage.house.zones.itervalues():
 
             _zone.cpe = _zone.cpe_mean[wind_dir_index]
+            _zone.cpe_str = _zone.cpe_str_mean[wind_dir_index]
+            _zone.cpe_eave = _zone.cpe_eave_mean[wind_dir_index]
 
             _zone.calc_zone_pressures(wind_dir_index,
                                       cpi,
@@ -108,6 +110,8 @@ class TestScenario1(unittest.TestCase):
         for _zone in self.house_damage.house.zones.itervalues():
 
             _zone.cpe = _zone.cpe_mean[0]
+            _zone.cpe_str = _zone.cpe_str_mean[0]
+            _zone.cpe_eave = _zone.cpe_eave_mean[0]
             _zone.calc_zone_pressures(wind_dir_index,
                                       cpi,
                                       qz,
@@ -128,7 +132,7 @@ class TestScenario1(unittest.TestCase):
                 pass
             except AssertionError:
                 print('{} is different from {} for conn #{}'.format(
-                    ref_load[_conn.name], _conn.load, _conn.id))
+                    ref_load[_conn.name], _conn.load, _conn.name))
 
 
 class TestScenario2(unittest.TestCase):
@@ -317,7 +321,6 @@ class TestScenario6(unittest.TestCase):
         cfg = Scenario(
             cfg_file=os.path.join(path, '../../scenarios/test_scenario6.cfg'),
             output_path=cls.path_output)
-
         cls.house_damage = HouseDamage(cfg, seed=0)
 
         # set up logging
@@ -329,14 +332,15 @@ class TestScenario6(unittest.TestCase):
 
     def test_damage_sheeting_batten_rafter(self):
 
-        conn_capacity = {40.0: [41, 43],
-                         70.0: [42],
-                         75.0: [40, 44],
-                         90.0: [46],
-                         95.0: [45],
-                         9999: range(1, 40)}
-        conn_capacity[9999].append(47)
+        # conn_capacity = {40.0: [41, 43],
+        #                  70.0: [42],
+        #                  75.0: [40, 44],
+        #                  90.0: [46],
+        #                  95.0: [45],
+        #                  9999: range(1, 40)}
+        # conn_capacity[9999].append(47)
 
+        conn_capacity = {9999: range(1, 48)}
         simulation(self.house_damage, conn_capacity,
                    wind_speeds=np.arange(40.0, 100.0, 5.0))
 
@@ -640,7 +644,39 @@ class TestScenario14(unittest.TestCase):
         simulation(self.house_damage, conn_capacity,
                    wind_speeds=np.arange(40.0, 120, 1.0))
 
+
+class TestScenario15(unittest.TestCase):
+
+    @classmethod
+    def setUpClass(cls):
+
+        path = '/'.join(__file__.split('/')[:-1])
+        cls.path_output = os.path.join(path, 'output')
+
+        cfg = Scenario(
+            cfg_file=os.path.join(path, '../../scenarios/test_scenario15.cfg'),
+            output_path=cls.path_output)
+        cls.house_damage = HouseDamage(cfg, seed=0)
+
+        # set up logging
+        file_logger = os.path.join(cls.path_output, 'log_test15.txt')
+        logging.basicConfig(filename=file_logger,
+                            filemode='w',
+                            level=logging.DEBUG,
+                            format='%(levelname)s %(message)s')
+
+    def test_damage_sheeting_batten_rafter(self):
+
+        conn_capacity = {67.0: [25, 27],
+                         80.0: [2, 3, 4, 5, 8, 9, 10, 11],
+                         81.0: [1, 6, 7, 12],
+                         87.0: [26],
+                         9999: range(13, 25)}
+
+        simulation(self.house_damage, conn_capacity,
+                   wind_speeds=np.arange(40.0, 100.0, 1.0))
+
 if __name__ == '__main__':
-    suite = unittest.TestLoader().loadTestsFromTestCase(TestScenario9)
-    unittest.TextTestRunner(verbosity=2).run(suite)
-    #unittest.main(verbosity=2)
+    #suite = unittest.TestLoader().loadTestsFromTestCase(TestScenario1)
+    #unittest.TextTestRunner(verbosity=2).run(suite)
+    unittest.main(verbosity=2)

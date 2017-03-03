@@ -31,13 +31,13 @@ class MyTestCase(unittest.TestCase):
         self.assertEqual(self.zone.is_wall_zone, False)
 
     def test_calc_zone_pressures(self):
-        self.zone.sample_zone_pressure(wind_dir_index=3,
-                                       cpe_cov=0.12,
-                                       cpe_k=0.1,
-                                       cpe_str_cov=0.07,
-                                       big_a=0.486,
-                                       big_b=1.145,
-                                       rnd_state=self.rnd_state)
+        self.zone.sample_zone_cpe(wind_dir_index=3,
+                                  cpe_cov=0.12,
+                                  cpe_k=0.1,
+                                  cpe_str_cov=0.07,
+                                  big_a=0.486,
+                                  big_b=1.145,
+                                  rnd_state=self.rnd_state)
 
         self.assertAlmostEqual(self.zone.cpe, -0.1084, places=4)
         self.assertAlmostEqual(self.zone.cpe_eave, 0.0000, places=4)
@@ -53,8 +53,7 @@ class MyTestCase(unittest.TestCase):
                                       Ms=1.0,
                                       building_spacing=0)
 
-        self.assertAlmostEqual(self.zone.pz, -0.08876, places=4)
-        self.assertAlmostEqual(self.zone.pz_str, -0.03881, places=4)
+        self.assertAlmostEqual(self.zone.pressure, -0.1276, places=4)
 
     def test_num2str(self):
         self.assertEqual(num2str(1), 'A')

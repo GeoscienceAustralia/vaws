@@ -49,6 +49,7 @@ class Zone(object):
         self.cpe_str = None
         self.cpe_eave = None
 
+        self.pressure = None
         self.pz = None
         self.pz_str = None
 
@@ -57,7 +58,7 @@ class Zone(object):
         else:
             self.is_wall_zone = False
 
-    def sample_zone_pressure(self, wind_dir_index, cpe_cov, cpe_k,
+    def sample_zone_cpe(self, wind_dir_index, cpe_cov, cpe_k,
                              cpe_str_cov, big_a, big_b, rnd_state):
 
         """
@@ -122,12 +123,16 @@ class Zone(object):
 
         diff_shielding = dsn / dsd
 
-        # calculate zone pressure for sheeting and batten
-        self.pz = qz * (self.cpe - self.cpi_alpha * cpi) * diff_shielding
+        # # calculate zone pressure for sheeting and batten
+        # self.pz =
+        #
+        # # calculate zone structure pressure for rafter
+        # self.pz_str = qz * (self.cpe_str - self.cpi_alpha * cpi
+        #                     - self.cpe_eave) * diff_shielding
 
-        # calculate zone structure pressure for rafter
-        self.pz_str = qz * (self.cpe_str - self.cpi_alpha * cpi
-                            - self.cpe_eave) * diff_shielding
+        # either cpe or cpe_str should be zero, and cpe_eave is counted once
+        self.pressure = qz * (self.cpe + self.cpe_str - self.cpi_alpha * cpi
+                              - self.cpe_eave) * diff_shielding
 
     @staticmethod
     def get_zone_location_from_grid(_zone_grid):
