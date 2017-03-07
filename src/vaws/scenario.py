@@ -52,7 +52,6 @@ class Scenario(object):
         self.idx_speeds = None
         self.terrain_category = None
         self.wind_profile = None
-        self.debris_regions = None
         self.debris_types = None
 
         self.path_datafile = None
@@ -66,13 +65,13 @@ class Scenario(object):
         self.regional_shielding_factor = None
         self.building_spacing = None
         self.wind_dir_index = None
-        self.debris_radius = 0.0
-        self.debris_angle = 0.0
-        self.debris_extension = 0.0
-        self.flight_time_mean = 0.0
-        self.flight_time_stddev = 0.0
-        self.flight_time_mu = 0.0
-        self.flight_time_std = 0.0
+        self.debris_radius = None
+        self.debris_angle = None
+        self.debris_extension = None
+        self.flight_time_mean = None
+        self.flight_time_stddev = None
+        self.flight_time_log_mu = None
+        self.flight_time_log_std = None
         self.debris_sources = None
 
         # house data
@@ -93,6 +92,9 @@ class Scenario(object):
         self.df_damage_costing = None
         self.dic_damage_factorings = None
         self.df_footprint = None
+        self.dic_front_facing_walls = None
+        self.df_coverages = None
+        self.dic_walls = None
 
         self.file_model = None
         self.file_group = None
@@ -246,11 +248,16 @@ class Scenario(object):
             self.building_spacing = conf.getfloat(key, 'building_spacing')
             self.debris_radius = conf.getfloat(key, 'debris_radius')
             self.debris_angle = conf.getfloat(key, 'debris_angle')
-            self.debris_extension = self.conf_float(conf, key, 'debris_extension', 0.0)
-            self.flight_time_mean = self.conf_float(conf, key, 'flight_time_mean', 0.0)
-            self.flight_time_stddev = self.conf_float(conf, key, 'flight_time_stddev', 0.0)
+            self.debris_extension = self.conf_float(conf, key,
+                                                    'debris_extension', 0.0)
+            self.flight_time_mean = self.conf_float(conf, key,
+                                                    'flight_time_mean', 0.0)
+            self.flight_time_stddev = self.conf_float(conf, key,
+                                                      'flight_time_stddev', 0.0)
 
-            self.compute_logarithmic_mean_stddev()
+            self.flight_time_log_mu, self.flight_time_log_std = \
+                compute_logarithmic_mean_stddev(self.flight_time_mean,
+                                                self.flight_time_stddev)
 
             self.debris_sources = Debris.create_sources(self.debris_radius,
                                                         self.debris_angle,
@@ -290,10 +297,6 @@ class Scenario(object):
         else:
             print 'output path is not assigned'
 
-    def compute_logarithmic_mean_stddev(self):
-        self.flight_time_mu, self.flight_time_std = compute_logarithmic_mean_stddev(self.flight_time_mean,
-                                                                                    self.flight_time_stddev)
-
     def read_house_data(self):
 
         # house data files
@@ -319,7 +322,6 @@ class Scenario(object):
                                               'influence_patches.csv')
         file_damage_factorings = os.path.join(self.path_datafile,
                                               'damage_factorings.csv')
-        file_footprint = os.path.join(self.path_datafile, 'footprint.csv')
 
         self.df_house = pd.read_csv(file_house)
         self.df_zones = pd.read_csv(file_zones, index_col='name',
@@ -370,9 +372,50 @@ class Scenario(object):
         self.df_damage_costing = pd.read_csv(file_damage_costing)
 
         if self.flags['debris']:
+            file_footprint = os.path.join(self.path_datafile, 'footprint.csv')
+            file_coverages = os.path.join(self.path_datafile, 'coverages.csv')
+            file_coverage_types = os.path.join(self.path_datafile,
+                                               'coverage_types.csv')
+            file_wall = os.path.join(self.path_datafile, 'walls.csv')
+            file_front_facing_walls = os.path.join(self.path_datafile,
+                                                   'front_facing_walls.csv')
+
             self.df_footprint = pd.read_csv(file_footprint,
                                             skiprows=1,
                                             header=None)
+
+            self.dic_front_facing_walls = self.read_front_facing_walls(
+                file_front_facing_walls)
+
+            dic_coverage_types = pd.read_csv(
+                file_coverage_types, index_col='Name').to_dict('index')
+
+            self.dic_walls = pd.read_csv(
+                file_wall, index_col='wall_name').to_dict()['wall_area']
+
+            self.df_coverages = pd.read_csv(file_coverages)
+
+            self.df_coverages['log_failure_momentum'] = \
+                self.df_coverages.apply(self.get_lognormal_tuple,
+                                        args=(dic_coverage_types,), axis=1)
+
+
+    @staticmethod
+    def read_front_facing_walls(filename):
+        _dic = dict()
+        with open(filename, 'r') as f:
+            next(f)  # skip the first line
+            for line in f:
+                fields = line.strip().rstrip(',').split(',')
+                _dic[fields[0]] = [int(x) for x in fields[1:]]
+        return _dic
+
+    @staticmethod
+    def get_lognormal_tuple(row, dic_):
+        _type = row['coverage_type']
+        _mean = dic_[_type]['failure_momentum_mean']
+        _sd = dic_[_type]['failure_momentum_cov'] * _mean
+        return compute_logarithmic_mean_stddev(_mean, _sd)
 
     @staticmethod
     def read_damage_factorings(filename):
@@ -502,17 +545,19 @@ class Scenario(object):
 
     def set_debris_types(self, file_debris_types, file_debris_regions):
 
-        self.debris_types = pd.read_csv(file_debris_types, index_col=0).to_dict('index')
-        self.debris_regions = pd.read_csv(file_debris_regions, index_col=0).to_dict('index')[self.region_name]
+        self.debris_types = pd.read_csv(
+            file_debris_types, index_col=0).to_dict('index')
+        debris_regions = pd.read_csv(
+            file_debris_regions, index_col=0).to_dict('index')[self.region_name]
 
         for key in self.debris_types:
 
             self.debris_types.setdefault(key, {})['ratio'] = \
-                self.debris_regions['{}_ratio'.format(key)]
+                debris_regions['{}_ratio'.format(key)]
 
             for item in ['frontalarea', 'mass']:
-                _mean = self.debris_regions['{0}_{1}_mean'.format(key, item)]
-                _std = self.debris_regions['{0}_{1}_stddev'.format(key, item)]
+                _mean = debris_regions['{0}_{1}_mean'.format(key, item)]
+                _std = debris_regions['{0}_{1}_stddev'.format(key, item)]
                 mu_lnx, std_lnx = compute_logarithmic_mean_stddev(_mean, _std)
                 self.debris_types.setdefault(key, {})['{}_mu'.format(item)] = mu_lnx
                 self.debris_types.setdefault(key, {})['{}_std'.format(item)] = std_lnx

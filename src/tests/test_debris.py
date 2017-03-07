@@ -1,19 +1,23 @@
 import unittest
 import os
+import numpy as np
 import matplotlib.pyplot as plt
 from descartes import PolygonPatch
 from shapely.geometry import Point, Polygon
+import logging
 
 from vaws.scenario import Scenario
 from vaws.debris import Debris
 
 
 class MyTestCase(unittest.TestCase):
+
     @classmethod
     def setUpClass(cls):
         path = '/'.join(__file__.split('/')[:-1])
         cfg_file = os.path.join(path, '../../scenarios/test_roof_sheeting2.cfg')
-        cls.cfg = Scenario(cfg_file=cfg_file)
+        cls.output_path = os.path.join(path, '../../outputs/output')
+        cls.cfg = Scenario(cfg_file=cfg_file, output_path=cls.output_path)
 
         cls.footprint_inst = Polygon([(-6.5, 4.0), (6.5, 4.0), (6.5, -4.0),
                                       (-6.5, -4.0), (-6.5, 4.0)])
@@ -64,7 +68,7 @@ class MyTestCase(unittest.TestCase):
     #     mgr.set_wind_direction_index(1)
     #     mgr.run(v, True)
     #     mgr.render(v)
-
+    '''
     def test_create_sources(self):
 
         self.cfg.debris_radius = 100.0
@@ -201,6 +205,120 @@ class MyTestCase(unittest.TestCase):
         self.assertFalse(rect.contains(Point(-100, -1.56)))
         self.assertFalse(rect.contains(Point(10.88, 4.514)))
         self.assertFalse(rect.contains(Point(7.773, 12.66)))
+
+    def test_cal_debris_momentum(self):
+
+        wind_speeds = np.arange(0.01, 120.0, 5.0)
+        flight_time = np.exp(self.cfg.flight_time_log_mu)
+        momentum = dict()
+        rnd_state = np.random.RandomState(1)
+
+        for _str, _value in self.cfg.debris_types.iteritems():
+
+            frontal_area = np.exp(_value['frontalarea_mu'])
+            mass = np.exp(_value['mass_mu'])
+
+            momentum[_str] = np.zeros_like(wind_speeds)
+            for i, wind_speed in enumerate(wind_speeds):
+                flight_distance = Debris.cal_flight_distance(_str,
+                                               flight_time,
+                                               frontal_area,
+                                               mass,
+                                               wind_speed)
+
+                momentum[_str][i] = Debris.cal_debris_mementum(_value['cdav'],
+                                                         frontal_area,
+                                                         flight_distance,
+                                                         mass,
+                                                         wind_speed,
+                                                         rnd_state)
+
+        dic_ = {'Compact': 'b', 'Sheet': 'r', 'Rod': 'g'}
+        plt.figure()
+        for _str, _value in momentum.iteritems():
+            plt.plot(wind_speeds, _value, color=dic_[_str],
+                     label=_str, linestyle='-')
+
+        plt.title('momentum')
+        plt.legend(loc=2)
+        # plt.show()
+        plt.pause(1.0)
+        plt.close()
+
+    def test_cal_flight_distance(self):
+
+        wind_speeds = np.arange(0.0, 120.0, 5.0)
+        flight_time = np.exp(self.cfg.flight_time_log_mu)
+        flight_distance = dict()
+        flight_distance_poly5 = dict()
+
+        for _str, _value in self.cfg.debris_types.iteritems():
+
+            frontal_area = np.exp(_value['frontalarea_mu'])
+            mass = np.exp(_value['mass_mu'])
+
+            flight_distance[_str] = np.zeros_like(wind_speeds)
+            flight_distance_poly5[_str] = np.zeros_like(wind_speeds)
+            for i, wind_speed in enumerate(wind_speeds):
+                flight_distance[_str][i] = \
+                    Debris.cal_flight_distance(_str,
+                                               flight_time,
+                                               frontal_area,
+                                               mass,
+                                               wind_speed)
+
+                flight_distance_poly5[_str][i] = \
+                    Debris.cal_flight_distance(_str,
+                                               flight_time,
+                                               frontal_area,
+                                               mass,
+                                               wind_speed,
+                                               flag_poly=5)
+
+        dic_ = {'Compact': 'b', 'Sheet': 'r', 'Rod': 'g'}
+        plt.figure()
+        for _str, _value in flight_distance.iteritems():
+            plt.plot(wind_speeds, _value, color=dic_[_str],
+                     label='{}_{}'.format(_str, '2'),
+                     linestyle='-')
+
+        for _str, _value in flight_distance_poly5.iteritems():
+            plt.plot(wind_speeds, _value, color=dic_[_str],
+                     label='{}_{}'.format(_str, '5'),
+                     linestyle='--')
+
+        plt.title('flight distance')
+        plt.legend(loc=2)
+        # plt.show()
+        plt.pause(1.0)
+        plt.close()
+    '''
+    def test_run(self):
+
+        # set up logging
+        file_logger = os.path.join(self.output_path, 'log_debris.txt')
+        logging.basicConfig(filename=file_logger,
+                            filemode='w',
+                            level=logging.DEBUG,
+                            format='%(levelname)s %(message)s')
+
+        _debris = Debris(cfg=self.cfg, )
+        _debris.footprint = (self.footprint_inst, 0)
+
+        rnd_state = np.random.RandomState(1)
+        wind_speeds = np.arange(0.0, 120.0, 5.0)
+
+        breached = []
+        damaged_area = []
+        for wind_speed in wind_speeds:
+            _debris.run(wind_speed, rnd_state)
+            breached.append(_debris.breached)
+            damaged_area.append(_debris.damaged_area)
+
+        plt.figure()
+        plt.plot(wind_speeds, np.array(damaged_area).cumsum() / _debris.area_walls * 100.0, '-')
+        plt.show()
+
 
 if __name__ == '__main__':
     unittest.main()

@@ -376,6 +376,11 @@ def process_commandline():
                       dest="output_folder",
                       help="folder name to store simulation results",
                       metavar="FOLDER")
+    parser.add_option("-v", "--verbose",
+                      action="store_true",
+                      dest="verbose",
+                      default=False,
+                      help="show verbose simulator output")
     return parser
 
 

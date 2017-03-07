@@ -59,7 +59,7 @@ class Zone(object):
             self.is_wall_zone = False
 
     def sample_zone_cpe(self, wind_dir_index, cpe_cov, cpe_k,
-                             cpe_str_cov, big_a, big_b, rnd_state):
+                        cpe_str_cov, big_a, big_b, rnd_state):
 
         """
         Sample external Zone Pressures for sheeting, structure and eaves Cpe,
@@ -122,13 +122,6 @@ class Zone(object):
                     dsn = 0.8 ** 2.0
 
         diff_shielding = dsn / dsd
-
-        # # calculate zone pressure for sheeting and batten
-        # self.pz =
-        #
-        # # calculate zone structure pressure for rafter
-        # self.pz_str = qz * (self.cpe_str - self.cpi_alpha * cpi
-        #                     - self.cpe_eave) * diff_shielding
 
         # either cpe or cpe_str should be zero, and cpe_eave is counted once
         self.pressure = qz * (self.cpe + self.cpe_str - self.cpi_alpha * cpi

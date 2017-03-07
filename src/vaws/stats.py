@@ -17,7 +17,7 @@ def sample_lognormal(mu_lnx, std_lnx, rnd_state):
 
     """
     try:
-        return rnd_state.lognormal(mu_lnx, std_lnx)
+        return rnd_state.lognormal(mean=mu_lnx, sigma=std_lnx)
     except ValueError:  # no sampling
         return exp(mu_lnx)
 

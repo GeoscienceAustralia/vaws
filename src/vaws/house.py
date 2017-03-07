@@ -51,7 +51,6 @@ class House(object):
         self.connections = dict()  # dict of connections with id
         self.zones = dict()  # dict of zones with id
         self.factors_costing = dict()  # dict of damage factoring with id
-        self.walls = dict()
         self.patches = dict()
 
         self.zone_by_name = dict()  # dict of zones with zone name
@@ -60,7 +59,7 @@ class House(object):
         # init house
         self.read_house_data()
 
-        # house is consisting of connections, zones, and walls
+        # house is consisting of connections, and zones
         self.set_house_wind_params()
         self.set_zones()
         self.set_connections()
@@ -157,8 +156,6 @@ class House(object):
 
             _group.costing_area = costing_area_by_group
             self.groups[group_name] = _group
-
-        # for item in db_house.walls:
 
         if self.cfg.flags['debris']:
             points = list()

@@ -3,7 +3,45 @@
 """
 import numpy as np
 from scipy.optimize.minpack import leastsq
- 
+from scipy.stats import weibull_min
+
+
+def vulnerability_weibull(alpha_, beta_, x, flag='pdf'):
+    """
+
+    vulnerability curve with Weibull function
+
+    Args:
+        _alpha, _beta: parameters for vulnerability curve
+        x: 3sec gust wind speed at 10m height
+        flag: 'pdf' or 'cdf'
+
+    Returns: weibull_min.flag(x, shape, loc=0, scale)
+
+    Notes
+    ----
+
+    weibull_min.pdf = c/s * (x/s)**(c-1) * exp(-(x/s)**c)
+        c: shape, s: scale, loc=0
+
+    weibull_min.cdf = 1 - exp(-(x/s)**c)
+
+    while Australian wind vulnerability is defined as
+
+        DI = 1 - exp(-(x/exp(beta))**(1/alpha))
+
+    therefore:
+
+        s = exp(beta)
+        c = 1/alpha
+
+    """
+    # convert alpha and beta to shape and scale respectively
+    shape_ = 1 / alpha_
+    scale_ = np.exp(beta_)
+
+    return getattr(weibull_min, flag)(x, shape_, loc=0, scale=scale_)
+
 
 def single_exponential_given_V(beta_, alpha_, x_arr):
     """
@@ -94,4 +132,4 @@ def fit_curve(x_arr, obs_arr, verbose=False):
     fitted_vals = single_exponential_given_V(A_final, x_arr)
     ss = (fitted_vals - obs_arr)**2  
     return A_final, ss.sum()
-    
+
