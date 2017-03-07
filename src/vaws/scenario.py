@@ -51,6 +51,7 @@ class Scenario(object):
         self.speeds = None
         self.idx_speeds = None
         self.terrain_category = None
+        self.path_wind_profiles = None
         self.wind_profile = None
         self.debris_types = None
 
@@ -181,10 +182,10 @@ class Scenario(object):
 
         self.set_terrain_category(conf.get(key, 'terrain_cat'))
         try:
-            path_wind_profiles = conf.get(key, 'path_wind_profiles')
+            self.path_wind_profiles = conf.get(key, 'path_wind_profiles')
         except ConfigParser.NoOptionError:
-            path_wind_profiles = '../data/gust_envelope_profiles'
-        self.set_wind_profile(path_wind_profiles)
+            self.path_wind_profiles = '../data/gust_envelope_profiles'
+        self.set_wind_profile(self.path_wind_profiles)
 
         self.path_datafile = os.path.join(self.path_cfg,
                                           conf.get(key, 'path_datafile'))

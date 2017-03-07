@@ -199,10 +199,9 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
         finiTable(self.ui.debrisTypes)
        
         # load up debris regions
-        debrisRegions = []
-        setupTable(self.ui.debrisRegions, debrisRegions)
-        irow = 0
-        for dr in debrisRegions:
+        setupTable(self.ui.debrisRegions, self.s.debris_regions)
+        # TODO complete debris model
+        for irow, dr in enumerate([]):
             self.ui.debrisRegions.setItem(irow, 0, QTableWidgetItem(dr.name))
             self.ui.debrisRegions.setItem(irow, 1, QTableWidgetItem("%0.3f" % dr.alpha))
             self.ui.debrisRegions.setItem(irow, 2, QTableWidgetItem("%0.3f" % dr.beta))
@@ -222,7 +221,7 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
             self.ui.debrisRegions.setItem(irow, 16, QTableWidgetItem("%0.3f" % dr.pfm))
             self.ui.debrisRegions.setItem(irow, 17, QTableWidgetItem("%0.3f" % dr.pfc))
             self.ui.debrisRegion.addItem(dr.name)
-            irow += 1
+
         finiTable(self.ui.debrisRegions)
         
     def showHouseInfoDlg(self):
@@ -232,21 +231,24 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
     
     def updateTerrainCategoryTable(self, tc):
         zarr = [3, 5, 7, 10, 12, 15, 17, 20, 25, 30]
-        parr = range(1, 11)
+
+        self.s.terrain_category = unicode(self.ui.terrainCategory.currentText())
+
+        self.s.set_wind_profile(self.s.path_wind_profiles)
+
         self.ui.boundaryProfile.setEditTriggers(QTableWidget.NoEditTriggers)
         self.ui.boundaryProfile.setRowCount(len(zarr))
         self.ui.boundaryProfile.setSelectionBehavior(QTableWidget.SelectRows)
         self.ui.boundaryProfile.clearContents()
-        irow = 0
-        for z in zarr:
-            self.ui.boundaryProfile.setItem(irow, 0, QTableWidgetItem("%0.3f" % z))
-            icol = 1
-            for p in parr:
-                # TODO figure out terrain.calculateMZCAT(unicode(tc), p, z)
+
+        for irow, head_col in enumerate(zarr):
+            self.ui.boundaryProfile.setItem(irow, 0, QTableWidgetItem("%0.3f" % head_col))
+
+        for icol in range(1, 11):
+            for irow in range(0, len(zarr)):
                 self.ui.boundaryProfile.setItem(irow, icol,
-                                                QTableWidgetItem("%0.3f" % 0.80))
-                icol += 1
-            irow += 1
+                                                QTableWidgetItem("%0.3f" % self.s.wind_profile[icol][irow]))
+
         self.ui.boundaryProfile.resizeColumnsToContents()
         
     def onConnectionTypesDoubleClicked(self, row, col):
@@ -378,11 +380,11 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
 
         # attempt to run the simulator, being careful with exceptions...
         try:
-            runTime = None
-            list_results = simulation.simulate_wind_damage_to_houses(self.s)
-            # runTime, self.house_results = self.simulator.simulator_mainloop()
-            if runTime is not None:
-                self.statusBar().showMessage(unicode('Simulation complete in %s' % runTime))
+            run_time, list_results = simulation.run_timed_simulation(self.s)
+
+            if run_time is not None:
+                self.statusBar().showMessage(unicode('Simulation '
+                                                     'complete in {:0.3f}'.format(run_time)))
                 self.updateVulnCurve()
                 self.updateHouseResultsTable()
                 self.updateConnectionTable()
@@ -390,6 +392,7 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
                 self.updateBreachPlot()
                 self.updateWaterIngressPlot()
                 self.has_run = True
+
         except IOError, err:
             QMessageBox.warning(self, 'VAWS Program Warning', unicode('A report file is still open by another program, unable to run simulation.'))
             self.statusBar().showMessage(unicode(''))
@@ -636,7 +639,7 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
     def newScenario(self):
         s = scenario.Scenario(20, 40.0, 120.0, 60.0, '2')
         s.setHouseName('Group 4 House')
-        s.setRegionName('Capital_city')
+        s.set_region_name('Capital_city')
         s.setOpt_DmgDistribute(True)
         s.setOpt_DmgPlotFragility(True)
         s.setOpt_DmgPlotVuln(True)
@@ -882,7 +885,7 @@ def run_gui():
         if options.output_folder is None:
             path_, _ = os.path.split(sys.argv[0])
             options.output_folder = os.path.abspath(
-                os.path.join(path_, '../outputs/output'))
+                os.path.join(path_, '../output'))
         else:
             options.output_folder = os.path.abspath(
                 os.path.join(os.getcwd(), options.output_folder))
