@@ -15,7 +15,6 @@ import pandas as pd
 from collections import OrderedDict
 
 from stats import compute_logarithmic_mean_stddev
-from debris import Debris
 
 
 class Scenario(object):
@@ -35,6 +34,22 @@ class Scenario(object):
     type_attributes = ['costing_area', 'dead_load_mean', 'dead_load_std',
                        'group_name', 'strength_mean', 'strength_std']
     conn_attributes = ['edge', 'type_name', 'zone_loc']
+
+    # model dependent attributes
+    list_house_bucket = ['profile', 'wind_orientation', 'construction_level',
+                          'mzcat']
+
+    # model and wind dependent attributes
+    list_house_damage_bucket = ['qz', 'Ms', 'cpi', 'cpiAt', 'collapse', 'di',
+                                'di_except_water']
+
+    # group: wind dependent attributes
+    list_group_bucket = ['prop_damaged_group', 'prop_damaged_area',
+                         'repair_cost']
+    list_type_bucket = ['damage_capacity', 'prop_damaged_type']
+    list_conn_bucket_wind = ['damaged', 'failure_v_raw', 'load']
+    list_conn_bucket = ['strength', 'dead_load']
+    list_zone_bucket = ['pressure', 'cpe', 'cpe_str', 'cpe_eave']
 
     def __init__(self, cfg_file=None, output_path=None):
 
@@ -64,7 +79,7 @@ class Scenario(object):
         self.fragility_thresholds = None
 
         self.source_items = None
-        self.regional_shielding_factor = None
+        self.regional_shielding_factor = 1.0
         self.building_spacing = None
         self.wind_dir_index = None
         self.debris_radius = 0.0
@@ -245,17 +260,16 @@ class Scenario(object):
         key = 'debris'
         if self.flags[key]:
 
+            from debris import Debris
+
             self.set_region_name(conf.get(key, 'region_name'))
             self.source_items = conf.getint(key, 'source_items')
             self.building_spacing = conf.getfloat(key, 'building_spacing')
             self.debris_radius = conf.getfloat(key, 'debris_radius')
             self.debris_angle = conf.getfloat(key, 'debris_angle')
-            self.debris_extension = self.conf_float(conf, key,
-                                                    'debris_extension', 0.0)
-            self.flight_time_mean = self.conf_float(conf, key,
-                                                    'flight_time_mean', 0.0)
-            self.flight_time_stddev = self.conf_float(conf, key,
-                                                      'flight_time_stddev', 0.0)
+            self.debris_extension = conf.getfloat(key, 'debris_extension')
+            self.flight_time_mean = conf.getfloat(key, 'flight_time_mean')
+            self.flight_time_stddev = conf.getfloat(key, 'flight_time_stddev')
 
             self.flight_time_log_mu, self.flight_time_log_std = \
                 compute_logarithmic_mean_stddev(self.flight_time_mean,

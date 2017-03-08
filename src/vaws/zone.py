@@ -50,8 +50,6 @@ class Zone(object):
         self.cpe_eave = None
 
         self.pressure = None
-        self.pz = None
-        self.pz_str = None
 
         if len(self.name) > 3 and self.name[0] == 'W':
             self.is_wall_zone = True
@@ -79,8 +77,8 @@ class Zone(object):
 
         """
 
-        self.cpe = sample_gev(self.cpe_mean[wind_dir_index], cpe_cov,
-                              big_a, big_b, cpe_k, rnd_state)
+        self.cpe = sample_gev(self.cpe_mean[wind_dir_index],
+                              cpe_cov, big_a, big_b, cpe_k, rnd_state)
 
         self.cpe_str = sample_gev(self.cpe_str_mean[wind_dir_index],
                                   cpe_str_cov, big_a, big_b, cpe_k, rnd_state)
