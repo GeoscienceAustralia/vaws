@@ -82,16 +82,7 @@ def simulate_wind_damage_to_houses(cfg):
         hdf[item] = pd.Panel(dic_)
     hdf.close()
 
-    return list_results
-
-
-def run_timed_simulation(cfg):
-    # simulator main_loop
-    tic = time.time()
-
-    results = simulate_wind_damage_to_houses(cfg)
-
-    return time.time()-tic, results
+    return time.time()-tic, list_results
 
 
 def run_simulation_per_house(id_sim, cfg):

@@ -380,7 +380,7 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
 
         # attempt to run the simulator, being careful with exceptions...
         try:
-            run_time, list_results = simulation.run_timed_simulation(self.s)
+            run_time, list_results = simulation.simulate_wind_damage_to_houses(self.s)
 
             if run_time is not None:
                 self.statusBar().showMessage(unicode('Simulation '
@@ -768,7 +768,10 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
         new_scenario.debris_extension = float(self.ui.debrisExtension.text())
         new_scenario.flight_time_mean = float(unicode(self.ui.flighttimeMean.text()))
         new_scenario.flight_time_stddev = float(unicode(self.ui.flighttimeStddev.text()))
-        new_scenario.compute_logarithmic_mean_stddev()
+
+        new_scenario.flight_time_log_mu, new_scenario.flight_time_log_std = \
+            stats.compute_logarithmic_mean_stddev(new_scenario.flight_time_mean,
+                                                  new_scenario.flight_time_stddev)
 
         new_scenario.red_v = float(unicode(self.ui.redV.value()))
         new_scenario.blue_v = float(unicode(self.ui.blueV.value()))

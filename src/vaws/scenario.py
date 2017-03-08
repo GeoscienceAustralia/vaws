@@ -54,6 +54,7 @@ class Scenario(object):
         self.path_wind_profiles = None
         self.wind_profile = None
         self.debris_types = None
+        self.debris_regions = None
 
         self.path_datafile = None
         self.table_house = None
@@ -66,11 +67,11 @@ class Scenario(object):
         self.regional_shielding_factor = None
         self.building_spacing = None
         self.wind_dir_index = None
-        self.debris_radius = None
-        self.debris_angle = None
-        self.debris_extension = None
-        self.flight_time_mean = None
-        self.flight_time_stddev = None
+        self.debris_radius = 0.0
+        self.debris_angle = 0.0
+        self.debris_extension = 0.0  # no longer required
+        self.flight_time_mean = 0.0
+        self.flight_time_stddev = 0.0
         self.flight_time_log_mu = None
         self.flight_time_log_std = None
         self.debris_sources = None
@@ -548,17 +549,17 @@ class Scenario(object):
 
         self.debris_types = pd.read_csv(
             file_debris_types, index_col=0).to_dict('index')
-        debris_regions = pd.read_csv(
+        self.debris_regions = pd.read_csv(
             file_debris_regions, index_col=0).to_dict('index')[self.region_name]
 
         for key in self.debris_types:
 
             self.debris_types.setdefault(key, {})['ratio'] = \
-                debris_regions['{}_ratio'.format(key)]
+                self.debris_regions['{}_ratio'.format(key)]
 
             for item in ['frontalarea', 'mass']:
-                _mean = debris_regions['{0}_{1}_mean'.format(key, item)]
-                _std = debris_regions['{0}_{1}_stddev'.format(key, item)]
+                _mean = self.debris_regions['{0}_{1}_mean'.format(key, item)]
+                _std = self.debris_regions['{0}_{1}_stddev'.format(key, item)]
                 mu_lnx, std_lnx = compute_logarithmic_mean_stddev(_mean, _std)
                 self.debris_types.setdefault(key, {})['{}_mu'.format(item)] = mu_lnx
                 self.debris_types.setdefault(key, {})['{}_std'.format(item)] = std_lnx
