@@ -6,7 +6,7 @@ from scipy.optimize.minpack import leastsq
 from scipy.stats import weibull_min
 
 
-def vulnerability_weibull(alpha_, beta_, x, flag='pdf'):
+def vulnerability_weibull(x, alpha_, beta_, flag='pdf'):
     """
 
     vulnerability curve with Weibull function

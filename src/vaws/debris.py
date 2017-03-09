@@ -12,8 +12,9 @@ Debris Module - adapted from JDH Consulting and Martin's work
 
 import logging
 
+from numpy import rint
 from math import pow, radians, tan, sqrt, exp
-from shapely.geometry import Point, Polygon
+from shapely.geometry import Point, Polygon, LineString
 from shapely.affinity import rotate
 # from shapely.ops import cascaded_union
 
@@ -29,6 +30,10 @@ class Debris(object):
         self.front_facing_walls = None
         self.area_walls = None
         self.coverages = None
+
+        self.no_items = None
+        self.no_items_mean = None
+        self.no_touched = None
 
         self.debris_items = list()
         self.breached = None  # only due to window breakage
@@ -60,7 +65,7 @@ class Debris(object):
                  2: 0.0, 6: 0.0,  # E, W
                  3: -45.0, 7: -45.0}  # SE, NW
 
-        rotated = rotate(polygon_inst, angle[wind_dir_index])
+        self._footprint = rotate(polygon_inst, angle[wind_dir_index])
 
         '''
         option 1: stretch
@@ -71,9 +76,6 @@ class Debris(object):
         self._footprint = cascaded_union([rotated,
                                           Polygon(points)]).convex_hull
         '''
-
-        # option 2: rotate only
-        self._footprint = rotated
 
         self.front_facing_walls = self.cfg.dic_front_facing_walls[
             self.cfg.wind_dir[wind_dir_index]]
@@ -90,34 +92,24 @@ class Debris(object):
         self.coverages['cum_prop_area'] = \
             self.coverages['area'].cumsum() / self.area_walls
 
-    # @staticmethod
-    # def get_angle(x_coord, y_coord):
-    #     """
-    #     compute anlge (in degrees) between a vector and unit vector (-1, 0)
-    #     Args:
-    #         x_coord:
-    #         y_coord:
-    #
-    #     Returns:
-    #     """
-    #
-    #     v0 = np.array([x_coord, y_coord])
-    #     v1 = np.array([-1.0, 0.0])
-    #     angle = np.math.atan2(np.linalg.det([v0, v1]), np.dot(v0, v1))
-    #     return np.degrees(angle)
-
     def run(self, wind_speed, rnd_state):
         """ Returns several results as data members
         """
 
-        no_item_mean = self.cal_number_of_debris_items(wind_speed)
+        no_item_mean = self.cal_number_of_debris_items(wind_speed,
+                                                       self.cfg.incr_speed)
+
+        self.no_items_mean = no_item_mean
         self.damaged_area = 0.0
+        self.no_touched = 0
 
         # sample a poisson for each source
         no_item_by_source = rnd_state.poisson(no_item_mean,
                                               size=len(self.cfg.debris_sources))
 
-        logging.debug('no_item_by_source: {}'.format(no_item_by_source))
+        self.no_items = sum(no_item_by_source)
+        logging.debug('no_item_by_source at speed {:.3f}: {}'.format(
+            wind_speed, self.no_items))
 
         # loop through sources
         for no_item, source in zip(no_item_by_source, self.cfg.debris_sources):
@@ -125,31 +117,154 @@ class Debris(object):
             list_debris = rnd_state.choice(self.cfg.debris_types.keys(),
                                            size=no_item, replace=True)
 
-            logging.debug('source: {}, list_debris: {}'.format(source, list_debris))
+            # logging.debug('source: {}, list_debris: {}'.format(source, list_debris))
 
             for _debris_type in list_debris:
                 self.generate_debris_item(wind_speed, source, _debris_type,
                                           rnd_state)
 
-    def cal_number_of_debris_items(self, wind_speed):
+    def run_alt(self, wind_speed, rnd_state):
+        """ Returns several results as data members
         """
-        dV = f * dD
-        where dV: incr. number of debris items,
-              dD: incr in wind damage
+
+        no_item_mean = self.cal_number_of_debris_items(wind_speed,
+                                                       self.cfg.incr_speed)
+
+        self.no_items_mean = no_item_mean
+        self.damaged_area = 0.0
+        self.no_touched = 0
+
+        # sample a poisson for each source
+        no_item_by_source = rnd_state.poisson(no_item_mean,
+                                              size=len(self.cfg.debris_sources))
+
+        self.no_items = sum(no_item_by_source)
+        logging.debug('no_item_by_source at speed {:.3f}: {}'.format(
+            wind_speed, self.no_items))
+
+        # loop through sources
+        for no_item, source in zip(no_item_by_source, self.cfg.debris_sources):
+
+            list_debris = rnd_state.choice(self.cfg.debris_types.keys(),
+                                           size=no_item, replace=True)
+
+            # logging.debug('source: {}, list_debris: {}'.format(source, list_debris))
+
+            for _debris_type in list_debris:
+                self.generate_debris_item_alt(wind_speed, source, _debris_type,
+                                          rnd_state)
+
+    def cal_number_of_debris_items(self, wind_speed, incr_speed):
+        """
+        dN = f * dD
+        where dN: incr. number of debris items,
+              dD: incr in vulnerability (or damage index)
               f : a constant factor
 
+              if we use dD/dV (pdf of vulnerability), then
+                 dN = f * (dD/dV) * dV
         """
         # tropical town
-        incr_damage = vulnerability_weibull(alpha_=0.10304,
+        incr_damage = vulnerability_weibull(x=wind_speed,
+                                            alpha_=0.10304,
                                             beta_=4.18252,
-                                            x=wind_speed,
                                             flag='pdf')
         logging.debug('incr_damage: {}'.format(incr_damage))
-        no_item_mean = int(incr_damage * self.cfg.source_items)
+        no_item_mean = rint(self.cfg.source_items * incr_damage * incr_speed)
 
         return no_item_mean
 
     def generate_debris_item(self, wind_speed, source, debris_type_str,
+                             rnd_state):
+        """
+
+        Args:
+            wind_speed:
+            source:
+            debris_type_str:
+            rnd_state:
+
+        Returns:
+
+        """
+
+        try:
+            debris = self.cfg.debris_types[debris_type_str]
+
+        except KeyError:
+            print '{} is not found in the debris types'.format(debris_type_str)
+
+        else:
+
+            mass = rnd_state.lognormal(debris['mass_mu'], debris['mass_std'])
+
+            frontal_area = rnd_state.lognormal(debris['frontalarea_mu'],
+                                               debris['frontalarea_std'])
+
+            flight_time = rnd_state.lognormal(self.cfg.flight_time_log_mu,
+                                              self.cfg.flight_time_log_std)
+
+            flight_distance = self.cal_flight_distance(debris_type_str,
+                                                       flight_time,
+                                                       frontal_area,
+                                                       mass,
+                                                       wind_speed)
+
+            # logging.debug('debris type:{}, area:{}, time:{}, distance:{}'.format(
+            #    debris_type_str, frontal_area, flight_time, flight_distance))
+
+            # determine landing location for a debris item
+            # sigma_x, y are taken from Wehner et al. (2010)
+            sigma_x = flight_distance / 3.0
+            sigma_y = flight_distance / 12.0
+            cov_matrix = [[pow(sigma_x, 2.0), 0.0], [0.0, pow(sigma_y, 2.0)]]
+
+            x, y = rnd_state.multivariate_normal(mean=[0.0, 0.0],
+                                                 cov=cov_matrix)
+            # reference point: target house
+            pt_debris = Point(x + source.x - flight_distance, y + source.y)
+            line_debris = LineString([source, pt_debris])
+
+            self.debris_items.append(line_debris)
+
+            if line_debris.intersects(self.footprint):
+
+                self.no_touched += 1
+                logging.debug('x:{}, y:{}: touched'.format(
+                    pt_debris.x, pt_debris.y))
+
+                item_momentum = self.cal_debris_mementum(debris['cdav'],
+                                                         frontal_area,
+                                                         flight_distance,
+                                                         mass,
+                                                         wind_speed,
+                                                         rnd_state)
+
+                # determine coverage type
+                _rv = rnd_state.uniform()
+                _id = self.coverages[
+                    self.coverages['cum_prop_area'] > _rv].index[0]
+                _coverage = self.coverages.loc[_id]
+
+                # check whether it impacts or not using failure momentum
+                _capacity = rnd_state.lognormal(
+                    *_coverage['log_failure_momentum'])
+
+                if _capacity < item_momentum:
+
+                    logging.debug(
+                        'coverage type:{}, capacity:{}, demand:{}'.format(
+                            _coverage['description'], _capacity, item_momentum))
+
+                    if _coverage['description'] == 'window':
+                        self.breached = True
+                        self.damaged_area += _coverage['area']
+
+                    else:
+                        self.damaged_area += min(frontal_area,
+                                                 _coverage['area'])
+
+    def generate_debris_item_alt(self, wind_speed, source, debris_type_str,
                              rnd_state):
         """
 
@@ -198,13 +313,15 @@ class Debris(object):
                                                  cov=cov_matrix)
             # reference point: target house
             pt_debris = Point(x + source.x - flight_distance, y + source.y)
+            line_debris = LineString([source, pt_debris])
 
-            self.debris_items.append((pt_debris, debris_type_str, source))
+            self.debris_items.append(line_debris)
 
             if (self.footprint.contains(pt_debris) or
                     self.footprint.touches(pt_debris)):
 
-                logging.debug('x:{}, y:{}: inside the footprint'.format(
+                self.no_touched += 1
+                logging.debug('x:{}, y:{}: touched'.format(
                     pt_debris.x, pt_debris.y))
 
                 item_momentum = self.cal_debris_mementum(debris['cdav'],
@@ -215,18 +332,20 @@ class Debris(object):
                                                          rnd_state)
 
                 # determine coverage type
-                rv_ = rnd_state.uniform()
-                _id = self.coverages[self.coverages['cum_prop_area'] > rv_].index[0]
+                _rv = rnd_state.uniform()
+                _id = self.coverages[
+                    self.coverages['cum_prop_area'] > _rv].index[0]
                 _coverage = self.coverages.loc[_id]
 
                 # check whether it impacts or not using failure momentum
                 _capacity = rnd_state.lognormal(
                     *_coverage['log_failure_momentum'])
 
-                logging.debug('rv:{}, coverage type:{}, capacity:{}, demand:{}'.format(
-                    rv_, _coverage['description'], _capacity, item_momentum))
-
                 if _capacity < item_momentum:
+
+                    logging.debug(
+                        'coverage type:{}, capacity:{}, demand:{}'.format(
+                            _coverage['description'], _capacity, item_momentum))
 
                     if _coverage['description'] == 'window':
                         self.breached = True
@@ -236,8 +355,6 @@ class Debris(object):
                         self.damaged_area += min(frontal_area,
                                                  _coverage['area'])
 
-            else:
-                logging.debug('pt outside')
 
     @staticmethod
     def cal_flight_distance(debris_type_str, flight_time, frontal_area, mass,

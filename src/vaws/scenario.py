@@ -64,6 +64,7 @@ class Scenario(object):
         self.wind_speed_max = 0.0
         self.wind_speed_num_steps = None
         self.speeds = None
+        self.incr_speed = None
         self.idx_speeds = None
         self.terrain_category = None
         self.path_wind_profiles = None
@@ -192,6 +193,7 @@ class Scenario(object):
                                   stop=self.wind_speed_max,
                                   num=self.wind_speed_num_steps)
         self.idx_speeds = range(self.wind_speed_num_steps)
+        self.incr_speed = self.speeds[1] - self.speeds[0]
         self.set_wind_dir_index(conf.get(key, 'wind_fixed_dir'))
         self.regional_shielding_factor = conf.getfloat(
             key, 'regional_shielding_factor')
@@ -430,7 +432,7 @@ class Scenario(object):
     def get_lognormal_tuple(row, dic_):
         _type = row['coverage_type']
         _mean = dic_[_type]['failure_momentum_mean']
-        _sd = dic_[_type]['failure_momentum_cov'] * _mean
+        _sd = dic_[_type]['failure_momentum_std']
         return compute_logarithmic_mean_stddev(_mean, _sd)
 
     @staticmethod

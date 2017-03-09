@@ -68,7 +68,7 @@ class MyTestCase(unittest.TestCase):
     #     mgr.set_wind_direction_index(1)
     #     mgr.run(v, True)
     #     mgr.render(v)
-    '''
+
     def test_create_sources(self):
 
         self.cfg.debris_radius = 100.0
@@ -292,7 +292,8 @@ class MyTestCase(unittest.TestCase):
         # plt.show()
         plt.pause(1.0)
         plt.close()
-    '''
+
+
     def test_run(self):
 
         # set up logging
@@ -317,8 +318,102 @@ class MyTestCase(unittest.TestCase):
 
         plt.figure()
         plt.plot(wind_speeds, np.array(damaged_area).cumsum() / _debris.area_walls * 100.0, '-')
-        plt.show()
+        # plt.show()
+        plt.pause(1.0)
+        plt.close()
 
+    def test_number_of_touched_org(self):
+
+        no_items = list()
+        no_items_mean = list()
+        no_touched = list()
+
+        _debris = Debris(cfg=self.cfg)
+        _stretched_poly = Polygon([(-24.0, 6.5), (4.0, 6.5), (4.0, -6.5),
+                                   (-24.0, -6.5), (-24.0, 6.5)])
+
+        _debris.footprint = (_stretched_poly, 2)  # no rotation
+
+        rnd_state = np.random.RandomState(1)
+
+        for speed in self.cfg.speeds:
+            _debris.run_alt(speed, rnd_state)
+            no_items.append(_debris.no_items)
+            no_touched.append(_debris.no_touched)
+            no_items_mean.append(_debris.no_items_mean)
+
+        fig = plt.figure(1)
+        ax = fig.add_subplot(111)
+
+        ax.set_xlim([-150, 150])
+        ax.set_ylim([-100, 100])
+        plt.title('Wind direction: 0')
+
+        for _target in _debris.debris_items:
+            x, y = _target.xy
+            ax.plot(x, y, linestyle='-', color='c', alpha=0.1)
+
+        p = PolygonPatch(_debris.footprint, fc='red')
+        ax.add_patch(p)
+        x, y = _debris.footprint.exterior.xy
+        ax.plot(x, y, 'k-')
+
+        for item in self.cfg.debris_sources:
+            ax.plot(item.x, item.y, 'ko')
+
+        title_str = 'org: no_items_mean:{}, no_items:{}, no_touched:{}'.format(
+            sum(no_items_mean), sum(no_items), sum(no_touched))
+        plt.title(title_str)
+        # plt.show()
+        plt.pause(1.0)
+        plt.close()
+
+
+    def test_number_of_touched_revised(self):
+
+        no_items = list()
+        no_items_mean = list()
+        no_touched = list()
+
+        self.cfg.source_items = 100
+
+        _debris = Debris(cfg=self.cfg)
+        _debris.footprint = (self.footprint_inst, 0)
+
+        rnd_state = np.random.RandomState(1)
+
+        for speed in self.cfg.speeds:
+            _debris.run(speed, rnd_state)
+            no_items.append(_debris.no_items)
+            no_touched.append(_debris.no_touched)
+            no_items_mean.append(_debris.no_items_mean)
+
+        fig = plt.figure(1)
+        ax = fig.add_subplot(111)
+
+        ax.set_xlim([-150, 150])
+        ax.set_ylim([-100, 100])
+        plt.title('Wind direction: 0')
+
+        for _target in _debris.debris_items:
+            x, y = _target.xy
+            ax.plot(x, y, linestyle='-', color='c', alpha=0.1)
+
+        p = PolygonPatch(_debris.footprint, fc='red')
+        ax.add_patch(p)
+        x, y = _debris.footprint.exterior.xy
+        ax.plot(x, y, 'k-')
+
+        for item in self.cfg.debris_sources:
+            ax.plot(item.x, item.y, 'ko')
+
+        title_str = 'no_items_mean:{}, no_items:{}, no_touched:{}'.format(
+            sum(no_items_mean), sum(no_items), sum(no_touched))
+        plt.title(title_str)
+
+        # plt.show()
+        plt.pause(1.0)
+        plt.close()
 
 if __name__ == '__main__':
     unittest.main()

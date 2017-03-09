@@ -12,7 +12,7 @@ class MyTestCase(unittest.TestCase):
         alpha_, beta_ = 0.1585, 3.8909  #
         x_arr = np.arange(10, 120, 1.0)
         y1 = single_exponential_given_V(beta_, alpha_, x_arr)
-        y2 = vulnerability_weibull(alpha_, beta_, x_arr, flag='cdf')
+        y2 = vulnerability_weibull(x_arr, alpha_, beta_, flag='cdf')
         np.testing.assert_almost_equal(y1, y2, decimal=3)
 
         plt.figure()
@@ -26,7 +26,7 @@ class MyTestCase(unittest.TestCase):
         alpha_, beta_ = 0.10304, 4.18252
         x_arr = np.arange(10, 120, 1.0)
         y1 = single_exponential_given_V(beta_, alpha_, x_arr)
-        y2 = vulnerability_weibull(alpha_, beta_, x_arr, flag='cdf')
+        y2 = vulnerability_weibull(x_arr, alpha_, beta_, flag='cdf')
         np.testing.assert_almost_equal(y1, y2, decimal=3)
 
         plt.figure()
@@ -43,19 +43,19 @@ class MyTestCase(unittest.TestCase):
         x_arr = np.arange(10, 120, 5.0)
         y1 = single_exponential_given_V(beta_, alpha_, x_arr)
         y1_diff = np.diff(y1)
-        y2 = vulnerability_weibull(alpha_, beta_, x_arr[1:], flag='pdf')
+        y2 = vulnerability_weibull(x_arr[1:], alpha_, beta_, flag='pdf')
 
         # wind increment 1.0
         x_arr_1 = np.arange(10, 120, 1.0)
         y1_1 = single_exponential_given_V(beta_, alpha_, x_arr_1)
         y1_diff_1 = np.diff(y1_1)
-        y2_1 = vulnerability_weibull(alpha_, beta_, x_arr_1[1:], flag='pdf')
+        y2_1 = vulnerability_weibull(x_arr_1[1:], alpha_, beta_, flag='pdf')
 
         # wind increment 0.5
         x_arr_2 = np.arange(10, 120, 0.5)
         y1_2 = single_exponential_given_V(beta_, alpha_, x_arr_2)
         y1_diff_2 = np.diff(y1_2)
-        y2_2 = vulnerability_weibull(alpha_, beta_, x_arr_2[1:], flag='pdf')
+        y2_2 = vulnerability_weibull(x_arr_2[1:], alpha_, beta_, flag='pdf')
 
         plt.figure()
         plt.plot(x_arr[1:], y1_diff, 'b-', x_arr[1:], y2, 'r-',
