@@ -66,94 +66,95 @@ def plot_damage_show(plotKey, v_damaged_at, numCols, numRows, v_min,
 
 
 def plot_pdf(y):
-    hist(y, bins=50)
+    plt.hist(y, bins=50)
     
 
 def plot_wind_event_damage(v, di):
-    scatter(v, di, s=8, marker='+', label='_nolegend_')
+    plt.scatter(v, di, s=8, marker='+', label='_nolegend_')
 
 
 def plot_wind_event_mean(v, di):
-    scatter(v, di, s=20, c='r', marker='o', label="Means")
+    plt.scatter(v, di, s=20, c='r', marker='o', label="Means")
     
 
 def plot_fitted_curve(v, di, label="Fitted Curve", alpha=1.0, col='b'):
-    plot(v, di, label=label, alpha=alpha, c=col)
+    plt.plot(v, di, label=label, alpha=alpha, c=col)
     
 
 def plot_model_curve(v, di, label="Model Curve"):
-    plot(v, di, label=label)
+    plt.plot(v, di, label=label)
     
 
 def plot_fragility_curve(v, fl, label, alpha=1.0, col='b'):
-    plot(v, fl, label=label, c=col, alpha=alpha)
+    plt.plot(v, fl, label=label, c=col, alpha=alpha)
 
 
 def plot_fragility_show(num_iters, Vmin, Vmax, output_folder):
-    axis([Vmin, Vmax, 0, 1.0])
-    title('Fragility Curve (n = %d)' % num_iters)
-    xlabel('Impact Wind speed (m/s)')
-    ylabel('Probability of Damage State')
-    legend(loc=2)
+    plt.axis([Vmin, Vmax, 0, 1.0])
+    plt.title('Fragility Curve (n = %d)' % num_iters)
+    plt.xlabel('Impact Wind speed (m/s)')
+    plt.ylabel('Probability of Damage State')
+    plt.legend(loc=2)
     if output_folder:
-        savefig(output_folder + "/windfrag_curve.png")
+        plt.savefig(output_folder + "/windfrag_curve.png")
     else:
-        show()
-    close('all')
+        plt.show()
+
+    plt.close('all')
 
 
 def plot_boundary_profile(z, m, p):
     label = 'Profile %s' % (p)
-    plot(z, m, label=label)
+    plt.plot(z, m, label=label)
     
 
 def plot_boundary_profile_show(tcat):
-    axis([0, 1.4, 0, 35])
-    title('Gust envelope profiles (normalized) TC %s' % (tcat))
-    legend(loc=2)
-    xlabel('Mz,cat 2/M10, cat %s' % (tcat))
-    ylabel('Height(m)')
-    show()
+    plt.axis([0, 1.4, 0, 35])
+    plt.title('Gust envelope profiles (normalized) TC %s' % (tcat))
+    plt.legend(loc=2)
+    plt.xlabel('Mz,cat 2/M10, cat %s' % (tcat))
+    plt.ylabel('Height(m)')
+    plt.show()
     
 
 def plot_damage_costs(v, dmg, index, col):
     shapes = ['s', 'o', 'd']
-    scatter(v, dmg, marker=shapes[index], c=col)
-    #hist(v)
+    plt.scatter(v, dmg, marker=shapes[index], c=col)
+    plt.hist(v)
     
 
 def plot_damage_costs_show(Vmin, Vmax):
-    title('Repair Cost Calculations - %s' % ("everything"))
-    #axis([Vmin, Vmax, 0, 300000])
-    xlabel('Impact Wind speed (m/s)')
-    ylabel('Damage Cost($)')
-    show()
+    plt.title('Repair Cost Calculations - %s' % ("everything"))
+    plt.axis([Vmin, Vmax, 0, 300000])
+    plt.xlabel('Impact Wind speed (m/s)')
+    plt.ylabel('Damage Cost($)')
+    plt.show()
     
 
 def plot_wind_qz_show():
-    title('QZ Scatter')
-    xlabel('Impact Wind speed (m/s)')
-    ylabel('QZ')
-    show()
+    plt.title('QZ Scatter')
+    plt.xlabel('Impact Wind speed (m/s)')
+    plt.ylabel('QZ')
+    plt.show()
     
 
 def plot_wind_event_show(num_iters, Vmin, Vmax, output_folder):
-    axis([Vmin, Vmax, 0, 1.2])
-    title('Vulnerability Curve (n = %d): %s' % (num_iters, version.VERSION_DESC))
-    xlabel('Impact Wind speed (m/s)')
-    ylabel('Damage Index')
-    legend(loc=2)
+    plt.axis([Vmin, Vmax, 0, 1.2])
+    plt.title('Vulnerability Curve (n = %d): %s' % (num_iters, version.VERSION_DESC))
+    plt.xlabel('Impact Wind speed (m/s)')
+    plt.ylabel('Damage Index')
+    plt.legend(loc=2)
     if output_folder:
-        savefig(output_folder + "/windvuln_curve.png")
-        close('all')
+        plt.savefig(output_folder + "/windvuln_curve.png")
+        plt.close('all')
     else:
-        show()
+        plt.show()
             
 
 def plot_show(show_legend=False):
     if show_legend:
-        legend(loc=2)
-    show()
+        plt.legend(loc=2)
+        plt.show()
     
 """
 def testme():

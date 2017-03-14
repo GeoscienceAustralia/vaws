@@ -57,8 +57,6 @@ class Scenario(object):
         self.path_cfg = os.path.dirname(os.path.realpath(cfg_file))
         self.output_path = output_path
 
-        self.values = dict()
-
         self.no_sims = None
         self.wind_speed_min = 0.0
         self.wind_speed_max = 0.0
@@ -74,6 +72,7 @@ class Scenario(object):
 
         self.path_datafile = None
         self.table_house = None
+        self.house_name = None
         self.parallel = None
         self.region_name = None
         self.construction_levels = OrderedDict()
@@ -137,17 +136,11 @@ class Scenario(object):
     def __ne__(self, other):
         return not self.__eq__(other)
 
-    def get_flag(self, flag_name):
-        return self.flags.get(flag_name, 0)
+    def get_flag(self, flag_name, default=0):
+        return self.flags.get(flag_name, default)
 
     def set_flag(self, flag_name, flag_value):
         self.flags[flag_name] = flag_value
-
-    def get_value(self, name, default=''):
-        return self.values.get(name, default)
-
-    def set_value(self, name, value):
-        self.values[name] = value
 
     @staticmethod
     def conf_float(conf, key, option, default):
@@ -182,7 +175,7 @@ class Scenario(object):
         conf.read(self.cfg_file)
 
         key = 'main'
-        self.values['house_name'] = conf.get(key, 'house_name')
+        self.house_name = conf.get(key, 'house_name')
         self.parallel = conf.getboolean(key, 'parallel')
         self.no_sims = conf.getint(key, 'no_simulations')
 

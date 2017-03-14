@@ -12,7 +12,7 @@ from PyQt4.QtGui import QProgressBar, QLabel, QMainWindow, QApplication, QTableW
 import numpy
 
 from main_ui import Ui_main
-from vaws import simulation, scenario, house, version, debris, stats
+from vaws import simulation, scenario, house, version, debris, stats, output
 
 from mixins import PersistSizePosMixin, setupTable, finiTable
 
@@ -177,12 +177,23 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
             self.updateVulnCurve()
             self.statusBar().showMessage(unicode('Curve Fit Updated'))
             
-    def updateVulnCurve(self):
-        self.simulator.show_results(None, self.ui.redV.value(), self.ui.blueV.value())
-        self.ui.sumOfSquares.setText('%f' % self.simulator.ss)
-        self.ui.coeff_1.setText('%f' % self.simulator.A_final[0])
-        self.ui.coeff_2.setText('%f' % self.simulator.A_final[1])
-                
+    def updateVulnCurve(self, list_results):
+        # self.show_results(None, self.ui.redV.value(), self.ui.blueV.value())
+        self.ui.mplfrag.axes.cla()
+        self.ui.mplfrag.axes.figure.canvas.draw()
+        self.ui.mplvuln.axes.cla()
+        self.ui.mplvuln.axes.figure.canvas.draw()
+
+        # loop through each result in the list
+        for result in list_results:
+            self.ui.mplfrag.axes.plot(self.s.speeds,
+                                      result['di'])
+                                      # ,'_nolegend_',0.3)
+            # self.ui.mplvuln.axes.plot(self.s.speeds,result[0][''])
+        # self.ui.sumOfSquares.setText('%f' % self.simulator.ss)
+        # self.ui.coeff_1.setText('%f' % self.simulator.A_final[0])
+        # self.ui.coeff_2.setText('%f' % self.simulator.A_final[1])
+
     def updateDisplaySettings(self):
         if self.has_run:
             self.simulator.plot_connection_damage(self.ui.redV.value(), self.ui.blueV.value())
@@ -296,16 +307,15 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
             self.ui.connGroups.setItem(irow, 2, QTableWidgetItem(ctg['dist_dir']))
             self.ui.connGroups.setItem(irow, 3, QTableWidgetItem(index))
             cellWidget = QCheckBox()
-            checked = False
-            # if ctg['enabled']:
-            #     checked = self.s.getOptCTGEnabled(index)
+            checked = self.s.get_flag('conn_type_group_{}'.format(index), False)
+
             cellWidget.setCheckState(Qt.Checked if checked else Qt.Unchecked)
             self.ui.connGroups.setCellWidget(irow, 4, cellWidget)            
         finiTable(self.ui.connGroups)
         
     def onHouseChanged(self, selectedHouseName):
         # called whenever a house is selected (including by initial scenario)
-        self.s.set_value('house_name', unicode(selectedHouseName))
+        self.s.house_name = unicode(selectedHouseName)
         self.updateConnectionGroupTable()
         self.updateConnectionTypeTable()
         
@@ -385,12 +395,13 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
             if run_time is not None:
                 self.statusBar().showMessage(unicode('Simulation '
                                                      'complete in {:0.3f}'.format(run_time)))
-                self.updateVulnCurve()
-                self.updateHouseResultsTable()
-                self.updateConnectionTable()
-                self.updateConnectionTypePlots()
-                self.updateBreachPlot()
-                self.updateWaterIngressPlot()
+                self.updateVulnCurve(list_results)
+                # TODO Finish drawing results
+                # self.updateHouseResultsTable(list_results)
+                # self.updateConnectionTable(list_results)
+                # self.updateConnectionTypePlots(list_results)
+                # self.updateBreachPlot(list_results)
+                # self.updateWaterIngressPlot(list_results)
                 self.has_run = True
 
         except IOError, err:
@@ -679,8 +690,8 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
     def updateUIFromScenario(self):
         if self.s is not None:
             self.statusBar().showMessage('Updating', 1000)
-            if self.s.get_value('house_name'):
-                self.ui.houseName.setCurrentIndex(self.ui.houseName.findText(self.s.get_value('house_name')))
+            if self.s.house_name:
+                self.ui.houseName.setCurrentIndex(self.ui.houseName.findText(self.s.house_name))
             self.ui.debrisRegion.setCurrentIndex(self.ui.debrisRegion.findText(""))
             self.ui.numHouses.setText('%d' % self.s.no_sims)
             self.ui.windMax.setValue(self.s.wind_speed_max)
@@ -689,7 +700,7 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
             self.ui.windDirection.setCurrentIndex(self.s.wind_dir_index)
             if self.s.source_items:
                 self.ui.sourceItems.setValue(self.s.source_items)
-            self.ui.regionalShielding.setText('%f' % (self.s.get_value('regional_shielding_factor', 0.0)))
+            self.ui.regionalShielding.setText('%f' % (self.s.get_flag('regional_shielding_factor', 0.0)))
             if self.s.building_spacing:
                 self.ui.buildingSpacing.setCurrentIndex(
                     self.ui.buildingSpacing.findText('%d' % (self.s.building_spacing)))
@@ -742,7 +753,7 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
     def updateScenarioFromUI(self):
 
         new_scenario = self.s
-        new_scenario.set_value('house_name', (unicode(self.ui.houseName.currentText())))
+        new_scenario.house_name = (unicode(self.ui.houseName.currentText()))
         new_scenario.set_region_name(unicode(self.ui.debrisRegion.currentText()))
         new_scenario.set_flag('dmg_plot_fragility', True)
         new_scenario.set_flag('dmg_plot_vuln', True)
@@ -754,13 +765,13 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
         new_scenario.set_flag('debris', self.ui.debris.isChecked())
         new_scenario.set_flag('debris_staggered_sources', self.ui.staggeredDebrisSources.isChecked())
         new_scenario.set_flag('construction_levels', self.ui.constructionEnabled.isChecked())
-        new_scenario.num_iters = int(self.ui.numHouses.text())
+        new_scenario.no_sims = int(self.ui.numHouses.text())
         new_scenario.wind_speed_max = self.ui.windMax.value()
         new_scenario.wind_speed_min = self.ui.windMin.value()
         new_scenario.wind_speed_num_steps = self.ui.windSteps.value()
         new_scenario.wind_dir_index = self.ui.windDirection.currentIndex()
         new_scenario.terrain_category = unicode(self.ui.terrainCategory.currentText())
-        new_scenario.set_value('regional_shielding_factor', float(unicode(self.ui.regionalShielding.text())))
+        new_scenario.set_flag('regional_shielding_factor', float(unicode(self.ui.regionalShielding.text())))
         new_scenario.source_items = self.ui.sourceItems.value()
         new_scenario.building_spacing = int(unicode(self.ui.buildingSpacing.currentText()))
         new_scenario.debris_radius = self.ui.debrisRadius.value()
@@ -804,7 +815,7 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
         
     def fileLoad(self, fname):
         try:
-            self.s = scenario.loadFromCSV(fname)
+            self.s = scenario.read_config(fname)
             self.filename = fname
             self.setScenario(self.s)    
         except:

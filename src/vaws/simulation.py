@@ -29,7 +29,7 @@ def simulate_wind_damage_to_houses(cfg):
             result = run_simulation_per_house(id_sim, cfg)
             list_results.append(result)
 
-    print('{}'.format(time.time()-tic))
+    logging.info('Time taken for simulation {}'.format(time.time()-tic))
 
     save_results_to_files(cfg, list_results)
 
