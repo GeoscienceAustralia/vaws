@@ -13,7 +13,7 @@ import logging
 from version import VERSION_DESC
 
 
-def simulate_wind_damage_to_houses(cfg):
+def simulate_wind_damage_to_houses(cfg, call_back):
 
     # simulator main_loop
     tic = time.time()
@@ -26,7 +26,8 @@ def simulate_wind_damage_to_houses(cfg):
         logging.info('Starting simulation in serial')
         list_results = []
         for id_sim in range(cfg.no_sims):
-            result = run_simulation_per_house(id_sim, cfg)
+            result = run_simulation_per_house(id_sim, cfg,
+                                              call_back)
             list_results.append(result)
 
     logging.info('Time taken for simulation {}'.format(time.time()-tic))
@@ -94,7 +95,7 @@ def save_results_to_files(cfg, list_results):
     hdf.close()
 
 
-def run_simulation_per_house(id_sim, cfg):
+def run_simulation_per_house(id_sim, cfg, call_back):
     """
 
     Args:
@@ -104,7 +105,8 @@ def run_simulation_per_house(id_sim, cfg):
     Returns:
 
     """
-
+    calc_count = 0.0
+    percent_done = 0.0
     seed = cfg.flags['random_seed'] + id_sim
     house_damage = HouseDamage(cfg, seed)
 
@@ -113,11 +115,14 @@ def run_simulation_per_house(id_sim, cfg):
 
     # iteration over wind speed list
     for id_speed, wind_speed in enumerate(cfg.speeds):
-
+        percent_done = (calc_count+(id_sim*len(cfg.speeds))) / (len(cfg.speeds)*cfg.no_sims)
+        if not call_back(int(percent_done*100)):
+            return
         # simulate sampled house
         logging.info('model #{} at speed {:.3f}'.format(id_sim, wind_speed))
 
         house_damage.run_simulation(wind_speed)
+        calc_count += 1
 
     return copy.deepcopy(house_damage.bucket)
 

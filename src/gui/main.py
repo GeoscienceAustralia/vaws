@@ -19,7 +19,7 @@ from mixins import PersistSizePosMixin, setupTable, finiTable
 myapp = None
 
 
-def scenarioDICallback(V, di, percLoops):
+def scenarioDICallback(percLoops):
     myapp.statusProgressBar.setValue(percLoops)
     QApplication.processEvents()
     if myapp.stopTriggered:
@@ -61,6 +61,8 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
         self.ui.debrisExtension.setValidator(QDoubleValidator(0.0, 100.0, 3, self.ui.debrisExtension))
       
         self.statusProgressBar = QProgressBar()
+        self.statusProgressBar.setMinimum(0)
+        self.statusProgressBar.setMaximum(100)
         self.statusBar().addPermanentWidget(self.statusProgressBar)
         self.statusProgressBar.hide()        
         self.statusBarScenarioLabel = QLabel()
@@ -187,8 +189,8 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
         # loop through each result in the list
         for result in list_results:
             self.ui.mplfrag.axes.plot(self.s.speeds,
-                                      result['di'])
-                                      # ,'_nolegend_',0.3)
+                                      result['di']
+                                      , '-', 0.3)
             # self.ui.mplvuln.axes.plot(self.s.speeds,result[0][''])
         # self.ui.sumOfSquares.setText('%f' % self.simulator.ss)
         # self.ui.coeff_1.setText('%f' % self.simulator.A_final[0])
@@ -390,7 +392,8 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
 
         # attempt to run the simulator, being careful with exceptions...
         try:
-            run_time, list_results = simulation.simulate_wind_damage_to_houses(self.s)
+            run_time, list_results = simulation.simulate_wind_damage_to_houses(self.s,
+                                                                               call_back=scenarioDICallback)
 
             if run_time is not None:
                 self.statusBar().showMessage(unicode('Simulation '
