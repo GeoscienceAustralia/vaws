@@ -170,6 +170,6 @@ if __name__ == '__main__':
     s = scenario.Scenario(20, 40.0, 120.0, 60.0, '2')
     s.setHouseName('Group 4 House')
     app = QApplication(sys.argv)
-    myapp = ZoneBrowser(s.house.zones[0].zone_name, 'sheeting', s.house, [])
-    myapp.show()
+    my_app = ZoneBrowser(s.house.zones[0].zone_name, 'sheeting', s.house, [])
+    my_app.show()
     app.exec_()

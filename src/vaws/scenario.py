@@ -20,7 +20,7 @@ from stats import compute_logarithmic_mean_stddev
 class Scenario(object):
 
     # lookup table mapping (0-7) to wind direction (8: random)
-    wind_dir = ['S', 'SW', 'W', 'NW', 'N', 'NE', 'E', 'SE']
+    wind_dir = ['S', 'SW', 'W', 'NW', 'N', 'NE', 'E', 'SE', 'Random']
     terrain_categories = ['2', '2.5', '3', 'non_cyclonic']
     heights = [3.0, 5.0, 7.0, 10.0, 12.0, 15.0, 17.0, 20.0, 25.0, 30.0]
 
@@ -410,7 +410,6 @@ class Scenario(object):
                 self.df_coverages.apply(self.get_lognormal_tuple,
                                         args=(dic_coverage_types,), axis=1)
 
-
     @staticmethod
     def read_front_facing_walls(filename):
         _dic = dict()
@@ -580,7 +579,7 @@ class Scenario(object):
             print('8(i.e., RANDOM) is set for wind_dir_index by default')
             self.wind_dir_index = 8
 
-    def storeToCSV(self, cfg_file):
+    def save_config(self, ):
 
         config = ConfigParser.RawConfigParser()
 
@@ -593,10 +592,10 @@ class Scenario(object):
         config.set(key, 'wind_speed_max', self.wind_speed_max)
         config.set(key, 'wind_speed_steps', self.wind_speed_num_steps)
         config.set(key, 'terrain_cat', self.terrain_category)
-        config.set(key, 'house_name', self.values['house_name'])
+        config.set(key, 'house_name', self.house_name)
         config.set(key, 'regional_shielding_factor',
                    self.regional_shielding_factor)
-        config.set(key, 'wind_fixed_dir', type(self).dirs[self.wind_dir_index])
+        config.set(key, 'wind_fixed_dir', Scenario.wind_dir[self.wind_dir_index])
         config.set(key, 'region_name', self.region_name)
 
         key = 'options'
@@ -639,7 +638,7 @@ class Scenario(object):
         config.set(key, 'mean_factors', ', '.join(_mean_factor))
         config.set(key, 'cov_factors', ', '.join(_cov_factor))
 
-        with open(cfg_file, 'wb') as configfile:
+        with open(self.cfg_file, 'wb') as configfile:
             config.write(configfile)
 
 

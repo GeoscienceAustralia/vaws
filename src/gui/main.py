@@ -16,34 +16,29 @@ from vaws import simulation, scenario, house, version, debris, stats, output
 
 from mixins import PersistSizePosMixin, setupTable, finiTable
 
-myapp = None
+my_app = None
 
 
-def scenarioDICallback(percLoops):
-    myapp.statusProgressBar.setValue(percLoops)
+def progress_callback(percent_done):
+    my_app.statusProgressBar.setValue(percent_done)
     QApplication.processEvents()
-    if myapp.stopTriggered:
-        myapp.stopTriggered = False
+    if my_app.stopTriggered:
+        my_app.stopTriggered = False
         return False
     else:
         return True
 
 
 class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
-    def __init__(self, splash_img=None, splash_time_secs=0, parent=None, init_scenario=None):
+    def __init__(self, parent=None, init_scenario=None):
         super(MyForm, self).__init__(parent)
         PersistSizePosMixin.__init__(self, "MainWindow")
         
-        self.splash = None
         self.simulator = None
-        if not splash_img is None:
-            self.splash = QSplashScreen(self, splash_img)
-            self.splash.show()
-            self.splash.showMessage("Loading House Database...", Qt.AlignBottom, Qt.white)
-            
+
         self.ui = Ui_main()
         self.ui.setupUi(self)
-        
+
         windowTitle = version.VERSION_DESC
         self.setWindowTitle(unicode(windowTitle))
 
@@ -77,18 +72,13 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
         self.connect(self.ui.actionOpen_Scenario, SIGNAL("triggered()"), self.openScenario)
         self.connect(self.ui.actionRun, SIGNAL("triggered()"), self.runScenario)
         self.connect(self.ui.actionStop, SIGNAL("triggered()"), self.stopScenario)
-        self.connect(self.ui.actionNew_Scenario, SIGNAL("triggered()"), self.newScenario)
         self.connect(self.ui.actionSave_Scenario, SIGNAL("triggered()"), self.saveScenario)
         self.connect(self.ui.actionSave_Scenario_As, SIGNAL("triggered()"), self.saveAsScenario)
         self.connect(self.ui.actionHouse_Info, SIGNAL("triggered()"), self.showHouseInfoDlg)
         self.connect(self.ui.testDebrisButton, SIGNAL("clicked()"), self.testDebrisSettings)
         self.connect(self.ui.testConstructionButton, SIGNAL("clicked()"), self.testConstructionLevels)
-        self.connect(self.ui.actionInfo, SIGNAL("triggered()"), self.showInfoDlg)
         self.connect(self.ui.houseName, SIGNAL("currentIndexChanged(QString)"), self.onHouseChanged)
         self.connect(self.ui.terrainCategory, SIGNAL("currentIndexChanged(QString)"), self.updateTerrainCategoryTable)
-        self.connect(self.ui.connectionsTypes, SIGNAL("cellDoubleClicked(int,int)"), self.onConnectionTypesDoubleClicked)
-        self.connect(self.ui.zones, SIGNAL("cellDoubleClicked(int,int)"), self.onZonesDoubleClicked)
-        self.connect(self.ui.connections, SIGNAL("cellDoubleClicked(int,int)"), self.onConnectionsDoubleClicked)
         self.connect(self.ui.windMin, SIGNAL("valueChanged(int)"), lambda val: self.onSliderChanged(self.ui.windMinLabel, val))
         self.connect(self.ui.windMax, SIGNAL("valueChanged(int)"), lambda val: self.onSliderChanged(self.ui.windMaxLabel, val))
         self.connect(self.ui.windSteps, SIGNAL("valueChanged(int)"), lambda val: self.onSliderChanged(self.ui.windStepsLabel, val))
@@ -107,40 +97,14 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
         self.selected_plotKey = None
         self.updateGlobalData()
         self.ui.sourceItems.setValue(-1)
-        QTimer.singleShot(0, self.setScenario)
-        
-    def showInfoDlg(self):
-        data_tab_index = self.ui.dataview_tab.currentIndex()
-        if data_tab_index == 0:
-            i = self.ui.houseinfo_tab.currentIndex()
-            if i == 0:
-                row = self.ui.connections.currentRow()
-                if row != -1:
-                    self.onConnectionsDoubleClicked(row, -1)
-            elif i == 1:
-                row = self.ui.connectionsTypes.currentRow()
-                if row != -1:
-                    self.onConnectionTypesDoubleClicked(row, -1)
-            elif i == 3:
-                row = self.ui.zones.currentRow()
-                if row != -1:
-                    self.onZonesDoubleClicked(row, -1)
-            elif i == 4: # damage
-                pass
-    
+
+        QTimer.singleShot(0, self.set_scenario)
+
     def onZoneSelected(self, z, plotKey):
         self.selected_zone = z
         self.selected_plotKey = plotKey
 
-    def showZoneBrowser(self):
-        if self.selected_zone is not None:
-            from gui import zone as gui_zone
-            dlg = gui_zone.ZoneBrowser(self.selected_zone.zone_name, self.selected_plotKey, self.s.house, self.house_results)    
-            retCode = dlg.exec_()
-            if retCode == QDialog.Accepted:
-                self.updateZonesTable()
-                
-    def onSelectConnection(self, connection_name):  
+    def onSelectConnection(self, connection_name):
         for irow in range(len(self.s.house.connections)):
             if unicode(self.ui.connections.item(irow, 0).text()) == connection_name:
                 self.ui.connections.setCurrentCell(irow, 0)
@@ -151,20 +115,7 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
             if unicode(self.ui.zones.item(irow, 0).text()) == zoneLoc:
                 self.ui.zones.setCurrentCell(irow, 0)
                 break
-            
-    def showConnectionViewer(self):
-        if self.selected_conn is not None:
-            from gui import connection as gui_conn
-            patches = db.qryConnectionPatchesFromDamagedConn(self.selected_conn.id)
-            dlg = gui_conn.ConnectionViewer(self.selected_conn, patches, self.house_results)    
-            dlg.exec_()
-        
-    def onZonesDoubleClicked(self, row, col):
-        zone_name = unicode(self.ui.zones.item(row, 0).text())
-        self.selected_zone = house.zoneByLocationMap[zone_name]
-        self.selected_plotKey = 'sheeting'
-        self.showZoneBrowser() 
-        
+
     def onConnectionsDoubleClicked(self, row, col):
         connection_name = unicode(self.ui.connections.item(row, 0).text())
         self.selected_conn = house.connByNameMap[connection_name]
@@ -191,7 +142,7 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
             self.ui.mplfrag.axes.plot(self.s.speeds,
                                       result['di']
                                       , '-', 0.3)
-            # self.ui.mplvuln.axes.plot(self.s.speeds,result[0][''])
+        # self.ui.mplvuln.axes.plot(self.s.speeds,result[0][''])
         # self.ui.sumOfSquares.setText('%f' % self.simulator.ss)
         # self.ui.coeff_1.setText('%f' % self.simulator.A_final[0])
         # self.ui.coeff_2.setText('%f' % self.simulator.A_final[1])
@@ -239,7 +190,7 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
         
     def showHouseInfoDlg(self):
         from gui import house as gui_house
-        dlg = gui_house.HouseViewer(self.s.house)
+        dlg = gui_house.HouseViewer(self.s)
         dlg.exec_()
     
     def updateTerrainCategoryTable(self, tc):
@@ -263,16 +214,7 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
                                                 QTableWidgetItem("%0.3f" % self.s.wind_profile[icol][irow]))
 
         self.ui.boundaryProfile.resizeColumnsToContents()
-        
-    def onConnectionTypesDoubleClicked(self, row, col):
-        from gui import connection_type
-        dlg = connection_type.ConnectionTypeEditor(self.s.house.conn_types[row], self.s.house)
-        dlg.setSizeGripEnabled(True)
-        retCode = dlg.exec_()
-        if retCode == QDialog.Accepted:
-            self.updateConnectionTypeTable()
-            self.dirty_conntypes = True
-            
+
     def updateConnectionTypeTable(self):
         # load up connection types grid
         setupTable(self.ui.connectionsTypes, self.s.df_types)
@@ -385,7 +327,6 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
         # run simulation with progress bar
         self.ui.actionStop.setEnabled(True)
         self.ui.actionRun.setEnabled(False)
-        self.ui.actionNew_Scenario.setEnabled(False)
         self.ui.actionOpen_Scenario.setEnabled(False)
         self.ui.actionSave_Scenario.setEnabled(False)
         self.ui.actionSave_Scenario_As.setEnabled(False)
@@ -393,7 +334,7 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
         # attempt to run the simulator, being careful with exceptions...
         try:
             run_time, list_results = simulation.simulate_wind_damage_to_houses(self.s,
-                                                                               call_back=scenarioDICallback)
+                                                                               call_back=progress_callback)
 
             if run_time is not None:
                 self.statusBar().showMessage(unicode('Simulation '
@@ -417,7 +358,6 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
             self.statusProgressBar.hide()
             self.ui.actionStop.setEnabled(False)
             self.ui.actionRun.setEnabled(True)
-            self.ui.actionNew_Scenario.setEnabled(True)
             self.ui.actionOpen_Scenario.setEnabled(True)
             self.ui.actionSave_Scenario.setEnabled(True)
             self.ui.actionSave_Scenario_As.setEnabled(True)
@@ -626,7 +566,7 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
         self.filename = QFileDialog.getOpenFileName(self, "Scenarios", scenario_path, "Scenarios (*.csv)")
         if os.path.isfile(self.filename):
             fname = '%s' % (self.filename)
-            self.fileLoad(fname)
+            self.file_load(fname)
             settings.setValue("ScenarioFolder", QVariant(QString(os.path.dirname(fname))))
             
     def saveScenario(self):
@@ -650,36 +590,14 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
             self.fileSave()
             self.updateUIFromScenario()
         
-    def newScenario(self):
-        s = scenario.Scenario(20, 40.0, 120.0, 60.0, '2')
-        s.setHouseName('Group 4 House')
-        s.set_region_name('Capital_city')
-        s.setOpt_DmgDistribute(True)
-        s.setOpt_DmgPlotFragility(True)
-        s.setOpt_DmgPlotVuln(True)
-        self.filename = None
-        self.setScenario(s)
-        
-    def setScenario(self, s=None):
+    def set_scenario(self, s=None):
         if s:
             self.s = s
 
         self.updateUIFromScenario()
-        
-    def loadInitialFile(self):
-        self.statusBar().showMessage('Loading initial scenario')
-        settings = QSettings()
-        fname = unicode(settings.value("LastFile").toString())
-        if fname and QFile.exists(fname):
-            self.fileLoad(fname)
-        else:
-            self.s = None
-            self.statusBar().showMessage('Scenario does not exist')
-            
-        if self.splash:
-            self.splash.finish(self)
+
         self.statusBar().showMessage('Ready')
-        
+
     def closeEvent(self, event):
         if self.okToContinue():
             if self.filename is not None and QFile.exists(self.filename):
@@ -814,23 +732,22 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
             
         self.dirty_scenario = new_scenario != self.s
         if self.dirty_scenario:
-            self.setScenario(new_scenario)
+            self.set_scenario(new_scenario)
         
-    def fileLoad(self, fname):
+    def file_load(self, fname):
         try:
-            self.s = scenario.read_config(fname)
+            self.s = scenario.Scenario(fname)
             self.filename = fname
-            self.setScenario(self.s)    
+            self.set_scenario(self.s)
         except:
             msg = 'Unable to load previous scenario: %s\nCreating new scenario.' % fname
             QMessageBox.warning(self, "VAWS Program Warning", unicode(msg))
-            self.newScenario()
-    
+
     def fileSave(self):
-        self.s.storeToCSV(self.filename)
+        self.s.save_config(self.filename)
         
     def fileSaveAs(self):
-        self.s.storeToCSV(self.filename)
+        self.s.save_config(self.filename)
     
     def okToContinue(self):
         self.updateScenarioFromUI()
@@ -927,10 +844,18 @@ def run_gui():
         img_file = os.path.join(path_, 'images/splash/splash.png')
         if not img.load(img_file):
             raise Exception('Could not load splash image')
-        global myapp
-        myapp = MyForm(img, init_scenario=conf)
-        myapp.show()
-        logging.getLogger().info('Program finished')
+
+        app.processEvents()
+
+        global my_app
+        my_app = MyForm(init_scenario=conf)
+
+        splash = QSplashScreen(my_app, img)
+        splash.show()
+        my_app.show()
+        import time
+        time.sleep(5)
+        splash.finish(my_app)
         sys.exit(app.exec_())
 
 

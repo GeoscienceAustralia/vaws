@@ -3,7 +3,7 @@
 '''
 from matplotlib import cm
 import matplotlib as mpl
-from vaws import version, zone, house
+from vaws import zone, house
 mplDict = None
         
 

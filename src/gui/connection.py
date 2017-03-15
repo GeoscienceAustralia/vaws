@@ -85,6 +85,6 @@ if __name__ == '__main__':
     s = scenario.Scenario(20, 40.0, 120.0, 60.0, '2')
     s.setHouseName('Group 4 House')
     app = QApplication(sys.argv)
-    myapp = ConnectionViewer(s.house.connections[400], database.db.qryConnectionPatchesFromDamagedConn(400), [])
-    myapp.show()
+    my_app = ConnectionViewer(s.house.connections[400], database.db.qryConnectionPatchesFromDamagedConn(400), [])
+    my_app.show()
     app.exec_()
