@@ -2,6 +2,8 @@ name: windtunnel
 channels:
 - groakat
 - IOOS
+#- conda-forge
+
 dependencies:
 - cycler=0.9.0=py27_0
 - dateutil=2.4.1=py27_0
@@ -19,14 +21,14 @@ dependencies:
 - pytables=3.2.2=np110py27_0
 - python-dateutil=2.4.2=py27_0
 - pyparsing=2.0.3=py27_0
-- pyqt=4.11.4=py27_4
+# - pyqt=4.11.4=py27_4
 - pytz=2015.7=py27_0
 - qt=4.8.7=1
 - readline=6.2=2
 - scipy=0.16.1=np110py27_1
 - setuptools=20.2.2=py27_0
 - shapely=1.5.13=py27_0
-- sip=4.18=py27_0
+# - sip=4.18=py27_0
 - six=1.10.0=py27_0
 - sqlalchemy=1.0.12=py27_0
 - sqlite=3.9.2=0
@@ -69,9 +71,6 @@ dependencies:
 - terminado=0.5=py27_1
 - tornado=4.3=py27_0
 
-# - dill=0.2.5=py27_0
-# - multiprocess=0.70.4-py27_0
-
 # added for testing
 - coverage=4.2=py27_0  
 
@@ -84,12 +83,18 @@ dependencies:
 - snowballstemmer=1.2.1=py27_0 
 - sphinx=1.5.1=py27_0 
 
-
 # added for shaeply plot
 - IOOS::descartes=1.0.2=py27_0
 
 # added for nosetests
 - nose=1.3.7=py27_1
+
+# added for pathos
+#- conda-forge::dill=0.2.6=py27_0
+#- conda-forge::multiprocess=0.70.5=py27_0
+#- conda-forge::pathos=0.2.0=py27_1
+#- conda-forge::pox=0.2.3=py27_0
+#- conda-forge::ppft=1.6.4.7.1=py27_0
 
 - pip:
   - parmap==1.2.3

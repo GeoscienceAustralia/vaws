@@ -3,12 +3,116 @@ import os
 import numpy as np
 import matplotlib.pyplot as plt
 from descartes import PolygonPatch
-from shapely.geometry import Point, Polygon
+from shapely.geometry import Point, Polygon, LineString
 import logging
 
 from vaws.scenario import Scenario
 from vaws.debris import Debris
+from vaws.curve import vulnerability_weibull
 
+'''
+    def run_alt(self, wind_speed):
+        """ Returns several results as data members
+        """
+
+        # self.no_items_mean = self.cal_number_of_debris_items(incr_damage)
+
+        self.damaged_area = 0.0
+        self.no_touched = 0
+
+        # sample a poisson for each source
+        no_items_by_source = self.rnd_state.poisson(
+            self.no_items_mean, size=len(self.cfg.debris_sources))
+
+        self.no_items = sum(no_items_by_source)
+        logging.debug('no_item_by_source at speed {:.3f}: {}'.format(
+            wind_speed, self.no_items))
+
+        # loop through sources
+        for no_item, source in zip(no_items_by_source, self.cfg.debris_sources):
+
+            list_debris = self.rnd_state.choice(self.cfg.debris_types.keys(),
+                                                size=no_item, replace=True)
+
+            # logging.debug('source: {}, list_debris: {}'.format(source, list_debris))
+
+            for _debris_type in list_debris:
+                self.generate_debris_item_alt(wind_speed, source, _debris_type)
+
+def generate_debris_item_alt(debris, wind_speed, source, rnd_state):
+    """
+
+    Args:
+        wind_speed:
+        source:
+        debris_type_str:
+
+    Returns:
+
+    """
+
+
+        mass = rnd_state.lognormal(debris['mass_mu'], debris['mass_std'])
+
+        frontal_area = rnd_state.lognormal(debris['frontalarea_mu'],
+                                                debris['frontalarea_std'])
+
+        flight_time = rnd_state.lognormal(self.cfg.flight_time_log_mu,
+                                               self.cfg.flight_time_log_std)
+
+        flight_distance = cal_flight_distance(debris_type_str,
+                                                   flight_time,
+                                                   frontal_area,
+                                                   mass,
+                                                   wind_speed)
+
+        # determine landing location for a debris item
+        # sigma_x, y are taken from Wehner et al. (2010)
+        sigma_x = flight_distance / 3.0
+        sigma_y = flight_distance / 12.0
+        cov_matrix = [[pow(sigma_x, 2.0), 0.0], [0.0, pow(sigma_y, 2.0)]]
+
+        x, y = rnd_state.multivariate_normal(mean=[0.0, 0.0],
+                                                  cov=cov_matrix)
+        # reference point: target house
+        pt_debris = Point(x + source.x - flight_distance, y + source.y)
+        line_debris = LineString([source, pt_debris])
+
+        if (footprint.contains(pt_debris) or footprint.touches(pt_debris)):
+
+            no_touched += 1
+
+            item_momentum = self.cal_debris_mementum(debris['cdav'],
+                                                     frontal_area,
+                                                     flight_distance,
+                                                     mass,
+                                                     wind_speed,
+                                                     rnd_state)
+
+            # determine coverage type
+            _rv = self.rnd_state.uniform()
+            _id = self.coverages[
+                self.coverages['cum_prop_area'] > _rv].index[0]
+            _coverage = self.coverages.loc[_id]
+
+            # check whether it impacts or not using failure momentum
+            _capacity = self.rnd_state.lognormal(
+                *_coverage['log_failure_momentum'])
+
+            if _capacity < item_momentum:
+
+                logging.debug(
+                    'coverage type:{}, capacity:{}, demand:{}'.format(
+                        _coverage['description'], _capacity, item_momentum))
+
+                if _coverage['description'] == 'window':
+                    self.breached = True
+                    self.damaged_area += _coverage['area']
+
+                else:
+                    self.damaged_area += min(frontal_area,
+                                             _coverage['area'])
+'''
 
 class MyTestCase(unittest.TestCase):
 
@@ -293,7 +397,6 @@ class MyTestCase(unittest.TestCase):
         plt.pause(1.0)
         plt.close()
 
-
     def test_run(self):
 
         # set up logging
@@ -305,14 +408,24 @@ class MyTestCase(unittest.TestCase):
 
         _debris = Debris(cfg=self.cfg, )
         _debris.footprint = (self.footprint_inst, 0)
-
         rnd_state = np.random.RandomState(1)
+        _debris.rnd_state = rnd_state
         wind_speeds = np.arange(0.0, 120.0, 5.0)
+        incr_speed = wind_speeds[1] - wind_speeds[0]
 
         breached = []
         damaged_area = []
+
         for wind_speed in wind_speeds:
-            _debris.run(wind_speed, rnd_state)
+
+            incr_damage = vulnerability_weibull(x=wind_speed,
+                                                alpha_=0.10304,
+                                                beta_=4.18252,
+                                                flag='pdf') * incr_speed
+
+            _debris.no_items_mean = incr_damage
+
+            _debris.run(wind_speed)
             breached.append(_debris.breached)
             damaged_area.append(_debris.damaged_area)
 
@@ -321,7 +434,7 @@ class MyTestCase(unittest.TestCase):
         # plt.show()
         plt.pause(1.0)
         plt.close()
-
+    '''
     def test_number_of_touched_org(self):
 
         no_items = list()
@@ -335,9 +448,20 @@ class MyTestCase(unittest.TestCase):
         _debris.footprint = (_stretched_poly, 2)  # no rotation
 
         rnd_state = np.random.RandomState(1)
+        _debris.rnd_state = rnd_state
+
+        incr_speed = self.cfg.speeds[1] - self.cfg.speeds[0]
 
         for speed in self.cfg.speeds:
-            _debris.run_alt(speed, rnd_state)
+
+            incr_damage = vulnerability_weibull(x=speed,
+                                                alpha_=0.10304,
+                                                beta_=4.18252,
+                                                flag='pdf') * incr_speed
+
+            _debris.no_items_mean = incr_damage
+
+            _debris.run_alt(speed)
             no_items.append(_debris.no_items)
             no_touched.append(_debris.no_touched)
             no_items_mean.append(_debris.no_items_mean)
@@ -367,7 +491,7 @@ class MyTestCase(unittest.TestCase):
         # plt.show()
         plt.pause(1.0)
         plt.close()
-
+    '''
 
     def test_number_of_touched_revised(self):
 
@@ -381,9 +505,20 @@ class MyTestCase(unittest.TestCase):
         _debris.footprint = (self.footprint_inst, 0)
 
         rnd_state = np.random.RandomState(1)
+        _debris.rnd_state = rnd_state
+
+        incr_speed = self.cfg.speeds[1] - self.cfg.speeds[0]
 
         for speed in self.cfg.speeds:
-            _debris.run(speed, rnd_state)
+
+            incr_damage = vulnerability_weibull(x=speed,
+                                                alpha_=0.10304,
+                                                beta_=4.18252,
+                                                flag='pdf') * incr_speed
+
+            _debris.no_items_mean = incr_damage
+
+            _debris.run(speed)
             no_items.append(_debris.no_items)
             no_touched.append(_debris.no_touched)
             no_items_mean.append(_debris.no_items_mean)

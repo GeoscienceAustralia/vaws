@@ -1,40 +1,111 @@
 import sys
 import os
 import time
-import copy
-import parmap
+import logging
+
+# from pathos.multiprocessing import ProcessingPool
 import pandas as pd
 import numpy as np
 from optparse import OptionParser
 
-from house import House
+from house_damage import HouseDamage
 from scenario import Scenario
-import logging
 from version import VERSION_DESC
 
 
 def simulate_wind_damage_to_houses(cfg, call_back):
+    """
+
+    Args:
+        cfg:
+        call_back:
+
+    Returns:
+
+    """
 
     # simulator main_loop
     tic = time.time()
 
-    if cfg.parallel:
-        logging.info('Starting simulation in parallel')
-        list_results = parmap.map(run_simulation_per_house,
-                                  range(cfg.no_sims), cfg)
-    else:
-        logging.info('Starting simulation in serial')
-        list_results = []
-        for id_sim in range(cfg.no_sims):
-            result = run_simulation_per_house(id_sim, cfg,
-                                              call_back)
-            list_results.append(result)
+    mean_damage = dict()
+    damage_incr = 0.0
+    list_results = list()
+    calc_count = 0
 
-    logging.info('Time taken for simulation {}'.format(time.time()-tic))
+    if cfg.parallel:
+        cfg.parallel = False
+        logging.info('parallel running is not implemented yet')
+
+        # very slow
+        # iteration over wind speed list
+        # for wind_speed in cfg.speeds:
+        #
+        #     list_ = ProcessingPool().map(HouseDamage.run_simulation,
+        #         list_house_damage, [wind_speed]*cfg.no_sims)
+
+    logging.info('Starting simulation in serial')
+
+    # generate instances of house_damage
+    list_house_damage = [create_house_damage(i, cfg) for i in
+                         range(cfg.no_sims)]
+
+    for ispeed, wind_speed in enumerate(cfg.speeds):
+
+        list_results_by_speed = list()
+
+        for house_damage in list_house_damage:
+
+            if cfg.flags['debris']:
+                house_damage.house.debris.no_items_mean = damage_incr
+
+            if call_back:
+                percent_done = (calc_count + ispeed * len(cfg.speeds)) / (
+                    len(cfg.speeds) * cfg.no_sims)
+
+                if not call_back(int(percent_done * 100)):
+                    return
+
+            list_ = house_damage.run_simulation(wind_speed)
+            list_results_by_speed.append(list_)
+
+            calc_count += 1
+
+        damage_incr, mean_damage = cal_damage_increment(
+            list_results_by_speed, mean_damage, ispeed)
+
+        list_results.append(list_results_by_speed)
 
     save_results_to_files(cfg, list_results)
 
+    logging.info('Time taken for simulation {}'.format(time.time()-tic))
+
     return time.time()-tic, list_results
+
+
+def cal_damage_increment(list_, dic_, index_):
+    """
+
+    Args:
+        list_: list of results
+        dic_: dic of damge index by wind step
+        index_: index of wind step
+
+    Returns:
+
+    """
+    dic_[index_] = np.array([x['house']['di'] for x in list_]).mean()
+    damage_incr = 0.0  # default value
+
+    # only index >= 1
+    if index_:
+
+        damage_incr = dic_[index_] - dic_[index_ - 1]
+
+        if damage_incr < 0:
+            logging.warn('damage increment is less than zero')
+            damage_incr = 0.0
+
+    return damage_incr, dic_
 
 
 def save_results_to_files(cfg, list_results):
@@ -42,336 +113,88 @@ def save_results_to_files(cfg, list_results):
 
     Args:
         cfg:
-        list_results:
+        list_results: [wind_speed_steps][no_sims]{'house': df, 'group': df,
+        'type': df, 'conn': df, 'zone': df }
 
     Returns:
 
     """
 
-    # file_model
-    hdf = pd.HDFStore(cfg.file_model, mode='w')
-    for item in cfg.list_house_bucket:
-        ps_ = pd.Series([x[item] for x in list_results])
-        hdf.append(item, ps_, format='t')
-
-    for item in cfg.list_house_damage_bucket:
-        ps_ = pd.DataFrame([x[item] for x in list_results])
-        hdf.append(item, ps_, format='t')
+    # file_house (attribute: DataFrame(wind_speed_steps, no_sims)
+    hdf = pd.HDFStore(cfg.file_house, mode='w')
+    for item in cfg.list_house_bucket + cfg.list_house_damage_bucket + \
+            cfg.list_debris_bucket:
+        df_ = pd.DataFrame(dtype=float, columns=range(cfg.no_sims),
+                           index=range(cfg.wind_speed_steps))
+        for ispeed in range(cfg.wind_speed_steps):
+            df_.loc[ispeed] = [x['house'][item] for x in list_results[ispeed]]
+        hdf.append(item, df_, format='t')
     hdf.close()
 
-    # results by group for each model
+    # file_group (group: Panel(attribute, wind_speed_steps, no_sims)
     hdf = pd.HDFStore(cfg.file_group, mode='w')
-    for item in cfg.list_group_bucket:
-        dic_ = {key: x[item] for key, x in enumerate(list_results)}
-        hdf[item] = pd.Panel(dic_)
+    for group_name in list_results[0][0]['group'].index.tolist():
+        _panel = pd.Panel(dtype=float, items=cfg.list_group_bucket,
+                          major_axis=range(cfg.wind_speed_steps),
+                          minor_axis=range(cfg.no_sims))
+        for item in cfg.list_group_bucket:
+            for ispeed in range(cfg.wind_speed_steps):
+                _panel[item].loc[ispeed] = [x['group'][item].values[0] for x
+                                            in list_results[ispeed]]
+        hdf[group_name] = _panel
     hdf.close()
 
     # results by type for each model
     hdf = pd.HDFStore(cfg.file_type, mode='w')
-    for item in cfg.list_type_bucket:
-        dic_ = {key: x[item] for key, x in enumerate(list_results)}
-        hdf[item] = pd.Panel(dic_)
+    for type_name in list_results[0][0]['type'].index.tolist():
+        _panel = pd.Panel(dtype=float, items=cfg.list_type_bucket,
+                          major_axis=range(cfg.wind_speed_steps),
+                          minor_axis=range(cfg.no_sims))
+        for item in cfg.list_type_bucket:
+            for ispeed in range(cfg.wind_speed_steps):
+                _panel[item].loc[ispeed] = [x['type'][item].values[0] for x
+                                            in list_results[ispeed]]
+        hdf[type_name] = _panel
     hdf.close()
 
     # results by connection for each model
     hdf = pd.HDFStore(cfg.file_conn, mode='w')
-    for item in cfg.list_conn_bucket:
-        ps_ = pd.DataFrame([x[item] for x in list_results])
-        hdf.append(item, ps_, format='t')
-
-    for item in cfg.list_conn_bucket_wind:
-        dic_ = {key: x[item] for key, x in enumerate(list_results)}
-        hdf[item] = pd.Panel(dic_)
-        # hdf.put(item, pd.Panel(dic_), format='t')
-        # pd.Panel(dic_).to_hdf(hdf, key=item, format='f')
+    for conn_name in list_results[0][0]['conn'].index.tolist():
+        _panel = pd.Panel(dtype=float, items=cfg.list_conn_bucket,
+                          major_axis=range(cfg.wind_speed_steps),
+                          minor_axis=range(cfg.no_sims))
+        for item in cfg.list_conn_bucket:
+            for ispeed in range(cfg.wind_speed_steps):
+                _panel[item].loc[ispeed] = [x['conn'][item].values[0] for x
+                                            in list_results[ispeed]]
+        hdf['c' + str(conn_name)] = _panel
     hdf.close()
 
     # results by zone for each model
     hdf = pd.HDFStore(cfg.file_zone, mode='w')
-    for item in cfg.list_zone_bucket:
-        dic_ = {key: x[item] for key, x in enumerate(list_results)}
-        # hdf.put(item, pd.Panel(dic_))
-        hdf[item] = pd.Panel(dic_)
+    for zone_name in list_results[0][0]['zone'].index.tolist():
+        _panel = pd.Panel(dtype=float, items=cfg.list_zone_bucket,
+                          major_axis=range(cfg.wind_speed_steps),
+                          minor_axis=range(cfg.no_sims))
+        for item in cfg.list_zone_bucket:
+            for ispeed in range(cfg.wind_speed_steps):
+                _panel[item].loc[ispeed] = [x['zone'][item].values[0] for x
+                                            in list_results[ispeed]]
+        hdf[zone_name] = _panel
     hdf.close()
 
 
-def run_simulation_per_house(id_sim, cfg, call_back):
-    """
+def create_house_damage(id_sim, cfg):
 
-    Args:
-        id_sim:
-        cfg:
-
-    Returns:
-
-    """
-    calc_count = 0.0
-    percent_done = 0.0
     seed = cfg.flags['random_seed'] + id_sim
     house_damage = HouseDamage(cfg, seed)
 
-    for item in cfg.list_house_bucket:
-        house_damage.bucket[item] = getattr(house_damage.house, item)
-
-    # iteration over wind speed list
-    for id_speed, wind_speed in enumerate(cfg.speeds):
-        percent_done = (calc_count+(id_sim*len(cfg.speeds))) / (len(cfg.speeds)*cfg.no_sims)
-        if not call_back(int(percent_done*100)):
-            return
-        # simulate sampled house
-        logging.info('model #{} at speed {:.3f}'.format(id_sim, wind_speed))
-
-        house_damage.run_simulation(wind_speed)
-        calc_count += 1
-
-    return copy.deepcopy(house_damage.bucket)
-
-
-class HouseDamage(object):
-
-    def __init__(self, cfg, seed):
-
-        assert isinstance(cfg, Scenario)
-        assert isinstance(seed, int)
-
-        self.cfg = cfg
-        self.rnd_state = np.random.RandomState(seed)
-
-        self.house = House(cfg, self.rnd_state)
-
-        self.qz = None
-        self.Ms = None
-        self.cpi = None
-        self.cpiAt = None
-        self.collapse = False
-        self.di = None
-        self.di_prev = None
-        self.di_except_water = None
-
-        self.bucket = None
-        self.init_bucket()
-
-    def run_simulation(self, wind_speed):
-
-        # only check if debris is ON
-        # cpi is computed here
-        self.check_pressurized_failure(wind_speed)
-
-        # compute load by zone
-        # load = qz * (Cpe + Cpi) * A + Dead
-        self.calculate_qz_Ms(wind_speed)
-
-        for _zone in self.house.zones.itervalues():
-            _zone.calc_zone_pressures(self.house.wind_orientation,
-                                      self.cpi,
-                                      self.qz,
-                                      self.Ms,
-                                      self.cfg.building_spacing,
-                                      self.cfg.flags['diff_shielding'])
-
-        # check damage by connection type group
-        for _group in self.house.groups.itervalues():
-
-            if self.cfg.flags.get('conn_type_group_{}'.format(_group.name)):
-                _group.check_damage(wind_speed)
-                _group.cal_prop_damaged()
-
-                if _group.damaged and self.cfg.flags.get('dmg_distribute_{}'.format(
-                        _group.name)):
-                    _group.distribute_damage()
-
-        self.check_house_collapse(wind_speed)
-        self.cal_damage_index()
-
-        self.fill_bucket(wind_speed)
-
-    def init_bucket(self):
-
-        self.bucket = dict()
-
-        list_groups = [x.name for x in self.house.groups.itervalues()]
-        list_types = [x.name for x in self.house.types.itervalues()]
-        list_conns = [x.name for x in self.house.connections.itervalues()]
-        list_zones = [x.name for x in self.house.zones.itervalues()]
-
-        # by wind speed
-        for item in self.cfg.list_house_damage_bucket:
-            self.bucket[item] = pd.Series(index=self.cfg.idx_speeds)
-
-        # by group
-        for item in self.cfg.list_group_bucket:
-            self.bucket[item] = pd.DataFrame(
-                dtype=float, columns=list_groups, index=self.cfg.idx_speeds)
-
-        # by type
-        for item in self.cfg.list_type_bucket:
-            self.bucket[item] = pd.DataFrame(
-                dtype=float, columns=list_types, index=self.cfg.idx_speeds)
-
-        # by connection
-        for item in self.cfg.list_conn_bucket_wind:
-            self.bucket[item] = pd.DataFrame(
-                dtype=float, columns=list_conns, index=self.cfg.idx_speeds)
-
-        for item in list_conns:
-            for _att in self.cfg.list_conn_bucket:
-                self.bucket.setdefault(_att, {})[item] = None
-
-        # by zone
-        for item in self.cfg.list_zone_bucket:
-            self.bucket[item] = pd.DataFrame(
-                None, columns=list_zones, index=self.cfg.idx_speeds)
-
-    def fill_bucket(self, wind_speed):
-
-        ispeed = np.abs(self.cfg.speeds-wind_speed).argmin()
-
-        for item in self.cfg.list_house_damage_bucket:
-            self.bucket[item][ispeed] = getattr(self, item)
-
-        # by group
-        for item in self.cfg.list_group_bucket:
-            for _value in self.house.groups.itervalues():
-                self.bucket[item][_value.name][ispeed] = getattr(_value, item)
-
-        # by type
-        for item in self.cfg.list_type_bucket:
-            for _value in self.house.types.itervalues():
-                self.bucket[item][_value.name][ispeed] = getattr(_value, item)
-
-        # by connection
-        for _value in self.house.connections.itervalues():
-
-            for item in self.cfg.list_conn_bucket_wind:
-                self.bucket[item][_value.name][ispeed] = getattr(_value, item)
-
-            for item in self.cfg.list_conn_bucket:
-                self.bucket[item][_value.name] = getattr(_value, item)
-
-        # by zone
-        for _value in self.house.zones.itervalues():
-
-            for item in self.cfg.list_zone_bucket:
-                self.bucket[item][_value.name][ispeed] = getattr(_value, item)
-
-    def calculate_qz_Ms(self, wind_speed):
-        """
-        calculate qz, velocity pressure given wind velocity
-        qz = 0.6*10-3*(Mz,cat*V)**2
-        Args:
-            wind_speed: wind velocity (m/s)
-
-        Returns:
-            qz
-            update Ms
-
-        """
-        if self.cfg.regional_shielding_factor <= 0.85:
-            thresholds = np.array([63, 63 + 15])
-            ms_dic = {0: 1.0, 1: 0.85, 2: 0.95}
-            idx = sum(thresholds <= self.rnd_state.random_integers(0, 100))
-            self.Ms = ms_dic[idx]
-            wind_speed *= self.Ms / self.cfg.regional_shielding_factor
-        else:
-            self.Ms = 1.0
-
-        self.qz = 0.6 * 1.0e-3 * (wind_speed * self.house.mzcat) ** 2
-
-    def check_pressurized_failure(self, wind_speed):
-
-        self.cpi = 0.0
-        self.cpiAt = 0.0
-
-        if self.cfg.flags['debris']:
-            logging.debug('debris model is not yet implemented in '
-                          'check_pressurized_failure')
-            self.cpi = 0.0
-            self.cpiAt = 0.0
-            # self.debris_manager.run(v)
-            # if self.cpi == 0 and self.debris_manager.get_breached():
-            #     self.cpi = 0.7
-            #     self.cpiAt = v
-
-    def check_house_collapse(self, wind_speed):
-        """
-
-        Args:
-            wind_speed:
-
-        Returns: collapse of house
-
-        """
-        if not self.collapse:
-
-            for _group in self.house.groups.itervalues():
-
-                if 0 < _group.trigger_collapse_at <= _group.prop_damaged_group:
-
-                    self.collapse = True
-
-                    # FIXME!! Don't understand WHY?
-                    for _conn in self.house.connections:
-                        _conn.set_damage(wind_speed)
-                    #
-                    # for _zone in self.house.zones:
-                    #     _zone.effective_area = 0.0
-
-    def cal_damage_index(self):
-        """
-
-        Args:
-            wind_speed:
-
-        Returns:
-            damage_index: repair cost / replacement cost
-
-        """
-
-        # factor costing
-        dic_damaged_area_final = dict()
-        for source_id, target_list in self.cfg.dic_damage_factorings.iteritems():
-            dic_damaged_area_final[source_id] = self.house.groups[source_id].prop_damaged_area
-            for target_id in target_list:
-                dic_damaged_area_final[source_id] -= self.house.groups[target_id].prop_damaged_area
-
-        # assign value
-        for source_id in self.cfg.dic_damage_factorings:
-            self.house.groups[source_id].prop_damaged_area = \
-                dic_damaged_area_final[source_id]
-
-        # calculate repair cost
-        repair_cost = 0.0
-        for group in self.house.groups.itervalues():
-            group.cal_repair_cost(group.prop_damaged_area)
-            repair_cost += group.repair_cost
-
-        # calculate initial envelope repair cost before water ingress is added
-        self.di_except_water = min(repair_cost / self.house.replace_cost, 1.0)
-
-        if self.di_except_water < 1.0 and self.cfg.flags['water_ingress']:
-
-            print 'Not implemented'
-            # (self.water_ratio, self.water_damage_name, self.water_ingress_cost,
-            #  self.water_costing) = \
-            #     wateringress.get_costing_for_envelope_damage_at_v(
-            #         self.di_except_water, wind_speed, self.house.water_groups)
-            #
-            # repair_cost += self.water_ingress_cost
-            #
-            # # combined internal + envelope damage costing can now be calculated
-            # self.di = min(repair_cost / self.house.replace_cost, 1.0)
-        else:
-            self.di = self.di_except_water
-
-        logging.debug('total repair_cost:{:.3f}, di: {:.3f}'.format(repair_cost,
-                                                              self.di))
-
-        self.di_prev = self.di
+    return house_damage
 
 
 def process_commandline():
-    USAGE = ('%prog -s <scenario_file> [-o <output_folder>]')
-    parser = OptionParser(usage=USAGE, version=VERSION_DESC)
+    usage = '%prog -s <scenario_file> [-o <output_folder>] [-v]'
+    parser = OptionParser(usage=usage, version=VERSION_DESC)
     parser.add_option("-s", "--scenario",
                       dest="scenario_filename",
                       help="read scenario description from FILE",
@@ -389,6 +212,7 @@ def process_commandline():
 
 
 def main():
+
     parser = process_commandline()
 
     (options, args) = parser.parse_args()
@@ -412,7 +236,7 @@ def main():
     if options.scenario_filename:
         conf = Scenario(cfg_file=options.scenario_filename,
                         output_path=options.output_folder)
-        _ = simulate_wind_damage_to_houses(conf)
+        _ = simulate_wind_damage_to_houses(conf, call_back=None)
     else:
         print '\nERROR: Must provide a scenario file to run simulator...\n'
         parser.print_help()

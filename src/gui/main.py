@@ -44,7 +44,7 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
 
         self.s = init_scenario
 
-        self.ui.houseName.addItems(self.s.df_house['Name'].values)
+        self.ui.houseName.addItems(self.s.df_house['name'].values)
         self.ui.houseName.setCurrentIndex(-1)
         self.ui.buildingSpacing.addItems(('20', '40'))
         self.ui.terrainCategory.addItems(self.s.terrain_categories)
@@ -617,7 +617,7 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
             self.ui.numHouses.setText('%d' % self.s.no_sims)
             self.ui.windMax.setValue(self.s.wind_speed_max)
             self.ui.windMin.setValue(self.s.wind_speed_min)
-            self.ui.windSteps.setValue(self.s.wind_speed_num_steps)
+            self.ui.windSteps.setValue(self.s.wind_speed_steps)
             self.ui.windDirection.setCurrentIndex(self.s.wind_dir_index)
             if self.s.source_items:
                 self.ui.sourceItems.setValue(self.s.source_items)
@@ -689,7 +689,7 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
         new_scenario.no_sims = int(self.ui.numHouses.text())
         new_scenario.wind_speed_max = self.ui.windMax.value()
         new_scenario.wind_speed_min = self.ui.windMin.value()
-        new_scenario.wind_speed_num_steps = self.ui.windSteps.value()
+        new_scenario.wind_speed_steps = self.ui.windSteps.value()
         new_scenario.wind_dir_index = self.ui.windDirection.currentIndex()
         new_scenario.terrain_category = unicode(self.ui.terrainCategory.currentText())
         new_scenario.set_flag('regional_shielding_factor', float(unicode(self.ui.regionalShielding.text())))
@@ -766,7 +766,7 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
         self.updateScenarioFromUI()
         mgr = debris.DebrisManager(self.s.house,
                                   self.s.region,
-                                  self.s.wind_speed_min, self.s.wind_speed_max, self.s.wind_speed_num_steps,
+                                  self.s.wind_speed_min, self.s.wind_speed_max, self.s.wind_speed_steps,
                                   self.s.getOpt_DebrisStaggeredSources(),
                                   self.s.debris_radius,
                                   self.s.debris_angle, 
@@ -819,20 +819,20 @@ def run_gui():
         if options.output_folder is None:
             path_, _ = os.path.split(sys.argv[0])
             options.output_folder = os.path.abspath(
-                os.path.join(path_, '../output'))
+                os.path.join(path_, '../outputs/output'))
         else:
             options.output_folder = os.path.abspath(
                 os.path.join(os.getcwd(), options.output_folder))
 
-        # set up logging
-        file_logger = os.path.join(options.output_folder, 'log.txt')
-        logging.basicConfig(filename=file_logger,
-                            filemode='w',
-                            level=logging.DEBUG,
-                            format='%(levelname)s %(message)s')
+        if options.verbose:
+            file_logger = os.path.join(options.output_folder, 'log.txt')
+            logging.basicConfig(filename=file_logger,
+                                filemode='w',
+                                level=logging.DEBUG,
+                                format='%(levelname)s %(message)s')
 
         conf = scenario.Scenario(cfg_file=options.scenario_filename,
-                        output_path=options.output_folder)
+                                 output_path=options.output_folder)
 
         app = QApplication(sys.argv)
         app.setOrganizationName("Geoscience Australia")
