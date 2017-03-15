@@ -1,0 +1,11 @@
+conn_name,type_name,zone_loc,edge
+1,sheetingeave,A1,2
+2,sheeting,A2,0
+3,sheeting,A3,0
+4,sheeting,A4,0
+5,sheeting,A5,0
+6,sheeting,A6,0
+7,sheeting,A7,0
+8,sheeting,A8,0
+9,sheeting,A9,0
+10,sheetingeave,A10,1

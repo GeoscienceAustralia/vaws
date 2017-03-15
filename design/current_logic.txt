@@ -1,0 +1,130 @@
+---------------> methodology: high level overview
+
+1. Open "workshop.csv" scenario file and edit:
+	(select house)
+	(select terrain category)
+	(select num_iterations)
+	(select Vmin, Vmax, Vsteps)
+	
+2. run "python damage.py -s workshop.csv"
+
+REPEAT 'num_iterations' times:
+
+	3. Generate a house by sampling various factors. 
+		(wind_direction: random)
+		(Cpi - fixed for now)
+		(mzcat - random sample envelope profile from selected terrain category)
+		(zone Cpe[wind_direction]: TypeIII GEV pdf)
+		(connection strengths)
+		(connection dead loads)
+		
+	4. For all windspeed steps from Vmin to Vmax:
+		4.1. Calculate qz 
+			(adjusted for variable shielding and terrain category)
+		4.2. Calculate pz for all zones 
+			(factored by zone Cpe[wind_direction], house Cpi and differential shielding)
+		4.3 Calculate load for all connections
+			(for each zone with an influence on connection)
+		4.4. Determine which connections have failed.
+			(if conn.load > sampled connection strength then is damaged)
+		4.5 Calculate Repair Cost using damage_scenarios:
+			(there is a link between connection *-> connection_type *-> damage_scenario)
+			(foreach damage_scenario:
+				perc = percentage of connections with matching connection_type damaged 
+				house_damage += calculate_damage_scenario_cost(perc))
+		4.6. Calculate Damage Index and store DamageResult.
+
+3. Post process results.
+	(calculate mean DI at each V)
+	(calculate fragility level percentages)
+	
+4. Plot fragility curve.
+
+5. Plot vulnerability curve.
+
+--------------------> calculate_mzcat()                             
+rv_profile = random_int from 1-10
+mzcat = terrain.calculateMZCAT(terrain_category, rv_profile, house_height)
+		
+--------------------> calculate_qz()
+return (0.6 * math.pow(10, -3) * math.pow(wind_speed * mzcat, 2))
+
+--------------------> calculate_pz(wind_dir, qz)
+MODEL: House --> Zone
+foreach zone:
+	zone_pz = qz * (zone.coeff[wind_dir] + Cpi)
+
+---------------> current pseudo code
+for i in scenario.num_iters:
+	sample_house_and_wind_params():
+	for next windspeed in range from scenario min, max, numsteps:
+		calculate_qz()
+		calculate_pz()
+		calculate_connection_loads()
+		calculate_damage_ratio_and_store()
+
+---------------> cpi module
+	if not "internally pressurized":
+		check_pressurized_failure()			
+				
+--------------------> sample_house_and_wind_params()
+MODEL: House --> Connection_Type
+MODEL: House --> Zone
+MODEL: House --> Terrain_Envelopes
+
+randomly select Cpi from [-0.3, 0.0](fixed at 0.0 for now) 
+randomly select wind direction
+calc_mzcat()
+
+foreach connection ():
+	conn.strength = sample(connection.connection_type.strength_PDF)
+	conn.dead_load = sample(connection.connection_type.deadload_PDF)
+	
+foreach zone():
+	zone_cpe = sample(zone cpe mean for direction, house_V,  house_k) --> GEV TypeIII
+
+--------------------> calculate connection loads(wind_dir, qz)
+MODEL: House --> Connection_Influence --> Connection
+foreach connection ():
+	foreach zone attached to this connection:
+		conn.load += zone_pz * coeff[zone][connection_id] * zone_area
+		
+	conn.load += conn.dead_load
+	if abs(conn.load) > conn.strength:
+		conn.damaged = True
+
+---------------------> calculate_damage_ratio_and_store()
+MODEL: House --> Connection --> Connection_Type --> Damage_Costing
+foreach damage_scenario:
+	determine percentage of matching connection types have been damaged --> perc
+	house_damage += costing_calculate_damage(perc)
+	
+damage_index = house_damage / house.replace_cost --> store for processing  
+
+---------------------> costing_calculate_damage()
+MODEL: House --> Connection --> Connection_Type --> Damage_Costing 
+calculate envelope_repair_cost(perc)	--> erc
+calculate lining_repair_cost(perc)		--> lrc
+return erc + lrc
+
+--------------------> check_pressurized_failure()
+if random() roll less than martin_cpi_cdf() 				(ie: window breaks)
+	mark as internally pressurized
+	set Cpi to appropriate value
+	calculate_connection_loads()	
+	
+---------------------> import process
+"Create a clean database"
+drop all tables from "model.db"
+from ORM metadata mappings, create database tables.
+setup foreign key behaviour
+import terrain envelope from CSV
+
+"Import House Types"
+for each subfolder underneath "inputs/houses" create a HOUSE model:
+	- house.csv
+	- surface_costing_profiles.csv
+	- zones.csv
+	- connections.csv
+	- conn_influences.csv
+	- conn_types.csv
