@@ -47,7 +47,7 @@ class MyTestCase(unittest.TestCase):
                        'mean_factor': 1.1,
                        'probability': 0.1})])
         tmp = []
-        for i in range(1000):
+        for i in xrange(1000):
             self.house.set_construction_level()
             tmp.append(self.house.construction_level)
 

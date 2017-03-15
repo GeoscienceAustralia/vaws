@@ -37,18 +37,20 @@ class Scenario(object):
 
     # model dependent attributes
     list_house_bucket = ['profile', 'wind_orientation', 'construction_level',
-                          'mzcat']
+                          'mzcat', 'str_mean_factor', 'str_cov_factor']
 
     # model and wind dependent attributes
-    list_house_damage_bucket = ['qz', 'Ms', 'cpi', 'cpiAt', 'collapse', 'di',
-                                'di_except_water']
+    list_house_damage_bucket = ['qz', 'Ms', 'cpi', 'cpi_wind_speed', 'collapse',
+                                'di', 'di_except_water']
+
+    list_debris_bucket = ['no_items', 'no_touched', 'breached', 'damaged_area']
 
     # group: wind dependent attributes
     list_group_bucket = ['prop_damaged_group', 'prop_damaged_area',
                          'repair_cost']
     list_type_bucket = ['damage_capacity', 'prop_damaged_type']
-    list_conn_bucket_wind = ['damaged', 'failure_v_raw', 'load']
-    list_conn_bucket = ['strength', 'dead_load']
+    list_conn_bucket = ['damaged', 'failure_v_raw', 'load', 'strength',
+                        'dead_load']
     list_zone_bucket = ['pressure', 'cpe', 'cpe_str', 'cpe_eave']
 
     def __init__(self, cfg_file=None, output_path=None):
@@ -62,7 +64,7 @@ class Scenario(object):
         self.no_sims = None
         self.wind_speed_min = 0.0
         self.wind_speed_max = 0.0
-        self.wind_speed_num_steps = None
+        self.wind_speed_steps = None
         self.speeds = None
         self.incr_speed = None
         self.idx_speeds = None
@@ -114,7 +116,7 @@ class Scenario(object):
         self.df_coverages = None
         self.dic_walls = None
 
-        self.file_model = None
+        self.file_house = None
         self.file_group = None
         self.file_type = None
         self.file_conn = None
@@ -188,11 +190,11 @@ class Scenario(object):
 
         self.wind_speed_min = conf.getfloat(key, 'wind_speed_min')
         self.wind_speed_max = conf.getfloat(key, 'wind_speed_max')
-        self.wind_speed_num_steps = conf.getint(key, 'wind_speed_steps')
+        self.wind_speed_steps = conf.getint(key, 'wind_speed_steps')
         self.speeds = np.linspace(start=self.wind_speed_min,
                                   stop=self.wind_speed_max,
-                                  num=self.wind_speed_num_steps)
-        self.idx_speeds = range(self.wind_speed_num_steps)
+                                  num=self.wind_speed_steps)
+        self.idx_speeds = range(self.wind_speed_steps)
         self.incr_speed = self.speeds[1] - self.speeds[0]
         self.set_wind_dir_index(conf.get(key, 'wind_fixed_dir'))
         self.regional_shielding_factor = conf.getfloat(
@@ -306,7 +308,7 @@ class Scenario(object):
                 os.makedirs(self.output_path)
             print 'output directory: {}'.format(self.output_path)
 
-            self.file_model = os.path.join(self.output_path, 'results_model.h5')
+            self.file_house = os.path.join(self.output_path, 'results_house.h5')
             self.file_group = os.path.join(self.output_path, 'results_group.h5')
             self.file_type = os.path.join(self.output_path, 'results_type.h5')
             self.file_conn = os.path.join(self.output_path, 'results_conn.h5')
@@ -598,7 +600,7 @@ class Scenario(object):
         config.set(key, 'no_simulations', self.no_sims)
         config.set(key, 'wind_speed_min', self.wind_speed_min)
         config.set(key, 'wind_speed_max', self.wind_speed_max)
-        config.set(key, 'wind_speed_steps', self.wind_speed_num_steps)
+        config.set(key, 'wind_speed_steps', self.wind_speed_steps)
         config.set(key, 'terrain_cat', self.terrain_category)
         config.set(key, 'house_name', self.values['house_name'])
         config.set(key, 'regional_shielding_factor',

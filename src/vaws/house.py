@@ -12,6 +12,7 @@ from connection import ConnectionTypeGroup
 from zone import Zone
 from stats import calc_big_a_b_values
 from scenario import Scenario
+from debris import Debris
 
 
 class House(object):
@@ -24,25 +25,30 @@ class House(object):
         self.cfg = cfg
         self.rnd_state = rnd_state
 
+        # attributes assigned by self.read_house_data
         self.width = None
         self.height = None
         self.length = None
         self.replace_cost = None
-
         self.cpe_cov = None
         self.cpe_str_cov = None
         self.cpe_k = None
-
-        self.footprint = None
         self.roof_rows = None
         self.roof_cols = None
 
+        # in case of debris
+        self.debris = None
+        self.footprint = None
+
+        # random variables
         self.wind_orientation = None  # 0 to 7
         self.construction_level = None
         self.profile = None
         self.str_mean_factor = None
         self.str_cov_factor = None
         self.mzcat = None
+
+        # constants
         self.big_a = None
         self.big_b = None
 
@@ -63,6 +69,9 @@ class House(object):
         self.set_house_wind_params()
         self.set_zones()
         self.set_connections()
+
+        if self.cfg.flags['debris']:
+            self.set_debris()
 
     def read_house_data(self):
 
@@ -157,11 +166,17 @@ class House(object):
             _group.costing_area = costing_area_by_group
             self.groups[group_name] = _group
 
-        if self.cfg.flags['debris']:
-            points = list()
-            for _, item in self.cfg.df_footprint.iterrows():
-                points.append((item[0], item[1]))
-            self.footprint = Polygon(points)
+    def set_debris(self):
+
+        self.debris = Debris(self.cfg)
+
+        points = list()
+        for _, item in self.cfg.df_footprint.iterrows():
+            points.append((item[0], item[1]))
+        self.footprint = Polygon(points)
+
+        self.debris.footprint = self.footprint, self.wind_orientation
+        self.debris.rnd_state = self.rnd_state
 
     def set_house_wind_params(self):
         """
@@ -216,23 +231,6 @@ class House(object):
             self.str_mean_factor = 1.0
             self.str_cov_factor = 1.0
 
-            # @staticmethod
-    # def string_first(value):
-    #     """
-    #     check if value starting with char otherwise re-arrange.
-    #     Args:
-    #         value: 'A12' or '12A'
-    #
-    #     Returns:
-    #
-    #     """
-    #     for i, item in enumerate(value):
-    #         try:
-    #             float(item)
-    #         except ValueError:
-    #             return value[i:] + value[:i]
-    #         else:
-    #             continue
 
 
 
