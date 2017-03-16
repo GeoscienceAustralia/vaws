@@ -10,6 +10,8 @@ from PyQt4.QtGui import QProgressBar, QLabel, QMainWindow, QApplication, QTableW
                         QTableWidgetItem, QDialog, QCheckBox, QFileDialog, QIntValidator,\
                         QDoubleValidator, QMessageBox, QTreeWidgetItem, QInputDialog, QSplashScreen
 import numpy
+import pandas as pd
+from vaws.curve import vulnerability_lognorm, vulnerability_weibull
 
 from main_ui import Ui_main
 from vaws import simulation, scenario, house, version, debris, stats, output
@@ -130,18 +132,37 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
             self.updateVulnCurve()
             self.statusBar().showMessage(unicode('Curve Fit Updated'))
             
-    def updateVulnCurve(self, list_results):
+    def updateVulnCurve(self):
         # self.show_results(None, self.ui.redV.value(), self.ui.blueV.value())
+
+        df_dmg_idx = pd.read_hdf(self.s.file_house, 'di')
+        df_fitted_curves = pd.read_csv(self.s.file_curve,
+                                       names=['key', 'error', 'param1',
+                                              'param2'], skiprows=1,
+                                       index_col='key')
+
         self.ui.mplfrag.axes.cla()
         self.ui.mplfrag.axes.figure.canvas.draw()
+        for _, col in df_dmg_idx.iteritems():
+            self.ui.mplfrag.axes.plot(self.s.speeds, col.values, 'o', 0.3)
+
+        for ds, value in self.s.fragility_thresholds.iterrows():
+            try:
+                y = vulnerability_lognorm(self.s.speeds,
+                                          df_fitted_curves.loc[ds, 'param1'],
+                                          df_fitted_curves.loc[ds, 'param2'])
+            except KeyError, msg:
+                logging.warning(msg)
+            else:
+                self.ui.mplfrag.axes.plot(self.s.speeds, y,
+                                          color=value['color'],
+                                          linestyle='-', label=ds)
+
         self.ui.mplvuln.axes.cla()
         self.ui.mplvuln.axes.figure.canvas.draw()
+        for _, col in df_dmg_idx.iteritems():
+            self.ui.mplvuln.axes.plot(self.s.speeds, col.values, '-', 0.3)
 
-        # loop through each result in the list
-        for result in list_results:
-            self.ui.mplfrag.axes.plot(self.s.speeds,
-                                      result['di']
-                                      , '-', 0.3)
         # self.ui.mplvuln.axes.plot(self.s.speeds,result[0][''])
         # self.ui.sumOfSquares.setText('%f' % self.simulator.ss)
         # self.ui.coeff_1.setText('%f' % self.simulator.A_final[0])
@@ -339,7 +360,7 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
             if run_time is not None:
                 self.statusBar().showMessage(unicode('Simulation '
                                                      'complete in {:0.3f}'.format(run_time)))
-                self.updateVulnCurve(list_results)
+                self.updateVulnCurve()
                 # TODO Finish drawing results
                 # self.updateHouseResultsTable(list_results)
                 # self.updateConnectionTable(list_results)

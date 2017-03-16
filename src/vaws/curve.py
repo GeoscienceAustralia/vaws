@@ -1,19 +1,17 @@
-"""
-    Curve module - fun with curves
-"""
+import logging
+
 from numpy import exp, log, sqrt, diag, newaxis, ones
 from scipy.optimize import curve_fit
 from scipy.stats import weibull_min, lognorm
 from collections import OrderedDict
 
 
-def fit_vulnerability_curve(cfg, df_dmg_idx, flag_obj_func='weibull'):
+def fit_vulnerability_curve(cfg, df_dmg_idx):
     """
 
     Args:
         cfg:
         df_dmg_idx:
-        flag_obj_func:
 
     Returns:
 
@@ -22,12 +20,15 @@ def fit_vulnerability_curve(cfg, df_dmg_idx, flag_obj_func='weibull'):
     xdata = (cfg.speeds[:, newaxis] * ones((1, cfg.no_sims))).flatten()
     ydata = df_dmg_idx.values.flatten()
 
-    popt, pcov = curve_fit(eval(cfg.dic_obj_for_fitting[flag_obj_func]),
-                           xdata,
-                           ydata)
-    perror = sqrt(diag(pcov))
+    fitted_curve = dict()
+    for key, func_ in cfg.dic_obj_for_fitting.items():
+        popt, pcov = curve_fit(eval(func_), xdata, ydata)
 
-    return popt, perror
+        fitted_curve[key] = dict(param1=popt[0],
+                                 param2=popt[1],
+                                 error=sqrt(diag(pcov)))
+
+    return fitted_curve
 
 
 def fit_fragility_curves(cfg, df_dmg_idx):
@@ -45,15 +46,17 @@ def fit_fragility_curves(cfg, df_dmg_idx):
     frag_counted = OrderedDict()
     for state, value in cfg.fragility_thresholds.iterrows():
         counted = (df_dmg_idx > value['threshold']).sum(axis=1) / \
-                  float(cfg.no_sims)
+            float(cfg.no_sims)
 
-        popt, pcov = curve_fit(vulnerability_lognorm,
-                               cfg.speeds,
-                               counted.values)
-
-        frag_counted.setdefault(state, {})['median'] = popt[0]
-        frag_counted[state]['sigma'] = popt[1]
-        frag_counted[state]['error'] = sqrt(diag(pcov))
+        try:
+            popt, pcov = curve_fit(vulnerability_lognorm, cfg.speeds,
+                                   counted.values)
+        except RuntimeError, msg:
+            logging.warning(msg)
+        else:
+            frag_counted[state] = dict(param1=popt[0],
+                                       param2=popt[1],
+                                       error=sqrt(diag(pcov)))
 
     return frag_counted
 

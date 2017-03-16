@@ -32,7 +32,7 @@ def simulate_wind_damage_to_houses(cfg, call_back=None):
     mean_damage = dict()
     damage_incr = 0.0
     list_results = list()
-    calc_count = 0
+    calc_count = 1
 
     if cfg.parallel:
         cfg.parallel = False
@@ -56,24 +56,22 @@ def simulate_wind_damage_to_houses(cfg, call_back=None):
 
         list_results_by_speed = list()
 
-        for house_damage in list_house_damage:
+        for ihouse, house_damage in enumerate(list_house_damage):
 
             if cfg.flags['debris']:
                 house_damage.house.debris.no_items_mean = damage_incr
 
-            if call_back:
-                percent_done = (calc_count + ispeed * len(cfg.speeds)) / (
-                    len(cfg.speeds) * cfg.no_sims)
-
-                print('{}'.format(percent_done))
-
-                if not call_back(int(percent_done * 100)):
-                    return
-
             list_ = house_damage.run_simulation(wind_speed)
             list_results_by_speed.append(list_)
 
-            calc_count += 1
+        if not call_back:
+            sys.stdout.write('{} out of {} completed \n'.format(
+                ispeed + 1, len(cfg.speeds)))
+            sys.stdout.flush()
+        else:
+            percent_done = 100.0 * (ispeed + 1) / len(cfg.speeds)
+            if not call_back(int(percent_done)):
+                return
 
         damage_incr, mean_damage = cal_damage_increment(
             list_results_by_speed, mean_damage, ispeed)
@@ -178,10 +176,10 @@ def save_results_to_files(cfg, list_results):
     frag_counted = fit_fragility_curves(cfg, df_damage_index)
     pd.DataFrame.from_dict(frag_counted).transpose().to_csv(cfg.file_curve)
 
-    popt, perror = fit_vulnerability_curve(cfg, df_damage_index)
-    print('{}:{}'.format(popt, perror))
+    fitted_curve = fit_vulnerability_curve(cfg, df_damage_index)
 
-
+    with open(cfg.file_curve, 'a') as f:
+        pd.DataFrame.from_dict(fitted_curve).transpose().to_csv(f, header=None)
 
 
 def save_panel_to_hdf(list_results, file_, key, list_key, list_items,
