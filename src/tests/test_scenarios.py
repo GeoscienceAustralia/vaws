@@ -676,7 +676,59 @@ class TestScenario15(unittest.TestCase):
         simulation(self.house_damage, conn_capacity,
                    wind_speeds=np.arange(40.0, 100.0, 1.0))
 
+class TestScenario16(unittest.TestCase):
+
+    @classmethod
+    def setUpClass(cls):
+
+        path = '/'.join(__file__.split('/')[:-1])
+        cls.path_output = os.path.join(path, 'output')
+
+        cfg = Scenario(
+            cfg_file=os.path.join(path, '../../scenarios/test_scenario16.cfg'),
+            output_path=cls.path_output)
+        cls.house_damage = HouseDamage(cfg, seed=0)
+
+        # set up logging
+        file_logger = os.path.join(cls.path_output, 'log_test16.txt')
+        logging.basicConfig(filename=file_logger,
+                            filemode='w',
+                            level=logging.DEBUG,
+                            format='%(levelname)s %(message)s')
+
+    def test_damage_sheeting_batten_rafter(self):
+
+        conn_capacity = {72.0: [76],
+                         73.0: [88],
+                         74.0: [64, 100],
+                         75.0: [112],
+                         79.0: [14, 26, 38, 50],
+                         80.0: [13, 15, 25, 27, 37, 39, 49, 51],
+                         81.0: [16, 28, 40, 52],
+                         82.0: [17, 29, 41, 53, 124, 127, 130, 133],
+                         83.0: [18, 30, 42, 54, 126, 129, 132, 135],
+                         84.0: [19, 31, 43, 55],
+                         85.0: [20, 32, 44, 56],
+                         86.0: [21, 33, 45, 57],
+                         87.0: [22, 34, 46, 58],
+                         88.0: [23, 35, 47, 59],
+                         89.0: [24, 36, 48, 60]}
+
+        conn_capacity.update({9999: range(1, 13) +
+                                    range(61, 64) +
+                                    range(65, 76) +
+                                    range(77, 100) +
+                                    range(101, 112) +
+                                    range(113, 124) +
+                                    [125, 128, 131, 134]})
+
+        simulation(self.house_damage, conn_capacity,
+                   wind_speeds=np.arange(40.0, 100.0, 1.0))
+
+
+
+
 if __name__ == '__main__':
-    #suite = unittest.TestLoader().loadTestsFromTestCase(TestScenario1)
-    #unittest.TextTestRunner(verbosity=2).run(suite)
-    unittest.main(verbosity=2)
+    suite = unittest.TestLoader().loadTestsFromTestCase(TestScenario16)
+    unittest.TextTestRunner(verbosity=2).run(suite)
+    #unittest.main(verbosity=2)

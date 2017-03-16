@@ -32,7 +32,6 @@ def simulate_wind_damage_to_houses(cfg, call_back=None):
     mean_damage = dict()
     damage_incr = 0.0
     list_results = list()
-    calc_count = 1
 
     if cfg.parallel:
         cfg.parallel = False
@@ -56,7 +55,7 @@ def simulate_wind_damage_to_houses(cfg, call_back=None):
 
         list_results_by_speed = list()
 
-        for ihouse, house_damage in enumerate(list_house_damage):
+        for house_damage in list_house_damage:
 
             if cfg.flags['debris']:
                 house_damage.house.debris.no_items_mean = damage_incr
@@ -97,6 +96,7 @@ def cal_damage_increment(list_, dic_, index_):
 
     """
     dic_[index_] = np.array([x['house']['di'] for x in list_]).mean()
+
     damage_incr = 0.0  # default value
 
     # only index >= 1
@@ -131,7 +131,11 @@ def save_results_to_files(cfg, list_results):
                            index=range(cfg.wind_speed_steps))
         for ispeed in range(cfg.wind_speed_steps):
             df_.loc[ispeed] = [x['house'][item] for x in list_results[ispeed]]
-        hdf.append(item, df_, format='t')
+
+        try:
+            hdf.append(item, df_, format='t')
+        except TypeError, msg:
+            logging.warning(msg)
     hdf.close()
 
     # results by group for each model
