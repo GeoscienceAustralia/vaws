@@ -53,6 +53,9 @@ class Scenario(object):
                         'dead_load']
     list_zone_bucket = ['pressure', 'cpe', 'cpe_str', 'cpe_eave']
 
+    dic_obj_for_fitting = {'weibull': 'vulnerability_weibull',
+                           'lognorm': 'vulnerability_lognorm'}
+
     def __init__(self, cfg_file=None, output_path=None):
 
         self.cfg_file = cfg_file
@@ -104,9 +107,13 @@ class Scenario(object):
         self.df_groups = None
         self.df_types = None
         self.df_conns = None
-
         self.dic_influences = None
         self.dic_influence_patches = None
+
+        self.list_groups = None
+        self.list_types = None
+        self.list_conns = None
+        self.list_zones = None
 
         self.df_damage_costing = None
         self.dic_damage_factorings = None
@@ -120,6 +127,7 @@ class Scenario(object):
         self.file_type = None
         self.file_conn = None
         self.file_zone = None
+        self.file_curve = None
 
         self.red_v = 54.0
         self.blue_v = 95.0
@@ -306,7 +314,7 @@ class Scenario(object):
             self.file_type = os.path.join(self.output_path, 'results_type.h5')
             self.file_conn = os.path.join(self.output_path, 'results_conn.h5')
             self.file_zone = os.path.join(self.output_path, 'results_zone.h5')
-
+            self.file_curve = os.path.join(self.output_path, 'results_curve.csv')
         else:
             print 'output path is not assigned'
 
@@ -341,6 +349,8 @@ class Scenario(object):
                                     dtype={'cpi_alpha': float,
                                            'area': float,
                                            'wall_dir': int})
+        self.list_zones = self.df_zones.index.tolist()
+
         names_ = ['name'] + range(8)
         self.df_zones_cpe_mean = pd.read_csv(file_zones_cpe_mean,
                                              names=names_,
@@ -360,7 +370,10 @@ class Scenario(object):
                                          skiprows=1)
 
         self.df_groups = pd.read_csv(file_groups, index_col='group_name')
+        self.list_groups = self.df_groups.index.tolist()
+
         self.df_types = pd.read_csv(file_types, index_col='type_name')
+        self.list_types = self.df_types.index.tolist()
 
         # change arithmetic mean, std to logarithmic mean, std
         self.df_types['lognormal_strength'] = self.df_types.apply(
@@ -374,6 +387,8 @@ class Scenario(object):
             axis=1)
 
         self.df_conns = pd.read_csv(file_conns, index_col='conn_name')
+        self.list_conns = self.df_conns.index.tolist()
+
         self.df_conns['group_name'] = self.df_types.loc[
             self.df_conns['type_name'], 'group_name'].values
 
@@ -618,7 +633,6 @@ class Scenario(object):
         config.set(key, 'building_spacing', self.building_spacing)
         config.set(key, 'debris_radius', self.debris_radius)
         config.set(key, 'debris_angle', self.debris_angle)
-        # FIXME!!! DO NOT KNOW WHAT debris_extension DOES
         config.set(key, 'debris_extension', self.debris_extension)
         config.set(key, 'flight_time_mean', self.flight_time_mean)
         config.set(key, 'flight_time_stddev', self.flight_time_stddev)

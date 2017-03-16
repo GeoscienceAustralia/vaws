@@ -53,7 +53,7 @@ class Connection(object):
         # self.failure_v_i = 0  # FIXME!!
         self.failure_v_raw = 9999  # dummy value
 
-        self.damaged = False
+        self.damaged = 0
         self.distributed = None
 
         self.load = None
@@ -187,7 +187,7 @@ class Connection(object):
             damaged, failure_v_raw
 
         """
-        self.damaged = True
+        self.damaged = 1
         # self.damaged_by_dist = False
         # self.failure_v_i += 1
         self.failure_v_raw = wind_speed

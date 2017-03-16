@@ -19,11 +19,6 @@ class HouseDamage(object):
 
         self.house = House(cfg, self.rnd_state)
 
-        self.list_groups = self.house.groups.keys()
-        self.list_types = self.house.types.keys()
-        self.list_conns = self.house.connections.keys()
-        self.list_zones = self.house.zones.keys()
-
         # vary over wind speeds
         self.qz = None
         self.Ms = None
@@ -80,19 +75,19 @@ class HouseDamage(object):
             self.bucket.setdefault('house', {})[item] = None
 
         # by group
-        self.bucket['group'] = pd.DataFrame(None, index=self.list_groups,
+        self.bucket['group'] = pd.DataFrame(None, index=self.cfg.list_groups,
                                             columns=self.cfg.list_group_bucket)
 
         # by type
-        self.bucket['type'] = pd.DataFrame(None, index=self.list_types,
+        self.bucket['type'] = pd.DataFrame(None, index=self.cfg.list_types,
                                            columns=self.cfg.list_type_bucket)
 
         # by connection
-        self.bucket['conn'] = pd.DataFrame(None, index=self.list_conns,
+        self.bucket['conn'] = pd.DataFrame(None, index=self.cfg.list_conns,
                                            columns=self.cfg.list_conn_bucket)
 
         # by zone
-        self.bucket['zone'] = pd.DataFrame(None, index=self.list_zones,
+        self.bucket['zone'] = pd.DataFrame(None, index=self.cfg.list_zones,
                                            columns=self.cfg.list_zone_bucket)
 
     def fill_bucket(self):

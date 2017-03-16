@@ -8,7 +8,7 @@ import logging
 
 from vaws.scenario import Scenario
 from vaws.debris import Debris
-from vaws.curve import vulnerability_weibull
+from vaws.curve import vulnerability_weibull, vulnerability_weibull_pdf
 
 '''
     def run_alt(self, wind_speed):
@@ -418,10 +418,9 @@ class MyTestCase(unittest.TestCase):
 
         for wind_speed in wind_speeds:
 
-            incr_damage = vulnerability_weibull(x=wind_speed,
+            incr_damage = vulnerability_weibull_pdf(x=wind_speed,
                                                 alpha_=0.10304,
-                                                beta_=4.18252,
-                                                flag='pdf') * incr_speed
+                                                beta_=4.18252) * incr_speed
 
             _debris.no_items_mean = incr_damage
 
@@ -511,10 +510,9 @@ class MyTestCase(unittest.TestCase):
 
         for speed in self.cfg.speeds:
 
-            incr_damage = vulnerability_weibull(x=speed,
+            incr_damage = vulnerability_weibull_pdf(x=speed,
                                                 alpha_=0.10304,
-                                                beta_=4.18252,
-                                                flag='pdf') * incr_speed
+                                                beta_=4.18252) * incr_speed
 
             _debris.no_items_mean = incr_damage
 

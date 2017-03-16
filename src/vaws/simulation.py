@@ -2,6 +2,7 @@ import sys
 import os
 import time
 import logging
+import warnings
 
 # from pathos.multiprocessing import ProcessingPool
 import pandas as pd
@@ -10,15 +11,16 @@ from optparse import OptionParser
 
 from house_damage import HouseDamage
 from scenario import Scenario
+from curve import fit_fragility_curves, fit_vulnerability_curve
 from version import VERSION_DESC
 
 
-def simulate_wind_damage_to_houses(cfg, call_back):
+def simulate_wind_damage_to_houses(cfg, call_back=None):
     """
 
     Args:
-        cfg:
-        call_back:
+        cfg: instance of Scenario class
+        call_back: used by gui
 
     Returns:
 
@@ -34,7 +36,8 @@ def simulate_wind_damage_to_houses(cfg, call_back):
 
     if cfg.parallel:
         cfg.parallel = False
-        logging.info('parallel running is not implemented yet')
+        print('parallel running is not implemented yet, '
+              'switched to serial mode')
 
         # very slow
         # iteration over wind speed list
@@ -61,6 +64,8 @@ def simulate_wind_damage_to_houses(cfg, call_back):
             if call_back:
                 percent_done = (calc_count + ispeed * len(cfg.speeds)) / (
                     len(cfg.speeds) * cfg.no_sims)
+
+                print('{}'.format(percent_done))
 
                 if not call_back(int(percent_done * 100)):
                     return
@@ -131,57 +136,88 @@ def save_results_to_files(cfg, list_results):
         hdf.append(item, df_, format='t')
     hdf.close()
 
-    # file_group (group: Panel(attribute, wind_speed_steps, no_sims)
-    hdf = pd.HDFStore(cfg.file_group, mode='w')
-    for group_name in list_results[0][0]['group'].index.tolist():
-        _panel = pd.Panel(dtype=float, items=cfg.list_group_bucket,
-                          major_axis=range(cfg.wind_speed_steps),
-                          minor_axis=range(cfg.no_sims))
-        for item in cfg.list_group_bucket:
-            for ispeed in range(cfg.wind_speed_steps):
-                _panel[item].loc[ispeed] = [x['group'][item].values[0] for x
-                                            in list_results[ispeed]]
-        hdf[group_name] = _panel
-    hdf.close()
+    # results by group for each model
+    save_panel_to_hdf(list_results,
+                      file_=cfg.file_group,
+                      key='group',
+                      list_key=cfg.list_groups,
+                      list_items=cfg.list_group_bucket,
+                      list_major_axis=range(cfg.wind_speed_steps),
+                      list_minor_axis=range(cfg.no_sims))
 
     # results by type for each model
-    hdf = pd.HDFStore(cfg.file_type, mode='w')
-    for type_name in list_results[0][0]['type'].index.tolist():
-        _panel = pd.Panel(dtype=float, items=cfg.list_type_bucket,
-                          major_axis=range(cfg.wind_speed_steps),
-                          minor_axis=range(cfg.no_sims))
-        for item in cfg.list_type_bucket:
-            for ispeed in range(cfg.wind_speed_steps):
-                _panel[item].loc[ispeed] = [x['type'][item].values[0] for x
-                                            in list_results[ispeed]]
-        hdf[type_name] = _panel
-    hdf.close()
+    save_panel_to_hdf(list_results,
+                      file_=cfg.file_type,
+                      key='type',
+                      list_key=cfg.list_types,
+                      list_items=cfg.list_type_bucket,
+                      list_major_axis=range(cfg.wind_speed_steps),
+                      list_minor_axis=range(cfg.no_sims))
 
     # results by connection for each model
-    hdf = pd.HDFStore(cfg.file_conn, mode='w')
-    for conn_name in list_results[0][0]['conn'].index.tolist():
-        _panel = pd.Panel(dtype=float, items=cfg.list_conn_bucket,
-                          major_axis=range(cfg.wind_speed_steps),
-                          minor_axis=range(cfg.no_sims))
-        for item in cfg.list_conn_bucket:
-            for ispeed in range(cfg.wind_speed_steps):
-                _panel[item].loc[ispeed] = [x['conn'][item].values[0] for x
-                                            in list_results[ispeed]]
-        hdf['c' + str(conn_name)] = _panel
-    hdf.close()
+    save_panel_to_hdf(list_results,
+                      file_=cfg.file_conn,
+                      key='conn',
+                      list_key=cfg.list_conns,
+                      list_items=cfg.list_conn_bucket,
+                      list_major_axis=range(cfg.wind_speed_steps),
+                      list_minor_axis=range(cfg.no_sims))
 
     # results by zone for each model
-    hdf = pd.HDFStore(cfg.file_zone, mode='w')
-    for zone_name in list_results[0][0]['zone'].index.tolist():
-        _panel = pd.Panel(dtype=float, items=cfg.list_zone_bucket,
-                          major_axis=range(cfg.wind_speed_steps),
-                          minor_axis=range(cfg.no_sims))
-        for item in cfg.list_zone_bucket:
-            for ispeed in range(cfg.wind_speed_steps):
-                _panel[item].loc[ispeed] = [x['zone'][item].values[0] for x
-                                            in list_results[ispeed]]
-        hdf[zone_name] = _panel
-    hdf.close()
+    save_panel_to_hdf(list_results,
+                      file_=cfg.file_zone,
+                      key='zone',
+                      list_key=cfg.list_zones,
+                      list_items=cfg.list_zone_bucket,
+                      list_major_axis=range(cfg.wind_speed_steps),
+                      list_minor_axis=range(cfg.no_sims))
+
+    # plot fragility and vulnerability curves
+    df_damage_index = pd.read_hdf(cfg.file_house, 'di')
+
+    frag_counted = fit_fragility_curves(cfg, df_damage_index)
+    pd.DataFrame.from_dict(frag_counted).transpose().to_csv(cfg.file_curve)
+
+    popt, perror = fit_vulnerability_curve(cfg, df_damage_index)
+    print('{}:{}'.format(popt, perror))
+
+
+
+
+def save_panel_to_hdf(list_results, file_, key, list_key, list_items,
+                      list_major_axis, list_minor_axis):
+    """
+
+    Args:
+        list_results:
+        file_:
+        key:
+        list_key:
+        list_items:
+        list_major_axis:
+        list_minor_axis:
+
+    Returns:
+
+    """
+
+    with warnings.catch_warnings():
+
+        warnings.simplefilter("ignore")
+
+        # file (key: Panel(attribute, wind_speed_steps, no_sims)
+        hdf = pd.HDFStore(file_, mode='w')
+        for _name in list_key:
+            _panel = pd.Panel(dtype=float,
+                              items=list_items,
+                              major_axis=list_major_axis,
+                              minor_axis=list_minor_axis)
+            for item in list_items:
+                for ispeed in list_major_axis:
+                    _panel[item].loc[ispeed] = [x[key][item].values[0] for x
+                                                in list_results[ispeed]]
+            hdf[str(_name)] = _panel
+        hdf.close()
 
 
 def create_house_damage(id_sim, cfg):

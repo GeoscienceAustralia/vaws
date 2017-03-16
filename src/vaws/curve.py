@@ -1,12 +1,64 @@
 """
     Curve module - fun with curves
 """
-import numpy as np
-from scipy.optimize.minpack import leastsq
-from scipy.stats import weibull_min
+from numpy import exp, log, sqrt, diag, newaxis, ones
+from scipy.optimize import curve_fit
+from scipy.stats import weibull_min, lognorm
+from collections import OrderedDict
 
 
-def vulnerability_weibull(x, alpha_, beta_, flag='pdf'):
+def fit_vulnerability_curve(cfg, df_dmg_idx, flag_obj_func='weibull'):
+    """
+
+    Args:
+        cfg:
+        df_dmg_idx:
+        flag_obj_func:
+
+    Returns:
+
+    """
+    # array changed to vector
+    xdata = (cfg.speeds[:, newaxis] * ones((1, cfg.no_sims))).flatten()
+    ydata = df_dmg_idx.values.flatten()
+
+    popt, pcov = curve_fit(eval(cfg.dic_obj_for_fitting[flag_obj_func]),
+                           xdata,
+                           ydata)
+    perror = sqrt(diag(pcov))
+
+    return popt, perror
+
+
+def fit_fragility_curves(cfg, df_dmg_idx):
+    """
+
+    Args:
+        cfg:
+        df_dmg_idx:
+
+    Returns:
+
+    """
+
+    # calculate damage probability
+    frag_counted = OrderedDict()
+    for state, value in cfg.fragility_thresholds.iterrows():
+        counted = (df_dmg_idx > value['threshold']).sum(axis=1) / \
+                  float(cfg.no_sims)
+
+        popt, pcov = curve_fit(vulnerability_lognorm,
+                               cfg.speeds,
+                               counted.values)
+
+        frag_counted.setdefault(state, {})['median'] = popt[0]
+        frag_counted[state]['sigma'] = popt[1]
+        frag_counted[state]['error'] = sqrt(diag(pcov))
+
+    return frag_counted
+
+
+def vulnerability_weibull(x, alpha_, beta_):
     """
 
     vulnerability curve with Weibull function
@@ -14,9 +66,8 @@ def vulnerability_weibull(x, alpha_, beta_, flag='pdf'):
     Args:
         _alpha, _beta: parameters for vulnerability curve
         x: 3sec gust wind speed at 10m height
-        flag: 'pdf' or 'cdf'
 
-    Returns: weibull_min.flag(x, shape, loc=0, scale)
+    Returns: weibull_min.cdf(x, shape, loc=0, scale)
 
     Notes
     ----
@@ -38,98 +89,58 @@ def vulnerability_weibull(x, alpha_, beta_, flag='pdf'):
     """
     # convert alpha and beta to shape and scale respectively
     shape_ = 1 / alpha_
-    scale_ = np.exp(beta_)
+    scale_ = exp(beta_)
 
-    return getattr(weibull_min, flag)(x, shape_, loc=0, scale=scale_)
+    return weibull_min.cdf(x, shape_, loc=0, scale=scale_)
 
 
-def single_exponential_given_V(beta_, alpha_, x_arr):
+def vulnerability_weibull_pdf(x, alpha_, beta_):
     """
-    compute
+
+    vulnerability curve with Weibull function
+
     Args:
-        beta_: parameter for vulnerability curve
-        alpha_: parameter for vulnerability curve
-        x_arr: 3sec gust wind speed at 10m height
+        _alpha, _beta: parameters for vulnerability curve
+        x: 3sec gust wind speed at 10m height
 
-    Returns: damage index
+    Returns: weibull_min.pdf(x, shape, loc=0, scale)
+
+    Notes
+    ----
+
+    weibull_min.pdf = c/s * (x/s)**(c-1) * exp(-(x/s)**c)
+        c: shape, s: scale, loc=0
+
+    weibull_min.cdf = 1 - exp(-(x/s)**c)
+
+    while Australian wind vulnerability is defined as
+
+        DI = 1 - exp(-(x/exp(beta))**(1/alpha))
+
+    therefore:
+
+        s = exp(beta)
+        c = 1/alpha
 
     """
-    exponent_ = -1.0 * np.power(x_arr / np.exp(beta_), 1.0 / alpha_)
-    return 1 - np.exp(exponent_)
+    # convert alpha and beta to shape and scale respectively
+    shape_ = 1 / alpha_
+    scale_ = exp(beta_)
+
+    return weibull_min.pdf(x, shape_, loc=0, scale=scale_)
 
 
-def objective(A, x_arr, obs_arr):
-    beta_, alpha_ = A
-    y = single_exponential_given_V(beta_, alpha_, x_arr)
-    diff = obs_arr - y
-    return diff
+def vulnerability_lognorm(x, med, std):
+    """
 
+    vulnerability curve with cumulative lognormal function
 
-def generate_observations(coeff_arr, x_arr, max_perc_err=0):
-    yarr = single_exponential_given_V(coeff_arr, x_arr)
-    if max_perc_err > 0:
-        error_perc_arr = (np.random.randn(len(x_arr))/100.0) * np.random.random_integers(0, max_perc_err, 1)
-        yarr += 0.2 * error_perc_arr
-    return yarr
+    Args:
+        med, std: exp(mean of log x) and standard deviation of log x
+        x: 3sec gust wind speed at 10m height
 
+    Returns: lognorm.flag(x, std, loc=0, scale=med)
 
-def calc_alpha_beta(ws1, di1, ws2, di2):
-    a = np.log(ws1/ws2)
-    if di1 == 1.0: di1 = 0.99   # for the call to log
-    if di2 == 1.0: di2 = 0.99   # for the call to log
-    b = -np.log(1 - di1)
-    c = -np.log(1 - di2)
-    d = np.log(b/c)
-    alpha = (a/d) 
-    beta = np.log( ws1 / np.power(b, alpha) ) 
-    return alpha, beta
-    
+    """
 
-def generate_guess(wind_speeds, damage_indexes):
-    i = np.searchsorted(damage_indexes, 0.01, side='right')
-    if i == damage_indexes.size:
-        ws0 = wind_speeds[0]
-        di0 = damage_indexes[0]
-    else:
-        ws0 = wind_speeds[i]
-        di0 = damage_indexes[i]
-        
-    i = np.searchsorted(damage_indexes, 0.2, side='right')
-    if i == damage_indexes.size:
-        ws1 = wind_speeds[0]
-        di1 = damage_indexes[0]
-    else:
-        ws1 = wind_speeds[i]
-        di1 = damage_indexes[i]
-        
-    i = np.searchsorted(damage_indexes, 0.9, side='right')
-    if i == damage_indexes.size:
-        ws2 = wind_speeds[damage_indexes.size-3]
-        di2 = damage_indexes[damage_indexes.size-3]        
-    else:
-        ws2 = wind_speeds[i]
-        di2 = damage_indexes[i]
-    
-    a1, b1 = calc_alpha_beta(ws2, di2, ws1, di1)
-    a2, b2 = calc_alpha_beta(ws2, di2, ws0, di0)
-    return (a1+a2)/2, (b1+b2)/2
-
-
-def fit_curve(x_arr, obs_arr, verbose=False):
-    guess_alpha, guess_beta = generate_guess(x_arr, obs_arr)
-    guess_x0 = [guess_beta, guess_alpha]            
-    try:
-        A_final, cov_x, infodict, msg, ier = leastsq(objective, 
-                                                     guess_x0, 
-                                                     args=(x_arr, obs_arr), 
-                                                     full_output=True, 
-                                                     warning=True)
-    except Exception, e:
-        return guess_x0, 0
-    if ier not in range(1, 5):
-        return guess_x0, 0
-    
-    fitted_vals = single_exponential_given_V(A_final, x_arr)
-    ss = (fitted_vals - obs_arr)**2  
-    return A_final, ss.sum()
-
+    return lognorm.cdf(x, std, loc=0, scale=med)
