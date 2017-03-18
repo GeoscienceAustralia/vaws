@@ -83,7 +83,7 @@ class Scenario(object):
         self.construction_levels = OrderedDict()
         self.fragility_thresholds = None
 
-        self.source_items = None
+        self.source_items = 0
         self.regional_shielding_factor = 1.0
         self.building_spacing = None
         self.wind_dir_index = None

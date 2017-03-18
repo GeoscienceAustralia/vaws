@@ -450,7 +450,7 @@ class ConnectionTypeGroup(object):
         except AssertionError:
             self.repair_cost = 0.0
 
-        logging.debug('group {}: repair_cost: {:.3f} for {:.3f}'.format(
+        logging.info('group {}: repair_cost: {:.3f} for {:.3f}'.format(
             self.name, self.repair_cost, value))
 
     def cal_prop_damaged(self):
@@ -478,7 +478,7 @@ class ConnectionTypeGroup(object):
         except ZeroDivisionError:
             self.prop_damaged_area = 0.0
 
-        logging.debug('group {}: prop damaged: {:.3f}, prop. damaged area: {:.3f}'.format(
+        logging.info('group {}: prop damaged: {:.3f}, prop. damaged area: {:.3f}'.format(
             self.name, self.prop_damaged_group, self.prop_damaged_area))
 
     def check_damage(self, wind_speed):
@@ -506,7 +506,7 @@ class ConnectionTypeGroup(object):
 
                     _conn.set_damage(wind_speed)
 
-                    logging.debug(
+                    logging.info(
                         'conn {} of {} at {} damaged at {:.3f} b/c load {:.3f} > strength {:.3f}'.format(
                             _conn.name, self.name, _conn.grid, wind_speed, _conn.load, _conn.strength))
 

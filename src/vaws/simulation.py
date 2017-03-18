@@ -6,7 +6,6 @@ import warnings
 
 # from pathos.multiprocessing import ProcessingPool
 import pandas as pd
-import numpy as np
 from optparse import OptionParser
 
 from house_damage import HouseDamage
@@ -29,27 +28,18 @@ def simulate_wind_damage_to_houses(cfg, call_back=None):
     # simulator main_loop
     tic = time.time()
 
-    mean_damage = dict()
     damage_incr = 0.0
-    list_results = list()
+    dic_panels = init_panels(cfg)
 
     if cfg.parallel:
         cfg.parallel = False
         print('parallel running is not implemented yet, '
               'switched to serial mode')
 
-        # very slow
-        # iteration over wind speed list
-        # for wind_speed in cfg.speeds:
-        #
-        #     list_ = ProcessingPool().map(HouseDamage.run_simulation,
-        #         list_house_damage, [wind_speed]*cfg.no_sims)
-
     logging.info('Starting simulation in serial')
 
     # generate instances of house_damage
-    list_house_damage = [create_house_damage(i, cfg) for i in
-                         range(cfg.no_sims)]
+    list_house_damage = [HouseDamage(cfg, i) for i in range(cfg.no_sims)]
 
     for ispeed, wind_speed in enumerate(cfg.speeds):
 
@@ -61,7 +51,10 @@ def simulate_wind_damage_to_houses(cfg, call_back=None):
                 house_damage.house.debris.no_items_mean = damage_incr
 
             list_ = house_damage.run_simulation(wind_speed)
+
             list_results_by_speed.append(list_)
+
+        damage_incr = update_panels(dic_panels, list_results_by_speed, ispeed)
 
         if not call_back:
             sys.stdout.write('{} out of {} completed \n'.format(
@@ -72,166 +65,111 @@ def simulate_wind_damage_to_houses(cfg, call_back=None):
             if not call_back(int(percent_done)):
                 return
 
-        damage_incr, mean_damage = cal_damage_increment(
-            list_results_by_speed, mean_damage, ispeed)
-
-        list_results.append(list_results_by_speed)
-
-    save_results_to_files(cfg, list_results)
+    save_results_to_files(cfg, dic_panels)
 
     logging.info('Time taken for simulation {}'.format(time.time()-tic))
 
-    return time.time()-tic, list_results
+    return time.time()-tic, dic_panels
 
 
-def cal_damage_increment(list_, dic_, index_):
-    """
+def init_panels(cfg):
 
-    Args:
-        list_: list of results
-        dic_: dic of damge index by wind step
-        index_: index of wind step
+    dic_panels = dict()
 
-    Returns:
+    # house
+    list_atts = cfg.list_house_bucket + cfg.list_house_damage_bucket + \
+                cfg.list_debris_bucket
+    dic_panels['house'] = pd.Panel(dtype=float,
+                                   items=list_atts,
+                                   major_axis=range(cfg.wind_speed_steps),
+                                   minor_axis=range(cfg.no_sims))
+    # other components
+    for item in ['group', 'type', 'conn', 'zone']:
+        for att in getattr(cfg, 'list_{}s'.format(item)):
+            dic_panels.setdefault(item, {})[att] = \
+                pd.Panel(dtype=float,
+                         items=getattr(cfg, 'list_{}_bucket'.format(item)),
+                         major_axis=range(cfg.wind_speed_steps),
+                         minor_axis=range(cfg.no_sims))
 
-    """
-    dic_[index_] = np.array([x['house']['di'] for x in list_]).mean()
+    return dic_panels
 
+
+def update_panels(dic_, list_results_by_speed, ispeed):
+
+    # house
+    for att in dic_['house'].items.tolist():
+        dic_['house'][att].loc[ispeed] = [x['house'][att] for x in
+                                          list_results_by_speed]
+
+    # other components
+    for item in ['group', 'type', 'conn', 'zone']:
+        for key, value in dic_[item].iteritems():
+            for att in value.items.tolist():
+                value[att].loc[ispeed] = [x[item].loc[key, att] for x in
+                                          list_results_by_speed]
+
+    # compute damage index increment
     damage_incr = 0.0  # default value
 
-    # only index >= 1
-    if index_:
+    if ispeed:
 
-        damage_incr = dic_[index_] - dic_[index_ - 1]
+        damage_incr = dic_['house']['di'].loc[ispeed].mean(axis=0) - \
+                      dic_['house']['di'].loc[ispeed - 1].mean(axis=0)
 
         if damage_incr < 0:
             logging.warn('damage increment is less than zero')
             damage_incr = 0.0
 
-    return damage_incr, dic_
+    return damage_incr
 
 
-def save_results_to_files(cfg, list_results):
+def save_results_to_files(cfg, dic_panels):
     """
 
     Args:
         cfg:
-        list_results: [wind_speed_steps][no_sims]{'house': df, 'group': df,
-        'type': df, 'conn': df, 'zone': df }
+        dic_panels:
 
     Returns:
 
     """
 
     # file_house (attribute: DataFrame(wind_speed_steps, no_sims)
-    hdf = pd.HDFStore(cfg.file_house, mode='w')
-    for item in cfg.list_house_bucket + cfg.list_house_damage_bucket + \
-            cfg.list_debris_bucket:
-        df_ = pd.DataFrame(dtype=float, columns=range(cfg.no_sims),
-                           index=range(cfg.wind_speed_steps))
-        for ispeed in range(cfg.wind_speed_steps):
-            df_.loc[ispeed] = [x['house'][item] for x in list_results[ispeed]]
-
-        try:
-            hdf.append(item, df_, format='t')
-        except TypeError, msg:
-            logging.warning(msg)
-    hdf.close()
+    dic_panels['house'].to_hdf(cfg.file_house, key='house', mode='w')
 
     # results by group for each model
-    save_panel_to_hdf(list_results,
-                      file_=cfg.file_group,
-                      key='group',
-                      list_key=cfg.list_groups,
-                      list_items=cfg.list_group_bucket,
-                      list_major_axis=range(cfg.wind_speed_steps),
-                      list_minor_axis=range(cfg.no_sims))
+    # other components
+    for item in ['group', 'type', 'conn', 'zone']:
 
-    # results by type for each model
-    save_panel_to_hdf(list_results,
-                      file_=cfg.file_type,
-                      key='type',
-                      list_key=cfg.list_types,
-                      list_items=cfg.list_type_bucket,
-                      list_major_axis=range(cfg.wind_speed_steps),
-                      list_minor_axis=range(cfg.no_sims))
+        with warnings.catch_warnings():
 
-    # results by connection for each model
-    save_panel_to_hdf(list_results,
-                      file_=cfg.file_conn,
-                      key='conn',
-                      list_key=cfg.list_conns,
-                      list_items=cfg.list_conn_bucket,
-                      list_major_axis=range(cfg.wind_speed_steps),
-                      list_minor_axis=range(cfg.no_sims))
+            warnings.simplefilter("ignore")
+            #  warnings.filterwarnings('error')
 
-    # results by zone for each model
-    save_panel_to_hdf(list_results,
-                      file_=cfg.file_zone,
-                      key='zone',
-                      list_key=cfg.list_zones,
-                      list_items=cfg.list_zone_bucket,
-                      list_major_axis=range(cfg.wind_speed_steps),
-                      list_minor_axis=range(cfg.no_sims))
+            # file (key: Panel(attribute, wind_speed_steps, no_sims)
+            hdf = pd.HDFStore(getattr(cfg, 'file_{}'.format(item)), mode='w')
+
+            for key, value in dic_panels[item].iteritems():
+                try:
+                    hdf[str(key)] = value
+                except Warning, msg:
+                    logging.warning(msg)
+
+            hdf.close()
 
     # plot fragility and vulnerability curves
-    df_damage_index = pd.read_hdf(cfg.file_house, 'di')
-
-    frag_counted = fit_fragility_curves(cfg, df_damage_index)
+    frag_counted = fit_fragility_curves(cfg, dic_panels['house']['di'])
     pd.DataFrame.from_dict(frag_counted).transpose().to_csv(cfg.file_curve)
 
-    fitted_curve = fit_vulnerability_curve(cfg, df_damage_index)
+    fitted_curve = fit_vulnerability_curve(cfg, dic_panels['house']['di'])
 
     with open(cfg.file_curve, 'a') as f:
         pd.DataFrame.from_dict(fitted_curve).transpose().to_csv(f, header=None)
 
 
-def save_panel_to_hdf(list_results, file_, key, list_key, list_items,
-                      list_major_axis, list_minor_axis):
-    """
-
-    Args:
-        list_results:
-        file_:
-        key:
-        list_key:
-        list_items:
-        list_major_axis:
-        list_minor_axis:
-
-    Returns:
-
-    """
-
-    with warnings.catch_warnings():
-
-        warnings.simplefilter("ignore")
-
-        # file (key: Panel(attribute, wind_speed_steps, no_sims)
-        hdf = pd.HDFStore(file_, mode='w')
-        for _name in list_key:
-            _panel = pd.Panel(dtype=float,
-                              items=list_items,
-                              major_axis=list_major_axis,
-                              minor_axis=list_minor_axis)
-            for item in list_items:
-                for ispeed in list_major_axis:
-                    _panel[item].loc[ispeed] = [x[key][item].values[0] for x
-                                                in list_results[ispeed]]
-            hdf[str(_name)] = _panel
-        hdf.close()
-
-
-def create_house_damage(id_sim, cfg):
-
-    seed = cfg.flags['random_seed'] + id_sim
-    house_damage = HouseDamage(cfg, seed)
-
-    return house_damage
-
-
 def process_commandline():
-    usage = '%prog -s <scenario_file> [-o <output_folder>] [-v]'
+    usage = '%prog -s <scenario_file> [-o <output_folder>] [-v <logging_level>]'
     parser = OptionParser(usage=usage, version=VERSION_DESC)
     parser.add_option("-s", "--scenario",
                       dest="scenario_filename",
@@ -242,10 +180,10 @@ def process_commandline():
                       help="folder name to store simulation results",
                       metavar="FOLDER")
     parser.add_option("-v", "--verbose",
-                      action="store_true",
                       dest="verbose",
                       default=False,
-                      help="show verbose simulator output")
+                      metavar="logging_level",
+                      help="set logging level")
     return parser
 
 
@@ -265,11 +203,19 @@ def main():
             os.path.join(os.getcwd(), options.output_folder))
 
     if options.verbose:
+
+        logger = logging.getLogger()
         file_logger = os.path.join(options.output_folder, 'log.txt')
-        logging.basicConfig(filename=file_logger,
-                            filemode='w',
-                            level=logging.DEBUG,
-                            format='%(levelname)s %(message)s')
+        file_handler = logging.FileHandler(filename=file_logger, mode='w')
+        formatter = logging.Formatter('%(levelname)s - %(message)s')
+        file_handler.setFormatter(formatter)
+        logger.addHandler(file_handler)
+
+        try:
+            logger.setLevel(getattr(logging, options.verbose.upper()))
+        except AttributeError:
+            print('{} is not a logging level'.format(options.verbose))
+            logger.setLevel(logging.DEBUG)
 
     if options.scenario_filename:
         conf = Scenario(cfg_file=options.scenario_filename,

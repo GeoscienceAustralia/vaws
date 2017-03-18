@@ -52,6 +52,8 @@ def simulation(house_damage, conn_capacity, wind_speeds):
             _group.cal_prop_damaged()
             _group.distribute_damage()
 
+        house_damage.cal_damage_index()
+
     # compare with reference capacity
     for _id, _conn in house_damage.house.connections.iteritems():
 
@@ -676,6 +678,7 @@ class TestScenario15(unittest.TestCase):
         simulation(self.house_damage, conn_capacity,
                    wind_speeds=np.arange(40.0, 100.0, 1.0))
 
+
 class TestScenario16(unittest.TestCase):
 
     @classmethod
@@ -723,7 +726,7 @@ class TestScenario16(unittest.TestCase):
                                     [125, 128, 131, 134]})
 
         simulation(self.house_damage, conn_capacity,
-                   wind_speeds=np.arange(40.0, 100.0, 1.0))
+                   wind_speeds=np.arange(70.0, 101.0, 1.0))
 
 
 

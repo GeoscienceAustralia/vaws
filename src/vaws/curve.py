@@ -1,7 +1,8 @@
 import logging
+import warnings
 
 from numpy import exp, log, sqrt, diag, newaxis, ones
-from scipy.optimize import curve_fit
+from scipy.optimize import curve_fit, OptimizeWarning
 from scipy.stats import weibull_min, lognorm
 from collections import OrderedDict
 
@@ -22,11 +23,21 @@ def fit_vulnerability_curve(cfg, df_dmg_idx):
 
     fitted_curve = dict()
     for key, func_ in cfg.dic_obj_for_fitting.items():
-        popt, pcov = curve_fit(eval(func_), xdata, ydata)
 
-        fitted_curve[key] = dict(param1=popt[0],
-                                 param2=popt[1],
-                                 error=sqrt(diag(pcov)))
+        with warnings.catch_warnings():
+
+            warnings.simplefilter("error", OptimizeWarning)
+
+            try:
+                popt, pcov = curve_fit(eval(func_), xdata, ydata)
+            except RuntimeError as e:
+                logging.warning(e.message + ' at {} curve fitting'.format(key))
+            except OptimizeWarning as e:
+                logging.warning(e.message + ' at {} curve fitting'.format(key))
+            else:
+                fitted_curve[key] = dict(param1=popt[0],
+                                         param2=popt[1],
+                                         error=sqrt(diag(pcov)))
 
     return fitted_curve
 
@@ -51,8 +62,9 @@ def fit_fragility_curves(cfg, df_dmg_idx):
         try:
             popt, pcov = curve_fit(vulnerability_lognorm, cfg.speeds,
                                    counted.values)
-        except RuntimeError, msg:
-            logging.warning(msg)
+        except RuntimeError as e:
+            logging.warning(e.message + ' at {} damage state fragility fitting'.
+                            format(state))
         else:
             frag_counted[state] = dict(param1=popt[0],
                                        param2=popt[1],

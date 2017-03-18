@@ -33,6 +33,8 @@ class HouseDamage(object):
 
     def run_simulation(self, wind_speed):
 
+        logging.info('wind speed {:.3f}'.format(wind_speed))
+
         # only check if debris is ON
         # cpi is computed here
         self.check_internal_pressurisation(wind_speed)
@@ -42,6 +44,7 @@ class HouseDamage(object):
 
         # load = qz * (Cpe + Cpi) * A + Dead
         for _zone in self.house.zones.itervalues():
+
             _zone.calc_zone_pressures(self.house.wind_orientation,
                                       self.cpi,
                                       self.qz,
@@ -239,9 +242,5 @@ class HouseDamage(object):
         else:
             self.di = self.di_except_water
 
-        logging.debug('total repair_cost:{:.3f}, di: {:.3f}'.format(repair_cost,
-                                                              self.di))
-
-        self.di_prev = self.di
-
-
+        logging.info('total repair_cost:{:.3f}, di: {:.3f}'.format(repair_cost,
+                                                                   self.di))

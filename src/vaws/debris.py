@@ -68,6 +68,7 @@ class Debris(object):
 
         """
         assert isinstance(value, float)
+
         self._no_items_mean = rint(self.cfg.source_items * value)
 
     @property
