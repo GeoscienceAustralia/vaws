@@ -77,21 +77,11 @@ class HouseDamage(object):
                 self.cfg.list_house_damage_bucket:
             self.bucket.setdefault('house', {})[item] = None
 
-        # by group
-        self.bucket['group'] = pd.DataFrame(None, index=self.cfg.list_groups,
-                                            columns=self.cfg.list_group_bucket)
-
-        # by type
-        self.bucket['type'] = pd.DataFrame(None, index=self.cfg.list_types,
-                                           columns=self.cfg.list_type_bucket)
-
-        # by connection
-        self.bucket['conn'] = pd.DataFrame(None, index=self.cfg.list_conns,
-                                           columns=self.cfg.list_conn_bucket)
-
-        # by zone
-        self.bucket['zone'] = pd.DataFrame(None, index=self.cfg.list_zones,
-                                           columns=self.cfg.list_zone_bucket)
+        # components
+        for item in self.cfg.list_compnents:
+            _index = getattr(self.cfg, 'list_{}s'.format(item))
+            _columns = getattr(self.cfg, 'list_{}_bucket'.format(item))
+            self.bucket[item] = pd.DataFrame(index=_index, columns=_columns)
 
     def fill_bucket(self):
 
@@ -106,25 +96,12 @@ class HouseDamage(object):
             for item in self.cfg.list_debris_bucket:
                 self.bucket['house'][item] = getattr(self.house.debris, item)
 
-        # by group
-        for item in self.cfg.list_group_bucket:
-            for key, value in self.house.groups.iteritems():
-                self.bucket['group'].loc[key, item] = getattr(value, item)
-
-        # by type
-        for item in self.cfg.list_type_bucket:
-            for key, value in self.house.types.iteritems():
-                self.bucket['type'].loc[key, item] = getattr(value, item)
-
-        # by connection
-        for item in self.cfg.list_conn_bucket:
-            for key, value in self.house.connections.iteritems():
-                self.bucket['conn'].loc[key, item] = getattr(value, item)
-
-        # by zone
-        for item in self.cfg.list_zone_bucket:
-            for key, value in self.house.zones.iteritems():
-                self.bucket['zone'].loc[key, item] = getattr(value, item)
+        # components
+        for item in self.cfg.list_compnents:
+            for att in getattr(self.cfg, 'list_{}_bucket'.format(item)):
+                _dic = getattr(self.house, '{}s'.format(item))
+                for key, value in _dic.iteritems():
+                    self.bucket[item].loc[key, att] = getattr(value, att)
 
     def calculate_qz_Ms(self, wind_speed):
         """
@@ -190,8 +167,8 @@ class HouseDamage(object):
                     self.collapse = True
 
                     # FIXME!! Don't understand WHY?
-                    for _conn in self.house.connections:
-                        _conn.set_damage(wind_speed)
+                    for _connection in self.house.connections.itervalues():
+                        _connection.set_damage(wind_speed)
                     #
                     # for _zone in self.house.zones:
                     #     _zone.effective_area = 0.0

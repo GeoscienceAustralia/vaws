@@ -16,15 +16,15 @@ class Connection(object):
 
     use_struct_pz_for = ['rafter', 'piersgroup', 'wallracking']
 
-    def __init__(self, conn_name=None, **kwargs):
+    def __init__(self, connection_name=None, **kwargs):
         """
 
         Args:
-            conn_name:
+            connection_name:
         """
 
-        assert isinstance(conn_name, int)
-        self.name = conn_name
+        assert isinstance(connection_name, int)
+        self.name = connection_name
 
         self.edge = None
         self.type_name = None
@@ -147,7 +147,7 @@ class Connection(object):
 
         if not self.damaged:
 
-            logging.debug('computing load of conn {}'.format(self.name))
+            logging.debug('computing load of connection {}'.format(self.name))
 
             for _inf in self.influences.itervalues():
 
@@ -196,11 +196,11 @@ class Connection(object):
         # denom_ = self.failure_v_i
         # self.failure_v = num_ / denom_
 
-    def update_influence(self, source_conn, infl_coeff):
+    def update_influence(self, source_connection, infl_coeff):
         """
 
         Args:
-            source_conn: source conn (sheeting)
+            source_connection: source connection (sheeting)
             infl_coeff:
 
         Returns: load
@@ -208,7 +208,7 @@ class Connection(object):
         """
 
         # looking at influences
-        for _id, _infl in source_conn.influences.iteritems():
+        for _id, _infl in source_connection.influences.iteritems():
 
             # update influence coeff
             updated_coeff = infl_coeff * _infl.coeff
@@ -264,11 +264,11 @@ class ConnectionType(object):
         self._connections = dict()
         for key, value in _dic.iteritems():
 
-            _conn = Connection(conn_name=key, **value)
-            _conn.lognormal_strength = self.lognormal_strength
-            _conn.lognormal_dead_load = self.lognormal_dead_load
+            _connection = Connection(connection_name=key, **value)
+            _connection.lognormal_strength = self.lognormal_strength
+            _connection.lognormal_dead_load = self.lognormal_dead_load
 
-            self._connections[key] = _conn
+            self._connections[key] = _connection
 
         self.no_connections = len(self._connections)
 
@@ -280,9 +280,9 @@ class ConnectionType(object):
         """
         num_damaged = 0
         _value = 99999
-        for _conn in self.connections.itervalues():
-            num_damaged += _conn.damaged
-            _value = min(_conn.failure_v_raw, _value)
+        for _connection in self.connections.itervalues():
+            num_damaged += _connection.damaged
+            _value = min(_connection.failure_v_raw, _value)
 
         try:
             self.prop_damaged_type = num_damaged / float(self.no_connections)
@@ -345,8 +345,8 @@ class ConnectionTypeGroup(object):
         self._damage_grid = None  # column (chr), row (num)
         # negative: no connection, 0: Intact,  1: Failed
 
-        self._conn_by_grid = dict()  # dict of connections with zone loc grid
-        self._conn_by_name = dict()  # dict of connections with conn name
+        self._connection_by_grid = dict()  # dict of connections with zone loc grid
+        self._connection_by_name = dict()  # dict of connections with conn name
 
         # self._dist_tuple = None
 
@@ -413,28 +413,28 @@ class ConnectionTypeGroup(object):
             self._damage_grid = None
 
     @property
-    def conn_by_grid(self):
-        return self._conn_by_grid
+    def connection_by_grid(self):
+        return self._connection_by_grid
 
-    @conn_by_grid.setter
-    def conn_by_grid(self, _tuple):
+    @connection_by_grid.setter
+    def connection_by_grid(self, _tuple):
 
         assert isinstance(_tuple, tuple)
-        _conn_grid, _conn = _tuple
+        _connection_grid, _connection = _tuple
 
-        self._conn_by_grid[_conn_grid] = _conn
+        self._connection_by_grid[_connection_grid] = _connection
 
     @property
-    def conn_by_name(self):
-        return self._conn_by_name
+    def connection_by_name(self):
+        return self._connection_by_name
 
-    @conn_by_name.setter
-    def conn_by_name(self, _tuple):
+    @connection_by_name.setter
+    def connection_by_name(self, _tuple):
 
         assert isinstance(_tuple, tuple)
-        _conn_name, _conn = _tuple
+        _connection_name, _connection = _tuple
 
-        self._conn_by_name[_conn_name] = _conn
+        self._connection_by_name[_connection_name] = _connection
 
     def cal_repair_cost(self, value):
         """
@@ -464,9 +464,9 @@ class ConnectionTypeGroup(object):
         area_damaged = 0.0
 
         for _type in self.types.itervalues():
-            for _conn in _type.connections.itervalues():
-                num_damaged += _conn.damaged
-                area_damaged += _type.costing_area * _conn.damaged
+            for _connection in _type.connections.itervalues():
+                num_damaged += _connection.damaged
+                area_damaged += _type.costing_area * _connection.damaged
 
         try:
             self.prop_damaged_group = num_damaged / float(self.no_connections)
@@ -497,26 +497,26 @@ class ConnectionTypeGroup(object):
 
         for _type in self.types.itervalues():
 
-            for _conn in _type.connections.itervalues():
+            for _connection in _type.connections.itervalues():
 
-                _conn.cal_load()
+                _connection.cal_load()
 
                 # if load is negative, check failure
-                if _conn.load < -1.0 * _conn.strength:
+                if _connection.load < -1.0 * _connection.strength:
 
-                    _conn.set_damage(wind_speed)
+                    _connection.set_damage(wind_speed)
 
                     logging.info(
-                        'conn {} of {} at {} damaged at {:.3f} b/c load {:.3f} > strength {:.3f}'.format(
-                            _conn.name, self.name, _conn.grid, wind_speed, _conn.load, _conn.strength))
+                        'connection {} of {} at {} damaged at {:.3f} b/c load {:.3f} > strength {:.3f}'.format(
+                            _connection.name, self.name, _connection.grid, wind_speed, _connection.load, _connection.strength))
 
                     if self.dist_dir == 'col':
-                        self.damaged.append(_conn.grid[0])
+                        self.damaged.append(_connection.grid[0])
 
                     elif self.dist_dir == 'row':
-                        self.damaged.append(_conn.grid[1])
+                        self.damaged.append(_connection.grid[1])
 
-                    self.damage_grid[_conn.grid] = 1
+                    self.damage_grid[_connection.grid] = 1
 
             # summary by connection type
             _type.damage_summary()
@@ -537,40 +537,40 @@ class ConnectionTypeGroup(object):
                 intact_left = intact[np.where(row > intact)[0]]
                 intact_right = intact[np.where(row < intact)[0]]
 
-                logging.debug('cols of intact conns:{}'.format(intact))
+                logging.debug('cols of intact connections:{}'.format(intact))
 
                 if intact_left.size * intact_right.size > 0:
                     infl_coeff = 0.5  # can be prop. to distance later
                 else:
                     infl_coeff = 1.0
 
-                source_conn = self.conn_by_grid[row, col]
+                source_connection = self.connection_by_grid[row, col]
 
                 try:
-                    target_conn = self.conn_by_grid[intact_right[0], col]
+                    target_connection = self.connection_by_grid[intact_right[0], col]
                 except IndexError:
                     pass
                 else:
-                    target_conn.update_influence(source_conn, infl_coeff)
-                    logging.debug('Influence of conn {} is updated: '
-                                  'conn {} with {:.2f}'.format(target_conn.name,
-                                                               source_conn.name,
+                    target_connection.update_influence(source_connection, infl_coeff)
+                    logging.debug('Influence of connection {} is updated: '
+                                  'connection {} with {:.2f}'.format(target_connection.name,
+                                                               source_connection.name,
                                                                infl_coeff))
 
                 try:
-                    target_conn = self.conn_by_grid[intact_left[-1], col]
+                    target_connection = self.connection_by_grid[intact_left[-1], col]
                 except IndexError:
                     pass
                 else:
-                    target_conn.update_influence(source_conn, infl_coeff)
-                    logging.debug('Influence of conn {} is updated: '
-                                  'conn {} with {:.2f}'.format(target_conn.name,
-                                                               source_conn.name,
+                    target_connection.update_influence(source_connection, infl_coeff)
+                    logging.debug('Influence of connection {} is updated: '
+                                  'connection {} with {:.2f}'.format(target_connection.name,
+                                                               source_connection.name,
                                                                infl_coeff))
 
                 # empty the influence of source connection
-                source_conn.influences.clear()
-                self.conn_by_grid[row, col].load = 0.0
+                source_connection.influences.clear()
+                self.connection_by_grid[row, col].load = 0.0
 
         elif self.dist_dir == 'col' and self.patch_dist:  # rafter
             # distributed over the same char.
@@ -583,21 +583,21 @@ class ConnectionTypeGroup(object):
 
                 row = self.damaged[row0]
 
-                source_conn = self.conn_by_grid[row, col]
+                source_connection = self.connection_by_grid[row, col]
 
-                for target_name, infl_dic in source_conn.influence_patch.iteritems():
+                for target_name, infl_dic in source_connection.influence_patch.iteritems():
 
-                    target_conn = self.conn_by_name[target_name]
+                    target_connection = self.connection_by_name[target_name]
 
                     for key, value in infl_dic.iteritems():
                         try:
-                            target_conn.influences[key].coeff = value
+                            target_connection.influences[key].coeff = value
                         except KeyError:
                             logging.error('{} not found in the influences {}'.
                                           format(key, target_name))
 
-                    logging.debug('Influence of conn {} is updated by conn {}'
-                                  .format(target_name, source_conn.name))
+                    logging.debug('Influence of connection {} is updated by connection {}'
+                                  .format(target_name, source_connection.name))
 
         elif self.dist_dir == 'col' and self.patch_dist == 0:  # sheeting
 
@@ -623,33 +623,33 @@ class ConnectionTypeGroup(object):
                 else:
                     infl_coeff = 1.0
 
-                source_conn = self.conn_by_grid[row, col]
+                source_connection = self.connection_by_grid[row, col]
 
                 try:
-                    target_conn = self.conn_by_grid[row, intact_right[0]]
+                    target_connection = self.connection_by_grid[row, intact_right[0]]
                 except IndexError:
                     pass
                 else:
-                    target_conn.update_influence(source_conn, infl_coeff)
-                    logging.debug('Influence of conn {} is updated: '
-                                  'conn {} with {:.2f}'.format(target_conn.name,
-                                                               source_conn.name,
+                    target_connection.update_influence(source_connection, infl_coeff)
+                    logging.debug('Influence of connection {} is updated: '
+                                  'connection {} with {:.2f}'.format(target_connection.name,
+                                                               source_connection.name,
                                                                infl_coeff))
 
                 try:
-                    target_conn = self.conn_by_grid[row, intact_left[-1]]
+                    target_connection = self.connection_by_grid[row, intact_left[-1]]
                 except IndexError:
                     pass
                 else:
-                    target_conn.update_influence(source_conn, infl_coeff)
-                    logging.debug('Influence of conn {} is updated: '
-                                  'conn {} with {:.2f}'.format(target_conn.name,
-                                                               source_conn.name,
+                    target_connection.update_influence(source_connection, infl_coeff)
+                    logging.debug('Influence of connection {} is updated: '
+                                  'connection {} with {:.2f}'.format(target_connection.name,
+                                                               source_connection.name,
                                                                infl_coeff))
 
                 # empty the influence of source connection
-                source_conn.influences.clear()
-                self.conn_by_grid[row, col].load = 0.0
+                source_connection.influences.clear()
+                self.connection_by_grid[row, col].load = 0.0
 
 
 class Influence(object):

@@ -103,20 +103,23 @@ class Debris(object):
 
         self._footprint = rotate(polygon_inst, angle[wind_dir_index])
 
-        self.front_facing_walls = self.cfg.dic_front_facing_walls[
-            self.cfg.wind_dir[wind_dir_index]]
+        try:
+            self.front_facing_walls = self.cfg.dic_front_facing_walls[
+                self.cfg.wind_dir[wind_dir_index]]
+        except KeyError:
+            self.front_facing_walls = list()
+        else:
+            self.area_walls = 0.0
+            for wall_name in self.front_facing_walls:
+                self.area_walls += self.cfg.dic_walls[wall_name]
 
-        self.area_walls = 0.0
-        for wall_name in self.front_facing_walls:
-            self.area_walls += self.cfg.dic_walls[wall_name]
+            id_ = self.cfg.df_coverages.apply(
+                lambda row: row['wall_name'] in self.front_facing_walls, axis=1)
 
-        id_ = self.cfg.df_coverages.apply(
-            lambda row: row['wall_name'] in self.front_facing_walls, axis=1)
+            self.coverages = self.cfg.df_coverages.loc[id_].copy()
 
-        self.coverages = self.cfg.df_coverages.loc[id_].copy()
-
-        self.coverages['cum_prop_area'] = \
-            self.coverages['area'].cumsum() / self.area_walls
+            self.coverages['cum_prop_area'] = \
+                self.coverages['area'].cumsum() / self.area_walls
 
     @property
     def rnd_state(self):

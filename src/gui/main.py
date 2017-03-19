@@ -135,7 +135,7 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
     def updateVulnCurve(self):
         # self.show_results(None, self.ui.redV.value(), self.ui.blueV.value())
 
-        df_dmg_idx = pd.read_hdf(self.s.file_house, 'di')
+        df_dmg_idx = pd.read_hdf(self.s.file_house, 'house')['di']
         df_fitted_curves = pd.read_csv(self.s.file_curve,
                                        names=['key', 'error', 'param1',
                                               'param2'], skiprows=1,
@@ -296,8 +296,8 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
         finiTable(self.ui.damageScenarios)
         
         # load up connections grid
-        setupTable(self.ui.connections, self.s.df_conns)
-        for irow, (index, c) in enumerate(self.s.df_conns.iterrows()):
+        setupTable(self.ui.connections, self.s.df_connections)
+        for irow, (index, c) in enumerate(self.s.df_connections.iterrows()):
             self.ui.connections.setItem(irow, 0, QTableWidgetItem(c['group_name']))
             self.ui.connections.setItem(irow, 1, QTableWidgetItem(c['type_name']))
             self.ui.connections.setItem(irow, 2, QTableWidgetItem(c['zone_loc']))

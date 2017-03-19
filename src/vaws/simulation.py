@@ -54,7 +54,7 @@ def simulate_wind_damage_to_houses(cfg, call_back=None):
 
             list_results_by_speed.append(list_)
 
-        damage_incr = update_panels(dic_panels, list_results_by_speed, ispeed)
+        damage_incr = update_panels(cfg, dic_panels, list_results_by_speed, ispeed)
 
         if not call_back:
             sys.stdout.write('{} out of {} completed \n'.format(
@@ -77,14 +77,14 @@ def init_panels(cfg):
     dic_panels = dict()
 
     # house
-    list_atts = cfg.list_house_bucket + cfg.list_house_damage_bucket + \
-                cfg.list_debris_bucket
+    list_atts = (cfg.list_house_bucket + cfg.list_house_damage_bucket +
+                 cfg.list_debris_bucket)
     dic_panels['house'] = pd.Panel(dtype=float,
                                    items=list_atts,
                                    major_axis=range(cfg.wind_speed_steps),
                                    minor_axis=range(cfg.no_sims))
-    # other components
-    for item in ['group', 'type', 'conn', 'zone']:
+    # components
+    for item in cfg.list_compnents:
         for att in getattr(cfg, 'list_{}s'.format(item)):
             dic_panels.setdefault(item, {})[att] = \
                 pd.Panel(dtype=float,
@@ -95,15 +95,15 @@ def init_panels(cfg):
     return dic_panels
 
 
-def update_panels(dic_, list_results_by_speed, ispeed):
+def update_panels(cfg, dic_, list_results_by_speed, ispeed):
 
     # house
     for att in dic_['house'].items.tolist():
         dic_['house'][att].loc[ispeed] = [x['house'][att] for x in
                                           list_results_by_speed]
 
-    # other components
-    for item in ['group', 'type', 'conn', 'zone']:
+    # components
+    for item in cfg.list_compnents:
         for key, value in dic_[item].iteritems():
             for att in value.items.tolist():
                 value[att].loc[ispeed] = [x[item].loc[key, att] for x in
@@ -113,9 +113,8 @@ def update_panels(dic_, list_results_by_speed, ispeed):
     damage_incr = 0.0  # default value
 
     if ispeed:
-
-        damage_incr = dic_['house']['di'].loc[ispeed].mean(axis=0) - \
-                      dic_['house']['di'].loc[ispeed - 1].mean(axis=0)
+        damage_incr = (dic_['house']['di'].loc[ispeed].mean(axis=0) -
+                       dic_['house']['di'].loc[ispeed - 1].mean(axis=0))
 
         if damage_incr < 0:
             logging.warn('damage increment is less than zero')
@@ -138,23 +137,17 @@ def save_results_to_files(cfg, dic_panels):
     # file_house (attribute: DataFrame(wind_speed_steps, no_sims)
     dic_panels['house'].to_hdf(cfg.file_house, key='house', mode='w')
 
-    # results by group for each model
-    # other components
-    for item in ['group', 'type', 'conn', 'zone']:
+    with warnings.catch_warnings():
 
-        with warnings.catch_warnings():
+        warnings.simplefilter("ignore")
+        #  warnings.filterwarnings('error')
 
-            warnings.simplefilter("ignore")
-            #  warnings.filterwarnings('error')
-
+        # other components
+        for item in cfg.list_compnents:
             # file (key: Panel(attribute, wind_speed_steps, no_sims)
             hdf = pd.HDFStore(getattr(cfg, 'file_{}'.format(item)), mode='w')
-
             for key, value in dic_panels[item].iteritems():
-                try:
-                    hdf[str(key)] = value
-                except Warning, msg:
-                    logging.warning(msg)
+                hdf[str(key)] = value
 
             hdf.close()
 
@@ -163,7 +156,6 @@ def save_results_to_files(cfg, dic_panels):
     pd.DataFrame.from_dict(frag_counted).transpose().to_csv(cfg.file_curve)
 
     fitted_curve = fit_vulnerability_curve(cfg, dic_panels['house']['di'])
-
     with open(cfg.file_curve, 'a') as f:
         pd.DataFrame.from_dict(fitted_curve).transpose().to_csv(f, header=None)
 
@@ -193,14 +185,12 @@ def main():
 
     (options, args) = parser.parse_args()
 
-    path_, _ = os.path.split(sys.argv[0])
-
     if options.output_folder is None:
-        options.output_folder = os.path.abspath(
-            os.path.join(path_, '../../outputs/output'))
+        options.output_folder = os.path.abspath(os.path.join(
+            os.path.split(sys.argv[0])[0], '../../outputs/output'))
     else:
-        options.output_folder = os.path.abspath(
-            os.path.join(os.getcwd(), options.output_folder))
+        options.output_folder = os.path.join(os.getcwd(),
+                                             options.output_folder)
 
     if options.verbose:
 

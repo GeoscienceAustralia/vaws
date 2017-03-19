@@ -732,6 +732,6 @@ class TestScenario16(unittest.TestCase):
 
 
 if __name__ == '__main__':
-    suite = unittest.TestLoader().loadTestsFromTestCase(TestScenario16)
-    unittest.TextTestRunner(verbosity=2).run(suite)
-    #unittest.main(verbosity=2)
+    #suite = unittest.TestLoader().loadTestsFromTestCase(TestScenario16)
+    #unittest.TextTestRunner(verbosity=2).run(suite)
+    unittest.main(verbosity=2)

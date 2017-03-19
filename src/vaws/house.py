@@ -70,8 +70,8 @@ class House(object):
         self.set_zones()
         self.set_connections()
 
-        if self.cfg.flags['debris']:
-            self.set_debris()
+        #if self.cfg.flags['debris']:
+        self.set_debris()
 
     def read_house_data(self):
 
@@ -126,36 +126,36 @@ class House(object):
             # linking with connections
             for type_name, _type in _group.types.iteritems():
 
-                df_selected_conns = self.cfg.df_conns.loc[
-                    self.cfg.df_conns['type_name'] == type_name]
+                df_selected_connections = self.cfg.df_connections.loc[
+                    self.cfg.df_connections['type_name'] == type_name]
 
-                _type.connections = df_selected_conns.to_dict('index')
+                _type.connections = df_selected_connections.to_dict('index')
                 _group.no_connections = _type.no_connections
 
                 # linking with connections
-                for conn_name, _conn in _type.connections.iteritems():
+                for connection_name, _connection in _type.connections.iteritems():
 
-                    self.connections[conn_name] = _conn
+                    self.connections[connection_name] = _connection
 
-                    _conn.sample_strength(mean_factor=self.str_mean_factor,
+                    _connection.sample_strength(mean_factor=self.str_mean_factor,
                                           cov_factor=self.str_cov_factor,
                                           rnd_state=self.rnd_state)
-                    _conn.sample_dead_load(rnd_state=self.rnd_state)
+                    _connection.sample_dead_load(rnd_state=self.rnd_state)
 
-                    _conn.grid = self.zones[_conn.zone_loc].grid
-                    _conn.influences = self.cfg.dic_influences[_conn.name]
+                    _connection.grid = self.zones[_connection.zone_loc].grid
+                    _connection.influences = self.cfg.dic_influences[_connection.name]
 
-                    if _conn.name in self.cfg.dic_influence_patches:
-                        _conn.influence_patch = \
-                            self.cfg.dic_influence_patches[_conn.name]
+                    if _connection.name in self.cfg.dic_influence_patches:
+                        _connection.influence_patch = \
+                            self.cfg.dic_influence_patches[_connection.name]
 
-                    _group.damage_grid[_conn.grid] = 0  # intact
+                    _group.damage_grid[_connection.grid] = 0  # intact
                     costing_area_by_group += _type.costing_area
-                    _group.conn_by_grid = _conn.grid, _conn
-                    _group.conn_by_name = _conn.name, _conn
+                    _group.connection_by_grid = _connection.grid, _connection
+                    _group.connection_by_name = _connection.name, _connection
 
                     # linking connections either zones or connections\
-                    for _inf in _conn.influences.itervalues():
+                    for _inf in _connection.influences.itervalues():
                         try:
                             _inf.source = self.zones[_inf.name]
                         except KeyError:

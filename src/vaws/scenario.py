@@ -33,24 +33,26 @@ class Scenario(object):
                         'set_zone_to_zero', 'water_ingress_order']
     type_attributes = ['costing_area', 'dead_load_mean', 'dead_load_std',
                        'group_name', 'strength_mean', 'strength_std']
-    conn_attributes = ['edge', 'type_name', 'zone_loc']
+    connection_attributes = ['edge', 'type_name', 'zone_loc']
 
     # model dependent attributes
     list_house_bucket = ['profile', 'wind_orientation', 'construction_level',
                           'mzcat', 'str_mean_factor', 'str_cov_factor']
 
     # model and wind dependent attributes
+    list_compnents = ['group', 'type', 'connection', 'zone']
     list_house_damage_bucket = ['qz', 'Ms', 'cpi', 'cpi_wind_speed', 'collapse',
                                 'di', 'di_except_water']
 
     list_debris_bucket = ['no_items', 'no_touched', 'breached', 'damaged_area']
 
-    # group: wind dependent attributes
     list_group_bucket = ['prop_damaged_group', 'prop_damaged_area',
                          'repair_cost']
     list_type_bucket = ['damage_capacity', 'prop_damaged_type']
-    list_conn_bucket = ['damaged', 'failure_v_raw', 'load', 'strength',
+
+    list_connection_bucket = ['damaged', 'failure_v_raw', 'load', 'strength',
                         'dead_load']
+
     list_zone_bucket = ['pressure', 'cpe', 'cpe_str', 'cpe_eave']
 
     dic_obj_for_fitting = {'weibull': 'vulnerability_weibull',
@@ -106,13 +108,13 @@ class Scenario(object):
 
         self.df_groups = None
         self.df_types = None
-        self.df_conns = None
+        self.df_connections = None
         self.dic_influences = None
         self.dic_influence_patches = None
 
         self.list_groups = None
         self.list_types = None
-        self.list_conns = None
+        self.list_connections = None
         self.list_zones = None
 
         self.df_damage_costing = None
@@ -125,7 +127,7 @@ class Scenario(object):
         self.file_house = None
         self.file_group = None
         self.file_type = None
-        self.file_conn = None
+        self.file_connection = None
         self.file_zone = None
         self.file_curve = None
 
@@ -312,7 +314,7 @@ class Scenario(object):
             self.file_house = os.path.join(self.output_path, 'results_house.h5')
             self.file_group = os.path.join(self.output_path, 'results_group.h5')
             self.file_type = os.path.join(self.output_path, 'results_type.h5')
-            self.file_conn = os.path.join(self.output_path, 'results_conn.h5')
+            self.file_connection = os.path.join(self.output_path, 'results_connection.h5')
             self.file_zone = os.path.join(self.output_path, 'results_zone.h5')
             self.file_curve = os.path.join(self.output_path, 'results_curve.csv')
         else:
@@ -334,7 +336,7 @@ class Scenario(object):
 
         file_groups = os.path.join(self.path_datafile, 'conn_groups.csv')
         file_types = os.path.join(self.path_datafile, 'conn_types.csv')
-        file_conns = os.path.join(self.path_datafile, 'connections.csv')
+        file_connections = os.path.join(self.path_datafile, 'connections.csv')
         file_damage_costing = os.path.join(self.path_datafile,
                                            'damage_costing_data.csv')
 
@@ -386,11 +388,11 @@ class Scenario(object):
                                                         row['dead_load_std']),
             axis=1)
 
-        self.df_conns = pd.read_csv(file_conns, index_col='conn_name')
-        self.list_conns = self.df_conns.index.tolist()
+        self.df_connections = pd.read_csv(file_connections, index_col='conn_name')
+        self.list_connections = self.df_connections.index.tolist()
 
-        self.df_conns['group_name'] = self.df_types.loc[
-            self.df_conns['type_name'], 'group_name'].values
+        self.df_connections['group_name'] = self.df_types.loc[
+            self.df_connections['type_name'], 'group_name'].values
 
         self.dic_influences = self.read_influences(file_influences)
         self.dic_damage_factorings = self.read_damage_factorings(
@@ -399,30 +401,34 @@ class Scenario(object):
             file_influence_patches)
         self.df_damage_costing = pd.read_csv(file_damage_costing)
 
-        if self.flags['debris']:
-            file_footprint = os.path.join(self.path_datafile, 'footprint.csv')
-            file_coverages = os.path.join(self.path_datafile, 'coverages.csv')
-            file_coverage_types = os.path.join(self.path_datafile,
-                                               'coverage_types.csv')
-            file_wall = os.path.join(self.path_datafile, 'walls.csv')
-            file_front_facing_walls = os.path.join(self.path_datafile,
-                                                   'front_facing_walls.csv')
+        # if self.flags['debris']:
+        file_footprint = os.path.join(self.path_datafile, 'footprint.csv')
+        file_coverages = os.path.join(self.path_datafile, 'coverages.csv')
+        file_coverage_types = os.path.join(self.path_datafile,
+                                           'coverage_types.csv')
+        file_wall = os.path.join(self.path_datafile, 'walls.csv')
+        file_front_facing_walls = os.path.join(self.path_datafile,
+                                               'front_facing_walls.csv')
 
-            self.df_footprint = pd.read_csv(file_footprint,
-                                            skiprows=1,
-                                            header=None)
+        self.df_footprint = pd.read_csv(file_footprint,
+                                        skiprows=1,
+                                        header=None)
 
-            self.dic_front_facing_walls = self.read_front_facing_walls(
-                file_front_facing_walls)
+        self.dic_front_facing_walls = self.read_front_facing_walls(
+            file_front_facing_walls)
 
-            dic_coverage_types = pd.read_csv(
-                file_coverage_types, index_col='Name').to_dict('index')
+        dic_coverage_types = pd.read_csv(
+            file_coverage_types, index_col='Name').to_dict('index')
 
+        try:
             self.dic_walls = pd.read_csv(
                 file_wall, index_col='wall_name').to_dict()['wall_area']
+        except TypeError:
+            self.dic_walls = dict()
 
-            self.df_coverages = pd.read_csv(file_coverages)
+        self.df_coverages = pd.read_csv(file_coverages)
 
+        if dic_coverage_types:
             self.df_coverages['log_failure_momentum'] = \
                 self.df_coverages.apply(self.get_lognormal_tuple,
                                         args=(dic_coverage_types,), axis=1)
