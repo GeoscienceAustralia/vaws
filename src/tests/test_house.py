@@ -80,44 +80,44 @@ class MyTestCase(unittest.TestCase):
     def test_set_house_components(self):
 
         self.assertEquals(len(self.house.groups), 2)
-        self.assertEquals(len(self.house.types), 8)
+        # self.assertEquals(len(self.house.types), 8)
         self.assertEquals(len(self.house.connections), 60)
 
         # sheeting
-        self.assertEquals(len(self.house.groups['sheeting'].types['sheetinggable'].connections), 4)
-        self.assertEqual(self.house.groups['sheeting'].types['sheetinggable'].no_connections, 4)
+        self.assertEquals(len(self.house.groups['sheeting0'].types['sheetinggable'].connections), 4)
+        self.assertEqual(self.house.groups['sheeting0'].types['sheetinggable'].no_connections, 4)
 
-        self.assertEquals(len(self.house.groups['sheeting'].types['sheetingeave'].connections), 8)
-        self.assertEqual(self.house.groups['sheeting'].types['sheetingeave'].no_connections, 8)
+        self.assertEquals(len(self.house.groups['sheeting0'].types['sheetingeave'].connections), 8)
+        self.assertEqual(self.house.groups['sheeting0'].types['sheetingeave'].no_connections, 8)
 
-        self.assertEquals(len(self.house.groups['sheeting'].types['sheetingcorner'].connections), 2)
-        self.assertEqual(self.house.groups['sheeting'].types['sheetingcorner'].no_connections, 2)
+        self.assertEquals(len(self.house.groups['sheeting0'].types['sheetingcorner'].connections), 2)
+        self.assertEqual(self.house.groups['sheeting0'].types['sheetingcorner'].no_connections, 2)
 
-        self.assertEquals(len(self.house.groups['sheeting'].types['sheeting'].connections), 16)
-        self.assertEqual(self.house.groups['sheeting'].types['sheeting'].no_connections, 16)
+        self.assertEquals(len(self.house.groups['sheeting0'].types['sheeting'].connections), 16)
+        self.assertEqual(self.house.groups['sheeting0'].types['sheeting'].no_connections, 16)
 
-        self.assertEqual(self.house.groups['sheeting'].no_connections, 30)
+        self.assertEqual(self.house.groups['sheeting0'].no_connections, 30)
 
         # batten
-        self.assertEquals(len(self.house.groups['batten'].types['batten'].connections), 12)
-        self.assertEqual(self.house.groups['batten'].types['batten'].no_connections, 12)
+        self.assertEquals(len(self.house.groups['batten0'].types['batten'].connections), 12)
+        self.assertEqual(self.house.groups['batten0'].types['batten'].no_connections, 12)
 
-        self.assertEquals(len(self.house.groups['batten'].types['battenend'].connections), 8)
-        self.assertEqual(self.house.groups['batten'].types['battenend'].no_connections, 8)
+        self.assertEquals(len(self.house.groups['batten0'].types['battenend'].connections), 8)
+        self.assertEqual(self.house.groups['batten0'].types['battenend'].no_connections, 8)
 
-        self.assertEquals(len(self.house.groups['batten'].types['batteneave'].connections), 6)
-        self.assertEqual(self.house.groups['batten'].types['batteneave'].no_connections, 6)
+        self.assertEquals(len(self.house.groups['batten0'].types['batteneave'].connections), 6)
+        self.assertEqual(self.house.groups['batten0'].types['batteneave'].no_connections, 6)
 
-        self.assertEquals(len(self.house.groups['batten'].types['battencorner'].connections), 4)
-        self.assertEqual(self.house.groups['batten'].types['battencorner'].no_connections, 4)
+        self.assertEquals(len(self.house.groups['batten0'].types['battencorner'].connections), 4)
+        self.assertEqual(self.house.groups['batten0'].types['battencorner'].no_connections, 4)
 
-        self.assertEqual(self.house.groups['batten'].no_connections, 30)
+        self.assertEqual(self.house.groups['batten0'].no_connections, 30)
 
         # costing area by group
-        self.assertAlmostEqual(self.house.groups['sheeting'].costing_area,
+        self.assertAlmostEqual(self.house.groups['sheeting0'].costing_area,
                                18.27, places=2)
 
-        self.assertAlmostEqual(self.house.groups['batten'].costing_area,
+        self.assertAlmostEqual(self.house.groups['batten0'].costing_area,
                                16.29, places=2)
         # zone
         conn_zone_loc_map = {
@@ -151,7 +151,7 @@ class MyTestCase(unittest.TestCase):
             self.assertEqual(_grid, zone_loc_to_grid_map[_zone.name])
             self.assertEqual(_grid, _zone.grid)
 
-        for _name, _zone in self.house.zone_by_name.iteritems():
+        for _name, _zone in self.house.zones.iteritems():
             self.assertEqual(_name, _zone.name)
 
         # influence zone
@@ -167,17 +167,17 @@ class MyTestCase(unittest.TestCase):
                     self.assertEqual(self.house.connections[_inf.name], _inf.source)
 
         # group.primary_dir and secondary_dir
-        self.assertEqual(self.house.groups['sheeting'].dist_dir, 'col')
-        self.assertEqual(self.house.groups['batten'].dist_dir, 'row')
+        self.assertEqual(self.house.groups['sheeting0'].dist_dir, 'col')
+        self.assertEqual(self.house.groups['batten0'].dist_dir, 'row')
 
-        self.assertEqual(self.house.groups['sheeting'].dist_order, 1)
+        self.assertEqual(self.house.groups['sheeting0'].dist_order, 1)
 
         # check identity
-        for id_type, _type in self.house.groups['sheeting'].types.iteritems():
-            self.assertEqual(self.house.types[id_type], _type)
+        # for id_type, _type in self.house.groups['sheeting'].types.iteritems():
+        #     self.assertEqual(self.house.types[id_type], _type)
 
-        for id_conn, _conn in self.house.types['sheeting'].connections.iteritems():
-            self.assertEqual(self.house.connections[id_conn], _conn)
+        # for id_conn, _conn in self.house.types['sheeting0'].connections.iteritems():
+        #     self.assertEqual(self.house.connections[id_conn], _conn)
 
     # def test_factors_costing(self):
     #
@@ -204,13 +204,13 @@ class MyTestCase(unittest.TestCase):
     def test_list_groups_types_conns(self):
 
         _groups = {x.name for x in self.house.groups.itervalues()}
-        _types = {x.name for x in self.house.types.itervalues()}
+        # _types = {x.name for x in self.house.types.itervalues()}
         _conns = {x.name for x in self.house.connections.itervalues()}
 
         self.assertEqual({'sheeting', 'batten'}, _groups)
-        self.assertEqual({'sheetinggable', 'sheetingeave', 'sheetingcorner',
-                          'sheeting', 'batten', 'battenend', 'batteneave',
-                          'battencorner'}, _types)
+        #self.assertEqual({'sheetinggable', 'sheetingeave', 'sheetingcorner',
+        #                  'sheeting', 'batten', 'battenend', 'batteneave',
+        #                  'battencorner'}, _types)
         self.assertEqual(set(range(1, 61)), _conns)
 
 if __name__ == '__main__':

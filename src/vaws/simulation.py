@@ -47,14 +47,15 @@ def simulate_wind_damage_to_houses(cfg, call_back=None):
 
         for house_damage in list_house_damage:
 
-            if cfg.flags['debris']:
-                house_damage.house.debris.no_items_mean = damage_incr
+            # if cfg.flags['debris']:
+            house_damage.house.debris.no_items_mean = damage_incr
 
             list_ = house_damage.run_simulation(wind_speed)
 
             list_results_by_speed.append(list_)
 
-        damage_incr = update_panels(cfg, dic_panels, list_results_by_speed, ispeed)
+        damage_incr = update_panels(cfg, dic_panels, list_results_by_speed,
+                                    ispeed)
 
         if not call_back:
             sys.stdout.write('{} out of {} completed \n'.format(
@@ -134,7 +135,7 @@ def save_results_to_files(cfg, dic_panels):
 
     """
 
-    # file_house (attribute: DataFrame(wind_speed_steps, no_sims)
+    # file_house ('house': Panel(attribute, wind_speed_steps, no_sims)
     dic_panels['house'].to_hdf(cfg.file_house, key='house', mode='w')
 
     with warnings.catch_warnings():

@@ -12,9 +12,10 @@ import logging
 import ConfigParser
 import numpy as np
 import pandas as pd
-from collections import OrderedDict
+from collections import OrderedDict, defaultdict
 
 from stats import compute_logarithmic_mean_stddev
+from damage_costing import Costing
 
 
 class Scenario(object):
@@ -27,31 +28,30 @@ class Scenario(object):
     house_attributes = ['replace_cost', 'height', 'cpe_cov', 'cpe_k',
                         'cpe_str_cov', 'length', 'width', 'roof_cols',
                         'roof_rows']
-    zone_attributes = ['area', 'cpi_alpha', 'wall_dir']
-    group_attributes = ['dist_order', 'dist_dir', 'damage_scenario',
-                        'trigger_collapse_at', 'patch_dist',
-                        'set_zone_to_zero', 'water_ingress_order']
-    type_attributes = ['costing_area', 'dead_load_mean', 'dead_load_std',
-                       'group_name', 'strength_mean', 'strength_std']
-    connection_attributes = ['edge', 'type_name', 'zone_loc']
+    # zone_attributes = ['area', 'cpi_alpha', 'wall_dir']
+    # group_attributes = ['dist_order', 'dist_dir', 'damage_scenario',
+    #                     'trigger_collapse_at', 'patch_dist',
+    #                     'set_zone_to_zero', 'water_ingress_order']
+    # type_attributes = ['costing_area', 'dead_load_mean', 'dead_load_std',
+    #                    'group_name', 'strength_mean', 'strength_std']
+    # connection_attributes = ['edge', 'type_name', 'zone_loc']
 
     # model dependent attributes
     list_house_bucket = ['profile', 'wind_orientation', 'construction_level',
                           'mzcat', 'str_mean_factor', 'str_cov_factor']
 
     # model and wind dependent attributes
-    list_compnents = ['group', 'type', 'connection', 'zone']
+    list_compnents = ['group', 'connection', 'zone']
+
     list_house_damage_bucket = ['qz', 'Ms', 'cpi', 'cpi_wind_speed', 'collapse',
-                                'di', 'di_except_water']
+                                'di', 'di_except_water', 'repair_cost']
 
     list_debris_bucket = ['no_items', 'no_touched', 'breached', 'damaged_area']
 
-    list_group_bucket = ['prop_damaged_group', 'prop_damaged_area',
-                         'repair_cost']
-    list_type_bucket = ['damage_capacity', 'prop_damaged_type']
+    list_group_bucket = ['damaged_area']
 
-    list_connection_bucket = ['damaged', 'failure_v_raw', 'load', 'strength',
-                        'dead_load']
+    list_connection_bucket = ['damaged', 'capacity', 'load', 'strength',
+                              'dead_load']
 
     list_zone_bucket = ['pressure', 'cpe', 'cpe_str', 'cpe_eave']
 
@@ -69,8 +69,6 @@ class Scenario(object):
         self.wind_speed_max = 0.0
         self.wind_speed_steps = None
         self.speeds = None
-        self.incr_speed = None
-        self.idx_speeds = None
         self.terrain_category = None
         self.path_wind_profiles = None
         self.wind_profile = None
@@ -91,7 +89,6 @@ class Scenario(object):
         self.wind_dir_index = None
         self.debris_radius = 0.0
         self.debris_angle = 0.0
-        self.debris_extension = 0.0  # no longer required
         self.flight_time_mean = 0.0
         self.flight_time_stddev = 0.0
         self.flight_time_log_mu = None
@@ -117,7 +114,8 @@ class Scenario(object):
         self.list_connections = None
         self.list_zones = None
 
-        self.df_damage_costing = None
+        self.dic_costings = None
+        self.dic_costing_to_group = None
         self.dic_damage_factorings = None
         self.df_footprint = None
         self.dic_front_facing_walls = None
@@ -197,8 +195,6 @@ class Scenario(object):
         self.speeds = np.linspace(start=self.wind_speed_min,
                                   stop=self.wind_speed_max,
                                   num=self.wind_speed_steps)
-        self.idx_speeds = range(self.wind_speed_steps)
-        self.incr_speed = self.speeds[1] - self.speeds[0]
         self.set_wind_dir_index(conf.get(key, 'wind_fixed_dir'))
         self.regional_shielding_factor = conf.getfloat(
             key, 'regional_shielding_factor')
@@ -274,7 +270,6 @@ class Scenario(object):
             self.building_spacing = conf.getfloat(key, 'building_spacing')
             self.debris_radius = conf.getfloat(key, 'debris_radius')
             self.debris_angle = conf.getfloat(key, 'debris_angle')
-            self.debris_extension = conf.getfloat(key, 'debris_extension')
             self.flight_time_mean = conf.getfloat(key, 'flight_time_mean')
             self.flight_time_stddev = conf.getfloat(key, 'flight_time_stddev')
 
@@ -388,7 +383,11 @@ class Scenario(object):
                                                         row['dead_load_std']),
             axis=1)
 
-        self.df_connections = pd.read_csv(file_connections, index_col='conn_name')
+        self.df_connections = pd.read_csv(file_connections,
+                                          index_col='conn_name')
+        if 'section' not in self.df_connections:
+            self.df_connections['section'] = 0
+
         self.list_connections = self.df_connections.index.tolist()
 
         self.df_connections['group_name'] = self.df_types.loc[
@@ -399,7 +398,9 @@ class Scenario(object):
             file_damage_factorings)
         self.dic_influence_patches = self.read_influence_patches(
             file_influence_patches)
-        self.df_damage_costing = pd.read_csv(file_damage_costing)
+
+        self.dic_costings, self.dic_costing_to_group = \
+            self.read_damage_costing_data(file_damage_costing, self.df_groups)
 
         # if self.flags['debris']:
         file_footprint = os.path.join(self.path_datafile, 'footprint.csv')
@@ -432,6 +433,20 @@ class Scenario(object):
             self.df_coverages['log_failure_momentum'] = \
                 self.df_coverages.apply(self.get_lognormal_tuple,
                                         args=(dic_coverage_types,), axis=1)
+
+    @staticmethod
+    def read_damage_costing_data(file_damage_costing, df_groups):
+        dic_costing = {}
+        df_damage_costing = pd.read_csv(file_damage_costing)
+        for _, item in df_damage_costing.iterrows():
+            _name = item['name']
+            dic_costing[_name] = Costing(costing_name=_name, **item)
+
+        dic_costing_to_group = defaultdict(list)
+        for key, value in df_groups['damage_scenario'].to_dict().iteritems():
+            dic_costing_to_group[value].append(key)
+
+        return dic_costing, dic_costing_to_group
 
     @staticmethod
     def read_front_facing_walls(filename):
@@ -639,7 +654,6 @@ class Scenario(object):
         config.set(key, 'building_spacing', self.building_spacing)
         config.set(key, 'debris_radius', self.debris_radius)
         config.set(key, 'debris_angle', self.debris_angle)
-        config.set(key, 'debris_extension', self.debris_extension)
         config.set(key, 'flight_time_mean', self.flight_time_mean)
         config.set(key, 'flight_time_stddev', self.flight_time_stddev)
 

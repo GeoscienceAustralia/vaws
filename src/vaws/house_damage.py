@@ -2,6 +2,7 @@ import logging
 import copy
 import pandas as pd
 import numpy as np
+from collections import defaultdict
 
 from house import House
 from scenario import Scenario
@@ -25,6 +26,7 @@ class HouseDamage(object):
         self.cpi = 0.0
         self.cpi_wind_speed = None
         self.collapse = False
+        self.repair_cost = 0.0
         self.di = None
         self.di_except_water = None
 
@@ -57,7 +59,7 @@ class HouseDamage(object):
 
             if self.cfg.flags.get('conn_type_group_{}'.format(_group.name)):
                 _group.check_damage(wind_speed)
-                _group.cal_prop_damaged()
+                _group.cal_damaged_area()
 
                 if _group.damaged and self.cfg.flags.get('dmg_distribute_{}'.format(
                         _group.name)):
@@ -182,27 +184,52 @@ class HouseDamage(object):
         Returns:
             damage_index: repair cost / replacement cost
 
+        Note:
+
+            1. sum of damaged area by each connection group
+            2. revised damage area by group by applying damage factoring
+            3. calculate sum of revised damaged area by damage scenario
+            4. apply costing modules
+
         """
 
-        # factor costing
-        damaged_area_final = dict()
-        for source_id, target_list in self.cfg.dic_damage_factorings.iteritems():
-            damaged_area_final[source_id] = self.house.groups[source_id].prop_damaged_area
-            for target_id in target_list:
-                damaged_area_final[source_id] -= self.house.groups[target_id].prop_damaged_area
+        # sum of damaged area by group
+        area_by_group = defaultdict(int)
+        total_area_by_group = defaultdict(int)
+        for _group in self.house.groups.itervalues():
+            area_by_group[_group.name] += _group.damaged_area
+            total_area_by_group[_group.name] += _group.costing_area
 
-        # assign value
-        for source_id in self.cfg.dic_damage_factorings:
-            self.house.groups[source_id].prop_damaged_area = damaged_area_final[source_id]
+        # prop_area_by_group
+        prop_area_by_group = {}
+        for key, value in area_by_group.iteritems():
+            prop_area_by_group[key] = value / total_area_by_group[key]
 
-        # calculate repair cost
-        repair_cost = 0.0
-        for group in self.house.groups.itervalues():
-            group.cal_repair_cost(group.prop_damaged_area)
-            repair_cost += group.repair_cost
+        # apply damage factoring
+        revised_prop = copy.deepcopy(prop_area_by_group)
+        for _source, target_list in self.cfg.dic_damage_factorings.iteritems():
+            for _target in target_list:
+                revised_prop[_source] -= prop_area_by_group[_target]
+
+        # sum of area by scenario
+        area_by_scenario = defaultdict(int)
+        total_area_by_scenario = defaultdict(int)
+        for scenario, _list in self.cfg.dic_costing_to_group.iteritems():
+            for _group in _list:
+                area_by_scenario[scenario] += \
+                    max(revised_prop[_group], 0.0) * total_area_by_group[_group]
+                total_area_by_scenario[scenario] += total_area_by_group[_group]
+
+        # prop_area_by_scenario
+        self.repair_cost = 0.0
+        for key, _cost in self.cfg.dic_costings.iteritems():
+            if key in area_by_scenario:
+                prop_area = area_by_scenario[key] / total_area_by_scenario[key]
+                self.repair_cost += _cost.calculate_cost(prop_area)
 
         # calculate initial envelope repair cost before water ingress is added
-        self.di_except_water = min(repair_cost / self.house.replace_cost, 1.0)
+        self.di_except_water = min(self.repair_cost / self.house.replace_cost,
+                                   1.0)
 
         if self.di_except_water < 1.0 and self.cfg.flags['water_ingress']:
 
@@ -219,5 +246,5 @@ class HouseDamage(object):
         else:
             self.di = self.di_except_water
 
-        logging.info('total repair_cost:{:.3f}, di: {:.3f}'.format(repair_cost,
-                                                                   self.di))
+        logging.info('total repair_cost:{:.3f}, di: {:.3f}'.format(
+            self.repair_cost, self.di))

@@ -19,7 +19,7 @@ class MyTestCase(unittest.TestCase):
 
         rnd_state = np.random.RandomState(1)
         house = House(self.cfg, rnd_state=rnd_state)
-        group = house.groups['sheeting']  # sheeting
+        group = house.groups['sheeting0']  # sheeting
 
         for _conn in house.connections.itervalues():
             self.assertEqual(_conn.damaged, False)
@@ -29,7 +29,8 @@ class MyTestCase(unittest.TestCase):
         # 3: sheeting corner(3): 1, 6
         # 4: sheeting(4): 8 - 11, 14 - 17, 20 - 23, 26 - 29
         for _id in [1, 4, 5, 7, 8, 11, 12]:
-            house.connections[_id].set_damage(20.0)
+            house.connections[_id].capacity = 20.0
+            house.connections[_id].damaged = 1
 
         ref_dic = {'sheetinggable': 4, 'sheetingeave': 8,
                    'sheetingcorner': 2, 'sheeting': 16}
@@ -42,36 +43,8 @@ class MyTestCase(unittest.TestCase):
         # costing area by group
         self.assertAlmostEqual(group.costing_area, 18.27, places=2)
 
-        ref_dic = {'sheetinggable': 0.5, 'sheetingeave': 0.25,
-                   'sheetingcorner': 0.5, 'sheeting': 0.125}
-        for id_type, _type in group.types.iteritems():
-            _type.damage_summary()
-            self.assertEqual(_type.prop_damaged_type, ref_dic[id_type])
-
-        group.cal_prop_damaged()
-        self.assertAlmostEqual(group.prop_damaged_group, 0.2333, places=4)
-        self.assertAlmostEqual(group.prop_damaged_area, 0.1897, places=4)
-
-    def test_cal_damage_capacity(self):
-
-        rnd_state = np.random.RandomState(1)
-        house = House(self.cfg, rnd_state)
-
-        # type 1
-        house.connections[2].set_damage(20.0)
-        house.connections[5].set_damage(30.0)
-
-        # type 2
-        house.connections[7].set_damage(30.0)
-
-        # type 3
-        house.connections[1].set_damage(45.0)
-
-        ref_dic = {'sheetinggable': 20.0, 'sheetingeave': 30.0,
-                   'sheetingcorner': 45.0, 'sheeting': 9999.0}
-        for id_type, _type in house.groups['sheeting'].types.iteritems():
-            _type.damage_summary()
-            self.assertAlmostEqual(_type.damage_capacity, ref_dic[id_type])
+        group.cal_damaged_area()
+        self.assertAlmostEqual(group.damaged_area, 3.465, places=4)
 
     def test_cal_load(self):
 
@@ -165,7 +138,7 @@ class MyTestCase(unittest.TestCase):
                                    places=4)
 
         # check load
-        group = house.groups['sheeting']
+        group = house.groups['sheeting0']
         group.check_damage(wind_speed=wind_speed)
 
         ref_dic = {x: False for x in range(1, 61)}
@@ -179,15 +152,15 @@ class MyTestCase(unittest.TestCase):
                 print '{}: {} vs {}'.format(_conn.name, _conn.damaged,
                                             ref_dic[id_conn])
 
-        ref_prop = {'sheetinggable': 0.25, 'sheetingeave': 0.0,
-                    'sheetingcorner': 0.0, 'sheeting': 0.25}
-        ref_capacity = {'sheetinggable': 75.0, 'sheetingeave': 9999,
-                        'sheetingcorner': 9999, 'sheeting': 75.0}
-        for id_type, _type in group.types.iteritems():
-            self.assertAlmostEqual(_type.prop_damaged_type,
-                                   ref_prop[id_type], places=3)
-            self.assertAlmostEqual(_type.damage_capacity,
-                                  ref_capacity[id_type], places=1)
+        # ref_prop = {'sheetinggable': 0.25, 'sheetingeave': 0.0,
+        #            'sheetingcorner': 0.0, 'sheeting': 0.25}
+        # ref_capacity = {'sheetinggable': 75.0, 'sheetingeave': 9999,
+        #                'sheetingcorner': 9999, 'sheeting': 75.0}
+        # for id_type, _type in group.types.iteritems():
+            #self.assertAlmostEqual(_type.prop_damaged_type,
+            #                       ref_prop[id_type], places=3)
+            #self.assertAlmostEqual(_type.capacity,
+            #                      ref_capacity[id_type], places=1)
 
 if __name__ == '__main__':
     unittest.main()

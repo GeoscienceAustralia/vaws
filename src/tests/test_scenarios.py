@@ -32,6 +32,8 @@ def simulation(house_damage, conn_capacity, wind_speeds):
 
     for wind_speed in wind_speeds:
 
+        logging.info('wind speed {:.3f}'.format(wind_speed))
+
         house_damage.calculate_qz_Ms(wind_speed)
 
         for _zone in house_damage.house.zones.itervalues():
@@ -48,24 +50,27 @@ def simulation(house_damage, conn_capacity, wind_speeds):
 
         # check damage by connection type group
         for _group in house_damage.house.groups.itervalues():
+
             _group.check_damage(wind_speed)
-            _group.cal_prop_damaged()
+
+            # _group.cal_damaged_area()
+
             _group.distribute_damage()
 
-        house_damage.cal_damage_index()
+        # house_damage.cal_damage_index()
 
     # compare with reference capacity
     for _id, _conn in house_damage.house.connections.iteritems():
 
         try:
-            np.testing.assert_almost_equal(_conn.failure_v_raw,
+            np.testing.assert_almost_equal(_conn.capacity,
                                            conn_capacity2[_id],
                                            decimal=2)
         except KeyError:
             print('conn #{} is not found'.format(_id))
         except AssertionError:
             print('conn #{} fails at {} not {}'.format(
-                _id, _conn.failure_v_raw, conn_capacity2[_id]))
+                _id, _conn.capacity, conn_capacity2[_id]))
 
 
 class TestScenario1(unittest.TestCase):
@@ -709,18 +714,68 @@ class TestScenario16(unittest.TestCase):
                          80.0: [13, 15, 25, 27, 37, 39, 49, 51],
                          81.0: [16, 28, 40, 52],
                          82.0: [17, 29, 41, 53, 124, 127, 130, 133],
-                         83.0: [18, 30, 42, 54, 126, 129, 132, 135],
-                         84.0: [19, 31, 43, 55],
-                         85.0: [20, 32, 44, 56],
-                         86.0: [21, 33, 45, 57],
-                         87.0: [22, 34, 46, 58],
-                         88.0: [23, 35, 47, 59],
-                         89.0: [24, 36, 48, 60]}
+                         83.0: [18, 30, 42, 54, 126, 129, 132, 135]}
 
         conn_capacity.update({9999: range(1, 13) +
+                                    range(19, 25) +
+                                    range(31, 37) +
+                                    range(43, 49) +
+                                    range(55, 61) +
                                     range(61, 64) +
                                     range(65, 76) +
-                                    range(77, 100) +
+                                    range(77, 88) +
+                                    range(89, 100) +
+                                    range(101, 112) +
+                                    range(113, 124) +
+                                    [125, 128, 131, 134]})
+
+        simulation(self.house_damage, conn_capacity,
+                   wind_speeds=np.arange(70.0, 101.0, 1.0))
+
+
+class TestScenario16p1(unittest.TestCase):
+
+    @classmethod
+    def setUpClass(cls):
+
+        path = '/'.join(__file__.split('/')[:-1])
+        cls.path_output = os.path.join(path, 'output')
+
+        cfg = Scenario(
+            cfg_file=os.path.join(path, '../../scenarios/test_scenario16p1.cfg'),
+            output_path=cls.path_output)
+        cls.house_damage = HouseDamage(cfg, seed=0)
+
+        # set up logging
+        file_logger = os.path.join(cls.path_output, 'log_test16p1.txt')
+        logging.basicConfig(filename=file_logger,
+                            filemode='w',
+                            level=logging.DEBUG,
+                            format='%(levelname)s %(message)s')
+
+    def test_damage_sheeting_batten_rafter(self):
+
+        conn_capacity = {72.0: [76],
+                         73.0: [88],
+                         74.0: [64, 100],
+                         75.0: [112],
+                         79.0: [14, 26, 38, 50],
+                         80.0: [13, 15, 25, 27, 37, 39, 49, 51, 33],
+                         81.0: [16, 28, 40, 52],
+                         82.0: [17, 29, 41, 53, 124, 127, 130, 133],
+                         83.0: [18, 30, 42, 54, 126, 129, 132, 135],
+                         88.0: [32, 34],
+                         89.0: [31, 35],
+                         90.0: [36]}
+
+        conn_capacity.update({9999: range(1, 13) +
+                                    range(19, 25) +
+                                    range(43, 49) +
+                                    range(55, 61) +
+                                    range(61, 64) +
+                                    range(65, 76) +
+                                    range(77, 88) +
+                                    range(89, 100) +
                                     range(101, 112) +
                                     range(113, 124) +
                                     [125, 128, 131, 134]})
@@ -730,8 +785,7 @@ class TestScenario16(unittest.TestCase):
 
 
 
-
 if __name__ == '__main__':
-    #suite = unittest.TestLoader().loadTestsFromTestCase(TestScenario16)
+    #suite = unittest.TestLoader().loadTestsFromTestCase(TestScenario16p1)
     #unittest.TextTestRunner(verbosity=2).run(suite)
     unittest.main(verbosity=2)

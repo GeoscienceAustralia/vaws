@@ -4,12 +4,14 @@
         - imported from house
         - referenced by damage module to cost damages
 """
+import logging
+
 from math import pow
 
 
 class Costing(object):
 
-    dic_repair = {1: 'func_type1', 2: 'func_type2'}
+    dic_costing = {1: 'func_type1', 2: 'func_type2'}
 
     def __init__(self, costing_name=None, **kwargs):
         """
@@ -23,11 +25,15 @@ class Costing(object):
         self.name = costing_name
 
         self.surface_area = None
+
+        self.envelope_repair = None
         self.envelope_repair_rate = None
         self.envelope_factor_formula_type = None
         self.envelope_coeff1 = None
         self.envelope_coeff2 = None
         self.envelope_coeff3 = None
+
+        self.internal_repair = None
         self.internal_repair_rate = None
         self.internal_factor_formula_type = None
         self.internal_coeff1 = None
@@ -45,53 +51,31 @@ class Costing(object):
                             internal_coeff1=None,
                             internal_coeff2=None,
                             internal_coeff3=None)
-
         default_attr.update(kwargs)
         for key, value in default_attr.iteritems():
             setattr(self, key, value)
 
-        assert isinstance(self.surface_area, float)
-        assert isinstance(self.envelope_repair_rate, float)
+        for key in ['internal', 'envelope']:
+            self.assign_costing_function(key)
+
+    def assign_costing_function(self, key):
+
         try:
-            assert isinstance(self.envelope_factor_formula_type, int)
-        except AssertionError:
+            _value = getattr(self, '{}_factor_formula_type'.format(key))
+            setattr(self, '{}_factor_formula_type'.format(key), int(_value))
+        except ValueError:
+            logging.error('Invalid {}_factor_formula_type: {}'.format(
+                key, _value))
+        else:
             try:
-                self.envelope_factor_formula_type = int(self.envelope_factor_formula_type)
-            except ValueError:
-                print('Invalid envelope_factor_formula_type: {}'.format(
-                    self.envelope_factor_formula_type))
-
-        assert isinstance(self.envelope_coeff1, float)
-        assert isinstance(self.envelope_coeff2, float)
-        assert isinstance(self.envelope_coeff3, float)
-
-        try:
-            assert isinstance(self.internal_factor_formula_type, int)
-        except AssertionError:
-            try:
-                self.internal_factor_formula_type = int(self.internal_factor_formula_type)
-            except ValueError:
-                print('Invalid internal_factor_formula_type: {}'.format(
-                    self.internal_factor_formula_type))
-
-        assert isinstance(self.internal_repair_rate, float)
-        assert isinstance(self.internal_coeff1, float)
-        assert isinstance(self.internal_coeff2, float)
-        assert isinstance(self.internal_coeff3, float)
-
-        try:
-            self.envelope_repair = getattr(self, Costing.dic_repair[
-                self.envelope_factor_formula_type])
-        except KeyError:
-            print('Invalid envelope_factor_formula_type: {}'.format(
-                self.envelope_factor_formula_type))
-
-        try:
-            self.internal_repair = getattr(self, Costing.dic_repair[
-                self.internal_factor_formula_type])
-        except KeyError:
-            print('Invalid internal_factor_formula_type: {}'.format(
-                self.internal_factor_formula_type))
+                _value = getattr(self, '{}_factor_formula_type'.format(key))
+                assert _value in Costing.dic_costing
+            except AssertionError:
+                logging.error('Invalid {}_factor_formula_type: {}'.format(
+                    key, _value))
+            else:
+                setattr(self, '{}_repair'.format(key),
+                        getattr(self, Costing.dic_costing[_value]))
 
     def calculate_cost(self, x):
         assert 0.0 <= x <= 1.0
@@ -103,8 +87,7 @@ class Costing(object):
                                                 self.internal_coeff1,
                                                 self.internal_coeff2,
                                                 self.internal_coeff3)
-        return x * (self.surface_area * envelop_costing *
-                    self.envelope_repair_rate +
+        return x * (self.surface_area * envelop_costing * self.envelope_repair_rate +
                     internal_costing * self.internal_repair_rate)
 
     @staticmethod

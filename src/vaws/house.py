@@ -7,6 +7,7 @@
 import numpy as np
 from shapely.geometry import Polygon
 from collections import OrderedDict
+import logging
 
 from connection import ConnectionTypeGroup
 from zone import Zone
@@ -36,7 +37,7 @@ class House(object):
         self.roof_rows = None
         self.roof_cols = None
 
-        # in case of debris
+        # debris related
         self.debris = None
         self.footprint = None
 
@@ -52,26 +53,22 @@ class House(object):
         self.big_a = None
         self.big_b = None
 
-        self.groups = OrderedDict()  # ordered dict of conn type groups
-        self.types = dict()  # dict of conn types with id
-        self.connections = dict()  # dict of connections with id
-        self.zones = dict()  # dict of zones with id
-        self.factors_costing = dict()  # dict of damage factoring with id
-        self.patches = dict()
-
-        self.zone_by_name = dict()  # dict of zones with zone name
-        self.zone_by_grid = dict()  # dict of zones with zone loc grid in tuple
+        self.groups = OrderedDict()  # list of conn type groups
+        self.connections = {}  # dict of connections with id
+        self.zones = {}  # dict of zones with id
+        self.factors_costing = {}  # dict of damage factoring with id
+        self.patches = {}
+        self.zone_by_grid = {}  # dict of zones with zone loc grid in tuple
 
         # init house
         self.read_house_data()
 
         # house is consisting of connections, and zones
         self.set_house_wind_params()
+        self.set_debris()
+
         self.set_zones()
         self.set_connections()
-
-        #if self.cfg.flags['debris']:
-        self.set_debris()
 
     def read_house_data(self):
 
@@ -110,67 +107,97 @@ class House(object):
 
         for group_name, item in self.cfg.df_groups.iterrows():
 
-            _group = ConnectionTypeGroup(group_name=group_name, **item)
+            _id_type = self.cfg.df_types['group_name'] == group_name
+            _id_conn = self.cfg.df_connections['group_name'] == group_name
 
-            _group.damage_grid = self.roof_cols, self.roof_rows
-            idx_costing = self.cfg.df_damage_costing[
-                self.cfg.df_damage_costing['name'] ==
-                _group.damage_scenario].index.tolist()[0]
-            _group.costing = self.cfg.df_damage_costing.loc[idx_costing].to_dict()
-            costing_area_by_group = 0.0
+            for section, grouped in self.cfg.df_connections.loc[_id_conn].groupby('section'):
 
-            df_selected_types = self.cfg.df_types.loc[
-                self.cfg.df_types['group_name'] == group_name]
-            _group.types = df_selected_types.to_dict('index')
+                _group = ConnectionTypeGroup(group_name=group_name, **item)
+                _group.damage_grid = self.roof_cols, self.roof_rows
 
-            # linking with connections
-            for type_name, _type in _group.types.iteritems():
+                _group.costing = self.assign_costing(item['damage_scenario'])
+                costing_area_by_group = 0.0
 
-                df_selected_connections = self.cfg.df_connections.loc[
-                    self.cfg.df_connections['type_name'] == type_name]
+                _in_conns = self.cfg.df_types.index.isin(grouped['type_name'])
+                df_selected_types = self.cfg.df_types.loc[_id_type & _in_conns]
 
-                _type.connections = df_selected_connections.to_dict('index')
-                _group.no_connections = _type.no_connections
+                _group.types = df_selected_types.to_dict('index')
 
                 # linking with connections
-                for connection_name, _connection in _type.connections.iteritems():
+                for type_name, _type in _group.types.iteritems():
 
-                    self.connections[connection_name] = _connection
+                    df_selected_connections = grouped.loc[
+                        grouped['type_name'] == type_name]
 
-                    _connection.sample_strength(mean_factor=self.str_mean_factor,
-                                          cov_factor=self.str_cov_factor,
-                                          rnd_state=self.rnd_state)
-                    _connection.sample_dead_load(rnd_state=self.rnd_state)
+                    _type.connections = df_selected_connections.to_dict('index')
+                    _group.no_connections = _type.no_connections
 
-                    _connection.grid = self.zones[_connection.zone_loc].grid
-                    _connection.influences = self.cfg.dic_influences[_connection.name]
+                    # linking with connections
+                    for connection_name, _connection in _type.connections.iteritems():
 
-                    if _connection.name in self.cfg.dic_influence_patches:
-                        _connection.influence_patch = \
-                            self.cfg.dic_influence_patches[_connection.name]
+                        self.connections[connection_name] = _connection
+                        self.set_connection_property(_connection)
 
-                    _group.damage_grid[_connection.grid] = 0  # intact
-                    costing_area_by_group += _type.costing_area
-                    _group.connection_by_grid = _connection.grid, _connection
-                    _group.connection_by_name = _connection.name, _connection
+                        _group.damage_grid[_connection.grid] = 0  # intact
 
-                    # linking connections either zones or connections\
-                    for _inf in _connection.influences.itervalues():
-                        try:
-                            _inf.source = self.zones[_inf.name]
-                        except KeyError:
-                            _inf.source = self.connections[_inf.name]
+                        costing_area_by_group += _type.costing_area
 
-                self.types[type_name] = _type
+                        _group.connection_by_grid = _connection.grid, _connection
+                        _group.connection_by_name = _connection.name, _connection
 
-            _group.costing_area = costing_area_by_group
-            self.groups[group_name] = _group
+                        # linking connections either zones or connections\
+                        for _inf in _connection.influences.itervalues():
+                            try:
+                                _inf.source = self.zones[_inf.name]
+                            except KeyError:
+                                _inf.source = self.connections[_inf.name]
+
+                _group.costing_area = costing_area_by_group
+                self.groups[group_name + str(section)] = _group
+
+    def set_connection_property(self, _connection):
+        """
+
+        Args:
+            _connection: instance of Connection class
+
+        Returns:
+
+        """
+        _connection.sample_strength(mean_factor=self.str_mean_factor,
+                                    cov_factor=self.str_cov_factor,
+                                    rnd_state=self.rnd_state)
+
+        _connection.sample_dead_load(rnd_state=self.rnd_state)
+
+        _connection.grid = self.zones[_connection.zone_loc].grid
+
+        _connection.influences = self.cfg.dic_influences[_connection.name]
+
+        if _connection.name in self.cfg.dic_influence_patches:
+            _connection.influence_patch = \
+                self.cfg.dic_influence_patches[_connection.name]
+
+    def assign_costing(self, key):
+        """
+
+        Args:
+            key:
+
+        Returns:
+
+        """
+
+        if key in self.cfg.dic_costings:
+            return self.cfg.dic_costings[key]
+        else:
+            logging.error('{} not in cfg.dic_costings'.format(key))
 
     def set_debris(self):
 
         self.debris = Debris(self.cfg)
 
-        points = list()
+        points = []
         for _, item in self.cfg.df_footprint.iterrows():
             points.append((item[0], item[1]))
         self.footprint = Polygon(points)
