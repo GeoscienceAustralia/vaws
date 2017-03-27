@@ -53,11 +53,11 @@ def simulation(house_damage, conn_capacity, wind_speeds):
 
             _group.check_damage(wind_speed)
 
-            # _group.cal_damaged_area()
+            _group.cal_damaged_area()
 
             _group.distribute_damage()
 
-        # house_damage.cal_damage_index()
+        house_damage.cal_damage_index(wind_speed)
 
     # compare with reference capacity
     for _id, _conn in house_damage.house.connections.iteritems():
@@ -782,8 +782,6 @@ class TestScenario16p1(unittest.TestCase):
 
         simulation(self.house_damage, conn_capacity,
                    wind_speeds=np.arange(70.0, 101.0, 1.0))
-
-
 
 if __name__ == '__main__':
     #suite = unittest.TestLoader().loadTestsFromTestCase(TestScenario16p1)

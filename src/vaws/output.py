@@ -1,10 +1,112 @@
 """
     output.py - output module, postprocess and plot display engine
 """
-from matplotlib import cm, colorbar, colors
+from matplotlib import cm, colorbar, colors, ticker
+from matplotlib.patches import Rectangle
+from matplotlib.collections import PatchCollection
+
 import matplotlib.pyplot as plt
-import version
 import numpy as np
+
+import version
+from zone import num2str
+
+
+def plot_heatmap(grouped, values, vmin, vmax, vstep, file_name):
+    """
+
+    Args:
+        grouped: pd.DataFrame (x_coord, y_coord, width, height)
+        values: np.array(N,1)
+        vmin: min. of scale in color bar
+        vmax: max. of scale in color bar
+        vstep: no. of scales in color bar
+        file_name: file to save
+
+    Returns:
+
+    """
+
+    group_key = grouped['group_name'].unique()[0]
+
+    xlim_max = (grouped['x_coord'] + 0.5 * grouped['width']).max()
+    ylim_max = (grouped['y_coord'] + 0.5 * grouped['height']).max()
+
+    patches, xticks, yticks = [], [], []
+
+    # assumed rectangle but should be polygon later
+    for _, row in grouped.iterrows():
+        rect = Rectangle((row['x_coord'] - row['width'] / 2.0,
+                          row['y_coord'] - row['height'] / 2.0),  # (x, y)
+                         row['width'],  # width
+                         row['height'],  # height
+                         )
+        xticks.append(row['x_coord'])
+        yticks.append(row['y_coord'])
+        patches.append(rect)
+
+    xticks = list(set(xticks))
+    yticks = list(set(yticks))
+    xticks.sort()
+    yticks.sort()
+
+    fig = plt.figure()
+
+    left = 0.1
+    bottom = 0.2
+    width = 1.0 - left * 2.0
+    height = 0.75
+    ax1 = fig.add_axes([left, bottom, width, height])
+
+    left = 0.1
+    bottom = 0.1
+    width = 1.0 - left * 2.0
+    height = 0.05
+    ax2 = fig.add_axes([left, bottom, width, height])
+
+    cmap = cm.jet_r
+    bounds = np.linspace(vmin, vmax, vstep)
+    norm = colors.BoundaryNorm(bounds, cmap.N)
+    cmap.set_under('gray')
+
+    cb = colorbar.ColorbarBase(ax2,
+                               cmap=cmap,
+                               norm=norm,
+                               spacing='proportional',
+                               ticks=bounds,
+                               boundaries=bounds,
+                               format='%.1f',
+                               orientation='horizontal',
+                               )
+    cb.set_label('Wind speed (m/s)', size=10)
+    cb.ax.tick_params(labelsize=8)
+
+    p = PatchCollection(patches, cmap=cmap, norm=norm)
+    p.set_array(values)
+    ax1.add_collection(p)
+    ax1.set_title('Heatmap of damage capacity for {}'.format(group_key))
+
+    ax1.set_xlim([0, xlim_max])
+    ax1.set_ylim([0, ylim_max])
+    ax1.set_xbound(lower=0.0, upper=xlim_max)
+    ax1.set_ybound(lower=0.0, upper=ylim_max)
+
+    # Hide major tick labels
+    ax1.xaxis.set_major_formatter(ticker.NullFormatter())
+    ax1.yaxis.set_major_formatter(ticker.NullFormatter())
+    ax1.tick_params(axis=u'both', which=u'both', length=0)
+
+    # Customize minor tick labels
+    ax1.xaxis.set_minor_locator(ticker.FixedLocator(xticks))
+    _list = [num2str(i) for i in range(1, len(xticks) + 1)]
+    ax1.xaxis.set_minor_formatter(ticker.FixedFormatter(_list))
+
+    ax1.yaxis.set_minor_locator(ticker.FixedLocator(yticks))
+    _list = [i for i in range(1, len(yticks) + 1)]
+    ax1.yaxis.set_minor_formatter(ticker.FixedFormatter(_list))
+
+    fig.savefig('{}.png'.format(file_name), dpi=150)
+    plt.close(fig)
 
 
 def plot_damage_show(plotKey, v_damaged_at, numCols, numRows, v_min,
@@ -45,6 +147,7 @@ def plot_damage_show(plotKey, v_damaged_at, numCols, numRows, v_min,
     cb1 = colorbar.ColorbarBase(axLegend, cmap=cmap, norm=norm,
                                 orientation='horizontal')
     cb1.set_label('Wind Speed')
+    cb1.ax.tick_params(labelsize=1)
 
     # add the heatmap
     left = 0.1
@@ -64,18 +167,6 @@ def plot_damage_show(plotKey, v_damaged_at, numCols, numRows, v_min,
     fig.savefig('{}.png'.format(file_name))
     plt.close(fig)
 
-
-def plot_pdf(y):
-    plt.hist(y, bins=50)
-    
-
-def plot_wind_event_damage(v, di):
-    plt.scatter(v, di, s=8, marker='+', label='_nolegend_')
-
-
-def plot_wind_event_mean(v, di):
-    plt.scatter(v, di, s=20, c='r', marker='o', label="Means")
-    
 
 def plot_fitted_curve(v, di, label="Fitted Curve", alpha=1.0, col='b'):
     plt.plot(v, di, label=label, alpha=alpha, c=col)
@@ -156,16 +247,3 @@ def plot_show(show_legend=False):
         plt.legend(loc=2)
         plt.show()
     
-"""
-def testme():
-    print "output.py says hi"
-    n = 100
-    scatter([10]*n, normal(0.2, 0.02, n))
-    scatter([15]*n, normal(0.25, 0.02, n))
-    scatter([20]*n, normal(0.35, 0.02, n))
-    scatter([25]*n, normal(0.40, 0.03, n))
-    scatter([30]*n, normal(0.60, 0.04, n))
-    show()
-
-if __name__ == '__main__': testme()
-"""

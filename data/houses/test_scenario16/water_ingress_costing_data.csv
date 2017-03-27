@@ -1,4 +1,4 @@
-Name,%WI,Base_cost,Formula_type,Coeff1,Coeff2,Coeff3
+name,water_ingress,base_cost,formula_type,coeff1,coeff2,coeff3
 Loss of roof sheeting,0,0,1,0,0,1
 Loss of roof sheeting,5,2989.97,1,0,0,1
 Loss of roof sheeting,18,10763.89,1,0,0,1

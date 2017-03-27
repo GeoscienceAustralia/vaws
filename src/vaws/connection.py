@@ -43,7 +43,7 @@ class Connection(object):
 
         self.strength = None
         self.dead_load = None
-        self.capacity = 9999
+        self.capacity = 0
         self.damaged = 0
         self.load = None
 

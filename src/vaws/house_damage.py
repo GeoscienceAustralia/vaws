@@ -6,6 +6,7 @@ from collections import defaultdict
 
 from house import House
 from scenario import Scenario
+from damage_costing import cal_water_ingress_given_damage
 
 
 class HouseDamage(object):
@@ -27,6 +28,7 @@ class HouseDamage(object):
         self.cpi_wind_speed = None
         self.collapse = False
         self.repair_cost = 0.0
+        self.water_ingress_cost = 0.0
         self.di = None
         self.di_except_water = None
 
@@ -66,7 +68,7 @@ class HouseDamage(object):
                     _group.distribute_damage()
 
         self.check_house_collapse(wind_speed)
-        self.cal_damage_index()
+        self.cal_damage_index(wind_speed)
 
         self.fill_bucket()
 
@@ -175,7 +177,7 @@ class HouseDamage(object):
                     # for _zone in self.house.zones:
                     #     _zone.effective_area = 0.0
 
-    def cal_damage_index(self):
+    def cal_damage_index(self, wind_speed):
         """
 
         Args:
@@ -201,9 +203,8 @@ class HouseDamage(object):
             total_area_by_group[_group.name] += _group.costing_area
 
         # prop_area_by_group
-        prop_area_by_group = {}
-        for key, value in area_by_group.iteritems():
-            prop_area_by_group[key] = value / total_area_by_group[key]
+        prop_area_by_group = {key: value / total_area_by_group[key]
+                              for key, value in area_by_group.iteritems()}
 
         # apply damage factoring
         revised_prop = copy.deepcopy(prop_area_by_group)
@@ -221,11 +222,12 @@ class HouseDamage(object):
                 total_area_by_scenario[scenario] += total_area_by_group[_group]
 
         # prop_area_by_scenario
-        self.repair_cost = 0.0
-        for key, _cost in self.cfg.dic_costings.iteritems():
-            if key in area_by_scenario:
-                prop_area = area_by_scenario[key] / total_area_by_scenario[key]
-                self.repair_cost += _cost.calculate_cost(prop_area)
+        prop_area_by_scenario = {key: value / total_area_by_scenario[key]
+                                 for key, value in area_by_scenario.iteritems()}
+
+        _list = [self.cfg.dic_costings[key].calculate_cost(value)
+                 for key, value in prop_area_by_scenario.iteritems()]
+        self.repair_cost = np.array(_list).sum()
 
         # calculate initial envelope repair cost before water ingress is added
         self.di_except_water = min(self.repair_cost / self.house.replace_cost,
@@ -233,18 +235,31 @@ class HouseDamage(object):
 
         if self.di_except_water < 1.0 and self.cfg.flags['water_ingress']:
 
-            print 'Not implemented'
-            # (self.water_ratio, self.water_damage_name, self.water_ingress_cost,
-            #  self.water_costing) = \
-            #     wateringress.get_costing_for_envelope_damage_at_v(
-            #         self.di_except_water, wind_speed, self.house.water_groups)
-            #
-            # repair_cost += self.water_ingress_cost
-            #
-            # # combined internal + envelope damage costing can now be calculated
-            # self.di = min(repair_cost / self.house.replace_cost, 1.0)
+            # compute water ingress
+            water_ingress_perc = 100.0 * cal_water_ingress_given_damage(
+                self.di_except_water, wind_speed,
+                self.cfg.water_ingress_given_di)
+
+            # determine damage scenario
+            damage_name = 'WI only'  # default
+            for _name in self.cfg.damage_order_by_water_ingress:
+                if prop_area_by_scenario[_name]:
+                    damage_name = _name
+                    break
+
+            # finding index close to water ingress threshold
+            _df = self.cfg.dic_water_ingress_costings[damage_name]
+            idx = np.argsort(np.abs(_df.index - water_ingress_perc))[0]
+
+            self.water_ingress_cost = \
+                _df.iloc[idx]['costing'].calculate_cost(self.di_except_water)
+            _di = (self.repair_cost +
+                   self.water_ingress_cost) / self.house.replace_cost
+            self.di = min(_di, 1.0)
+
         else:
             self.di = self.di_except_water
 
-        logging.info('total repair_cost:{:.3f}, di: {:.3f}'.format(
-            self.repair_cost, self.di))
+        logging.info('repair_cost:{:.3f}, water:{:.3f}, '
+                     'di_except_water:{:.3f}, di:{:.3f}'.format(
+            self.repair_cost, self.water_ingress_cost, self.di_except_water, self.di))

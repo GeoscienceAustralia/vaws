@@ -13,9 +13,10 @@ import ConfigParser
 import numpy as np
 import pandas as pd
 from collections import OrderedDict, defaultdict
+from scipy.stats import norm
 
 from stats import compute_logarithmic_mean_stddev
-from damage_costing import Costing
+from damage_costing import Costing, WaterIngressCosting
 
 
 class Scenario(object):
@@ -44,7 +45,8 @@ class Scenario(object):
     list_compnents = ['group', 'connection', 'zone']
 
     list_house_damage_bucket = ['qz', 'Ms', 'cpi', 'cpi_wind_speed', 'collapse',
-                                'di', 'di_except_water', 'repair_cost']
+                                'di', 'di_except_water', 'repair_cost',
+                                'water_ingress_cost']
 
     list_debris_bucket = ['no_items', 'no_touched', 'breached', 'damaged_area']
 
@@ -82,6 +84,7 @@ class Scenario(object):
         self.region_name = None
         self.construction_levels = OrderedDict()
         self.fragility_thresholds = None
+        self.water_ingress_given_di = None
 
         self.source_items = 0
         self.regional_shielding_factor = 1.0
@@ -115,7 +118,9 @@ class Scenario(object):
         self.list_zones = None
 
         self.dic_costings = None
+        self.damage_order_by_water_ingress = None
         self.dic_costing_to_group = None
+        self.dic_water_ingress_costings = None
         self.dic_damage_factorings = None
         self.df_footprint = None
         self.dic_front_facing_walls = None
@@ -300,6 +305,24 @@ class Scenario(object):
         except ConfigParser.NoSectionError:
             print('default value is used for heatmap')
 
+        key = 'water_ingress'
+        if conf.has_section(key):
+            thresholds = [float(x) for x in conf.get(key, 'thresholds').split(',')]
+            lower = [float(x) for x in conf.get(key, 'lower').split(',')]
+            upper = [float(x) for x in conf.get(key, 'upper').split(',')]
+        else:
+            thresholds = [0.1, 0.2, 0.5, 2.0]
+            lower = [40.0, 35.0, 0.0, -20.0]
+            upper = [60.0, 55.0, 40.0, 20.0]
+            print('default water ingress thresholds is used')
+
+        self.water_ingress_given_di = pd.DataFrame(np.array([lower, upper]).T,
+                                                   index=thresholds,
+                                                   columns=['lower', 'upper'])
+
+        self.water_ingress_given_di['wi'] = self.water_ingress_given_di.apply(
+            self.return_norm_cdf, axis=1)
+
         if self.output_path:
 
             if not os.path.exists(self.output_path):
@@ -314,6 +337,22 @@ class Scenario(object):
             self.file_curve = os.path.join(self.output_path, 'results_curve.csv')
         else:
             print 'output path is not assigned'
+
+    @staticmethod
+    def return_norm_cdf(row):
+        """
+
+        Args:
+            row:
+
+        Returns:
+
+        """
+
+        _mean = (row['upper'] + row['lower']) / 2.0
+        _sd = (row['upper'] - row['lower']) / 6.0
+
+        return norm(loc=_mean, scale=_sd).cdf
 
     def read_house_data(self):
 
@@ -340,6 +379,9 @@ class Scenario(object):
                                               'influence_patches.csv')
         file_damage_factorings = os.path.join(self.path_datafile,
                                               'damage_factorings.csv')
+
+        file_water_ingress_costing = os.path.join(
+            self.path_datafile, 'water_ingress_costing_data.csv')
 
         self.df_house = pd.read_csv(file_house)
         self.df_zones = pd.read_csv(file_zones, index_col='name',
@@ -399,8 +441,11 @@ class Scenario(object):
         self.dic_influence_patches = self.read_influence_patches(
             file_influence_patches)
 
-        self.dic_costings, self.dic_costing_to_group = \
+        self.dic_costings, self.dic_costing_to_group, self.damage_order_by_water_ingress = \
             self.read_damage_costing_data(file_damage_costing, self.df_groups)
+
+        self.dic_water_ingress_costings = self.read_water_ingress_costing_data(
+            file_water_ingress_costing, self.df_groups)
 
         # if self.flags['debris']:
         file_footprint = os.path.join(self.path_datafile, 'footprint.csv')
@@ -439,14 +484,36 @@ class Scenario(object):
         dic_costing = {}
         df_damage_costing = pd.read_csv(file_damage_costing)
         for _, item in df_damage_costing.iterrows():
-            _name = item['name']
-            dic_costing[_name] = Costing(costing_name=_name, **item)
+            if df_groups['damage_scenario'].isin([item['name']]).any():
+                _name = item['name']
+                dic_costing[_name] = Costing(costing_name=_name, **item)
 
         dic_costing_to_group = defaultdict(list)
         for key, value in df_groups['damage_scenario'].to_dict().iteritems():
             dic_costing_to_group[value].append(key)
 
-        return dic_costing, dic_costing_to_group
+        _a = df_damage_costing.loc[df_damage_costing[
+            'water_ingress_order'].sort_values().index, 'name']
+        damage_order_by_water_ingress = []
+        for i, value in _a.iteritems():
+            if df_damage_costing.loc[i, 'water_ingress_order'] and \
+                    df_groups['damage_scenario'].isin([value]).any():
+                damage_order_by_water_ingress.append(value)
+
+        return dic_costing, dic_costing_to_group, damage_order_by_water_ingress
+
+    @staticmethod
+    def read_water_ingress_costing_data(file_water_ingress_costing, df_groups):
+        dic_ = {}
+        tmp = pd.read_csv(file_water_ingress_costing)
+        for key, grouped in tmp.groupby('name'):
+            if df_groups['damage_scenario'].isin([key]).any():
+                grouped = grouped.set_index('water_ingress')
+                grouped['costing'] = grouped.apply(
+                    lambda row: WaterIngressCosting(costing_name=key, **row),
+                    axis=1)
+                dic_[key] = grouped
+        return dic_
 
     @staticmethod
     def read_front_facing_walls(filename):

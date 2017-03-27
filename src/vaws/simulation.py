@@ -11,6 +11,7 @@ from optparse import OptionParser
 from house_damage import HouseDamage
 from scenario import Scenario
 from curve import fit_fragility_curves, fit_vulnerability_curve
+from output import plot_heatmap
 from version import VERSION_DESC
 
 
@@ -86,10 +87,10 @@ def init_panels(cfg):
                                    minor_axis=range(cfg.no_sims))
     # components
     for item in cfg.list_compnents:
-        for att in getattr(cfg, 'list_{}s'.format(item)):
+        for att in getattr(cfg, 'list_{}_bucket'.format(item)):
             dic_panels.setdefault(item, {})[att] = \
                 pd.Panel(dtype=float,
-                         items=getattr(cfg, 'list_{}_bucket'.format(item)),
+                         items=getattr(cfg, 'list_{}s'.format(item)),
                          major_axis=range(cfg.wind_speed_steps),
                          minor_axis=range(cfg.no_sims))
 
@@ -107,7 +108,7 @@ def update_panels(cfg, dic_, list_results_by_speed, ispeed):
     for item in cfg.list_compnents:
         for key, value in dic_[item].iteritems():
             for att in value.items.tolist():
-                value[att].loc[ispeed] = [x[item].loc[key, att] for x in
+                value[att].loc[ispeed] = [x[item].loc[att, key] for x in
                                           list_results_by_speed]
 
     # compute damage index increment
@@ -159,6 +160,23 @@ def save_results_to_files(cfg, dic_panels):
     fitted_curve = fit_vulnerability_curve(cfg, dic_panels['house']['di'])
     with open(cfg.file_curve, 'a') as f:
         pd.DataFrame.from_dict(fitted_curve).transpose().to_csv(f, header=None)
+
+    if cfg.flags['plot_connection_damage']:
+
+        for group_name, grouped in cfg.df_connections.groupby('group_name'):
+
+            for id_sim, df_ in dic_panels['connection']['capacity'].loc[
+                               grouped.index, cfg.wind_speed_steps - 1, :].iterrows():
+
+                file_name = os.path.join(cfg.output_path,
+                                         '{}_id{}'.format(group_name, id_sim))
+                plot_heatmap(grouped,
+                             df_.values,
+                             vmin=cfg.red_v,
+                             vmax=cfg.blue_v,
+                             vstep=21,
+                             file_name=file_name)
+
 
 
 def process_commandline():

@@ -3,8 +3,12 @@ if __name__ == '__main__':
     import unittest
     import pandas as pd
     import os
+    import numpy as np
+    import matplotlib.pyplot as plt
 
-    from vaws.damage_costing import Costing
+    from vaws.damage_costing import Costing, WaterIngressCosting, \
+        cal_water_ingress_given_damage
+    from vaws.scenario import Scenario
 
     class MyTestCase(unittest.TestCase):
         @classmethod
@@ -66,8 +70,100 @@ if __name__ == '__main__':
             self.assertAlmostEqual(self.costing2.calculate_cost(1.0),
                                    27264.7029, places=4)
 
+    class WaterIngressTestCase(unittest.TestCase):
+
+        @classmethod
+        def setUpClass(cls):
+            path = '/'.join(__file__.split('/')[:-1])
+            cls.cfg = Scenario(
+                cfg_file=os.path.join(path,
+                                      '../../scenarios/test_scenario16p1.cfg'))
+
+        def test_cal_water_ingress_given_damage(self):
+
+            di_array = [0, 0.15, 0.3, 0.7]
+            speed_array = np.arange(20, 100, 1.0)
+            a = np.zeros((len(di_array), len(speed_array)))
+
+            for i, di in enumerate(di_array):
+                for j, speed in enumerate(speed_array):
+                    a[i, j] = cal_water_ingress_given_damage(di, speed, self.cfg.water_ingress_given_di)
+
+            plt.figure()
+            for j in range(a.shape[0]):
+                plt.plot(speed_array, a[j, :],
+                         label='DI={:.1f}'.format(di_array[j]))
+
+            plt.legend()
+            plt.xlabel('wind speed')
+            plt.ylabel('Water ingress')
+            plt.grid(1)
+            plt.pause(1.0)
+            plt.close()
+
+        def test_water_costs(self):
+
+            # thresholds = [0, 5.0, 18.0, 37.0, 67.0, 100.0]
+
+            dic_wi = {0: 0,
+                      4.3: 5.0,
+                      5.6: 5.0,
+                      22.12: 18.0,
+                      50.0: 37.0,
+                      67.1: 67.0,
+                      99.0: 100.0}
+
+            damage_name = 'Loss of roof sheeting'
+            _df = self.cfg.dic_water_ingress_costings[damage_name]
+
+            for wi, expected in dic_wi.iteritems():
+                idx = np.argsort(np.abs(_df.index - wi))[0]
+                self.assertEquals(_df.iloc[idx].name, expected)
+
+        def test_water_ingress_costings(self):
+
+            file_water_ingress_costing = os.path.join(self.cfg.path_datafile,
+                                                      'water_ingress_costing_data.csv')
+            dic_ = {}
+            tmp = pd.read_csv(file_water_ingress_costing)
+            for key, grouped in tmp.groupby('name'):
+                grouped = grouped.set_index('water_ingress')
+                grouped['costing'] = grouped.apply(
+                    lambda row: WaterIngressCosting(costing_name=key,
+                                                    **row),
+                    axis=1)
+                dic_[key] = grouped
+
+            for _name, _df in dic_.iteritems():
+
+                wi_array = [0, 5.0, 18.0, 37.0, 67.0, 100.0]
+                di_array = np.arange(0.0, 1.1, 0.1)
+                a = np.zeros((len(wi_array), len(di_array)))
+
+                # _df = self.cfg.dic_water_ingress_costings[name]
+                for i, wi in enumerate(wi_array):
+                    for j, di in enumerate(di_array):
+                        idx = np.argsort(np.abs(_df.index - wi))[0]
+                        a[i, j] = _df.iloc[idx]['costing'].calculate_cost(di)
+
+                plt.figure()
+                for j in range(a.shape[0]):
+                    plt.plot(di_array, a[j, :],
+                             label='WI={:.0f}'.format(wi_array[j]))
+
+                plt.legend()
+                plt.xlabel('Damage index')
+                plt.ylabel('Cost due to water ingress')
+                plt.title(_name)
+                plt.grid(1)
+                plt.pause(1.0)
+                #plt.savefig('./wi_costing_{}'.format(_name))
+                plt.close()
+
+
+
 if __name__ == '__main__':
     unittest.main()
 
-    # suite = unittest.TestLoader().loadTestsFromTestCase(MyTestCase)
+    # suite = unittest.TestLoader().loadTestsFromTestCase(WaterIngressTestCase)
     # unittest.TextTestRunner(verbosity=2).run(suite)
