@@ -177,6 +177,44 @@ def save_results_to_files(cfg, dic_panels):
                              vstep=21,
                              file_name=file_name)
 
+def show_results(self, output_folder=None, vRed=40, vBlue=80):
+    if self.mplDict:
+        self.mplDict['fragility'].axes.cla()
+        self.mplDict['fragility'].axes.figure.canvas.draw()
+        self.mplDict['vulnerability'].axes.cla()
+        self.mplDict['vulnerability'].axes.figure.canvas.draw()
+    if self.cfg.flags['dmg_plot_fragility']:
+        self.plot_fragility(output_folder)
+    if self.cfg.flags['dmg_plot_vul']:
+        self.plot_vulnerability(output_folder)
+        output.plot_wind_event_show(self.cfg.no_sims,
+                                    self.cfg.wind_speed_min,
+                                    self.cfg.wind_speed_max,
+                                    output_folder)
+    self.plot_connection_damage(vRed, vBlue)
+
+
+def set_logger(file_logger, logging_level):
+    """
+    
+    Args:
+        file_logger: 
+        logging_level: 
+
+    Returns:
+
+    """
+    logger = logging.getLogger()
+    file_handler = logging.FileHandler(filename=file_logger, mode='w')
+    formatter = logging.Formatter('%(levelname)s - %(message)s')
+    file_handler.setFormatter(formatter)
+    logger.addHandler(file_handler)
+    try:
+        logger.setLevel(getattr(logging, logging_level.upper()))
+    except AttributeError:
+        print('{} is not a logging level, '
+              'DEBUG is set instead'.format(logging_level))
+        logger.setLevel(logging.DEBUG)
 
 
 def process_commandline():
@@ -204,37 +242,28 @@ def main():
 
     (options, args) = parser.parse_args()
 
-    if options.output_folder is None:
-        options.output_folder = os.path.abspath(os.path.join(
-            os.path.split(sys.argv[0])[0], '../../outputs/output'))
+    if options.scenario_filename is None:
+        print('\nERROR: Must provide a scenario file to run simulator...\n')
+        parser.print_help()
+
     else:
-        options.output_folder = os.path.join(os.getcwd(),
-                                             options.output_folder)
+        path_, _ = os.path.split(sys.argv[0])
+        if options.output_folder is None:
+            options.output_folder = os.path.abspath(
+                os.path.join(path_, '../../outputs/output'))
+        else:
+            options.output_folder = os.path.join(os.getcwd(),
+                                                 options.output_folder)
 
-    if options.verbose:
+        if options.verbose:
+            file_logger = os.path.join(options.output_folder, 'log.txt')
+            set_logger(file_logger, options.verbose)
 
-        logger = logging.getLogger()
-        file_logger = os.path.join(options.output_folder, 'log.txt')
-        file_handler = logging.FileHandler(filename=file_logger, mode='w')
-        formatter = logging.Formatter('%(levelname)s - %(message)s')
-        file_handler.setFormatter(formatter)
-        logger.addHandler(file_handler)
-
-        try:
-            logger.setLevel(getattr(logging, options.verbose.upper()))
-        except AttributeError:
-            print('{} is not a logging level'.format(options.verbose))
-            logger.setLevel(logging.DEBUG)
-
-    if options.scenario_filename:
         conf = Scenario(cfg_file=options.scenario_filename,
                         output_path=options.output_folder)
         _ = simulate_wind_damage_to_houses(conf, call_back=None)
-    else:
-        print '\nERROR: Must provide a scenario file to run simulator...\n'
-        parser.print_help()
 
-    logging.info('Program finished')
+        logging.info('Program finished')
 
 if __name__ == '__main__':
     main()
