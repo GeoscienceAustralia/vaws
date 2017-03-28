@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 # adjust python path so we may import things from peer packages
 import sys
+import time
 import os.path
 import logging
 
@@ -14,7 +15,11 @@ import pandas as pd
 from vaws.curve import vulnerability_lognorm, vulnerability_weibull
 
 from main_ui import Ui_main
-from vaws import simulation, scenario, house, version, debris, stats, output
+from vaws.simulation import process_commandline, set_logger, \
+    simulate_wind_damage_to_houses
+from vaws.scenario import Scenario
+from vaws.version import VERSION_DESC
+from vaws.stats import compute_logarithmic_mean_stddev
 
 from mixins import PersistSizePosMixin, setupTable, finiTable
 
@@ -36,16 +41,17 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
         super(MyForm, self).__init__(parent)
         PersistSizePosMixin.__init__(self, "MainWindow")
         
-        self.simulator = None
+        # self.simulator = None
 
         self.ui = Ui_main()
         self.ui.setupUi(self)
 
-        windowTitle = version.VERSION_DESC
+        windowTitle = VERSION_DESC
         self.setWindowTitle(unicode(windowTitle))
 
         self.s = init_scenario
 
+        # scenario pane
         self.ui.houseName.addItems(self.s.df_house['name'].values)
         self.ui.houseName.setCurrentIndex(-1)
         self.ui.buildingSpacing.addItems(('20', '40'))
@@ -141,6 +147,7 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
                                               'param2'], skiprows=1,
                                        index_col='key')
 
+        self.ui.mplfrag.axes.hold(True)
         self.ui.mplfrag.axes.cla()
         self.ui.mplfrag.axes.figure.canvas.draw()
         for _, col in df_dmg_idx.iteritems():
@@ -151,17 +158,18 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
                 y = vulnerability_lognorm(self.s.speeds,
                                           df_fitted_curves.loc[ds, 'param1'],
                                           df_fitted_curves.loc[ds, 'param2'])
-            except KeyError, msg:
+            except KeyError as msg:
                 logging.warning(msg)
             else:
                 self.ui.mplfrag.axes.plot(self.s.speeds, y,
                                           color=value['color'],
                                           linestyle='-', label=ds)
+        self.ui.mplfrag.axes.legend()
 
-        self.ui.mplvuln.axes.cla()
-        self.ui.mplvuln.axes.figure.canvas.draw()
-        for _, col in df_dmg_idx.iteritems():
-            self.ui.mplvuln.axes.plot(self.s.speeds, col.values, '-', 0.3)
+        # self.ui.mplvuln.axes.cla()
+        # self.ui.mplvuln.axes.figure.canvas.draw()
+        # for _, col in df_dmg_idx.iteritems():
+        #     self.ui.mplvuln.axes.plot(self.s.speeds, col.values, '-', 0.3)
 
         # self.ui.mplvuln.axes.plot(self.s.speeds,result[0][''])
         # self.ui.sumOfSquares.setText('%f' % self.simulator.ss)
@@ -285,13 +293,13 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
         self.updateConnectionTypeTable()
         
         # load up damage scenarios grid
-        setupTable(self.ui.damageScenarios, self.s.df_damage_costing)
+        setupTable(self.ui.damageScenarios, self.s.dic_costings)
 
-        for irow, (index, ds) in enumerate(self.s.df_damage_costing.iterrows()):
-            self.ui.damageScenarios.setItem(irow, 0, QTableWidgetItem(ds['name']))
-            self.ui.damageScenarios.setItem(irow, 1, QTableWidgetItem("%d" % ds['surface_area']))
-            self.ui.damageScenarios.setItem(irow, 2, QTableWidgetItem("%0.3f" % ds['envelope_repair_rate']))
-            self.ui.damageScenarios.setItem(irow, 3, QTableWidgetItem("%0.3f" % ds['internal_repair_rate']))
+        for irow, (name, _inst) in enumerate(self.s.dic_costings.iteritems()):
+            self.ui.damageScenarios.setItem(irow, 0, QTableWidgetItem(name))
+            self.ui.damageScenarios.setItem(irow, 1, QTableWidgetItem('%0.3f' % _inst.surface_area))
+            self.ui.damageScenarios.setItem(irow, 2, QTableWidgetItem('%0.3f' % _inst.envelope_repair_rate))
+            self.ui.damageScenarios.setItem(irow, 3, QTableWidgetItem('%0.3f' % _inst.internal_repair_rate))
 
         finiTable(self.ui.damageScenarios)
         
@@ -301,10 +309,10 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
             self.ui.connections.setItem(irow, 0, QTableWidgetItem(c['group_name']))
             self.ui.connections.setItem(irow, 1, QTableWidgetItem(c['type_name']))
             self.ui.connections.setItem(irow, 2, QTableWidgetItem(c['zone_loc']))
-            edge = 'False'
-            if c['edge'] != 0:
-                edge = 'True'
-            self.ui.connections.setItem(irow, 3, QTableWidgetItem(edge))
+            # edge = 'False'
+            # if c['edge'] != 0:
+            #     edge = 'True'
+            # self.ui.connections.setItem(irow, 3, QTableWidgetItem(edge))
         finiTable(self.ui.connections)
         self.ui.connections.horizontalHeader().resizeSection(2, 70)
         self.ui.connections.horizontalHeader().resizeSection(1, 110)
@@ -354,7 +362,7 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
 
         # attempt to run the simulator, being careful with exceptions...
         try:
-            run_time, list_results = simulation.simulate_wind_damage_to_houses(self.s,
+            run_time, list_results = simulate_wind_damage_to_houses(self.s,
                                                                                call_back=progress_callback)
 
             if run_time is not None:
@@ -533,7 +541,7 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
         self.statusBar().showMessage('Updating Zone Results')
         self.ui.zoneResults.clear()
         for (house_num, hr) in enumerate(self.house_results):
-            parent = QTreeWidgetItem(self.ui.zoneResults, ['H%d (%s/%.3f/%s)'%(house_num+1, scenario.Scenario.dirs[hr[2]], hr[3], hr[5]), 
+            parent = QTreeWidgetItem(self.ui.zoneResults, ['H%d (%s/%.3f/%s)'%(house_num+1, scenario.Scenario.dirs[hr[2]], hr[3], hr[5]),
                                                            '', '', '', ''])
             zone_results_dict = hr[0]      
             for zr_key in sorted(zone_results_dict):
@@ -657,7 +665,7 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
             self.ui.flighttimeStddev.setText("{0:.3f}".format(self.s.flight_time_stddev))
             self.ui.debrisAngle.setValue(self.s.debris_angle)
             self.ui.debrisRadius.setValue(self.s.debris_radius)
-            self.ui.debrisExtension.setText('%f' % self.s.debris_extension)
+            # self.ui.debrisExtension.setText('%f' % self.s.debris_extension)
             self.ui.diffShielding.setChecked(self.s.get_flag('diff_shielding'))
             self.ui.debris.setChecked(self.s.get_flag('debris'))
             self.ui.staggeredDebrisSources.setChecked(self.s.get_flag('debris_staggered_sources'))
@@ -718,12 +726,12 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
         new_scenario.building_spacing = int(unicode(self.ui.buildingSpacing.currentText()))
         new_scenario.debris_radius = self.ui.debrisRadius.value()
         new_scenario.debris_angle = self.ui.debrisAngle.value()
-        new_scenario.debris_extension = float(self.ui.debrisExtension.text())
+        # new_scenario.debris_extension = float(self.ui.debrisExtension.text())
         new_scenario.flight_time_mean = float(unicode(self.ui.flighttimeMean.text()))
         new_scenario.flight_time_stddev = float(unicode(self.ui.flighttimeStddev.text()))
 
         new_scenario.flight_time_log_mu, new_scenario.flight_time_log_std = \
-            stats.compute_logarithmic_mean_stddev(new_scenario.flight_time_mean,
+            compute_logarithmic_mean_stddev(new_scenario.flight_time_mean,
                                                   new_scenario.flight_time_stddev)
 
         new_scenario.red_v = float(unicode(self.ui.redV.value()))
@@ -826,19 +834,21 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
                     ax.hist(x, 50, normed=1, facecolor='green', alpha=0.75)
                     fig.canvas.draw()
                     plt.show()    
-        
+
+
 def run_gui():
-    parser = simulation.process_commandline()
+    parser = process_commandline()
 
     (options, args) = parser.parse_args()
 
-    if not options.scenario_filename:
-        print '\nERROR: Must provide a scenario file to run simulator...\n'
+    if options.scenario_filename is None:
+        print('\nERROR: Must provide a scenario file to run simulator...\n')
         parser.print_help()
     else:
 
+        path_, _ = os.path.split(sys.argv[0])
+
         if options.output_folder is None:
-            path_, _ = os.path.split(sys.argv[0])
             options.output_folder = os.path.abspath(
                 os.path.join(path_, '../outputs/output'))
         else:
@@ -847,13 +857,10 @@ def run_gui():
 
         if options.verbose:
             file_logger = os.path.join(options.output_folder, 'log.txt')
-            logging.basicConfig(filename=file_logger,
-                                filemode='w',
-                                level=logging.DEBUG,
-                                format='%(levelname)s %(message)s')
+            set_logger(file_logger, options.verbose)
 
-        conf = scenario.Scenario(cfg_file=options.scenario_filename,
-                                 output_path=options.output_folder)
+        conf = Scenario(cfg_file=options.scenario_filename,
+                        output_path=options.output_folder)
 
         app = QApplication(sys.argv)
         app.setOrganizationName("Geoscience Australia")
@@ -861,7 +868,6 @@ def run_gui():
         app.setApplicationName("WindSim")
         img = QPixmap()
 
-        path_ = '/'.join(__file__.split('/')[:-1])
         img_file = os.path.join(path_, 'images/splash/splash.png')
         if not img.load(img_file):
             raise Exception('Could not load splash image')
@@ -874,7 +880,7 @@ def run_gui():
         splash = QSplashScreen(my_app, img)
         splash.show()
         my_app.show()
-        import time
+
         time.sleep(5)
         splash.finish(my_app)
         sys.exit(app.exec_())
