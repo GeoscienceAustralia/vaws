@@ -49,19 +49,26 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
         windowTitle = VERSION_DESC
         self.setWindowTitle(unicode(windowTitle))
 
-        self.s = init_scenario
+        self.cfg = init_scenario
 
-        # scenario pane
-        self.ui.houseName.addItems(self.s.df_house['name'].values)
-        self.ui.houseName.setCurrentIndex(-1)
-        self.ui.buildingSpacing.addItems(('20', '40'))
-        self.ui.terrainCategory.addItems(self.s.terrain_categories)
-        self.ui.terrainCategory.setCurrentIndex(-1)
-        self.ui.windDirection.addItems(self.s.wind_dir)
+        # scenario section
         self.ui.numHouses.setValidator(QIntValidator(1, 10000, self.ui.numHouses))
-        self.ui.flighttimeMean.setValidator(QDoubleValidator(0.0, 100.0, 3, self.ui.flighttimeMean))
-        self.ui.flighttimeStddev.setValidator(QDoubleValidator(0.0, 100.0, 3, self.ui.flighttimeStddev))
-        self.ui.debrisExtension.setValidator(QDoubleValidator(0.0, 100.0, 3, self.ui.debrisExtension))
+        self.ui.houseName.addItems(self.cfg.df_house['name'].values)
+        self.ui.houseName.setCurrentIndex(-1)
+        self.ui.terrainCategory.addItems(self.cfg.terrain_categories)
+        self.ui.terrainCategory.setCurrentIndex(-1)
+        self.ui.windDirection.addItems(self.cfg.wind_dir)
+
+        # debris
+        self.ui.debrisRegion.addItems(self.cfg.region_names)
+        self.ui.debrisRegion.setCurrentIndex(-1)
+        self.ui.buildingSpacing.addItems(('20', '40'))
+        self.ui.flighttimeMean.setValidator(
+            QDoubleValidator(0.0, 100.0, 3, self.ui.flighttimeMean))
+        self.ui.flighttimeStddev.setValidator(QDoubleValidator(
+            0.0, 100.0, 3, self.ui.flighttimeStddev))
+        # self.ui.debrisExtension.setValidator(QDoubleValidator(
+        #     0.0, 100.0, 3, self.ui.debrisExtension))
       
         self.statusProgressBar = QProgressBar()
         self.statusProgressBar.setMinimum(0)
@@ -103,6 +110,7 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
         self.selected_zone = None
         self.selected_conn = None
         self.selected_plotKey = None
+
         self.updateGlobalData()
         self.ui.sourceItems.setValue(-1)
 
@@ -113,13 +121,13 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
         self.selected_plotKey = plotKey
 
     def onSelectConnection(self, connection_name):
-        for irow in range(len(self.s.house.connections)):
+        for irow in range(len(self.cfg.house.connections)):
             if unicode(self.ui.connections.item(irow, 0).text()) == connection_name:
                 self.ui.connections.setCurrentCell(irow, 0)
                 break
         
     def onSelectZone(self, zoneLoc):
-        for irow in range(len(self.s.house.zones)):
+        for irow in range(len(self.cfg.house.zones)):
             if unicode(self.ui.zones.item(irow, 0).text()) == zoneLoc:
                 self.ui.zones.setCurrentCell(irow, 0)
                 break
@@ -141,8 +149,8 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
     def updateVulnCurve(self):
         # self.show_results(None, self.ui.redV.value(), self.ui.blueV.value())
 
-        df_dmg_idx = pd.read_hdf(self.s.file_house, 'house')['di']
-        df_fitted_curves = pd.read_csv(self.s.file_curve,
+        df_dmg_idx = pd.read_hdf(self.cfg.file_house, 'house')['di']
+        df_fitted_curves = pd.read_csv(self.cfg.file_curve,
                                        names=['key', 'error', 'param1',
                                               'param2'], skiprows=1,
                                        index_col='key')
@@ -151,17 +159,17 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
         self.ui.mplfrag.axes.cla()
         self.ui.mplfrag.axes.figure.canvas.draw()
         for _, col in df_dmg_idx.iteritems():
-            self.ui.mplfrag.axes.plot(self.s.speeds, col.values, 'o', 0.3)
+            self.ui.mplfrag.axes.plot(self.cfg.speeds, col.values, 'o', 0.3)
 
-        for ds, value in self.s.fragility_thresholds.iterrows():
+        for ds, value in self.cfg.fragility_thresholds.iterrows():
             try:
-                y = vulnerability_lognorm(self.s.speeds,
+                y = vulnerability_lognorm(self.cfg.speeds,
                                           df_fitted_curves.loc[ds, 'param1'],
                                           df_fitted_curves.loc[ds, 'param2'])
             except KeyError as msg:
                 logging.warning(msg)
             else:
-                self.ui.mplfrag.axes.plot(self.s.speeds, y,
+                self.ui.mplfrag.axes.plot(self.cfg.speeds, y,
                                           color=value['color'],
                                           linestyle='-', label=ds)
         self.ui.mplfrag.axes.legend()
@@ -169,9 +177,9 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
         # self.ui.mplvuln.axes.cla()
         # self.ui.mplvuln.axes.figure.canvas.draw()
         # for _, col in df_dmg_idx.iteritems():
-        #     self.ui.mplvuln.axes.plot(self.s.speeds, col.values, '-', 0.3)
+        #     self.ui.mplvuln.axes.plot(self.cfg.speeds, col.values, '-', 0.3)
 
-        # self.ui.mplvuln.axes.plot(self.s.speeds,result[0][''])
+        # self.ui.mplvuln.axes.plot(self.cfg.speeds,result[0][''])
         # self.ui.sumOfSquares.setText('%f' % self.simulator.ss)
         # self.ui.coeff_1.setText('%f' % self.simulator.A_final[0])
         # self.ui.coeff_2.setText('%f' % self.simulator.A_final[1])
@@ -181,53 +189,53 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
             self.simulator.plot_connection_damage(self.ui.redV.value(), self.ui.blueV.value())
             
     def updateGlobalData(self):
+
         # load up debris types
-        debrisTypes = []
-        setupTable(self.ui.debrisTypes, None)
-        irow = 0
-        for dt in debrisTypes:
-            self.ui.debrisTypes.setItem(irow, 0, QTableWidgetItem(dt[0]))
-            self.ui.debrisTypes.setItem(irow, 1, QTableWidgetItem("%0.3f" % dt[1]))
-            irow += 1
+        setupTable(self.ui.debrisTypes, self.cfg.debris_types)
+        for i, (key, value) in enumerate(self.cfg.debris_types.iteritems()):
+            self.ui.debrisTypes.setItem(i, 0, QTableWidgetItem(key))
+            self.ui.debrisTypes.setItem(i, 1, QTableWidgetItem('{:.2f}'.format(value['cdav'])))
         finiTable(self.ui.debrisTypes)
-       
+
         # load up debris regions
-        setupTable(self.ui.debrisRegions, self.s.debris_regions)
-        # TODO complete debris model
-        for irow, dr in enumerate([]):
-            self.ui.debrisRegions.setItem(irow, 0, QTableWidgetItem(dr.name))
-            self.ui.debrisRegions.setItem(irow, 1, QTableWidgetItem("%0.3f" % dr.alpha))
-            self.ui.debrisRegions.setItem(irow, 2, QTableWidgetItem("%0.3f" % dr.beta))
-            self.ui.debrisRegions.setItem(irow, 3, QTableWidgetItem("%0.3f" % dr.cr))
-            self.ui.debrisRegions.setItem(irow, 4, QTableWidgetItem("%0.3f" % dr.cmm))
-            self.ui.debrisRegions.setItem(irow, 5, QTableWidgetItem("%0.3f" % dr.cmc))
-            self.ui.debrisRegions.setItem(irow, 6, QTableWidgetItem("%0.3f" % dr.cfm))
-            self.ui.debrisRegions.setItem(irow, 7, QTableWidgetItem("%0.3f" % dr.cfc))
-            self.ui.debrisRegions.setItem(irow, 8, QTableWidgetItem("%0.3f" % dr.rr))
-            self.ui.debrisRegions.setItem(irow, 9, QTableWidgetItem("%0.3f" % dr.rmm))
-            self.ui.debrisRegions.setItem(irow, 10, QTableWidgetItem("%0.3f" % dr.rmc))
-            self.ui.debrisRegions.setItem(irow, 11, QTableWidgetItem("%0.3f" % dr.rfm))
-            self.ui.debrisRegions.setItem(irow, 12, QTableWidgetItem("%0.3f" % dr.rfc))
-            self.ui.debrisRegions.setItem(irow, 13, QTableWidgetItem("%0.3f" % dr.pr))
-            self.ui.debrisRegions.setItem(irow, 14, QTableWidgetItem("%0.3f" % dr.pmm))
-            self.ui.debrisRegions.setItem(irow, 15, QTableWidgetItem("%0.3f" % dr.pmc))
-            self.ui.debrisRegions.setItem(irow, 16, QTableWidgetItem("%0.3f" % dr.pfm))
-            self.ui.debrisRegions.setItem(irow, 17, QTableWidgetItem("%0.3f" % dr.pfc))
-            self.ui.debrisRegion.addItem(dr.name)
+        setupTable(self.ui.debrisRegions, self.cfg.debris_regions)
+
+        for i, key1 in enumerate(self.cfg.debris_types):
+
+            _str = '{}_ratio'.format(key1)
+            _value = self.cfg.debris_regions[_str]
+            self.ui.debrisRegions.setItem(5*i, 0, QTableWidgetItem(_str))
+            self.ui.debrisRegions.setItem(5*i, 1, QTableWidgetItem('{:.3f}'.format(_value)))
+
+            for j, key2 in enumerate(['frontalarea', 'mass'], 1):
+                _mean_str = '{}_{}_mean'.format(key1, key2)
+                _std_str = '{}_{}_stddev'.format(key1, key2)
+                _mean = self.cfg.debris_regions[_mean_str]
+                _std = self.cfg.debris_regions[_std_str]
+
+                self.ui.debrisRegions.setItem(5*i + 2*j-1, 0,
+                                              QTableWidgetItem(_mean_str))
+                self.ui.debrisRegions.setItem(5*i + 2*j-1, 1,
+                                              QTableWidgetItem('{:.3f}'.format(_mean)))
+
+                self.ui.debrisRegions.setItem(5*i + 2*j, 0,
+                                              QTableWidgetItem(_std_str))
+                self.ui.debrisRegions.setItem(5*i + 2*j, 1,
+                                              QTableWidgetItem('{:.3f}'.format(_std)))
 
         finiTable(self.ui.debrisRegions)
-        
+
     def showHouseInfoDlg(self):
         from gui import house as gui_house
-        dlg = gui_house.HouseViewer(self.s)
+        dlg = gui_house.HouseViewer(self.cfg)
         dlg.exec_()
     
     def updateTerrainCategoryTable(self, tc):
         zarr = [3, 5, 7, 10, 12, 15, 17, 20, 25, 30]
 
-        self.s.terrain_category = unicode(self.ui.terrainCategory.currentText())
+        self.cfg.terrain_category = unicode(self.ui.terrainCategory.currentText())
 
-        self.s.set_wind_profile(self.s.path_wind_profiles)
+        self.cfg.set_wind_profile(self.cfg.path_wind_profiles)
 
         self.ui.boundaryProfile.setEditTriggers(QTableWidget.NoEditTriggers)
         self.ui.boundaryProfile.setRowCount(len(zarr))
@@ -240,14 +248,14 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
         for icol in range(1, 11):
             for irow in range(0, len(zarr)):
                 self.ui.boundaryProfile.setItem(irow, icol,
-                                                QTableWidgetItem("%0.3f" % self.s.wind_profile[icol][irow]))
+                                                QTableWidgetItem("%0.3f" % self.cfg.wind_profile[icol][irow]))
 
         self.ui.boundaryProfile.resizeColumnsToContents()
 
     def updateConnectionTypeTable(self):
         # load up connection types grid
-        setupTable(self.ui.connectionsTypes, self.s.df_types)
-        for irow, (index, ctype) in enumerate(self.s.df_types.iterrows()):
+        setupTable(self.ui.connectionsTypes, self.cfg.df_types)
+        for irow, (index, ctype) in enumerate(self.cfg.df_types.iterrows()):
             self.ui.connectionsTypes.setItem(irow, 0, QTableWidgetItem(index))
             self.ui.connectionsTypes.setItem(irow, 1, QTableWidgetItem("%0.3f" % ctype['lognormal_strength'][0]))
             self.ui.connectionsTypes.setItem(irow, 2, QTableWidgetItem("%0.3f" % ctype['lognormal_strength'][1]))
@@ -258,29 +266,29 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
         finiTable(self.ui.connectionsTypes)
         
     def updateZonesTable(self):
-        setupTable(self.ui.zones, self.s.df_zones)
+        setupTable(self.ui.zones, self.cfg.df_zones)
 
-        for irow, (index, z) in enumerate(self.s.df_zones.iterrows()):
+        for irow, (index, z) in enumerate(self.cfg.df_zones.iterrows()):
             self.ui.zones.setItem(irow, 0, QTableWidgetItem(index))
             self.ui.zones.setItem(irow, 1, QTableWidgetItem("%0.3f" % z['area']))
             self.ui.zones.setItem(irow, 2, QTableWidgetItem("%0.3f" % z['cpi_alpha']))
             for dir in range(8):
-                self.ui.zones.setItem(irow, 3+dir, QTableWidgetItem("%0.3f" % self.s.df_zones_cpe_mean[dir][index]))
+                self.ui.zones.setItem(irow, 3+dir, QTableWidgetItem("%0.3f" % self.cfg.df_zones_cpe_mean[dir][index]))
             for dir in range(8):
-                self.ui.zones.setItem(irow, 11+dir, QTableWidgetItem("%0.3f" % self.s.df_zones_cpe_str_mean[dir][index]))
+                self.ui.zones.setItem(irow, 11+dir, QTableWidgetItem("%0.3f" % self.cfg.df_zones_cpe_str_mean[dir][index]))
             for dir in range(8):
-                self.ui.zones.setItem(irow, 19+dir, QTableWidgetItem("%0.3f" % self.s.df_zones_cpe_eave_mean[dir][index]))
+                self.ui.zones.setItem(irow, 19+dir, QTableWidgetItem("%0.3f" % self.cfg.df_zones_cpe_eave_mean[dir][index]))
         finiTable(self.ui.zones)
     
     def updateConnectionGroupTable(self):
-        setupTable(self.ui.connGroups, self.s.df_groups)
-        for irow, (index, ctg) in enumerate(self.s.df_groups.iterrows()):
+        setupTable(self.ui.connGroups, self.cfg.df_groups)
+        for irow, (index, ctg) in enumerate(self.cfg.df_groups.iterrows()):
             self.ui.connGroups.setItem(irow, 0, QTableWidgetItem(index))
             self.ui.connGroups.setItem(irow, 1, QTableWidgetItem("%d" % ctg['dist_order']))
             self.ui.connGroups.setItem(irow, 2, QTableWidgetItem(ctg['dist_dir']))
             self.ui.connGroups.setItem(irow, 3, QTableWidgetItem(index))
             cellWidget = QCheckBox()
-            checked = self.s.get_flag('conn_type_group_{}'.format(index), False)
+            checked = self.cfg.get_flag('conn_type_group_{}'.format(index), False)
 
             cellWidget.setCheckState(Qt.Checked if checked else Qt.Unchecked)
             self.ui.connGroups.setCellWidget(irow, 4, cellWidget)            
@@ -288,14 +296,14 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
         
     def onHouseChanged(self, selectedHouseName):
         # called whenever a house is selected (including by initial scenario)
-        self.s.house_name = unicode(selectedHouseName)
+        self.cfg.house_name = unicode(selectedHouseName)
         self.updateConnectionGroupTable()
         self.updateConnectionTypeTable()
         
         # load up damage scenarios grid
-        setupTable(self.ui.damageScenarios, self.s.dic_costings)
+        setupTable(self.ui.damageScenarios, self.cfg.dic_costings)
 
-        for irow, (name, _inst) in enumerate(self.s.dic_costings.iteritems()):
+        for irow, (name, _inst) in enumerate(self.cfg.dic_costings.iteritems()):
             self.ui.damageScenarios.setItem(irow, 0, QTableWidgetItem(name))
             self.ui.damageScenarios.setItem(irow, 1, QTableWidgetItem('%0.3f' % _inst.surface_area))
             self.ui.damageScenarios.setItem(irow, 2, QTableWidgetItem('%0.3f' % _inst.envelope_repair_rate))
@@ -304,8 +312,8 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
         finiTable(self.ui.damageScenarios)
         
         # load up connections grid
-        setupTable(self.ui.connections, self.s.df_connections)
-        for irow, (index, c) in enumerate(self.s.df_connections.iterrows()):
+        setupTable(self.ui.connections, self.cfg.df_connections)
+        for irow, (index, c) in enumerate(self.cfg.df_connections.iterrows()):
             self.ui.connections.setItem(irow, 0, QTableWidgetItem(c['group_name']))
             self.ui.connections.setItem(irow, 1, QTableWidgetItem(c['type_name']))
             self.ui.connections.setItem(irow, 2, QTableWidgetItem(c['zone_loc']))
@@ -321,7 +329,7 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
     def updateModelFromUI(self):
         if self.dirty_conntypes:
             irow = 0
-            for ctype in self.s.house.conn_types:
+            for ctype in self.cfg.house.conn_types:
                 sm = float(unicode(self.ui.connectionsTypes.item(irow, 1).text())) 
                 ss = float(unicode(self.ui.connectionsTypes.item(irow, 2).text())) 
                 dm = float(unicode(self.ui.connectionsTypes.item(irow, 3).text())) 
@@ -331,7 +339,7 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
                 irow += 1
             self.dirty_conntypes = False
             
-        self.s.updateModel()
+        self.cfg.updateModel()
     
     def stopScenario(self):
         self.stopTriggered = True
@@ -362,7 +370,7 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
 
         # attempt to run the simulator, being careful with exceptions...
         try:
-            run_time, list_results = simulate_wind_damage_to_houses(self.s,
+            run_time, list_results = simulate_wind_damage_to_houses(self.cfg,
                                                                                call_back=progress_callback)
 
             if run_time is not None:
@@ -466,7 +474,7 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
         self.ui.connection_type_plot.axes.hold(False)
         
         obs_dict = {}
-        for ct in self.s.house.conn_types:
+        for ct in self.cfg.house.conn_types:
             obs_dict[ct.connection_type] = []
         for hr in self.house_results:
             for cr in hr[4]:
@@ -474,7 +482,7 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
                 sampled_strength = cr[3]
                 obs_dict[connection_type_name].append(sampled_strength)
         
-        for (ct_num, ct) in enumerate(self.s.house.conn_types):
+        for (ct_num, ct) in enumerate(self.cfg.house.conn_types):
             obs_arr = obs_dict[ct.connection_type]
             if len(obs_arr) > 0:                
                 self.ui.connection_type_plot.axes.scatter([ct_num]*len(obs_arr), obs_arr, s=8, marker='+')
@@ -483,7 +491,7 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
         
         xlabels = []
         xticks = []
-        for (ct_num, ct) in enumerate(self.s.house.conn_types):
+        for (ct_num, ct) in enumerate(self.cfg.house.conn_types):
             xlabels.append(ct.connection_type)
             xticks.append(ct_num)
         
@@ -498,7 +506,7 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
         self.ui.connection_type_damages_plot.axes.hold(False)
         
         obs_dict = {}
-        for ct in self.s.house.conn_types:
+        for ct in self.cfg.house.conn_types:
             obs_dict[ct.connection_type] = []
         for hr in self.house_results:
             for cr in hr[4]:
@@ -506,7 +514,7 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
                 broke_at_v = cr[2]
                 obs_dict[connection_type_name].append(broke_at_v)
         
-        for (ct_num, ct) in enumerate(self.s.house.conn_types):
+        for (ct_num, ct) in enumerate(self.cfg.house.conn_types):
             obs_arr = obs_dict[ct.connection_type]
             if len(obs_arr) > 0:                
                 self.ui.connection_type_damages_plot.axes.scatter([ct_num]*len(obs_arr), obs_arr, s=8, marker='+')
@@ -515,7 +523,7 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
         
         xlabels = []
         xticks = []
-        for (ct_num, ct) in enumerate(self.s.house.conn_types):
+        for (ct_num, ct) in enumerate(self.cfg.house.conn_types):
             xlabels.append(ct.connection_type)
             xticks.append(ct_num)
         
@@ -533,7 +541,7 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
 
     def updateConnectionTable(self):
         self.statusBar().showMessage('Updating Connections Table')
-        for irow, c in enumerate(self.s.house.connections):
+        for irow, c in enumerate(self.cfg.house.connections):
             self.ui.connections.setItem(irow, 4, QTableWidgetItem("%0.3f" % c.result_failure_v))
             self.ui.connections.setItem(irow, 5, QTableWidgetItem("%d" % c.result_failure_v_i))
         
@@ -621,7 +629,7 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
         
     def set_scenario(self, s=None):
         if s:
-            self.s = s
+            self.cfg = s
 
         self.updateUIFromScenario()
 
@@ -638,60 +646,66 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
             event.ignore()
         
     def updateUIFromScenario(self):
-        if self.s is not None:
+        if self.cfg is not None:
             self.statusBar().showMessage('Updating', 1000)
-            if self.s.house_name:
-                self.ui.houseName.setCurrentIndex(self.ui.houseName.findText(self.s.house_name))
-            self.ui.debrisRegion.setCurrentIndex(self.ui.debrisRegion.findText(""))
-            self.ui.numHouses.setText('%d' % self.s.no_sims)
-            self.ui.windMax.setValue(self.s.wind_speed_max)
-            self.ui.windMin.setValue(self.s.wind_speed_min)
-            self.ui.windSteps.setValue(self.s.wind_speed_steps)
-            self.ui.windDirection.setCurrentIndex(self.s.wind_dir_index)
-            if self.s.source_items:
-                self.ui.sourceItems.setValue(self.s.source_items)
-            self.ui.regionalShielding.setText('%f' % (self.s.get_flag('regional_shielding_factor', 0.0)))
-            if self.s.building_spacing:
-                self.ui.buildingSpacing.setCurrentIndex(
-                    self.ui.buildingSpacing.findText('%d' % (self.s.building_spacing)))
+            # Scenario
+            self.ui.numHouses.setText('%d' % self.cfg.no_sims)
+            if self.cfg.house_name:
+                self.ui.houseName.setCurrentIndex(self.ui.houseName.findText(self.cfg.house_name))
+            self.ui.terrainCategory.setCurrentIndex(
+                self.ui.terrainCategory.findText(self.cfg.terrain_category))
+            self.ui.regionalShielding.setText('{:.1f}'.format(
+                self.cfg.get_att('regional_shielding_factor', 0.0)))
+            self.ui.windMin.setValue(self.cfg.wind_speed_min)
+            self.ui.windMax.setValue(self.cfg.wind_speed_max)
+            self.ui.windSteps.setValue(self.cfg.wind_speed_steps)
+            self.ui.windDirection.setCurrentIndex(self.cfg.wind_dir_index)
 
-            self.ui.seedRandom.setChecked(self.s.get_flag('sample_seed'))
-            self.ui.fitLognormalCurve.setChecked(self.s.get_flag('vuln_fit_log'))
-            self.ui.waterIngress.setChecked(self.s.get_flag('water_ingress'))
-            self.ui.distribution.setChecked(self.s.get_flag('dmg_distribute'))
-            self.ui.terrainCategory.setCurrentIndex(self.ui.terrainCategory.findText(self.s.terrain_category))
+            # Debris
+            self.ui.debrisRegion.setCurrentIndex(
+                self.ui.debrisRegion.findText(""))
+            if self.cfg.source_items:
+                self.ui.sourceItems.setValue(self.cfg.source_items)
+            if self.cfg.building_spacing:
+                self.ui.buildingSpacing.setCurrentIndex(
+                    self.ui.buildingSpacing.findText('%d' % (self.cfg.building_spacing)))
+
+            self.ui.seedRandom.setChecked(self.cfg.get_flag('sample_seed'))
+            self.ui.fitLognormalCurve.setChecked(self.cfg.get_flag('vuln_fit_log'))
+            self.ui.waterIngress.setChecked(self.cfg.get_flag('water_ingress'))
+            self.ui.distribution.setChecked(self.cfg.get_flag('dmg_distribute'))
             self.ui.actionRun.setEnabled(True)
-            self.ui.flighttimeMean.setText("{0:.3f}".format(self.s.flight_time_mean))
-            self.ui.flighttimeStddev.setText("{0:.3f}".format(self.s.flight_time_stddev))
-            self.ui.debrisAngle.setValue(self.s.debris_angle)
-            self.ui.debrisRadius.setValue(self.s.debris_radius)
-            # self.ui.debrisExtension.setText('%f' % self.s.debris_extension)
-            self.ui.diffShielding.setChecked(self.s.get_flag('diff_shielding'))
-            self.ui.debris.setChecked(self.s.get_flag('debris'))
-            self.ui.staggeredDebrisSources.setChecked(self.s.get_flag('debris_staggered_sources'))
-            self.ui.redV.setValue(self.s.red_v)
-            self.ui.blueV.setValue(self.s.blue_v)
+            self.ui.flighttimeMean.setText("{0:.3f}".format(self.cfg.flight_time_mean))
+            self.ui.flighttimeStddev.setText("{0:.3f}".format(self.cfg.flight_time_stddev))
+            self.ui.debrisAngle.setValue(self.cfg.debris_angle)
+            self.ui.debrisRadius.setValue(self.cfg.debris_radius)
+            # self.ui.debrisExtension.setText('%f' % self.cfg.debris_extension)
+            self.ui.diffShielding.setChecked(self.cfg.get_flag('diff_shielding'))
+            self.ui.debris.setChecked(self.cfg.get_flag('debris'))
+            self.ui.staggeredDebrisSources.setChecked(self.cfg.get_flag('debris_staggered_sources'))
+            self.ui.redV.setValue(self.cfg.red_v)
+            self.ui.blueV.setValue(self.cfg.blue_v)
           
-            self.ui.constructionEnabled.setChecked(self.s.get_flag('constructionLevels'))
-            prob, mf, cf = self.s.getConstructionLevel('low')
+            self.ui.constructionEnabled.setChecked(self.cfg.get_flag('constructionLevels'))
+            prob, mf, cf = self.cfg.getConstructionLevel('low')
             self.ui.lowProb.setValue(float(prob))
             self.ui.lowMean.setValue(float(mf))
             self.ui.lowCov.setValue(float(cf))
             
-            prob, mf, cf = self.s.getConstructionLevel('medium')
+            prob, mf, cf = self.cfg.getConstructionLevel('medium')
             self.ui.mediumProb.setValue(float(prob))
             self.ui.mediumMean.setValue(float(mf))
             self.ui.mediumCov.setValue(float(cf))
             
-            prob, mf, cf = self.s.getConstructionLevel('high')
+            prob, mf, cf = self.cfg.getConstructionLevel('high')
             self.ui.highProb.setValue(float(prob))
             self.ui.highMean.setValue(float(mf))
             self.ui.highCov.setValue(float(cf))
             
-            self.ui.slight.setValue(self.s.fragility_thresholds.loc['slight', 'threshold'])
-            self.ui.medium.setValue(self.s.fragility_thresholds.loc['medium', 'threshold'])
-            self.ui.severe.setValue(self.s.fragility_thresholds.loc['severe', 'threshold'])
-            self.ui.complete.setValue(self.s.fragility_thresholds.loc['complete', 'threshold'])
+            self.ui.slight.setValue(self.cfg.fragility_thresholds.loc['slight', 'threshold'])
+            self.ui.medium.setValue(self.cfg.fragility_thresholds.loc['medium', 'threshold'])
+            self.ui.severe.setValue(self.cfg.fragility_thresholds.loc['severe', 'threshold'])
+            self.ui.complete.setValue(self.cfg.fragility_thresholds.loc['complete', 'threshold'])
             
             self.updateConnectionGroupTable()
                       
@@ -702,81 +716,85 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
         
     def updateScenarioFromUI(self):
 
-        new_scenario = self.s
-        new_scenario.house_name = (unicode(self.ui.houseName.currentText()))
-        new_scenario.set_region_name(unicode(self.ui.debrisRegion.currentText()))
-        new_scenario.set_flag('dmg_plot_fragility', True)
-        new_scenario.set_flag('dmg_plot_vuln', True)
-        new_scenario.set_flag('sample_seed', self.ui.seedRandom.isChecked())
-        new_scenario.set_flag('vuln_fit_log', self.ui.fitLognormalCurve.isChecked())
-        new_scenario.set_flag('water_ingress', self.ui.waterIngress.isChecked())
-        new_scenario.set_flag('dmg_distribute', self.ui.distribution.isChecked())
-        new_scenario.set_flag('diff_shielding', self.ui.diffShielding.isChecked())
-        new_scenario.set_flag('debris', self.ui.debris.isChecked())
-        new_scenario.set_flag('debris_staggered_sources', self.ui.staggeredDebrisSources.isChecked())
-        new_scenario.set_flag('construction_levels', self.ui.constructionEnabled.isChecked())
-        new_scenario.no_sims = int(self.ui.numHouses.text())
-        new_scenario.wind_speed_max = self.ui.windMax.value()
-        new_scenario.wind_speed_min = self.ui.windMin.value()
-        new_scenario.wind_speed_steps = self.ui.windSteps.value()
-        new_scenario.wind_dir_index = self.ui.windDirection.currentIndex()
-        new_scenario.terrain_category = unicode(self.ui.terrainCategory.currentText())
-        new_scenario.set_flag('regional_shielding_factor', float(unicode(self.ui.regionalShielding.text())))
-        new_scenario.source_items = self.ui.sourceItems.value()
-        new_scenario.building_spacing = int(unicode(self.ui.buildingSpacing.currentText()))
-        new_scenario.debris_radius = self.ui.debrisRadius.value()
-        new_scenario.debris_angle = self.ui.debrisAngle.value()
-        # new_scenario.debris_extension = float(self.ui.debrisExtension.text())
-        new_scenario.flight_time_mean = float(unicode(self.ui.flighttimeMean.text()))
-        new_scenario.flight_time_stddev = float(unicode(self.ui.flighttimeStddev.text()))
+        new_cfg = self.cfg
 
-        new_scenario.flight_time_log_mu, new_scenario.flight_time_log_std = \
-            compute_logarithmic_mean_stddev(new_scenario.flight_time_mean,
-                                                  new_scenario.flight_time_stddev)
+        # Scenario section
+        new_cfg.no_sims = int(self.ui.numHouses.text())
+        # new_cfg.house_name = (unicode(self.ui.houseName.currentText()))
+        new_cfg.terrain_category = unicode(self.ui.terrainCategory.currentText())
+        new_cfg.set_flag('regional_shielding_factor', float(unicode(self.ui.regionalShielding.text())))
+        new_cfg.wind_speed_min = self.ui.windMin.value()
+        new_cfg.wind_speed_max = self.ui.windMax.value()
+        new_cfg.wind_speed_steps = self.ui.windSteps.value()
+        new_cfg.wind_dir_index = self.ui.windDirection.currentIndex()
 
-        new_scenario.red_v = float(unicode(self.ui.redV.value()))
-        new_scenario.blue_v = float(unicode(self.ui.blueV.value()))
+        # Debris section
+        new_cfg.set_region_name(unicode(self.ui.debrisRegion.currentText()))
+        new_cfg.set_flag('dmg_plot_fragility', True)
+        new_cfg.set_flag('dmg_plot_vuln', True)
+        new_cfg.set_flag('sample_seed', self.ui.seedRandom.isChecked())
+        new_cfg.set_flag('vuln_fit_log', self.ui.fitLognormalCurve.isChecked())
+        new_cfg.set_flag('water_ingress', self.ui.waterIngress.isChecked())
+        new_cfg.set_flag('dmg_distribute', self.ui.distribution.isChecked())
+        new_cfg.set_flag('diff_shielding', self.ui.diffShielding.isChecked())
+        new_cfg.set_flag('debris', self.ui.debris.isChecked())
+        new_cfg.set_flag('debris_staggered_sources', self.ui.staggeredDebrisSources.isChecked())
+        new_cfg.set_flag('construction_levels', self.ui.constructionEnabled.isChecked())
+        new_cfg.source_items = self.ui.sourceItems.value()
+        new_cfg.building_spacing = int(unicode(self.ui.buildingSpacing.currentText()))
+        new_cfg.debris_radius = self.ui.debrisRadius.value()
+        new_cfg.debris_angle = self.ui.debrisAngle.value()
+        # new_cfg.debris_extension = float(self.ui.debrisExtension.text())
+        new_cfg.flight_time_mean = float(unicode(self.ui.flighttimeMean.text()))
+        new_cfg.flight_time_stddev = float(unicode(self.ui.flighttimeStddev.text()))
+
+        new_cfg.flight_time_log_mu, new_cfg.flight_time_log_std = \
+            compute_logarithmic_mean_stddev(new_cfg.flight_time_mean,
+                                                  new_cfg.flight_time_stddev)
+
+        new_cfg.red_v = float(unicode(self.ui.redV.value()))
+        new_cfg.blue_v = float(unicode(self.ui.blueV.value()))
         
-        new_scenario.setConstructionLevel('low', 
+        new_cfg.setConstructionLevel('low',
                                 float(unicode(self.ui.lowProb.value())), 
                                 float(unicode(self.ui.lowMean.value())), 
                                 float(unicode(self.ui.lowCov.value())))
-        new_scenario.setConstructionLevel('medium', 
+        new_cfg.setConstructionLevel('medium',
                                 float(unicode(self.ui.mediumProb.value())), 
                                 float(unicode(self.ui.mediumMean.value())), 
                                 float(unicode(self.ui.mediumCov.value())))
-        new_scenario.setConstructionLevel('high', 
+        new_cfg.setConstructionLevel('high',
                                 float(unicode(self.ui.highProb.value())), 
                                 float(unicode(self.ui.highMean.value())), 
                                 float(unicode(self.ui.highCov.value())))
         
-        new_scenario.fragility_thresholds['slight'] = float(self.ui.slight.value())
-        new_scenario.fragility_thresholds['medium'] = float(self.ui.medium.value())
-        new_scenario.fragility_thresholds['severe'] = float(self.ui.severe.value())
-        new_scenario.fragility_thresholds['complete'] = float(self.ui.complete.value())   
+        new_cfg.fragility_thresholds['slight'] = float(self.ui.slight.value())
+        new_cfg.fragility_thresholds['medium'] = float(self.ui.medium.value())
+        new_cfg.fragility_thresholds['severe'] = float(self.ui.severe.value())
+        new_cfg.fragility_thresholds['complete'] = float(self.ui.complete.value())
         
-        for irow, (index, ctg) in enumerate(self.s.df_groups.iterrows()):
+        for irow, (index, ctg) in enumerate(self.cfg.df_groups.iterrows()):
             cellWidget = self.ui.connGroups.cellWidget(irow, 4)
-            new_scenario.setOptCTGEnabled(index, True if cellWidget.checkState() == Qt.Checked else False)
+            new_cfg.setOptCTGEnabled(index, True if cellWidget.checkState() == Qt.Checked else False)
             
-        self.dirty_scenario = new_scenario != self.s
+        self.dirty_scenario = new_scenario != self.cfg
         if self.dirty_scenario:
             self.set_scenario(new_scenario)
         
     def file_load(self, fname):
         try:
-            self.s = scenario.Scenario(fname)
+            self.cfg = scenario.Scenario(fname)
             self.filename = fname
-            self.set_scenario(self.s)
+            self.set_scenario(self.cfg)
         except:
             msg = 'Unable to load previous scenario: %s\nCreating new scenario.' % fname
             QMessageBox.warning(self, "VAWS Program Warning", unicode(msg))
 
     def fileSave(self):
-        self.s.save_config(self.filename)
+        self.cfg.save_config(self.filename)
         
     def fileSaveAs(self):
-        self.s.save_config(self.filename)
+        self.cfg.save_config(self.filename)
     
     def okToContinue(self):
         self.updateScenarioFromUI()
@@ -793,33 +811,33 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
     
     def testDebrisSettings(self):
         self.updateScenarioFromUI()
-        mgr = debris.DebrisManager(self.s.house,
-                                  self.s.region,
-                                  self.s.wind_speed_min, self.s.wind_speed_max, self.s.wind_speed_steps,
-                                  self.s.getOpt_DebrisStaggeredSources(),
-                                  self.s.debris_radius,
-                                  self.s.debris_angle, 
-                                  self.s.debris_extension,
-                                  self.s.building_spacing,
-                                  self.s.source_items,
-                                  self.s.flighttime_mean,
-                                  self.s.flighttime_stddev)
+        mgr = debris.DebrisManager(self.cfg.house,
+                                  self.cfg.region,
+                                  self.cfg.wind_speed_min, self.cfg.wind_speed_max, self.cfg.wind_speed_steps,
+                                  self.cfg.getOpt_DebrisStaggeredSources(),
+                                  self.cfg.debris_radius,
+                                  self.cfg.debris_angle, 
+                                  self.cfg.debris_extension,
+                                  self.cfg.building_spacing,
+                                  self.cfg.source_items,
+                                  self.cfg.flighttime_mean,
+                                  self.cfg.flighttime_stddev)
         
         v, ok = QInputDialog.getInteger(self, "Debris Test", "Wind Speed (m/s):", 50, 10, 200)
         if ok:
-            mgr.set_wind_direction_index(self.s.getWindDirIndex())
+            mgr.set_wind_direction_index(self.cfg.getWindDirIndex())
             mgr.run(v, True)
             mgr.render(v)
     
     def testConstructionLevels(self):
         self.updateScenarioFromUI()
         items = []
-        for ctype in self.s.house.conn_types:
+        for ctype in self.cfg.house.conn_types:
             items.append(ctype.connection_type) 
         selected_ctype, ok = QInputDialog.getItem(self, "Construction Test", "Connection Type:", items, 0, False)
         if ok:
             import matplotlib.pyplot as plt
-            for ctype in self.s.house.conn_types:
+            for ctype in self.cfg.house.conn_types:
                 if ctype.connection_type == selected_ctype:
                     
                     fig = plt.figure()
@@ -827,7 +845,7 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
                     x = []
                     n = 50000
                     for i in xrange(n):
-                        level, mean_factor, cov_factor = self.s.sampleConstructionLevel()
+                        level, mean_factor, cov_factor = self.cfg.sampleConstructionLevel()
                         rv = ctype.sample_strength(mean_factor, cov_factor)
                         x.append(rv)
                         
