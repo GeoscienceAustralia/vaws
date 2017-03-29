@@ -1,6 +1,5 @@
 from math import log, exp, sqrt, gamma, copysign
 from scipy.stats import genextreme
-from numpy import isclose
 
 
 def sample_lognormal(mu_lnx, std_lnx, rnd_state):

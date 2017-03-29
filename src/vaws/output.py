@@ -9,7 +9,7 @@ from matplotlib import cm, colorbar, colors, ticker
 from matplotlib.patches import Rectangle
 from matplotlib.collections import PatchCollection
 
-from zone import num2str
+from vaws.zone import num2str
 
 
 def plot_heatmap(grouped, values, vmin, vmax, vstep, file_name=None):

@@ -1,4 +1,4 @@
-conn_name,conn_type,zone-loc,edge,x_coord,y_coord
+conn_name,type_name,zone_loc,edge,x_coord,y_coord
 1,sheetingcorner,A1,1,0.675,0.405
 2,sheetingcorner,A8,2,0.675,6.795
 3,sheeting,B1,1,1.35,0.405

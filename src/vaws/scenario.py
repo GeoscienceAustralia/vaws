@@ -15,8 +15,8 @@ import pandas as pd
 from collections import OrderedDict, defaultdict
 from scipy.stats import norm
 
-from stats import compute_logarithmic_mean_stddev
-from damage_costing import Costing, WaterIngressCosting
+from vaws.stats import compute_logarithmic_mean_stddev
+from vaws.damage_costing import Costing, WaterIngressCosting
 
 
 class Scenario(object):

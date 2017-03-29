@@ -6,8 +6,8 @@
 import numpy as np
 import logging
 
-from zone import Zone
-from stats import compute_arithmetic_mean_stddev, sample_lognormal, \
+from vaws.zone import Zone
+from vaws.stats import compute_arithmetic_mean_stddev, sample_lognormal, \
     sample_lognorm_given_mean_stddev
 
 
