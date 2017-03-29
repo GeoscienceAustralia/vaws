@@ -371,7 +371,7 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
         # attempt to run the simulator, being careful with exceptions...
         try:
             run_time, list_results = simulate_wind_damage_to_houses(self.cfg,
-                                                                               call_back=progress_callback)
+                                                                    call_back=progress_callback)
 
             if run_time is not None:
                 self.statusBar().showMessage(unicode('Simulation '
@@ -710,14 +710,12 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
             
             self.updateConnectionGroupTable()
                       
-        if self.s.cfg_file:
-            self.statusBarScenarioLabel.setText('Scenario: %s' % (os.path.basename(self.s.cfg_file)))
+        if self.cfg.cfg_file:
+            self.statusBarScenarioLabel.setText('Scenario: %s' % (os.path.basename(self.cfg.cfg_file)))
         else:
             self.statusBarScenarioLabel.setText('Scenario: None')
         
     def updateScenarioFromUI(self):
-
-<<<<<<< Updated upstream
         new_cfg = self.cfg
 
         # Scenario section
@@ -779,13 +777,13 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
             cellWidget = self.ui.connGroups.cellWidget(irow, 4)
             new_cfg.setOptCTGEnabled(index, True if cellWidget.checkState() == Qt.Checked else False)
             
-        self.dirty_scenario = new_scenario != self.cfg
+        self.dirty_scenario = new_cfg != self.cfg
         if self.dirty_scenario:
-            self.set_scenario(new_scenario)
+            self.set_scenario(new_cfg)
         
     def file_load(self, fname):
         try:
-            self.cfg = scenario.Scenario(fname)
+            self.cfg = Scenario(fname)
             self.filename = fname
             self.set_scenario(self.cfg)
         except:
