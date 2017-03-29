@@ -652,8 +652,9 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
             self.ui.numHouses.setText('%d' % self.cfg.no_sims)
             if self.cfg.house_name:
                 self.ui.houseName.setCurrentIndex(self.ui.houseName.findText(self.cfg.house_name))
-            self.ui.terrainCategory.setCurrentIndex(
-                self.ui.terrainCategory.findText(self.cfg.terrain_category))
+            if self.cfg.region_name:
+                self.ui.terrainCategory.setCurrentIndex(
+                    self.ui.terrainCategory.findText(self.cfg.terrain_category))
             self.ui.regionalShielding.setText('{:.1f}'.format(
                 self.cfg.get_att('regional_shielding_factor', 0.0)))
             self.ui.windMin.setValue(self.cfg.wind_speed_min)
@@ -709,13 +710,14 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
             
             self.updateConnectionGroupTable()
                       
-        if self.filename:
-            self.statusBarScenarioLabel.setText('Scenario: %s' % (os.path.basename(self.filename)))
+        if self.s.cfg_file:
+            self.statusBarScenarioLabel.setText('Scenario: %s' % (os.path.basename(self.s.cfg_file)))
         else:
             self.statusBarScenarioLabel.setText('Scenario: None')
         
     def updateScenarioFromUI(self):
 
+<<<<<<< Updated upstream
         new_cfg = self.cfg
 
         # Scenario section
@@ -859,49 +861,38 @@ def run_gui():
 
     (options, args) = parser.parse_args()
 
-    if options.scenario_filename is None:
-        print('\nERROR: Must provide a scenario file to run simulator...\n')
-        parser.print_help()
+    if not options.scenario_filename:
+        initial_scenario = Scenario(cfg_file='scenarios/default/default.cfg')
     else:
+        initial_scenario = Scenario(cfg_file=options.scenario_filename)
 
-        path_, _ = os.path.split(sys.argv[0])
+    if options.verbose:
+        file_logger = os.path.join(initial_scenario.output_path, 'log.txt')
+        set_logger(file_logger, options.verbose)
 
-        if options.output_folder is None:
-            options.output_folder = os.path.abspath(
-                os.path.join(path_, '../outputs/output'))
-        else:
-            options.output_folder = os.path.abspath(
-                os.path.join(os.getcwd(), options.output_folder))
+    app = QApplication(sys.argv)
+    app.setOrganizationName("Geoscience Australia")
+    app.setOrganizationDomain("ga.gov.au")
+    app.setApplicationName("WindSim")
+    splash_image = QPixmap()
 
-        if options.verbose:
-            file_logger = os.path.join(options.output_folder, 'log.txt')
-            set_logger(file_logger, options.verbose)
+    source_dir = os.path.dirname(__file__)
+    splash_file = os.path.join(source_dir, 'images/splash/splash.png')
+    if not splash_image.load(splash_file):
+        raise Exception('Could not load splash image')
 
-        conf = Scenario(cfg_file=options.scenario_filename,
-                        output_path=options.output_folder)
+    app.processEvents()
 
-        app = QApplication(sys.argv)
-        app.setOrganizationName("Geoscience Australia")
-        app.setOrganizationDomain("ga.gov.au")
-        app.setApplicationName("WindSim")
-        img = QPixmap()
+    global my_app
+    my_app = MyForm(init_scenario=initial_scenario)
 
-        img_file = os.path.join(path_, 'images/splash/splash.png')
-        if not img.load(img_file):
-            raise Exception('Could not load splash image')
+    splash = QSplashScreen(my_app, splash_image)
+    splash.show()
+    my_app.show()
 
-        app.processEvents()
-
-        global my_app
-        my_app = MyForm(init_scenario=conf)
-
-        splash = QSplashScreen(my_app, img)
-        splash.show()
-        my_app.show()
-
-        time.sleep(5)
-        splash.finish(my_app)
-        sys.exit(app.exec_())
+    time.sleep(5)
+    splash.finish(my_app)
+    sys.exit(app.exec_())
 
 
 if __name__ == '__main__':

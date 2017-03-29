@@ -224,10 +224,6 @@ def process_commandline():
                       dest="scenario_filename",
                       help="read scenario description from FILE",
                       metavar="FILE")
-    parser.add_option("-o", "--output",
-                      dest="output_folder",
-                      help="folder name to store simulation results",
-                      metavar="FOLDER")
     parser.add_option("-v", "--verbose",
                       dest="verbose",
                       default=False,
@@ -242,28 +238,18 @@ def main():
 
     (options, args) = parser.parse_args()
 
-    if options.scenario_filename is None:
-        print('\nERROR: Must provide a scenario file to run simulator...\n')
-        parser.print_help()
-
+    if not options.scenario_filename:
+        initial_scenario = Scenario(cfg_file='scenarios/default/default.cfg')
     else:
-        path_, _ = os.path.split(sys.argv[0])
-        if options.output_folder is None:
-            options.output_folder = os.path.abspath(
-                os.path.join(path_, '../../outputs/output'))
-        else:
-            options.output_folder = os.path.join(os.getcwd(),
-                                                 options.output_folder)
+        initial_scenario = Scenario(cfg_file=options.scenario_filename)
 
-        if options.verbose:
-            file_logger = os.path.join(options.output_folder, 'log.txt')
-            set_logger(file_logger, options.verbose)
+    if options.verbose:
+        file_logger = os.path.join(initial_scenario.output_path, 'log.txt')
+        set_logger(file_logger, options.verbose)
 
-        conf = Scenario(cfg_file=options.scenario_filename,
-                        output_path=options.output_folder)
-        _ = simulate_wind_damage_to_houses(conf, call_back=None)
+    _ = simulate_wind_damage_to_houses(initial_scenario, call_back=None)
 
-        logging.info('Program finished')
+    logging.info('Program finished')
 
 if __name__ == '__main__':
     main()
