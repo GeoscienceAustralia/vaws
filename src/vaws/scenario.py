@@ -60,11 +60,11 @@ class Scenario(object):
     dic_obj_for_fitting = {'weibull': 'vulnerability_weibull',
                            'lognorm': 'vulnerability_lognorm'}
 
-    def __init__(self, cfg_file=None, output_path=None):
+    def __init__(self, cfg_file=None):
 
         self.cfg_file = cfg_file
         self.path_cfg = os.path.dirname(os.path.realpath(cfg_file))
-        self.output_path = output_path
+        self.output_path = None
 
         self.no_sims = None
         self.wind_speed_min = 0.0
@@ -217,11 +217,14 @@ class Scenario(object):
         try:
             self.path_wind_profiles = conf.get(key, 'path_wind_profiles')
         except ConfigParser.NoOptionError:
-            self.path_wind_profiles = '../data/gust_envelope_profiles'
+            self.path_wind_profiles = './input/gust_envelope_profiles'
         self.set_wind_profile(self.path_wind_profiles)
 
         self.path_datafile = os.path.join(self.path_cfg,
                                           conf.get(key, 'path_datafile'))
+
+        self.output_path = os.path.join(self.path_cfg,
+                                        conf.get(key, 'output_path'))
 
         key = 'options'
         for sub_key, value in conf.items('options'):
@@ -299,7 +302,7 @@ class Scenario(object):
             try:
                 path_debris = conf.get(key, 'path_debris')
             except ConfigParser.NoOptionError:
-                path_debris = '../data/debris'
+                path_debris = './input/debris'
 
             file_debris_regions = os.path.join(self.path_cfg, path_debris,
                                                'debris_regions.csv')
