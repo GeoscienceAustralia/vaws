@@ -25,7 +25,7 @@ class Scenario(object):
     wind_dir = ['S', 'SW', 'W', 'NW', 'N', 'NE', 'E', 'SE', 'Random']
     terrain_categories = ['2', '2.5', '3', 'non_cyclonic']
     heights = [3.0, 5.0, 7.0, 10.0, 12.0, 15.0, 17.0, 20.0, 25.0, 30.0]
-
+    region_names = ['Capital_city', 'Tropical_town']
     house_attributes = ['replace_cost', 'height', 'cpe_cov', 'cpe_k',
                         'cpe_str_cov', 'length', 'width', 'roof_cols',
                         'roof_rows']
@@ -151,8 +151,17 @@ class Scenario(object):
     def __ne__(self, other):
         return not self.__eq__(other)
 
-    def get_flag(self, flag_name, default=0):
-        return self.flags.get(flag_name, default)
+    def get_att(self, att_name, default=0):
+        try:
+            return getattr(self, att_name)
+        except AttributeError:
+            return default
+
+    def get_flag(self, key, default=0):
+        try:
+            return self.flags[key]
+        except KeyError:
+            return default
 
     def set_flag(self, flag_name, flag_value):
         self.flags[flag_name] = flag_value
@@ -627,7 +636,7 @@ class Scenario(object):
 
     def set_region_name(self, value):
         try:
-            assert value in ['Capital_city', 'Tropical_town']
+            assert value in self.region_names
         except AssertionError:
             self.region_name = 'Capital_city'
             print('Capital_city is set for region_name by default')
@@ -636,7 +645,7 @@ class Scenario(object):
 
     def set_terrain_category(self, value):
         try:
-            assert value in ['2', '2.5', '3', 'non_cyclonic']
+            assert value in self.terrain_categories
         except AssertionError:
             print('Invalid terrain category: {}'.format(value))
         else:
