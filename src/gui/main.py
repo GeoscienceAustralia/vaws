@@ -92,7 +92,6 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
         self.connect(self.ui.actionHouse_Info, SIGNAL("triggered()"), self.showHouseInfoDlg)
         self.connect(self.ui.testDebrisButton, SIGNAL("clicked()"), self.testDebrisSettings)
         self.connect(self.ui.testConstructionButton, SIGNAL("clicked()"), self.testConstructionLevels)
-        self.connect(self.ui.houseName, SIGNAL("currentIndexChanged(QString)"), self.onHouseChanged)
         self.connect(self.ui.terrainCategory, SIGNAL("currentIndexChanged(QString)"), self.updateTerrainCategoryTable)
         self.connect(self.ui.windMin, SIGNAL("valueChanged(int)"), lambda val: self.onSliderChanged(self.ui.windMinLabel, val))
         self.connect(self.ui.windMax, SIGNAL("valueChanged(int)"), lambda val: self.onSliderChanged(self.ui.windMaxLabel, val))
@@ -297,6 +296,9 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
     def onHouseChanged(self, selectedHouseName):
         # called whenever a house is selected (including by initial scenario)
         self.cfg.house_name = unicode(selectedHouseName)
+        self.update_house_panel()
+
+    def update_house_panel(self):
         self.updateConnectionGroupTable()
         self.updateConnectionTypeTable()
         
@@ -707,9 +709,9 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
             self.ui.medium.setValue(self.cfg.fragility_thresholds.loc['medium', 'threshold'])
             self.ui.severe.setValue(self.cfg.fragility_thresholds.loc['severe', 'threshold'])
             self.ui.complete.setValue(self.cfg.fragility_thresholds.loc['complete', 'threshold'])
-            
-            self.updateConnectionGroupTable()
-                      
+
+            self.update_house_panel()
+
         if self.cfg.cfg_file:
             self.statusBarScenarioLabel.setText('Scenario: %s' % (os.path.basename(self.cfg.cfg_file)))
         else:
