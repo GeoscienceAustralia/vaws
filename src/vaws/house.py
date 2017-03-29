@@ -5,15 +5,15 @@
 """
 
 import numpy as np
+import logging
 from shapely.geometry import Polygon
 from collections import OrderedDict
-import logging
 
-from connection import ConnectionTypeGroup
-from zone import Zone
-from stats import calc_big_a_b_values
-from scenario import Scenario
-from debris import Debris
+from vaws.connection import ConnectionTypeGroup
+from vaws.zone import Zone
+from vaws.stats import calc_big_a_b_values
+from vaws.scenario import Scenario
+from vaws.debris import Debris
 
 
 class House(object):

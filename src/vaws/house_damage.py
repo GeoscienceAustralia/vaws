@@ -1,12 +1,12 @@
-import logging
 import copy
+import logging
 import pandas as pd
 import numpy as np
 from collections import defaultdict
 
-from house import House
-from scenario import Scenario
-from damage_costing import cal_water_ingress_given_damage
+from vaws.house import House
+from vaws.scenario import Scenario
+from vaws.damage_costing import cal_water_ingress_given_damage
 
 
 class HouseDamage(object):

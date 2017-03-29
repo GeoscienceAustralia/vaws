@@ -5,7 +5,7 @@ import os
 
 group_string = 'group_name,dist_order,dist_dir,damage_scenario,trigger_collapse_at,patch_dist,set_zone_to_zero,water_ingress_order'
 type_string = 'type_name,strength_mean,strength_std,dead_load_mean,dead_load_std,group_name,costing_area'
-conn_string = 'conn_name,type_name,zone_loc,edge'
+conn_string = 'conn_name,type_name,zone_loc,edge,x_coord,y_coord'
 house_string = 'name,replace_cost,height,cpe_cov,cpe_k,cpe_str_cov,length,width,roof_cols,roof_rows'
 damage_string = 'name,surface_area,envelope_repair_rate,envelope_factor_formula_type,envelope_coeff1,envelope_coeff2,envelope_coeff3,internal_repair_rate,internal_factor_formula_type,internal_coeff1,internal_coeff2,internal_coeff3'
 
@@ -21,16 +21,18 @@ dic_string = {'conn_group.csv': group_string,
               'house_data.csv': house_string,
               'damage_costing_data.csv': damage_string}
 
+
 def change_header(path_, filename, name_string, new_filename):
 
     col_names = name_string.split(',')
     try:
         tmp = pd.read_csv(os.path.join(path_, filename), names=col_names,
-                      skiprows=1)
+                          skiprows=1)
     except IOError:
-        print path_, filename
+        print(path_, filename)
     else:
         tmp.to_csv(os.path.join(path_, new_filename), index=False)
+
 
 def change_header_by_dir(path_):
 
