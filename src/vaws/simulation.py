@@ -8,11 +8,11 @@ import warnings
 import pandas as pd
 from optparse import OptionParser
 
-from house_damage import HouseDamage
-from scenario import Scenario
-from curve import fit_fragility_curves, fit_vulnerability_curve
-from output import plot_heatmap
-from version import VERSION_DESC
+from vaws.house_damage import HouseDamage
+from vaws.scenario import Scenario
+from vaws.curve import fit_fragility_curves, fit_vulnerability_curve
+from vaws.output import plot_heatmap
+from vaws.version import VERSION_DESC
 
 
 def simulate_wind_damage_to_houses(cfg, call_back=None):
