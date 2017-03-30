@@ -17,7 +17,7 @@ from vaws.curve import vulnerability_lognorm, vulnerability_weibull
 from main_ui import Ui_main
 from vaws.simulation import process_commandline, set_logger, \
     simulate_wind_damage_to_houses
-from vaws.scenario import Scenario
+from vaws.config import Config
 from vaws.version import VERSION_DESC
 from vaws.stats import compute_logarithmic_mean_stddev
 
@@ -189,40 +189,41 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
             
     def updateGlobalData(self):
 
-        # load up debris types
-        setupTable(self.ui.debrisTypes, self.cfg.debris_types)
-        for i, (key, value) in enumerate(self.cfg.debris_types.iteritems()):
-            self.ui.debrisTypes.setItem(i, 0, QTableWidgetItem(key))
-            self.ui.debrisTypes.setItem(i, 1, QTableWidgetItem('{:.2f}'.format(value['cdav'])))
-        finiTable(self.ui.debrisTypes)
+        if self.cfg.debris_types:
+            # load up debris types
+            setupTable(self.ui.debrisTypes, self.cfg.debris_types)
+            for i, (key, value) in enumerate(self.cfg.debris_types.iteritems()):
+                self.ui.debrisTypes.setItem(i, 0, QTableWidgetItem(key))
+                self.ui.debrisTypes.setItem(i, 1, QTableWidgetItem('{:.2f}'.format(value['cdav'])))
+            finiTable(self.ui.debrisTypes)
 
-        # load up debris regions
-        setupTable(self.ui.debrisRegions, self.cfg.debris_regions)
+            # load up debris regions
+            setupTable(self.ui.debrisRegions, self.cfg.debris_regions)
 
-        for i, key1 in enumerate(self.cfg.debris_types):
+            for i, key1 in enumerate(self.cfg.debris_types):
 
-            _str = '{}_ratio'.format(key1)
-            _value = self.cfg.debris_regions[_str]
-            self.ui.debrisRegions.setItem(5*i, 0, QTableWidgetItem(_str))
-            self.ui.debrisRegions.setItem(5*i, 1, QTableWidgetItem('{:.3f}'.format(_value)))
+                _str = '{}_ratio'.format(key1)
+                _value = self.cfg.debris_regions[_str]
+                self.ui.debrisRegions.setItem(5*i, 0, QTableWidgetItem(_str))
+                self.ui.debrisRegions.setItem(5*i, 1, QTableWidgetItem('{:.3f}'.format(_value)))
 
-            for j, key2 in enumerate(['frontalarea', 'mass'], 1):
-                _mean_str = '{}_{}_mean'.format(key1, key2)
-                _std_str = '{}_{}_stddev'.format(key1, key2)
-                _mean = self.cfg.debris_regions[_mean_str]
-                _std = self.cfg.debris_regions[_std_str]
+                for j, key2 in enumerate(['frontalarea', 'mass'], 1):
+                    _mean_str = '{}_{}_mean'.format(key1, key2)
+                    _std_str = '{}_{}_stddev'.format(key1, key2)
+                    _mean = self.cfg.debris_regions[_mean_str]
+                    _std = self.cfg.debris_regions[_std_str]
 
-                self.ui.debrisRegions.setItem(5*i + 2*j-1, 0,
-                                              QTableWidgetItem(_mean_str))
-                self.ui.debrisRegions.setItem(5*i + 2*j-1, 1,
-                                              QTableWidgetItem('{:.3f}'.format(_mean)))
+                    self.ui.debrisRegions.setItem(5*i + 2*j-1, 0,
+                                                  QTableWidgetItem(_mean_str))
+                    self.ui.debrisRegions.setItem(5*i + 2*j-1, 1,
+                                                  QTableWidgetItem('{:.3f}'.format(_mean)))
 
-                self.ui.debrisRegions.setItem(5*i + 2*j, 0,
-                                              QTableWidgetItem(_std_str))
-                self.ui.debrisRegions.setItem(5*i + 2*j, 1,
-                                              QTableWidgetItem('{:.3f}'.format(_std)))
+                    self.ui.debrisRegions.setItem(5*i + 2*j, 0,
+                                                  QTableWidgetItem(_std_str))
+                    self.ui.debrisRegions.setItem(5*i + 2*j, 1,
+                                                  QTableWidgetItem('{:.3f}'.format(_std)))
 
-        finiTable(self.ui.debrisRegions)
+            finiTable(self.ui.debrisRegions)
 
     def showHouseInfoDlg(self):
         from gui import house as gui_house
@@ -863,13 +864,16 @@ def run_gui():
 
     (options, args) = parser.parse_args()
 
-    if not options.scenario_filename:
-        initial_scenario = Scenario(cfg_file='scenarios/default/default.cfg')
+    source_dir = os.path.dirname(__file__)
+    if not options.config_filename:
+        default_config = os.path.join(source_dir,
+                                      '../../scenarios/default/default.cfg')
+        initial_config = Config(cfg_file=default_config)
     else:
-        initial_scenario = Scenario(cfg_file=options.scenario_filename)
+        initial_config = Config(cfg_file=options.config_filename)
 
     if options.verbose:
-        file_logger = os.path.join(initial_scenario.output_path, 'log.txt')
+        file_logger = os.path.join(initial_config.output_path, 'log.txt')
         set_logger(file_logger, options.verbose)
 
     app = QApplication(sys.argv)
@@ -886,7 +890,7 @@ def run_gui():
     app.processEvents()
 
     global my_app
-    my_app = MyForm(init_scenario=initial_scenario)
+    my_app = MyForm(init_scenario=initial_config)
 
     splash = QSplashScreen(my_app, splash_image)
     splash.show()

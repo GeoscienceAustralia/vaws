@@ -155,7 +155,11 @@ def save_results_to_files(cfg, dic_panels):
 
     # plot fragility and vulnerability curves
     frag_counted = fit_fragility_curves(cfg, dic_panels['house']['di'])
-    pd.DataFrame.from_dict(frag_counted).transpose().to_csv(cfg.file_curve)
+    if frag_counted:
+        pd.DataFrame.from_dict(frag_counted).transpose().to_csv(cfg.file_curve)
+    else:
+        with open(cfg.file_curve, 'w') as fid:
+            fid.write(', error, param1, param2\n')
 
     fitted_curve = fit_vulnerability_curve(cfg, dic_panels['house']['di'])
     with open(cfg.file_curve, 'a') as f:
@@ -238,18 +242,19 @@ def main():
 
     (options, args) = parser.parse_args()
 
-    if not options.config_filename:
-        initial_config = Config(cfg_file='scenarios/default/default.cfg')
+    if options.config_filename:
+
+        conf = Config(cfg_file=options.config_filename)
+
+        if options.verbose:
+            file_logger = os.path.join(conf.output_path, 'log.txt')
+            set_logger(file_logger, options.verbose)
+
+        _ = simulate_wind_damage_to_houses(conf)
+
     else:
-        initial_config = Config(cfg_file=options.config_filename)
-
-    if options.verbose:
-        file_logger = os.path.join(initial_config.output_path, 'log.txt')
-        set_logger(file_logger, options.verbose)
-
-    _ = simulate_wind_damage_to_houses(initial_config, call_back=None)
-
-    logging.info('Program finished')
+        print('\nERROR: Must provide a config file to run...\n')
+        parser.print_help()
 
 if __name__ == '__main__':
     main()

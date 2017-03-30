@@ -69,7 +69,7 @@ class Config(object):
         self.no_sims = None
         self.wind_speed_min = 0.0
         self.wind_speed_max = 0.0
-        self.wind_speed_steps = None
+        self.wind_speed_increment = None
         self.speeds = None
         self.terrain_category = None
         self.path_wind_profiles = None
