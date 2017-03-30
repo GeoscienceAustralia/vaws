@@ -8,7 +8,7 @@ if __name__ == '__main__':
 
     from vaws.damage_costing import Costing, WaterIngressCosting, \
         cal_water_ingress_given_damage
-    from vaws.scenario import Scenario
+    from vaws.config import Config
 
     class MyTestCase(unittest.TestCase):
         @classmethod
@@ -75,9 +75,9 @@ if __name__ == '__main__':
         @classmethod
         def setUpClass(cls):
             path = '/'.join(__file__.split('/')[:-1])
-            cls.cfg = Scenario(
+            cls.cfg = Config(
                 cfg_file=os.path.join(path,
-                                      '../../scenarios/test_scenario16p1.cfg'))
+                                      '../../scenarios/test_scenario16p1/test_scenario16p1.cfg'))
 
         def test_cal_water_ingress_given_damage(self):
 

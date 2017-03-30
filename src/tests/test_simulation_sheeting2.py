@@ -9,7 +9,7 @@ import pandas as pd
 
 from vaws.simulation import HouseDamage, simulate_wind_damage_to_houses
 # import vaws.database as database
-from vaws.scenario import Scenario
+from vaws.config import Config
 # from vaws import zone
 # from vaws import engine
 

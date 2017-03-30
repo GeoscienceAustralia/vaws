@@ -12,7 +12,7 @@ from collections import OrderedDict
 from vaws.connection import ConnectionTypeGroup
 from vaws.zone import Zone
 from vaws.stats import calc_big_a_b_values
-from vaws.scenario import Scenario
+from vaws.config import Config
 from vaws.debris import Debris
 
 
@@ -20,7 +20,7 @@ class House(object):
 
     def __init__(self, cfg, rnd_state):
 
-        assert isinstance(cfg, Scenario)
+        assert isinstance(cfg, Config)
         assert isinstance(rnd_state, np.random.RandomState)
 
         self.cfg = cfg

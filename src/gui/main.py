@@ -287,13 +287,13 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
             self.ui.connGroups.setItem(irow, 1, QTableWidgetItem("%d" % ctg['dist_order']))
             self.ui.connGroups.setItem(irow, 2, QTableWidgetItem(ctg['dist_dir']))
             self.ui.connGroups.setItem(irow, 3, QTableWidgetItem(index))
-            cellWidget = QCheckBox()
-            checked = self.cfg.get_flag('conn_type_group_{}'.format(index), False)
 
+            checked = self.cfg.get_flag('conn_type_group_{}'.format(index), False)
+            cellWidget = QCheckBox()
             cellWidget.setCheckState(Qt.Checked if checked else Qt.Unchecked)
-            self.ui.connGroups.setCellWidget(irow, 4, cellWidget)            
+            self.ui.connGroups.setCellWidget(irow, 4, cellWidget)
         finiTable(self.ui.connGroups)
-        
+
     def onHouseChanged(self, selectedHouseName):
         # called whenever a house is selected (including by initial scenario)
         self.cfg.house_name = unicode(selectedHouseName)
@@ -722,7 +722,7 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
         new_cfg.no_sims = int(self.ui.numHouses.text())
         # new_cfg.house_name = (unicode(self.ui.houseName.currentText()))
         new_cfg.terrain_category = unicode(self.ui.terrainCategory.currentText())
-        new_cfg.set_flag('regional_shielding_factor', float(unicode(self.ui.regionalShielding.text())))
+        new_cfg.regional_shielding_factor = float(unicode(self.ui.regionalShielding.text()))
         new_cfg.wind_speed_min = self.ui.windMin.value()
         new_cfg.wind_speed_max = self.ui.windMax.value()
         new_cfg.wind_speed_steps = self.ui.windSteps.value()
@@ -772,11 +772,13 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
         new_cfg.fragility_thresholds['medium'] = float(self.ui.medium.value())
         new_cfg.fragility_thresholds['severe'] = float(self.ui.severe.value())
         new_cfg.fragility_thresholds['complete'] = float(self.ui.complete.value())
-        
+
         for irow, (index, ctg) in enumerate(self.cfg.df_groups.iterrows()):
+
             cellWidget = self.ui.connGroups.cellWidget(irow, 4)
-            new_cfg.setOptCTGEnabled(index, True if cellWidget.checkState() == Qt.Checked else False)
-            
+            new_cfg.set_flag('conn_type_group_{}'.format(index),
+                             True if cellWidget.checkState() == Qt.Checked else False)
+
         self.dirty_scenario = new_cfg != self.cfg
         if self.dirty_scenario:
             self.set_scenario(new_cfg)

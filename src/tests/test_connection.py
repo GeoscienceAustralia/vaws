@@ -2,7 +2,7 @@ import unittest
 import os
 import numpy as np
 
-from vaws.scenario import Scenario
+from vaws.config import Config
 from vaws.house import House
 
 
@@ -12,8 +12,8 @@ class MyTestCase(unittest.TestCase):
 
         path = '/'.join(__file__.split('/')[:-1])
         cfg_file = os.path.join(path,
-                                '../../scenarios/test_sheeting_batten.cfg')
-        cls.cfg = Scenario(cfg_file=cfg_file)
+                                '../../scenarios/test_sheeting_batten/test_sheeting_batten.cfg')
+        cls.cfg = Config(cfg_file=cfg_file)
 
     def test_cal_prop_damaged(self):
 

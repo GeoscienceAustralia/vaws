@@ -77,3 +77,49 @@ def split_zones(path_):
 
         df3 = tmp.loc[:, ['zone', '1.3', '2.3', '3.3', '4.3', '5.3', '6.3', '7.3', '8.3']]
         df3.to_csv(os.path.join(path_, 'zones_edge.csv'), header=other, index=False)
+
+
+# new structure
+from distutils.dir_util import copy_tree
+from distutils.file_util import copy_file
+
+# scen_name = 'test_scenario1'
+
+
+def create_dir(_path):
+    try:
+        os.makedirs(_path)
+    except OSError:
+        print('{} exists'.format(_path))
+
+def new_dir_structure(scen_name):
+
+    org_debris = '/Users/hyeuk/Projects/windtunnel/data/debris/'
+    org_gust = '/Users/hyeuk/Projects/windtunnel/data/gust_envelope_profiles/'
+    new_path = '/Users/hyeuk/Projects/windtunnel/scenarios/'
+
+    org_path = os.path.join('/Users/hyeuk/Projects/windtunnel/data/houses/',
+                                scen_name)
+
+    # make new directory
+    new_path_scen = os.path.join(new_path, scen_name)
+    create_dir(new_path_scen)
+    create_dir(os.path.join(new_path_scen, 'input'))
+    create_dir(os.path.join(new_path_scen, 'output'))
+
+    path_house = os.path.join(new_path_scen, 'input/house')
+    path_debris = os.path.join(new_path_scen, 'input/debris')
+    path_gust = os.path.join(new_path_scen, 'input/gust_envelope_profiles')
+
+    create_dir(path_house)
+    create_dir(path_debris)
+    create_dir(path_gust)
+
+    copy_tree(org_path, path_house)
+    copy_tree(org_debris, path_debris)
+    copy_tree(org_gust, path_gust)
+
+    # copy cfg file
+    copy_file(os.path.join(new_path, '{}.cfg'.format(scen_name)),
+              os.path.join(new_path_scen, '{}.cfg'.format(scen_name)))
+

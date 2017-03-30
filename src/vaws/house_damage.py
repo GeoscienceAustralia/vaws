@@ -5,7 +5,7 @@ import numpy as np
 from collections import defaultdict
 
 from vaws.house import House
-from vaws.scenario import Scenario
+from vaws.config import Config
 from vaws.damage_costing import cal_water_ingress_given_damage
 
 
@@ -13,7 +13,7 @@ class HouseDamage(object):
 
     def __init__(self, cfg, seed):
 
-        assert isinstance(cfg, Scenario)
+        assert isinstance(cfg, Config)
         assert isinstance(seed, int)
 
         self.cfg = cfg

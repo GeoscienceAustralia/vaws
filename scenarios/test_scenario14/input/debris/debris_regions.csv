@@ -1,0 +1,3 @@
+Region name,Compact_ratio,Compact_mass_mean,Compact_mass_stddev,Compact_frontalarea_mean,Compact_frontalarea_stddev,Rod_ratio,Rod_mass_mean,Rod_mass_stddev,Rod_frontalarea_mean,Rod_frontalarea_stddev,Sheet_ratio,Sheet_mass_mean,Sheet_mass_stddev,Sheet_frontalarea_mean,Sheet_frontalarea_stddev,vuln_alpha,vuln_beta
+Capital_city,20,0.1,0.1,0.002,0.001,30,4,2,0.1,0.03,50,3,0.9,0.1,0.03,0.1585,3.8909
+Tropical_town,15,0.1,0.1,0.002,0.001,40,4,2,0.1,0.03,45,10,5,1,0.3,0.10304,4.18252

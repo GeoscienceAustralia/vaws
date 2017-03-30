@@ -6,7 +6,7 @@ from descartes import PolygonPatch
 from shapely.geometry import Point, Polygon, LineString
 import logging
 
-from vaws.scenario import Scenario
+from vaws.config import Config
 from vaws.debris import Debris
 from vaws.curve import vulnerability_weibull, vulnerability_weibull_pdf
 
@@ -119,9 +119,9 @@ class MyTestCase(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         path = '/'.join(__file__.split('/')[:-1])
-        cfg_file = os.path.join(path, '../../scenarios/test_roof_sheeting2.cfg')
-        cls.output_path = os.path.join(path, '../../outputs/output')
-        cls.cfg = Scenario(cfg_file=cfg_file, output_path=cls.output_path)
+        cfg_file = os.path.join(path, '../../scenarios/test_roof_sheeting2/test_roof_sheeting2.cfg')
+        cls.cfg = Config(cfg_file=cfg_file)
+        cls.output_path = cls.cfg.output_path
 
         cls.footprint_inst = Polygon([(-6.5, 4.0), (6.5, 4.0), (6.5, -4.0),
                                       (-6.5, -4.0), (-6.5, 4.0)])

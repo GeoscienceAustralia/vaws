@@ -9,7 +9,7 @@ import pandas as pd
 
 from vaws.simulation import HouseDamage
 # import vaws.database as database
-from vaws.scenario import Scenario
+from vaws.config import Config
 # from vaws import zone
 # from vaws import engine
 
@@ -299,9 +299,8 @@ class TestHouseDamage(unittest.TestCase):
         cls.path_reference = os.path.join(path, 'test')
         cls.path_output = os.path.join(path, 'output')
 
-        cfg = Scenario(
-            cfg_file=os.path.join(path, '../../scenarios/test_sheeting_batten.cfg'),
-            output_path=cls.path_output)
+        cfg = Config(
+            cfg_file=os.path.join(path, '../../scenarios/test_sheeting_batten/test_sheeting_batten.cfg'))
 
         cls.house_damage = HouseDamage(cfg, seed=1)
 

@@ -4,7 +4,7 @@ import os
 import numpy as np
 from collections import Counter, OrderedDict
 
-from vaws.scenario import Scenario
+from vaws.config import Config
 from vaws.house import House
 
 
@@ -13,8 +13,8 @@ class MyTestCase(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         path = '/'.join(__file__.split('/')[:-1])
-        cfg_file = os.path.join(path, '../../scenarios/test_sheeting_batten.cfg')
-        cfg = Scenario(cfg_file=cfg_file)
+        cfg_file = os.path.join(path, '../../scenarios/test_sheeting_batten/test_sheeting_batten.cfg')
+        cfg = Config(cfg_file=cfg_file)
         rnd_state = np.random.RandomState(1)
         cls.house = House(cfg, rnd_state)
 
@@ -181,7 +181,7 @@ class MyTestCase(unittest.TestCase):
 
     # def test_factors_costing(self):
     #
-    #     cfg = Scenario(
+    #     cfg = Config(
     #         cfg_file='../scenarios/carl1_dmg_dist_off_no_wall_no_water.cfg')
     #     rnd_state = np.random.RandomState(1)
     #     house = House(cfg, rnd_state=rnd_state)

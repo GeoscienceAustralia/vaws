@@ -9,7 +9,7 @@ import pandas as pd
 from optparse import OptionParser
 
 from vaws.house_damage import HouseDamage
-from vaws.scenario import Scenario
+from vaws.config import Config
 from vaws.curve import fit_fragility_curves, fit_vulnerability_curve
 from vaws.output import plot_heatmap
 from vaws.version import VERSION_DESC
@@ -19,7 +19,7 @@ def simulate_wind_damage_to_houses(cfg, call_back=None):
     """
 
     Args:
-        cfg: instance of Scenario class
+        cfg: instance of Config class
         call_back: used by gui
 
     Returns:
@@ -218,11 +218,11 @@ def set_logger(file_logger, logging_level):
 
 
 def process_commandline():
-    usage = '%prog -s <scenario_file> [-o <output_folder>] [-v <logging_level>]'
+    usage = '%prog -c <config_file> [-v <logging_level>]'
     parser = OptionParser(usage=usage, version=VERSION_DESC)
-    parser.add_option("-s", "--scenario",
-                      dest="scenario_filename",
-                      help="read scenario description from FILE",
+    parser.add_option("-c", "--config",
+                      dest="config_filename",
+                      help="read configuration from FILE",
                       metavar="FILE")
     parser.add_option("-v", "--verbose",
                       dest="verbose",
@@ -238,16 +238,16 @@ def main():
 
     (options, args) = parser.parse_args()
 
-    if not options.scenario_filename:
-        initial_scenario = Scenario(cfg_file='scenarios/default/default.cfg')
+    if not options.config_filename:
+        initial_config = Config(cfg_file='scenarios/default/default.cfg')
     else:
-        initial_scenario = Scenario(cfg_file=options.scenario_filename)
+        initial_config = Config(cfg_file=options.config_filename)
 
     if options.verbose:
-        file_logger = os.path.join(initial_scenario.output_path, 'log.txt')
+        file_logger = os.path.join(initial_config.output_path, 'log.txt')
         set_logger(file_logger, options.verbose)
 
-    _ = simulate_wind_damage_to_houses(initial_scenario, call_back=None)
+    _ = simulate_wind_damage_to_houses(initial_config, call_back=None)
 
     logging.info('Program finished')
 
