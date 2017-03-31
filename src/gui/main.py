@@ -163,8 +163,8 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
         for ds, value in self.cfg.fragility_thresholds.iterrows():
             try:
                 y = vulnerability_lognorm(self.cfg.speeds,
-                                          df_fitted_curves.loc[ds, 'param1'],
-                                          df_fitted_curves.loc[ds, 'param2'])
+                                          df_fitted_curves.at[ds, 'param1'],
+                                          df_fitted_curves.at[ds, 'param2'])
             except KeyError as msg:
                 logging.warning(msg)
             else:
@@ -691,16 +691,17 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
             self.ui.blueV.setValue(self.cfg.blue_v)
           
             self.ui.constructionEnabled.setChecked(self.cfg.get_flag('constructionLevels'))
+
             prob, mf, cf = self.cfg.getConstructionLevel('low')
             self.ui.lowProb.setValue(float(prob))
             self.ui.lowMean.setValue(float(mf))
             self.ui.lowCov.setValue(float(cf))
-            
+
             prob, mf, cf = self.cfg.getConstructionLevel('medium')
             self.ui.mediumProb.setValue(float(prob))
             self.ui.mediumMean.setValue(float(mf))
             self.ui.mediumCov.setValue(float(cf))
-            
+
             prob, mf, cf = self.cfg.getConstructionLevel('high')
             self.ui.highProb.setValue(float(prob))
             self.ui.highMean.setValue(float(mf))

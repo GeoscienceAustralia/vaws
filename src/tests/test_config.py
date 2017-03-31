@@ -34,12 +34,12 @@ class MyTestCase(unittest.TestCase):
         self.cfg.flags['water_ingress'] = True
         self.assertTrue(self.cfg.flags['water_ingress'])
 
-    def test_ctgenables(self):
-        self.assertTrue(
-            self.cfg.flags['conn_type_group_{}'.format('sheeting')])
-        self.cfg.setOptCTGEnabled('batten', False)
-        self.assertFalse(
-            self.cfg.flags['conn_type_group_{}'.format('batten')])
+    # def test_ctgenables(self):
+    #     self.assertTrue(
+    #         self.cfg.flags['conn_type_group_{}'.format('sheeting')])
+    #     self.cfg.setOptCTGEnabled('batten', False)
+    #     self.assertFalse(
+    #         self.cfg.flags['conn_type_group_{}'.format('batten')])
 
         # s.storeToCSV(self.scenario_filename3)
         # s2 = Scenario(cfg_file=self.scenario_filename3)

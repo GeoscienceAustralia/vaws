@@ -73,7 +73,7 @@ class House(object):
     def read_house_data(self):
 
         for att in self.cfg.house_attributes:
-            setattr(self, att, self.cfg.df_house.loc[0, att])
+            setattr(self, att, self.cfg.df_house.at[0, att])
 
     def set_zones(self):
 

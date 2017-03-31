@@ -26,23 +26,17 @@ class Config(object):
     terrain_categories = ['2', '2.5', '3', 'non_cyclonic']
     heights = [3.0, 5.0, 7.0, 10.0, 12.0, 15.0, 17.0, 20.0, 25.0, 30.0]
     region_names = ['Capital_city', 'Tropical_town']
+
     house_attributes = ['replace_cost', 'height', 'cpe_cov', 'cpe_k',
                         'cpe_str_cov', 'length', 'width', 'roof_cols',
                         'roof_rows']
-    # zone_attributes = ['area', 'cpi_alpha', 'wall_dir']
-    # group_attributes = ['dist_order', 'dist_dir', 'damage_scenario',
-    #                     'trigger_collapse_at', 'patch_dist',
-    #                     'set_zone_to_zero', 'water_ingress_order']
-    # type_attributes = ['costing_area', 'dead_load_mean', 'dead_load_std',
-    #                    'group_name', 'strength_mean', 'strength_std']
-    # connection_attributes = ['edge', 'type_name', 'zone_loc']
 
     # model dependent attributes
     list_house_bucket = ['profile', 'wind_orientation', 'construction_level',
                           'mzcat', 'str_mean_factor', 'str_cov_factor']
 
     # model and wind dependent attributes
-    list_compnents = ['group', 'connection', 'zone']
+    list_components = ['group', 'connection', 'zone']
 
     list_house_damage_bucket = ['qz', 'Ms', 'cpi', 'cpi_wind_speed', 'collapse',
                                 'di', 'di_except_water', 'repair_cost',
@@ -69,7 +63,8 @@ class Config(object):
         self.no_sims = None
         self.wind_speed_min = 0.0
         self.wind_speed_max = 0.0
-        self.wind_speed_increment = None
+        self.wind_speed_increment = 0.0
+        self.wind_speed_steps = None
         self.speeds = None
         self.terrain_category = None
         self.path_wind_profiles = None
@@ -78,7 +73,6 @@ class Config(object):
         self.debris_regions = None
 
         self.path_datafile = None
-        self.table_house = None
         self.house_name = None
         self.parallel = None
         self.region_name = None
@@ -144,13 +138,6 @@ class Config(object):
         else:
             self.read_config()
 
-    def __eq__(self, other):
-        return (isinstance(other, self.__class__) and
-                self.__dict__ == other.__dict__)
-
-    def __ne__(self, other):
-        return not self.__eq__(other)
-
     def get_att(self, att_name, default=0):
         try:
             return getattr(self, att_name)
@@ -165,18 +152,6 @@ class Config(object):
 
     def set_flag(self, flag_name, flag_value):
         self.flags[flag_name] = flag_value
-
-    @staticmethod
-    def conf_float(conf, key, option, default):
-        value = conf.get(key, option)
-        if value:
-            return float(value)
-        else:
-            return default
-
-    def setOptCTGEnabled(self, ctg_name, opt):
-        key_name = 'conn_type_group_{}'.format(ctg_name)
-        self.flags[key_name] = opt
 
     def getConstructionLevel(self, name):
         try:
@@ -363,7 +338,7 @@ class Config(object):
 
             if not os.path.exists(self.output_path):
                 os.makedirs(self.output_path)
-            print 'output directory: {}'.format(self.output_path)
+            print('output directory: {}'.format(self.output_path))
 
             self.file_house = os.path.join(self.output_path, 'results_house.h5')
             self.file_group = os.path.join(self.output_path, 'results_group.h5')
@@ -371,8 +346,6 @@ class Config(object):
             self.file_connection = os.path.join(self.output_path, 'results_connection.h5')
             self.file_zone = os.path.join(self.output_path, 'results_zone.h5')
             self.file_curve = os.path.join(self.output_path, 'results_curve.csv')
-        else:
-            print 'output path is not assigned'
 
     @staticmethod
     def return_norm_cdf(row):
@@ -532,7 +505,7 @@ class Config(object):
             'water_ingress_order'].sort_values().index, 'name']
         damage_order_by_water_ingress = []
         for i, value in _a.iteritems():
-            if df_damage_costing.loc[i, 'water_ingress_order'] and \
+            if df_damage_costing.at[i, 'water_ingress_order'] and \
                     df_groups['damage_scenario'].isin([value]).any():
                 damage_order_by_water_ingress.append(value)
 
@@ -543,7 +516,7 @@ class Config(object):
         dic_ = {}
         tmp = pd.read_csv(file_water_ingress_costing)
         for key, grouped in tmp.groupby('name'):
-            if df_groups['damage_scenario'].isin([key]).any():
+            if df_groups['damage_scenario'].isin([key]).any() or (key == 'WI only'):
                 grouped = grouped.set_index('water_ingress')
                 grouped['costing'] = grouped.apply(
                     lambda row: WaterIngressCosting(costing_name=key, **row),

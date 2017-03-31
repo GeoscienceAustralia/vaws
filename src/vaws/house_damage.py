@@ -25,7 +25,7 @@ class HouseDamage(object):
         self.qz = None
         self.Ms = None
         self.cpi = 0.0
-        self.cpi_wind_speed = None
+        self.cpi_wind_speed = 0.0
         self.collapse = False
         self.repair_cost = 0.0
         self.water_ingress_cost = 0.0
@@ -41,7 +41,9 @@ class HouseDamage(object):
 
         # only check if debris is ON
         # cpi is computed here
-        self.check_internal_pressurisation(wind_speed)
+
+        if self.cfg.flags['debris']:
+            self.check_internal_pressurisation(wind_speed)
 
         # compute load by zone
         self.calculate_qz_Ms(wind_speed)
@@ -82,7 +84,7 @@ class HouseDamage(object):
             self.bucket.setdefault('house', {})[item] = None
 
         # components
-        for item in self.cfg.list_compnents:
+        for item in self.cfg.list_components:
             _index = getattr(self.cfg, 'list_{}s'.format(item))
             _columns = getattr(self.cfg, 'list_{}_bucket'.format(item))
             self.bucket[item] = pd.DataFrame(index=_index, columns=_columns)
@@ -101,11 +103,11 @@ class HouseDamage(object):
                 self.bucket['house'][item] = getattr(self.house.debris, item)
 
         # components
-        for item in self.cfg.list_compnents:
+        for item in self.cfg.list_components:
             for att in getattr(self.cfg, 'list_{}_bucket'.format(item)):
                 _dic = getattr(self.house, '{}s'.format(item))
                 for key, value in _dic.iteritems():
-                    self.bucket[item].loc[key, att] = getattr(value, att)
+                    self.bucket[item].at[key, att] = getattr(value, att)
 
     def calculate_qz_Ms(self, wind_speed):
         """
@@ -142,16 +144,14 @@ class HouseDamage(object):
 
         """
 
-        if self.cfg.flags['debris']:
+        self.house.debris.run(wind_speed)
+        logging.debug('no_items_mean: {}, no_items:{}'.format(
+            self.house.debris.no_items_mean,
+            self.house.debris.no_items))
 
-            self.house.debris.run(wind_speed)
-            logging.debug('no_items_mean: {}, no_items:{}'.format(
-                self.house.debris.no_items_mean,
-                self.house.debris.no_items))
-
-            if self.cpi < 0.7 and self.house.debris.breached:
-                self.cpi = 0.7
-                self.cpi_wind_speed = wind_speed
+        if self.cpi < 0.7 and self.house.debris.breached:
+            self.cpi = 0.7
+            self.cpi_wind_speed = wind_speed
 
     def check_house_collapse(self, wind_speed):
         """
@@ -252,7 +252,7 @@ class HouseDamage(object):
             idx = np.argsort(np.abs(_df.index - water_ingress_perc))[0]
 
             self.water_ingress_cost = \
-                _df.iloc[idx]['costing'].calculate_cost(self.di_except_water)
+                _df.at[idx, 'costing'].calculate_cost(self.di_except_water)
             _di = (self.repair_cost +
                    self.water_ingress_cost) / self.house.replace_cost
             self.di = min(_di, 1.0)

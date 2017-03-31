@@ -192,6 +192,5 @@ def cal_water_ingress_given_damage(damage_index, wind_speed, df_water_ingress):
 
     """
     # Note that thresholds are upper values
-    idx = (df_water_ingress.index < damage_index).sum()
-
-    return df_water_ingress.iloc[idx]['wi'](wind_speed)
+    idx = df_water_ingress.index[(df_water_ingress.index < damage_index).sum()]
+    return df_water_ingress.at[idx, 'wi'](wind_speed)

@@ -86,7 +86,7 @@ def init_panels(cfg):
                                    major_axis=range(cfg.wind_speed_steps),
                                    minor_axis=range(cfg.no_sims))
     # components
-    for item in cfg.list_compnents:
+    for item in cfg.list_components:
         for att in getattr(cfg, 'list_{}_bucket'.format(item)):
             dic_panels.setdefault(item, {})[att] = \
                 pd.Panel(dtype=float,
@@ -100,15 +100,17 @@ def init_panels(cfg):
 def update_panels(cfg, dic_, list_results_by_speed, ispeed):
 
     # house
-    for att in dic_['house'].items.tolist():
-        dic_['house'][att].loc[ispeed] = [x['house'][att] for x in
+    list_atts = (cfg.list_house_bucket + cfg.list_house_damage_bucket +
+                 cfg.list_debris_bucket)
+    for att in list_atts:
+        dic_['house'][att].at[ispeed] = [x['house'][att] for x in
                                           list_results_by_speed]
 
     # components
-    for item in cfg.list_compnents:
+    for item in cfg.list_components:
         for key, value in dic_[item].iteritems():
             for att in value.items.tolist():
-                value[att].loc[ispeed] = [x[item].loc[att, key] for x in
+                value[att].at[ispeed] = [x[item].at[att, key] for x in
                                           list_results_by_speed]
 
     # compute damage index increment
@@ -145,7 +147,7 @@ def save_results_to_files(cfg, dic_panels):
         #  warnings.filterwarnings('error')
 
         # other components
-        for item in cfg.list_compnents:
+        for item in cfg.list_components:
             # file (key: Panel(attribute, wind_speed_steps, no_sims)
             hdf = pd.HDFStore(getattr(cfg, 'file_{}'.format(item)), mode='w')
             for key, value in dic_panels[item].iteritems():
@@ -253,7 +255,7 @@ def main():
         _ = simulate_wind_damage_to_houses(conf)
 
     else:
-        print('\nERROR: Must provide a config file to run...\n')
+        print('Error: Must provide a config file to run')
         parser.print_help()
 
 if __name__ == '__main__':
