@@ -1,3 +1,5 @@
+
+import logging
 from math import log, exp, sqrt, gamma, copysign
 from scipy.stats import genextreme
 
@@ -68,8 +70,8 @@ def calc_parameters_gev(mean_est, cov_est, big_a, big_b):
         a_est = abs(mean_est) * cov_est / big_b
         u_est = abs(mean_est) - a_est * big_a
     except TypeError:
-        print 'mean_est:{}, cov_est:{}, big_a:{}, big_b:{}'.format(
-            mean_est, cov_est, big_a, big_b)
+        logging.warning('mean_est:{}, cov_est:{}, big_a:{}, big_b:{}'.format(
+            mean_est, cov_est, big_a, big_b))
     else:
         return a_est, u_est
 
@@ -89,7 +91,7 @@ def calc_big_a_b_values(shape_k):
     Returns: A, B
 
     """
-    assert 0 < shape_k < 0.5
+    assert 0.0 < shape_k < 0.5
     big_a = (1.0 - gamma(1.0 + shape_k)) / shape_k
     big_b = sqrt(gamma(1.0 + 2 * shape_k) - gamma(1.0 + shape_k) ** 2) / shape_k
 

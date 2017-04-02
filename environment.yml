@@ -96,6 +96,13 @@ dependencies:
 #- conda-forge::pox=0.2.3=py27_0
 #- conda-forge::ppft=1.6.4.7.1=py27_0
 
+# added for memory profile
+
+- memory_profiler=0.43=py27_0 
+- psutil=5.2.1=py27_0
+
+
+
 - pip:
 #  - parmap==1.2.3
   - pyprof2calltree==1.4.0

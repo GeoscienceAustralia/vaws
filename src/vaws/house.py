@@ -235,7 +235,7 @@ class House(object):
         """
         self.profile = self.rnd_state.random_integers(1, 10)
         _wind_profile = self.cfg.wind_profile[self.profile]
-        self.mzcat = np.interp(self.height, self.cfg.heights, _wind_profile)
+        self.mzcat = np.interp(self.height, self.cfg.profile_heights, _wind_profile)
 
     def set_construction_level(self):
         """

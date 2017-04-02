@@ -6,6 +6,7 @@
     Note: differential shielding may be indirectly disabled by setting
     'building_spacing' to 0
 """
+import copy
 import os
 import sys
 import logging
@@ -24,7 +25,7 @@ class Config(object):
     # lookup table mapping (0-7) to wind direction (8: random)
     wind_dir = ['S', 'SW', 'W', 'NW', 'N', 'NE', 'E', 'SE', 'Random']
     terrain_categories = ['2', '2.5', '3', 'non_cyclonic']
-    heights = [3.0, 5.0, 7.0, 10.0, 12.0, 15.0, 17.0, 20.0, 25.0, 30.0]
+    profile_heights = [3.0, 5.0, 7.0, 10.0, 12.0, 15.0, 17.0, 20.0, 25.0, 30.0]
     region_names = ['Capital_city', 'Tropical_town']
 
     house_attributes = ['replace_cost', 'height', 'cpe_cov', 'cpe_k',
@@ -70,7 +71,6 @@ class Config(object):
         self.path_wind_profiles = None
         self.wind_profile = None
         self.debris_types = None
-        self.debris_regions = None
 
         self.path_datafile = None
         self.house_name = None
@@ -106,6 +106,9 @@ class Config(object):
         self.dic_influences = None
         self.dic_influence_patches = None
 
+        self.dic_debris_regions = None
+        self.dic_debris_types = None
+
         self.list_groups = None
         self.list_types = None
         self.list_connections = None
@@ -137,21 +140,6 @@ class Config(object):
             sys.exit(msg)
         else:
             self.read_config()
-
-    def get_att(self, att_name, default=0):
-        try:
-            return getattr(self, att_name)
-        except AttributeError:
-            return default
-
-    def get_flag(self, key, default=0):
-        try:
-            return self.flags[key]
-        except KeyError:
-            return default
-
-    def set_flag(self, flag_name, flag_value):
-        self.flags[flag_name] = flag_value
 
     def getConstructionLevel(self, name):
         try:
@@ -307,7 +295,12 @@ class Config(object):
                                                'debris_regions.csv')
             file_debris_types = os.path.join(path_debris,
                                              'debris_types.csv')
-            self.set_debris_types(file_debris_types, file_debris_regions)
+
+            self.dic_debris_types = pd.read_csv(
+                file_debris_types, index_col=0).to_dict('index')
+            self.dic_debris_regions = pd.read_csv(
+                file_debris_regions, index_col=0).to_dict('index')
+            self.set_debris_types()
 
         key = 'heatmap'
         try:
@@ -665,28 +658,26 @@ class Config(object):
                                         header=None,
                                         index_col=0).to_dict('list')
 
-    def set_debris_types(self, file_debris_types, file_debris_regions):
+    def set_debris_types(self):
 
-        self.debris_types = pd.read_csv(
-            file_debris_types, index_col=0).to_dict('index')
-        self.debris_regions = pd.read_csv(
-            file_debris_regions, index_col=0).to_dict('index')[self.region_name]
+        self.debris_types = copy.deepcopy(self.dic_debris_types)
+        _debris_region = self.dic_debris_regions[self.region_name]
 
         for key in self.debris_types:
 
             self.debris_types.setdefault(key, {})['ratio'] = \
-                self.debris_regions['{}_ratio'.format(key)]
+                _debris_region['{}_ratio'.format(key)]
 
             for item in ['frontalarea', 'mass']:
-                _mean = self.debris_regions['{0}_{1}_mean'.format(key, item)]
-                _std = self.debris_regions['{0}_{1}_stddev'.format(key, item)]
+                _mean = _debris_region['{0}_{1}_mean'.format(key, item)]
+                _std = _debris_region['{0}_{1}_stddev'.format(key, item)]
                 mu_lnx, std_lnx = compute_logarithmic_mean_stddev(_mean, _std)
                 self.debris_types.setdefault(key, {})['{}_mu'.format(item)] = mu_lnx
                 self.debris_types.setdefault(key, {})['{}_std'.format(item)] = std_lnx
 
     def set_wind_dir_index(self, wind_dir_str):
         try:
-            self.wind_dir_index = Config.wind_dir.index(wind_dir_str.upper())
+            self.wind_dir_index = self.__class__.wind_dir.index(wind_dir_str.upper())
         except ValueError:
             print('8(i.e., RANDOM) is set for wind_dir_index by default')
             self.wind_dir_index = 8
@@ -707,7 +698,7 @@ class Config(object):
         config.set(key, 'house_name', self.house_name)
         config.set(key, 'regional_shielding_factor',
                    self.regional_shielding_factor)
-        config.set(key, 'wind_fixed_dir', Config.wind_dir[self.wind_dir_index])
+        config.set(key, 'wind_fixed_dir', self.__class__.wind_dir[self.wind_dir_index])
         config.set(key, 'region_name', self.region_name)
 
         key = 'options'

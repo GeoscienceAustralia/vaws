@@ -69,13 +69,13 @@ class Costing(object):
         else:
             try:
                 _value = getattr(self, '{}_factor_formula_type'.format(key))
-                assert _value in Costing.dic_costing
+                assert _value in self.__class__.dic_costing
             except AssertionError:
                 logging.error('Invalid {}_factor_formula_type: {}'.format(
                     key, _value))
             else:
                 setattr(self, '{}_repair'.format(key),
-                        getattr(self, Costing.dic_costing[_value]))
+                        getattr(self, self.__class__.dic_costing[_value]))
 
     def calculate_cost(self, x):
         assert 0.0 <= x <= 1.0
@@ -167,7 +167,7 @@ class WaterIngressCosting(object):
             logging.error('Invalid formula_type: {}'.format(self.formula_type))
         else:
             try:
-                assert self.formula_type in WaterIngressCosting.dic_costing
+                assert self.formula_type in self.__class__.dic_costing
             except AssertionError:
                 logging.error(
                     'Invalid formula_type: {}'.format(self.formula_type))

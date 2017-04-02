@@ -511,7 +511,7 @@ class TestScenario11(unittest.TestCase):
                          55.0: [13],
                          56.0: [12],
                          57.0: [11],
-                         9999: range(1, 11)}
+                         0.0: range(1, 11)}
 
         simulation(self.house_damage, conn_capacity,
                    wind_speeds=np.arange(40.0, 120.0, 1.0))
@@ -546,7 +546,7 @@ class TestScenario12(unittest.TestCase):
                          91.0: [13],
                          92.0: [12],
                          93.0: [11],
-                         9999: range(1, 11),
+                         0.0: range(1, 11),
                          40.0: [7]}
 
         simulation(self.house_damage, conn_capacity,
@@ -582,7 +582,7 @@ class TestScenario13(unittest.TestCase):
                          74.0: [13],
                          75.0: [12],
                          76.0: [11],
-                         9999: range(1, 11)}
+                         0.0: range(1, 11)}
 
         simulation(self.house_damage, conn_capacity,
                    wind_speeds=np.arange(40.0, 120, 1.0))
@@ -618,7 +618,7 @@ class TestScenario14(unittest.TestCase):
                          73.0: [13],
                          74.0: [12],
                          75.0: [11],
-                         9999: range(1, 11)}
+                         0.0: range(1, 11)}
 
         simulation(self.house_damage, conn_capacity,
                    wind_speeds=np.arange(40.0, 120, 1.0))
@@ -648,7 +648,7 @@ class TestScenario15(unittest.TestCase):
                          80.0: [2, 3, 4, 5, 8, 9, 10, 11],
                          81.0: [1, 6, 7, 12],
                          87.0: [26],
-                         9999: range(13, 25)}
+                         0.0: range(13, 25)}
 
         simulation(self.house_damage, conn_capacity,
                    wind_speeds=np.arange(40.0, 100.0, 1.0))
@@ -684,7 +684,7 @@ class TestScenario16(unittest.TestCase):
                          82.0: [17, 29, 41, 53, 124, 127, 130, 133],
                          83.0: [18, 30, 42, 54, 126, 129, 132, 135]}
 
-        conn_capacity.update({9999: range(1, 13) +
+        conn_capacity.update({0.0: range(1, 13) +
                                     range(19, 25) +
                                     range(31, 37) +
                                     range(43, 49) +
@@ -734,22 +734,21 @@ class TestScenario16p1(unittest.TestCase):
                          89.0: [31, 35],
                          90.0: [36]}
 
-        conn_capacity.update({9999: range(1, 13) +
-                                    range(19, 25) +
-                                    range(43, 49) +
-                                    range(55, 61) +
-                                    range(61, 64) +
-                                    range(65, 76) +
-                                    range(77, 88) +
-                                    range(89, 100) +
-                                    range(101, 112) +
-                                    range(113, 124) +
-                                    [125, 128, 131, 134]})
+        conn_capacity.update({0.0: range(1, 13) +
+                                   range(19, 25) +
+                                   range(43, 49) +
+                                   range(55, 61) +
+                                   range(61, 64) +
+                                   range(65, 76) +
+                                   range(77, 88) +
+                                   range(89, 100) +
+                                   range(101, 112) +
+                                   range(113, 124) + [125, 128, 131, 134]})
 
         simulation(self.house_damage, conn_capacity,
                    wind_speeds=np.arange(70.0, 101.0, 1.0))
 
 if __name__ == '__main__':
-    #suite = unittest.TestLoader().loadTestsFromTestCase(TestScenario16p1)
-    #unittest.TextTestRunner(verbosity=2).run(suite)
-    unittest.main(verbosity=2)
+    suite = unittest.TestLoader().loadTestsFromTestCase(TestScenario16p1)
+    unittest.TextTestRunner(verbosity=2).run(suite)
+    #unittest.main(verbosity=2)
