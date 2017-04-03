@@ -172,8 +172,8 @@ class WaterIngressCosting(object):
                 logging.error(
                     'Invalid formula_type: {}'.format(self.formula_type))
             else:
-                self.cost = \
-                        getattr(Costing, Costing.dic_costing[self.formula_type])
+                self.cost = getattr(
+                    Costing, self.__class__.dic_costing[self.formula_type])
 
     def calculate_cost(self, x):
         assert 0.0 <= x <= 1.0
