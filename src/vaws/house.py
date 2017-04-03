@@ -170,7 +170,9 @@ class House(object):
 
         _connection.sample_dead_load(rnd_state=self.rnd_state)
 
-        _connection.grid = self.zones[_connection.zone_loc].grid
+        # _connection.grid = self.zones[_connection.zone_loc].grid
+        _connection.grid = Zone.get_grid_from_zone_location(
+            _connection.zone_loc)
 
         _connection.influences = self.cfg.dic_influences[_connection.name]
 

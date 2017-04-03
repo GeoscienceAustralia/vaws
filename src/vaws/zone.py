@@ -42,7 +42,7 @@ class Zone(object):
         for key, value in default_attr.iteritems():
             setattr(self, key, value)
 
-        self.grid = self.get_grid_from_zone_location()
+        self.grid = self.get_grid_from_zone_location(self.name)
 
         self.distributed = None
         self.cpe = None
@@ -140,19 +140,20 @@ class Zone(object):
         assert isinstance(_zone_grid, tuple)
         return num2str(_zone_grid[0] + 1) + str(_zone_grid[1] + 1)
 
-    def get_grid_from_zone_location(self):
+    @staticmethod
+    def get_grid_from_zone_location(_zone_name):
         """
         Extract 0 based grid refs from string location (eg 'A10' to 0, 9)
         """
         chr_part = ''
-        for i, item in enumerate(self.name):
+        for i, item in enumerate(_zone_name):
             try:
                 float(item)
             except ValueError:
                 chr_part += item
             else:
                 break
-        num_part = self.name.strip(chr_part)
+        num_part = _zone_name.strip(chr_part)
         return str2num(chr_part) - 1, int(num_part) - 1
 
 
