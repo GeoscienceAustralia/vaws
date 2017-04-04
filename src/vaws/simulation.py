@@ -213,13 +213,18 @@ def set_logger(conf):
     if not conf.logging_level:
         return
 
+    logger = logging.getLogger()
+
+    logger.handlers = []
+
     file_logger = os.path.join(conf.output_path, 'log.txt')
 
-    logger = logging.getLogger()
     file_handler = logging.FileHandler(filename=file_logger, mode='w')
     formatter = logging.Formatter('%(levelname)s - %(message)s')
     file_handler.setFormatter(formatter)
+
     logger.addHandler(file_handler)
+
     try:
         logger.setLevel(getattr(logging, conf.logging_level.upper()))
     except AttributeError:
