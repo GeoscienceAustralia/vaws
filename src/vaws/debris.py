@@ -12,7 +12,7 @@ Debris Module - adapted from JDH Consulting and Martin's work
 
 import logging
 
-from numpy import rint, random
+from numpy import rint, random, array
 from math import pow, radians, tan, sqrt, exp
 from shapely.geometry import Point, Polygon, LineString
 from shapely.affinity import rotate
@@ -20,6 +20,19 @@ from shapely.affinity import rotate
 
 
 class Debris(object):
+
+    rho_air = 1.2  # air density
+    g_const = 9.81  # acceleration of gravity
+
+    flight_distance_coeff = {2: {'Compact': [0.011, 0.2060],
+                                 'Sheet': [0.3456, 0.072],
+                                 'Rod': [0.2376, 0.0723]},
+                             5: {'Sheet': [0.456, -0.148, 0.024, -0.0014],
+                                 'Compact': [0.405, -0.036, -0.052, 0.008],
+                                 'Rod': [0.4005, -0.16, 0.036, -0.0032]}}
+
+    flight_distance_power = {2: [1, 2],
+                             5: [2, 3, 4, 5]}
 
     def __init__(self, cfg):
 
@@ -273,15 +286,11 @@ class Debris(object):
             else:
                 self.damaged_area += min(frontal_area, _coverage['area'])
 
-    @staticmethod
-    def cal_flight_distance(debris_type_str, flight_time, frontal_area, mass,
-                            wind_speed, flag_poly=2):
+    def cal_flight_distance(self, debris_type_str, flight_time, frontal_area,
+                            mass, wind_speed, flag_poly=2):
         """
         calculate flight distance based on the methodology in Appendix of
         Lin and Vanmarcke (2008)
-
-        Note that the coefficients of fifth order polynomials are from
-        Lin and Vanmarcke (2008), while ones of quadratic form are proposed.
 
         Args:
             debris_type_str:
@@ -293,6 +302,10 @@ class Debris(object):
 
         Returns:
 
+        Notes:
+            The coefficients of fifth order polynomials are from
+        Lin and Vanmarcke (2008), while quadratic form are proposed by Martin.
+
         """
         try:
             assert wind_speed > 0
@@ -302,49 +315,48 @@ class Debris(object):
 
         else:
 
-            assert flag_poly == 2 or flag_poly == 5
-
-            rho_air = 1.2  # air density
-            g_const = 9.81  # acceleration of gravity
-
-            # in increasing order
-            coeff_by_type = {2: {'Compact': (0.011, 0.2060),
-                                 'Sheet': (0.3456, 0.072),
-                                 'Rod': (0.2376, 0.0723)},
-                             5: {'Sheet': (0.456, -0.148, 0.024, -0.0014),
-                                 'Compact': (0.405, -0.036, -0.052, 0.008),
-                                 'Rod': (0.4005, -0.16, 0.036, -0.0032)}}
+            assert flag_poly in self.__class__.flight_distance_power
 
             # dimensionless time
-            t_star = g_const * flight_time / wind_speed
+            t_star = self.__class__.g_const * flight_time / wind_speed
 
             # Tachikawa Number: rho*(V**2)/(2*g*h_m*rho_m)
             # assume h_m * rho_m == mass / frontal_area
-            k_star = rho_air * pow(wind_speed, 2.0) / (
-                2.0 * g_const * mass / frontal_area)
+            k_star = self.__class__.rho_air * pow(wind_speed, 2.0) / (
+                2.0 * self.__class__.g_const * mass / frontal_area)
+            kt_star = k_star * t_star
+
+            kt_star_powered = array([pow(kt_star, i)
+                for i in self.__class__.flight_distance_power[flag_poly]])
+            coeff = array(self.__class__.flight_distance_coeff[
+                              flag_poly][debris_type_str])
+            less_dis = (coeff * kt_star_powered).sum()
 
             # dimensionless hor. displacement
             # k*x_star = k*g*x/V**2
             # x = (k*x_star)*(V**2)/(k*g)
-            convert_to_dim = pow(wind_speed, 2.0) / (k_star * g_const)
-
-            kt_star = k_star * t_star
-
-            less_dis = None
-            if flag_poly == 2:
-                less_dis = sum([coeff_by_type[2][debris_type_str][i] *
-                                pow(kt_star, i + 1) for i in range(2)])
-            elif flag_poly == 5:
-                less_dis = sum([coeff_by_type[5][debris_type_str][i] *
-                                pow(kt_star, i + 2) for i in range(4)])
+            convert_to_dim = pow(wind_speed, 2.0) / (
+                k_star * self.__class__.g_const)
 
             return convert_to_dim * less_dis
 
-    @staticmethod
-    def cal_debris_mementum(cdav, frontal_area, flight_distance, mass,
+    def cal_debris_mementum(self, cdav, frontal_area, flight_distance, mass,
                             wind_speed, rnd_state):
         """
-        The ratio of horizontal velocity of the windborne debris object
+        calculate momentum of debris object
+
+        Args:
+            cdav: average drag coefficient
+            frontal_area:
+            flight_distance:
+            mass:
+            wind_speed:
+            rnd_state:
+
+        Returns: momentum of debris object
+
+        Notes:
+         The ratio of horizontal velocity of the windborne debris object
          to the wind gust velocity is related to the horizontal distance
          travelled, x as below
 
@@ -357,25 +369,14 @@ class Debris(object):
 
          The ratio is assumed to follow a beta distribution with mean, and
 
-        Args:
-            cdav: average drag coefficient
-            frontal_area:
-            flight_distance:
-            mass:
-            wind_speed:
-            rnd_state:
-
-        Returns:
-
         """
         # calculate um/vs, ratio of hor. vel. of debris to local wind speed
-        rho_air = 1.2  # air density
-        param_b = sqrt(rho_air * cdav * frontal_area / mass)
+        param_b = sqrt(self.__class__.rho_air * cdav * frontal_area / mass)
         _mean = 1.0 - exp(-param_b * sqrt(flight_distance))
 
         # dispersion here means a + b of Beta(a, b)
         try:
-            assert 0 <= _mean <= 1
+            assert 0.0 <= _mean <= 1.0
         except AssertionError:
             logging.warn('{}:{}:{}'.format(_mean, param_b, flight_distance))
 
@@ -455,81 +456,3 @@ class Debris(object):
 
         return sources
 
-    '''
-    def check_impacts(self, rnd_state):
-        """ Check to see if any of the Nv impacts break coverages.
-        """
-
-        no_impacts = len(self.momentums)
-
-        for wall_name in self.front_facing_walls:
-
-            _id = self.cfg.df_coverages['wall_name'] == wall_name
-
-            for _, coverage in self.cfg.df_coverages.loc[_id].iterrows():
-
-                rv_ = rnd_state.lognormal(*(
-                    coverage['lognormal_failure_momentum']+(no_impacts,)))
-
-                ccdf_momentum = (self.momentums > rv_).sum() / float(no_impacts)
-
-                mean_rate = no_impacts * coverage['area'] / self.area_walls * \
-                            ccdf_momentum
-
-                # Once window is damaged, then total area is redeemed as
-                # damaged area while non-wondow is only
-
-                if coverage.description == 'window':
-                    prob_damage = 1.0 - exp(-mean_rate)
-
-                    dice = np.random.random()
-                    if dice <= Pd:
-                        self.result_breached = True
-
-                else:
-                    sampled_impacts = rnd_state.poisson(mean_rate)
-
-                    cov.result_num_impacts += sampled_impacts
-                        if cov.result_num_impacts > 0:
-                            cov.result_intact = False
-
-    def gather_results(self):
-        """ Calculate total area of envelope damaged, as a percentage
-        """
-        area = 0.0
-        wall_area = self.house.getWallArea()
-        for wall in self.front_facing_walls:
-            for cov in wall.coverages:
-                if not cov.result_intact:
-                    if cov.description == 'window':
-                        area += cov.area
-                    else:
-                        thisarea = cov.result_num_impacts if \
-                            cov.result_num_impacts <= cov.area else cov.area
-                        area += thisarea
-
-        self.result_dmgperc = area / wall_area
-        return self.result_dmgperc
-
-    def render(self, v):
-        """ Render a simple (but useful) plot showing a debris run.
-        """
-        points = []
-        if self.result_items is not None:
-            for item in self.result_items:
-                sz = 30
-                item.impact_point.set_plot(item.col, item.shape, sz, 0.5)
-                points.append(item.impact_point)
-        srcs = []
-        for src in self.sources:
-            srcs.append(Point(src.xord, src.yord, src.col, 'o', 300, 0.3))
-
-        title = ('Debris Sample Field for Wind Speed: {0:.3f} m/s '
-                 'in Region: {1}').format(v, self.region.name)
-        self.footprint_rect.render(title, points, srcs)
-
-    def get_breached(self):
-        """ Returns True if any window was broken.
-        """
-        return self.result_breached
-    '''

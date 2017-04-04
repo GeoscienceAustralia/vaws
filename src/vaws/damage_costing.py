@@ -69,13 +69,13 @@ class Costing(object):
         else:
             try:
                 _value = getattr(self, '{}_factor_formula_type'.format(key))
-                assert _value in Costing.dic_costing
+                assert _value in self.__class__.dic_costing
             except AssertionError:
                 logging.error('Invalid {}_factor_formula_type: {}'.format(
                     key, _value))
             else:
                 setattr(self, '{}_repair'.format(key),
-                        getattr(self, Costing.dic_costing[_value]))
+                        getattr(self, self.__class__.dic_costing[_value]))
 
     def calculate_cost(self, x):
         assert 0.0 <= x <= 1.0
@@ -167,13 +167,13 @@ class WaterIngressCosting(object):
             logging.error('Invalid formula_type: {}'.format(self.formula_type))
         else:
             try:
-                assert self.formula_type in WaterIngressCosting.dic_costing
+                assert self.formula_type in self.__class__.dic_costing
             except AssertionError:
                 logging.error(
                     'Invalid formula_type: {}'.format(self.formula_type))
             else:
-                self.cost = \
-                        getattr(Costing, Costing.dic_costing[self.formula_type])
+                self.cost = getattr(
+                    Costing, self.__class__.dic_costing[self.formula_type])
 
     def calculate_cost(self, x):
         assert 0.0 <= x <= 1.0
@@ -192,6 +192,5 @@ def cal_water_ingress_given_damage(damage_index, wind_speed, df_water_ingress):
 
     """
     # Note that thresholds are upper values
-    idx = (df_water_ingress.index < damage_index).sum()
-
-    return df_water_ingress.iloc[idx]['wi'](wind_speed)
+    idx = df_water_ingress.index[(df_water_ingress.index < damage_index).sum()]
+    return df_water_ingress.at[idx, 'wi'](wind_speed)

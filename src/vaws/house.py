@@ -73,7 +73,7 @@ class House(object):
     def read_house_data(self):
 
         for att in self.cfg.house_attributes:
-            setattr(self, att, self.cfg.df_house.loc[0, att])
+            setattr(self, att, self.cfg.df_house.at[0, att])
 
     def set_zones(self):
 
@@ -170,7 +170,9 @@ class House(object):
 
         _connection.sample_dead_load(rnd_state=self.rnd_state)
 
-        _connection.grid = self.zones[_connection.zone_loc].grid
+        # _connection.grid = self.zones[_connection.zone_loc].grid
+        _connection.grid = Zone.get_grid_from_zone_location(
+            _connection.zone_loc)
 
         _connection.influences = self.cfg.dic_influences[_connection.name]
 
@@ -235,7 +237,7 @@ class House(object):
         """
         self.profile = self.rnd_state.random_integers(1, 10)
         _wind_profile = self.cfg.wind_profile[self.profile]
-        self.mzcat = np.interp(self.height, self.cfg.heights, _wind_profile)
+        self.mzcat = np.interp(self.height, self.cfg.profile_heights, _wind_profile)
 
     def set_construction_level(self):
         """
