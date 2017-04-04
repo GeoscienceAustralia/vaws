@@ -90,15 +90,3 @@ class ConnectionTypeEditor(QDialog, Ui_Dialog, mixins.PersistSizePosMixin):
         
     def reject(self):
         QDialog.reject(self)
-        
-        
-if __name__ == '__main__':
-    import sys
-    from vaws import scenario, database
-    database.configure()
-    s = scenario.Scenario(20, 40.0, 120.0, 60.0, '2')
-    s.setHouseName('Group 4 House')
-    app = QApplication(sys.argv)
-    my_app = ConnectionTypeEditor(s.house.conn_types[1], s.house)
-    my_app.show()
-    app.exec_()

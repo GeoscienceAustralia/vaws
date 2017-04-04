@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 # adjust python path so we may import things from peer packages
 import sys
+import shutil
 import time
 import os.path
 import logging
@@ -17,7 +18,7 @@ from vaws.curve import vulnerability_lognorm, vulnerability_weibull
 from main_ui import Ui_main
 from vaws.simulation import process_commandline, set_logger, \
     simulate_wind_damage_to_houses
-from vaws.config import Config
+from vaws.config import Config, INPUT_DIR
 from vaws.version import VERSION_DESC
 from vaws.stats import compute_logarithmic_mean_stddev
 
@@ -25,6 +26,11 @@ from mixins import PersistSizePosMixin, setupTable, finiTable
 
 my_app = None
 
+SOURCE_DIR = os.path.dirname(__file__)
+VAWS_DIR = os.sep.join(SOURCE_DIR.split(os.sep)[:-2])
+SCENARIOS_DIR = os.path.join(VAWS_DIR, 'scenarios')
+CONFIG_TEMPL = "Scenarios (*.cfg)"
+DEFAULT_SCENARIO = os.path.join(SCENARIOS_DIR,'default/default.cfg')
 
 def progress_callback(percent_done):
     my_app.statusProgressBar.setValue(percent_done)
@@ -41,8 +47,6 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
         super(MyForm, self).__init__(parent)
         PersistSizePosMixin.__init__(self, "MainWindow")
         
-        # self.simulator = None
-
         self.ui = Ui_main()
         self.ui.setupUi(self)
 
@@ -82,13 +86,12 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
         self.dirty_scenario = False         # means scenario has changed
         self.dirty_conntypes = False        # means connection_types have been modified
         self.has_run = False
-        self.filename = None
         self.initSizePosFromSettings()
-        self.connect(self.ui.actionOpen_Scenario, SIGNAL("triggered()"), self.openScenario)
+        self.connect(self.ui.actionOpen_Scenario, SIGNAL("triggered()"), self.open_scenario)
         self.connect(self.ui.actionRun, SIGNAL("triggered()"), self.runScenario)
         self.connect(self.ui.actionStop, SIGNAL("triggered()"), self.stopScenario)
-        self.connect(self.ui.actionSave_Scenario, SIGNAL("triggered()"), self.saveScenario)
-        self.connect(self.ui.actionSave_Scenario_As, SIGNAL("triggered()"), self.saveAsScenario)
+        self.connect(self.ui.actionSave_Scenario, SIGNAL("triggered()"), self.save_scenario)
+        self.connect(self.ui.actionSave_Scenario_As, SIGNAL("triggered()"), self.save_as_scenario)
         self.connect(self.ui.actionHouse_Info, SIGNAL("triggered()"), self.showHouseInfoDlg)
         self.connect(self.ui.testDebrisButton, SIGNAL("clicked()"), self.testDebrisSettings)
         self.connect(self.ui.testConstructionButton, SIGNAL("clicked()"), self.testConstructionLevels)
@@ -141,7 +144,7 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
         
     def updateVulnCurveSettings(self):
         if self.has_run:
-            self.updateScenarioFromUI()
+            self.update_config_from_ui()
             self.updateVulnCurve()
             self.statusBar().showMessage(unicode('Curve Fit Updated'))
             
@@ -235,7 +238,7 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
 
         self.cfg.terrain_category = unicode(self.ui.terrainCategory.currentText())
 
-        self.cfg.set_wind_profile(self.cfg.path_wind_profiles)
+        self.cfg.set_wind_profile()
 
         self.ui.boundaryProfile.setEditTriggers(QTableWidget.NoEditTriggers)
         self.ui.boundaryProfile.setRowCount(len(zarr))
@@ -350,7 +353,7 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
     def runScenario(self):
         self.statusBar().showMessage('Running Scenario')
         self.statusProgressBar.show()
-        self.updateScenarioFromUI()
+        self.update_config_from_ui()
         self.ui.mplsheeting.axes.cla()
         self.ui.mplsheeting.axes.figure.canvas.draw()
         self.ui.mplbatten.axes.cla()
@@ -552,7 +555,7 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
         self.statusBar().showMessage('Updating Zone Results')
         self.ui.zoneResults.clear()
         for (house_num, hr) in enumerate(self.house_results):
-            parent = QTreeWidgetItem(self.ui.zoneResults, ['H%d (%s/%.3f/%s)'%(house_num+1, scenario.Scenario.dirs[hr[2]], hr[3], hr[5]),
+            parent = QTreeWidgetItem(self.ui.zoneResults, ['H%d (%s/%.3f/%s)'%(house_num+1, config.Config.dirs[hr[2]], hr[3], hr[5]),
                                                            '', '', '', ''])
             zone_results_dict = hr[0]      
             for zr_key in sorted(zone_results_dict):
@@ -598,58 +601,84 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
         header_view = self.ui.connectionResults.header()
         header_view.resizeSection(0, 350)
                             
-    def openScenario(self):
-        scenario_path = '../scenarios'
+    def open_scenario(self):
         settings = QSettings()
+        # Set the path to the default
+        scenario_path = SCENARIOS_DIR
         if settings.contains("ScenarioFolder"):
+            # we have a saved scenario path so use that
             scenario_path = unicode(settings.value("ScenarioFolder").toString())
-        self.filename = QFileDialog.getOpenFileName(self, "Scenarios", scenario_path, "Scenarios (*.csv)")
-        if os.path.isfile(self.filename):
-            fname = '%s' % (self.filename)
-            self.file_load(fname)
-            settings.setValue("ScenarioFolder", QVariant(QString(os.path.dirname(fname))))
-            
-    def saveScenario(self):
-        if self.filename is None:
-            self.saveAsScenario()
-            self.ui.statusbar.showMessage('Saved as file %s' % self.filename)
+
+        filename = QFileDialog.getOpenFileName(self, "Scenarios", scenario_path, "Scenarios (*.cfg)")
+        config_file = '%s' % (filename)
+        if os.path.isfile(config_file):
+            self.file_load(config_file)
+            settings.setValue("ScenarioFolder", QVariant(QString(os.path.dirname(config_file))))
         else:
-            self.updateScenarioFromUI()
-            self.fileSave()
-            self.ui.statusbar.showMessage('Saved to file %s' % self.filename)
-        self.updateUIFromScenario()
+            msg = 'Unable to load scenario: {}\nFile not found.'.format(config_file)
+            QMessageBox.warning(self, "VAWS Program Warning", unicode(msg))
+
+    def save_scenario(self):
+        self.update_config_from_ui()
+        self.cfg.save_config()
+        self.ui.statusbar.showMessage('Saved to file %s' % self.cfg.cfg_file)
+        self.update_ui_from_config()
         
-    def saveAsScenario(self):
-        self.updateScenarioFromUI()
-        fname = self.filename if self.filename is not None else "."
-        fname = unicode(QFileDialog.getSaveFileName(self, "VAWS - Save Scenario", fname, "Scenarios (*.csv)"))
+    def save_as_scenario(self):
+        self.update_config_from_ui()
+        current_parent, _ = os.path.split(self.cfg.path_cfg)
+
+        fname = unicode(QFileDialog.getSaveFileName(self, "VAWS - Save Scenario",
+                                                    current_parent, CONFIG_TEMPL))
         if len(fname) > 0:
             if "." not in fname:
-                fname += ".csv"
-            self.filename = fname
-            self.fileSave()
-            self.updateUIFromScenario()
-        
+                fname += ".cfg"
+            # check we have a directory for the scenario
+            path_cfg, file_suffix_name = os.path.split(fname)
+            file_name, ext = os.path.splitext(file_suffix_name)
+            if file_name not in path_cfg:
+                # we need to create a directory for the scenario
+                path_cfg = os.path.join(path_cfg, file_name)
+
+            if not os.path.isdir(path_cfg):
+                os.mkdir(path_cfg)
+
+            if not os.path.isdir(os.path.join(path_cfg, INPUT_DIR)):
+                default_input = os.path.join(self.cfg.path_cfg, INPUT_DIR)
+                shutil.copytree(default_input,
+                                os.path.join(path_cfg, INPUT_DIR))
+
+            settings = QSettings()
+            settings.setValue("ScenarioFolder", QVariant(QString(path_cfg)))
+            self.cfg.path_cfg = path_cfg
+            self.cfg.cfg_file = os.path.join(path_cfg, file_suffix_name)
+
+            self.cfg.save_config()
+            self.update_ui_from_config()
+        else:
+            msg = 'No scenario name entered. Action cancelled'
+            QMessageBox.warning(self, "VAWS Program Warning", unicode(msg))
+
     def set_scenario(self, s=None):
         if s:
             self.cfg = s
 
-        self.updateUIFromScenario()
+        self.update_ui_from_config()
 
         self.statusBar().showMessage('Ready')
 
     def closeEvent(self, event):
         if self.okToContinue():
-            if self.filename is not None and QFile.exists(self.filename):
+            if self.cfg.cfg_file and QFile.exists(self.cfg.cfg_file):
                 settings = QSettings()
-                filename = QVariant(QString(self.filename))
+                filename = QVariant(QString(self.cfg.cfg_file))
                 settings.setValue("LastFile", filename)
             self.storeSizePosToSettings()
         else:
             event.ignore()
         
-    def updateUIFromScenario(self):
-        if self.cfg is not None:
+    def update_ui_from_config(self):
+        if self.cfg:
             self.statusBar().showMessage('Updating', 1000)
             # Scenario
             self.ui.numHouses.setText('%d' % self.cfg.no_sims)
@@ -667,7 +696,8 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
 
             # Debris
             self.ui.debrisRegion.setCurrentIndex(
-                self.ui.debrisRegion.findText(""))
+                self.ui.debrisRegion.findText(self.cfg.region_name))
+
             if self.cfg.source_items:
                 self.ui.sourceItems.setValue(self.cfg.source_items)
             if self.cfg.building_spacing:
@@ -713,12 +743,12 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
 
             self.update_house_panel()
 
-        if self.cfg.cfg_file:
-            self.statusBarScenarioLabel.setText('Scenario: %s' % (os.path.basename(self.cfg.cfg_file)))
+            if self.cfg.cfg_file:
+                self.statusBarScenarioLabel.setText('Scenario: %s' % (os.path.basename(self.cfg.cfg_file)))
         else:
             self.statusBarScenarioLabel.setText('Scenario: None')
         
-    def updateScenarioFromUI(self):
+    def update_config_from_ui(self):
         new_cfg = self.cfg
 
         # Scenario section
@@ -788,34 +818,30 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
         
     def file_load(self, fname):
         try:
-            self.cfg = Scenario(fname)
-            self.filename = fname
+            self.cfg = Config(fname)
             self.set_scenario(self.cfg)
-        except:
+        except Exception as excep:
+            logging.exception("Loading configuration caused exception")
+
             msg = 'Unable to load previous scenario: %s\nCreating new scenario.' % fname
             QMessageBox.warning(self, "VAWS Program Warning", unicode(msg))
 
-    def fileSave(self):
-        self.cfg.save_config(self.filename)
-        
-    def fileSaveAs(self):
-        self.cfg.save_config(self.filename)
-    
     def okToContinue(self):
-        self.updateScenarioFromUI()
+        self.update_config_from_ui()
         if self.dirty_scenario:
             reply = QMessageBox.question(self,
-                            "WindSim - Unsaved Changes",
-                            "Save unsaved changes?",
-                            QMessageBox.Yes|QMessageBox.No|QMessageBox.Cancel)
+                                         "WindSim - Unsaved Changes",
+                                         "Save unsaved changes?",
+                                         QMessageBox.Yes | QMessageBox.No |
+                                         QMessageBox.Cancel)
             if reply == QMessageBox.Cancel:
                 return False
             elif reply == QMessageBox.Yes:
-                self.saveScenario()
+                self.save_scenario()
         return True
     
     def testDebrisSettings(self):
-        self.updateScenarioFromUI()
+        self.update_config_from_ui()
         mgr = debris.DebrisManager(self.cfg.house,
                                   self.cfg.region,
                                   self.cfg.wind_speed_min, self.cfg.wind_speed_max, self.cfg.wind_speed_steps,
@@ -835,7 +861,7 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
             mgr.render(v)
     
     def testConstructionLevels(self):
-        self.updateScenarioFromUI()
+        self.update_config_from_ui()
         items = []
         for ctype in self.cfg.house.conn_types:
             items.append(ctype.connection_type) 
@@ -864,11 +890,15 @@ def run_gui():
 
     (options, args) = parser.parse_args()
 
-    source_dir = os.path.dirname(__file__)
     if not options.config_filename:
-        default_config = os.path.join(source_dir,
-                                      '../../scenarios/default/default.cfg')
-        initial_config = Config(cfg_file=default_config)
+        settings = QSettings()
+        if settings.contains("LastFile"):
+            initial_scenario = unicode(settings.value("LastFile").toString())
+        else:
+            initial_scenario = DEFAULT_SCENARIO
+
+        initial_config = Config(cfg_file=initial_scenario)
+
     else:
         initial_config = Config(cfg_file=options.config_filename)
 
@@ -894,6 +924,7 @@ def run_gui():
 
     splash = QSplashScreen(my_app, splash_image)
     splash.show()
+
     my_app.show()
 
     time.sleep(5)
