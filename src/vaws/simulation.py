@@ -200,7 +200,7 @@ def show_results(self, output_folder=None, vRed=40, vBlue=80):
     self.plot_connection_damage(vRed, vBlue)
 
 
-def set_logger(file_logger, logging_level):
+def set_logger(conf):
     """
     
     Args:
@@ -210,16 +210,21 @@ def set_logger(file_logger, logging_level):
     Returns:
 
     """
+    if not conf.logging_level:
+        return
+
+    file_logger = os.path.join(conf.output_path, 'log.txt')
+
     logger = logging.getLogger()
     file_handler = logging.FileHandler(filename=file_logger, mode='w')
     formatter = logging.Formatter('%(levelname)s - %(message)s')
     file_handler.setFormatter(formatter)
     logger.addHandler(file_handler)
     try:
-        logger.setLevel(getattr(logging, logging_level.upper()))
+        logger.setLevel(getattr(logging, conf.logging_level.upper()))
     except AttributeError:
         print('{} is not a logging level, '
-              'DEBUG is set instead'.format(logging_level))
+              'DEBUG is set instead'.format(conf.logging_level))
         logger.setLevel(logging.DEBUG)
 
 
@@ -249,8 +254,7 @@ def main():
         conf = Config(cfg_file=options.config_filename)
 
         if options.verbose:
-            file_logger = os.path.join(conf.output_path, 'log.txt')
-            set_logger(file_logger, options.verbose)
+            set_logger(conf, options.verbose)
 
         _ = simulate_wind_damage_to_houses(conf)
 

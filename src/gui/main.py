@@ -89,7 +89,7 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
         self.initSizePosFromSettings()
 
         # top panel
-        self.connect(self.ui.actionOpen_Scenario, SIGNAL("triggered()"), self.openScenario)
+        self.connect(self.ui.actionOpen_Scenario, SIGNAL("triggered()"), self.open_scenario)
         self.connect(self.ui.actionRun, SIGNAL("triggered()"), self.runScenario)
         self.connect(self.ui.actionStop, SIGNAL("triggered()"), self.stopScenario)
         self.connect(self.ui.actionSave_Scenario, SIGNAL("triggered()"), self.save_scenario)
@@ -636,6 +636,9 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
             scenario_path = unicode(settings.value("ScenarioFolder").toString())
 
         filename = QFileDialog.getOpenFileName(self, "Scenarios", scenario_path, "Scenarios (*.cfg)")
+        if not filename:
+            return
+
         config_file = '%s' % (filename)
         if os.path.isfile(config_file):
             self.file_load(config_file)
@@ -850,6 +853,7 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
         try:
             self.cfg = Config(fname)
             self.set_scenario(self.cfg)
+            set_logger(self.cfg)
         except Exception as excep:
             logging.exception("Loading configuration caused exception")
 
@@ -933,8 +937,8 @@ def run_gui():
         initial_config = Config(cfg_file=options.config_filename)
 
     if options.verbose:
-        file_logger = os.path.join(initial_config.output_path, 'log.txt')
-        set_logger(file_logger, options.verbose)
+        initial_config.logging_level = options.verbose
+        set_logger(initial_config)
 
     app = QApplication(sys.argv)
     app.setOrganizationName("Geoscience Australia")

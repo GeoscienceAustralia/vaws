@@ -68,6 +68,8 @@ class Config(object):
         if not os.path.exists(self.output_path):
             os.makedirs(self.output_path)
 
+        self.logging = None
+
         self.no_sims = None
         self.wind_speed_min = 0.0
         self.wind_speed_max = 0.0
