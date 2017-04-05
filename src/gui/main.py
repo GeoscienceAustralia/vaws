@@ -127,7 +127,8 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
         self.selected_conn = None
         self.selected_plotKey = None
 
-        self.updateGlobalData()
+        if self.cfg.flags['debris']:
+            self.updateGlobalData()
         self.ui.sourceItems.setValue(-1)
 
         QTimer.singleShot(0, self.set_scenario)
@@ -754,17 +755,17 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
 
             self.ui.constructionEnabled.setChecked(self.cfg.flags.get('construction_levels'))
 
-            prob, mf, cf = self.cfg.getConstructionLevel('low')
+            prob, mf, cf = self.cfg.get_construction_level('low')
             self.ui.lowProb.setValue(float(prob))
             self.ui.lowMean.setValue(float(mf))
             self.ui.lowCov.setValue(float(cf))
 
-            prob, mf, cf = self.cfg.getConstructionLevel('medium')
+            prob, mf, cf = self.cfg.get_construction_level('medium')
             self.ui.mediumProb.setValue(float(prob))
             self.ui.mediumMean.setValue(float(mf))
             self.ui.mediumCov.setValue(float(cf))
 
-            prob, mf, cf = self.cfg.getConstructionLevel('high')
+            prob, mf, cf = self.cfg.get_construction_level('high')
             self.ui.highProb.setValue(float(prob))
             self.ui.highMean.setValue(float(mf))
             self.ui.highCov.setValue(float(cf))
@@ -821,15 +822,15 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
         new_cfg.red_v = float(unicode(self.ui.redV.value()))
         new_cfg.blue_v = float(unicode(self.ui.blueV.value()))
         
-        new_cfg.setConstructionLevel('low',
+        new_cfg.set_construction_level('low',
                                 float(unicode(self.ui.lowProb.value())), 
                                 float(unicode(self.ui.lowMean.value())), 
                                 float(unicode(self.ui.lowCov.value())))
-        new_cfg.setConstructionLevel('medium',
+        new_cfg.set_construction_level('medium',
                                 float(unicode(self.ui.mediumProb.value())), 
                                 float(unicode(self.ui.mediumMean.value())), 
                                 float(unicode(self.ui.mediumCov.value())))
-        new_cfg.setConstructionLevel('high',
+        new_cfg.set_construction_level('high',
                                 float(unicode(self.ui.highProb.value())), 
                                 float(unicode(self.ui.highMean.value())), 
                                 float(unicode(self.ui.highCov.value())))
@@ -853,7 +854,7 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
         try:
             self.cfg = Config(fname)
             self.set_scenario(self.cfg)
-            set_logger(self.cfg)
+            set_logger(self.cfg, logging_level='info')
         except Exception as excep:
             logging.exception("Loading configuration caused exception")
 
@@ -937,8 +938,9 @@ def run_gui():
         initial_config = Config(cfg_file=options.config_filename)
 
     if options.verbose:
-        initial_config.logging_level = options.verbose
-        set_logger(initial_config)
+        set_logger(initial_config, logging_level=options.verbose)
+    else:
+        set_logger(initial_config, logging_level='info')
 
     app = QApplication(sys.argv)
     app.setOrganizationName("Geoscience Australia")

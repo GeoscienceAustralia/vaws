@@ -121,7 +121,7 @@ class MyTestCase(unittest.TestCase):
         path = '/'.join(__file__.split('/')[:-1])
         cfg_file = os.path.join(path, '../../scenarios/test_roof_sheeting2/test_roof_sheeting2.cfg')
         cls.cfg = Config(cfg_file=cfg_file)
-        cls.output_path = cls.cfg.output_path
+        cls.path_output = cls.cfg.path_output
 
         cls.footprint_inst = Polygon([(-6.5, 4.0), (6.5, 4.0), (6.5, -4.0),
                                       (-6.5, -4.0), (-6.5, 4.0)])
@@ -404,7 +404,7 @@ class MyTestCase(unittest.TestCase):
     def test_run(self):
 
         # set up logging
-        file_logger = os.path.join(self.output_path, 'log_debris.txt')
+        file_logger = os.path.join(self.path_output, 'log_debris.txt')
         logging.basicConfig(filename=file_logger,
                             filemode='w',
                             level=logging.DEBUG,

@@ -449,7 +449,7 @@ class ConnectionTypeGroup(object):
                     pass
                 else:
                     target_connection.update_influence(source_connection, infl_coeff)
-                    logging.debug('Influence of connection {} is updated: '
+                    logging.debug('row: Influence of connection {} is updated: '
                                   'connection {} with {:.2f}'.format(target_connection.name,
                                                                source_connection.name,
                                                                infl_coeff))
@@ -460,7 +460,7 @@ class ConnectionTypeGroup(object):
                     pass
                 else:
                     target_connection.update_influence(source_connection, infl_coeff)
-                    logging.debug('Influence of connection {} is updated: '
+                    logging.debug('row: Influence of connection {} is updated: '
                                   'connection {} with {:.2f}'.format(target_connection.name,
                                                                source_connection.name,
                                                                infl_coeff))
@@ -493,7 +493,7 @@ class ConnectionTypeGroup(object):
                             logging.error('{} not found in the influences {}'.
                                           format(key, target_name))
 
-                    logging.debug('Influence of connection {} is updated by connection {}'
+                    logging.debug('col: Influence of connection {} is updated by connection {}'
                                   .format(target_name, source_connection.name))
 
         elif self.dist_dir == 'col' and self.patch_dist == 0:  # sheeting
@@ -528,7 +528,7 @@ class ConnectionTypeGroup(object):
                     pass
                 else:
                     target_connection.update_influence(source_connection, infl_coeff)
-                    logging.debug('Influence of connection {} is updated: '
+                    logging.debug('col: Influence of connection {} is updated: '
                                   'connection {} with {:.2f}'.format(target_connection.name,
                                                                source_connection.name,
                                                                infl_coeff))
@@ -539,7 +539,7 @@ class ConnectionTypeGroup(object):
                     pass
                 else:
                     target_connection.update_influence(source_connection, infl_coeff)
-                    logging.debug('Influence of connection {} is updated: '
+                    logging.debug('col: Influence of connection {} is updated: '
                                   'connection {} with {:.2f}'.format(target_connection.name,
                                                                source_connection.name,
                                                                infl_coeff))

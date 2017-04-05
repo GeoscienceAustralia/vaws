@@ -197,15 +197,16 @@ class House(object):
 
     def set_debris(self):
 
-        self.debris = Debris(self.cfg)
+        if self.cfg.flags['debris']:
+            self.debris = Debris(self.cfg)
 
-        points = []
-        for _, item in self.cfg.df_footprint.iterrows():
-            points.append((item[0], item[1]))
-        self.footprint = Polygon(points)
+            points = []
+            for _, item in self.cfg.df_footprint.iterrows():
+                points.append((item[0], item[1]))
+            self.footprint = Polygon(points)
 
-        self.debris.footprint = self.footprint, self.wind_orientation
-        self.debris.rnd_state = self.rnd_state
+            self.debris.footprint = self.footprint, self.wind_orientation
+            self.debris.rnd_state = self.rnd_state
 
     def set_house_wind_params(self):
         """

@@ -6,7 +6,6 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 from matplotlib import cm, colorbar, colors, ticker
-from matplotlib.patches import Rectangle
 from matplotlib.collections import PatchCollection
 
 from vaws.zone import num2str
@@ -29,26 +28,11 @@ def plot_heatmap(grouped, values, vmin, vmax, vstep, file_name=None):
 
     group_key = grouped['group_name'].unique()[0]
 
-    xlim_max = (grouped['x_coord'] + 0.5 * grouped['width']).max()
-    ylim_max = (grouped['y_coord'] + 0.5 * grouped['height']).max()
+    xlim_max = 6
+    ylim_max = 8
 
-    patches, xticks, yticks = [], [], []
-
-    # assumed rectangle but should be polygon later
-    for _, row in grouped.iterrows():
-        rect = Rectangle((row['x_coord'] - row['width'] / 2.0,
-                          row['y_coord'] - row['height'] / 2.0),  # (x, y)
-                         row['width'],  # width
-                         row['height'],  # height
-                         )
-        xticks.append(row['x_coord'])
-        yticks.append(row['y_coord'])
-        patches.append(rect)
-
-    xticks = list(set(xticks))
-    yticks = list(set(yticks))
-    xticks.sort()
-    yticks.sort()
+    # xlim_max = (grouped['x_coord'] + 0.5 * grouped['width']).max()
+    # ylim_max = (grouped['y_coord'] + 0.5 * grouped['height']).max()
 
     fig = plt.figure()
 
@@ -57,6 +41,12 @@ def plot_heatmap(grouped, values, vmin, vmax, vstep, file_name=None):
     width = 1.0 - left * 2.0
     height = 0.75
     ax1 = fig.add_axes([left, bottom, width, height])
+
+    #
+    # xticks = list(set(xticks))
+    # yticks = list(set(yticks))
+    # xticks.sort()
+    # yticks.sort()
 
     left = 0.1
     bottom = 0.1
@@ -81,9 +71,19 @@ def plot_heatmap(grouped, values, vmin, vmax, vstep, file_name=None):
     cb.set_label('Wind speed (m/s)', size=10)
     cb.ax.tick_params(labelsize=8)
 
-    p = PatchCollection(patches, cmap=cmap, norm=norm)
+    p = PatchCollection(grouped['coords'].tolist(), cmap=cmap, norm=norm)
     p.set_array(values)
     ax1.add_collection(p)
+
+    for irow, row in grouped.iterrows():
+
+        # patches = [row['coords']]
+        # p = PatchCollection(patches, label=row['zone_loc'])
+        #p.set_array(values)
+        # ax1.add_collection(p)
+        ax1.annotate(irow, row['centroid'], color='w', weight='bold',
+                     fontsize=8, ha='center', va='center')
+
     ax1.set_title('Heatmap of damage capacity for {}'.format(group_key))
 
     ax1.set_xlim([0, xlim_max])
@@ -97,13 +97,13 @@ def plot_heatmap(grouped, values, vmin, vmax, vstep, file_name=None):
     ax1.tick_params(axis=u'both', which=u'both', length=0)
 
     # Customize minor tick labels
-    ax1.xaxis.set_minor_locator(ticker.FixedLocator(xticks))
-    _list = [num2str(i) for i in range(1, len(xticks) + 1)]
-    ax1.xaxis.set_minor_formatter(ticker.FixedFormatter(_list))
-
-    ax1.yaxis.set_minor_locator(ticker.FixedLocator(yticks))
-    _list = [i for i in range(1, len(yticks) + 1)]
-    ax1.yaxis.set_minor_formatter(ticker.FixedFormatter(_list))
+    # ax1.xaxis.set_minor_locator(ticker.FixedLocator(xticks))
+    # _list = [num2str(i) for i in range(1, len(xticks) + 1)]
+    # ax1.xaxis.set_minor_formatter(ticker.FixedFormatter(_list))
+    #
+    # ax1.yaxis.set_minor_locator(ticker.FixedLocator(yticks))
+    # _list = [i for i in range(1, len(yticks) + 1)]
+    # ax1.yaxis.set_minor_formatter(ticker.FixedFormatter(_list))
 
     if file_name:
         fig.savefig('{}.png'.format(file_name), dpi=150)

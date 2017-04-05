@@ -21,7 +21,7 @@ def simulation(house_damage, conn_capacity, wind_speeds):
     # compute zone pressures
     cpi = 0.0
     wind_dir_index = 0
-    Ms = 1.0
+    ms = 1.0
     building_spacing = 0
     house_damage.house.mzcat = 1.0
 
@@ -34,7 +34,7 @@ def simulation(house_damage, conn_capacity, wind_speeds):
 
         logging.info('wind speed {:.3f}'.format(wind_speed))
 
-        house_damage.calculate_qz_Ms(wind_speed)
+        house_damage.calculate_qz_ms(wind_speed)
 
         for _zone in house_damage.house.zones.itervalues():
 
@@ -45,7 +45,7 @@ def simulation(house_damage, conn_capacity, wind_speeds):
             _zone.calc_zone_pressures(wind_dir_index,
                                       cpi,
                                       house_damage.qz,
-                                      Ms,
+                                      ms,
                                       building_spacing)
 
         # check damage by connection type group
@@ -89,7 +89,7 @@ class TestScenario1(unittest.TestCase):
         cls.house_damage = HouseDamage(cfg, seed=0)
 
         # # set up logging
-        # file_logger = os.path.join(cfg.output_path, 'log_test1.txt')
+        # file_logger = os.path.join(cfg.path_output, 'log_test1.txt')
         # cls.logger = logging.getLogger('myapp')
         # hdlr = logging.FileHandler(file_logger, mode='w')
         # formatter = logging.Formatter('%(asctime)s %(levelname)s %(message)s')
@@ -156,7 +156,7 @@ class TestScenario2(unittest.TestCase):
         cls.house_damage = HouseDamage(cfg, seed=0)
 
         # # set up logging
-        # file_logger = os.path.join(cfg.output_path, 'log_test2.txt')
+        # file_logger = os.path.join(cfg.path_output, 'log_test2.txt')
         # cls.logger = logging.getLogger('myapp')
         # hdlr = logging.FileHandler(file_logger, mode='w')
         # formatter = logging.Formatter('%(asctime)s %(levelname)s %(message)s')
@@ -199,7 +199,7 @@ class TestScenario3(unittest.TestCase):
         cls.house_damage = HouseDamage(cfg, seed=0)
 
         # set up logging
-        file_logger = os.path.join(cfg.output_path, 'log_test3.txt')
+        file_logger = os.path.join(cfg.path_output, 'log_test3.txt')
         logging.basicConfig(filename=file_logger,
                             filemode='w',
                             level=logging.DEBUG,
@@ -240,7 +240,7 @@ class TestScenario4(unittest.TestCase):
         cls.house_damage = HouseDamage(cfg, seed=0)
 
         # set up logging
-        file_logger = os.path.join(cfg.output_path, 'log_test4.txt')
+        file_logger = os.path.join(cfg.path_output, 'log_test4.txt')
         logging.basicConfig(filename=file_logger,
                             filemode='w',
                             level=logging.DEBUG,
@@ -278,7 +278,7 @@ class TestScenario5(unittest.TestCase):
         cls.house_damage = HouseDamage(cfg, seed=0)
 
         # set up logging
-        file_logger = os.path.join(cfg.output_path, 'log_test5.txt')
+        file_logger = os.path.join(cfg.path_output, 'log_test5.txt')
         logging.basicConfig(filename=file_logger,
                             filemode='w',
                             level=logging.DEBUG,
@@ -319,7 +319,7 @@ class TestScenario6(unittest.TestCase):
         cls.house_damage = HouseDamage(cfg, seed=0)
 
         # set up logging
-        file_logger = os.path.join(cfg.output_path, 'log_test6.txt')
+        file_logger = os.path.join(cfg.path_output, 'log_test6.txt')
         logging.basicConfig(filename=file_logger,
                             filemode='w',
                             level=logging.DEBUG,
@@ -353,7 +353,7 @@ class TestScenario7(unittest.TestCase):
         cls.house_damage = HouseDamage(cfg, seed=0)
 
         # set up logging
-        file_logger = os.path.join(cfg.output_path, 'log_test7.txt')
+        file_logger = os.path.join(cfg.path_output, 'log_test7.txt')
         logging.basicConfig(filename=file_logger,
                             filemode='w',
                             level=logging.DEBUG,
@@ -390,7 +390,7 @@ class TestScenario8(unittest.TestCase):
         cls.house_damage = HouseDamage(cfg, seed=0)
 
         # set up logging
-        file_logger = os.path.join(cfg.output_path, 'log_test8.txt')
+        file_logger = os.path.join(cfg.path_output, 'log_test8.txt')
         logging.basicConfig(filename=file_logger,
                             filemode='w',
                             level=logging.DEBUG,
@@ -427,7 +427,7 @@ class TestScenario9(unittest.TestCase):
         cls.house_damage = HouseDamage(cfg, seed=0)
 
         # set up logging
-        file_logger = os.path.join(cfg.output_path, 'log_test9.txt')
+        file_logger = os.path.join(cfg.path_output, 'log_test9.txt')
         logging.basicConfig(filename=file_logger,
                             filemode='w',
                             level=logging.DEBUG,
@@ -462,7 +462,7 @@ class TestScenario10(unittest.TestCase):
         cls.house_damage = HouseDamage(cfg, seed=0)
 
         # set up logging
-        file_logger = os.path.join(cfg.output_path, 'log_test10.txt')
+        file_logger = os.path.join(cfg.path_output, 'log_test10.txt')
         logging.basicConfig(filename=file_logger,
                             filemode='w',
                             level=logging.DEBUG,
@@ -495,7 +495,7 @@ class TestScenario11(unittest.TestCase):
         cls.house_damage = HouseDamage(cfg, seed=0)
 
         # set up logging
-        file_logger = os.path.join(cfg.output_path, 'log_test11.txt')
+        file_logger = os.path.join(cfg.path_output, 'log_test11.txt')
         logging.basicConfig(filename=file_logger,
                             filemode='w',
                             level=logging.DEBUG,
@@ -530,7 +530,7 @@ class TestScenario12(unittest.TestCase):
         cls.house_damage = HouseDamage(cfg, seed=0)
 
         # set up logging
-        file_logger = os.path.join(cfg.output_path, 'log_test12.txt')
+        file_logger = os.path.join(cfg.path_output, 'log_test12.txt')
         logging.basicConfig(filename=file_logger,
                             filemode='w',
                             level=logging.DEBUG,
@@ -566,7 +566,7 @@ class TestScenario13(unittest.TestCase):
         cls.house_damage = HouseDamage(cfg, seed=0)
 
         # set up logging
-        file_logger = os.path.join(cfg.output_path, 'log_test13.txt')
+        file_logger = os.path.join(cfg.path_output, 'log_test13.txt')
         logging.basicConfig(filename=file_logger,
                             filemode='w',
                             level=logging.DEBUG,
@@ -601,7 +601,7 @@ class TestScenario14(unittest.TestCase):
         cls.house_damage = HouseDamage(cfg, seed=0)
 
         # set up logging
-        file_logger = os.path.join(cfg.output_path, 'log_test14.txt')
+        file_logger = os.path.join(cfg.path_output, 'log_test14.txt')
         logging.basicConfig(filename=file_logger,
                             filemode='w',
                             level=logging.DEBUG,
@@ -636,7 +636,7 @@ class TestScenario15(unittest.TestCase):
         cls.house_damage = HouseDamage(cfg, seed=0)
 
         # set up logging
-        file_logger = os.path.join(cfg.output_path, 'log_test15.txt')
+        file_logger = os.path.join(cfg.path_output, 'log_test15.txt')
         logging.basicConfig(filename=file_logger,
                             filemode='w',
                             level=logging.DEBUG,
@@ -666,7 +666,7 @@ class TestScenario16(unittest.TestCase):
         cls.house_damage = HouseDamage(cfg, seed=0)
 
         # set up logging
-        file_logger = os.path.join(cfg.output_path, 'log_test16.txt')
+        file_logger = os.path.join(cfg.path_output, 'log_test16.txt')
         logging.basicConfig(filename=file_logger,
                             filemode='w',
                             level=logging.DEBUG,
@@ -713,7 +713,7 @@ class TestScenario16p1(unittest.TestCase):
         cls.house_damage = HouseDamage(cfg, seed=0)
 
         # set up logging
-        file_logger = os.path.join(cfg.output_path, 'log_test16p1.txt')
+        file_logger = os.path.join(cfg.path_output, 'log_test16p1.txt')
         logging.basicConfig(filename=file_logger,
                             filemode='w',
                             level=logging.DEBUG,
@@ -761,7 +761,7 @@ class TestScenario17(unittest.TestCase):
         cls.house_damage = HouseDamage(cfg, seed=0)
 
         # set up logging
-        file_logger = os.path.join(cfg.output_path, 'log_test17.txt')
+        file_logger = os.path.join(cfg.path_output, 'log_test17.txt')
         logging.basicConfig(filename=file_logger,
                             filemode='w',
                             level=logging.DEBUG,
@@ -810,4 +810,4 @@ class TestScenario17(unittest.TestCase):
 if __name__ == '__main__':
     suite = unittest.TestLoader().loadTestsFromTestCase(TestScenario17)
     unittest.TextTestRunner(verbosity=2).run(suite)
-    #unittest.main(verbosity=2)
+    # unittest.main(verbosity=2)

@@ -120,7 +120,7 @@ class Debris(object):
             self.front_facing_walls = self.cfg.dic_front_facing_walls[
                 self.cfg.wind_dir[wind_dir_index]]
         except KeyError:
-            self.front_facing_walls = list()
+            self.front_facing_walls = []
         else:
             self.area_walls = 0.0
             for wall_name in self.front_facing_walls:

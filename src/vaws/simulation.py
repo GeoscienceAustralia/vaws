@@ -48,8 +48,8 @@ def simulate_wind_damage_to_houses(cfg, call_back=None):
 
         for house_damage in list_house_damage:
 
-            # if cfg.flags['debris']:
-            house_damage.house.debris.no_items_mean = damage_incr
+            if cfg.flags['debris']:
+                house_damage.house.debris.no_items_mean = damage_incr
 
             list_ = house_damage.run_simulation(wind_speed)
 
@@ -174,7 +174,7 @@ def save_results_to_files(cfg, dic_panels):
             for id_sim, df_ in dic_panels['connection']['capacity'].loc[
                                grouped.index, cfg.wind_speed_steps - 1, :].iterrows():
 
-                file_name = os.path.join(cfg.output_path,
+                file_name = os.path.join(cfg.path_output,
                                          '{}_id{}'.format(group_name, id_sim))
                 plot_heatmap(grouped,
                              df_.values,
@@ -200,7 +200,7 @@ def show_results(self, output_folder=None, vRed=40, vBlue=80):
     self.plot_connection_damage(vRed, vBlue)
 
 
-def set_logger(conf):
+def set_logger(conf, logging_level):
     """
     
     Args:
@@ -210,10 +210,10 @@ def set_logger(conf):
     Returns:
 
     """
-    if not conf.logging_level:
+    if not logging_level:
         return
 
-    file_logger = os.path.join(conf.output_path, 'log.txt')
+    file_logger = os.path.join(conf.path_output, 'log.txt')
 
     logger = logging.getLogger()
     file_handler = logging.FileHandler(filename=file_logger, mode='w')
@@ -221,10 +221,10 @@ def set_logger(conf):
     file_handler.setFormatter(formatter)
     logger.addHandler(file_handler)
     try:
-        logger.setLevel(getattr(logging, conf.logging_level.upper()))
+        logger.setLevel(getattr(logging, logging_level.upper()))
     except AttributeError:
         print('{} is not a logging level, '
-              'DEBUG is set instead'.format(conf.logging_level))
+              'DEBUG is set instead'.format(logging_level))
         logger.setLevel(logging.DEBUG)
 
 

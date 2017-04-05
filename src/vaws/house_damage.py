@@ -23,7 +23,7 @@ class HouseDamage(object):
 
         # vary over wind speeds
         self.qz = None
-        self.Ms = None
+        self.ms = None
         self.cpi = 0.0
         self.cpi_wind_speed = 0.0
         self.collapse = False
@@ -46,7 +46,7 @@ class HouseDamage(object):
             self.check_internal_pressurisation(wind_speed)
 
         # compute load by zone
-        self.calculate_qz_Ms(wind_speed)
+        self.calculate_qz_ms(wind_speed)
 
         # load = qz * (Cpe + Cpi) * A + Dead
         for _zone in self.house.zones.itervalues():
@@ -54,7 +54,7 @@ class HouseDamage(object):
             _zone.calc_zone_pressures(self.house.wind_orientation,
                                       self.cpi,
                                       self.qz,
-                                      self.Ms,
+                                      self.ms,
                                       self.cfg.building_spacing,
                                       self.cfg.flags['diff_shielding'])
 
@@ -109,7 +109,7 @@ class HouseDamage(object):
                 for key, value in _dic.iteritems():
                     self.bucket[item].at[key, att] = getattr(value, att)
 
-    def calculate_qz_Ms(self, wind_speed):
+    def calculate_qz_ms(self, wind_speed):
         """
         calculate qz, velocity pressure given wind velocity
         qz = 0.6*10-3*(Mz,cat*V)**2
@@ -118,17 +118,17 @@ class HouseDamage(object):
 
         Returns:
             qz
-            update Ms
+            update ms
 
         """
         if self.cfg.regional_shielding_factor <= 0.85:
             thresholds = np.array([63, 63 + 15])
             ms_dic = {0: 1.0, 1: 0.85, 2: 0.95}
             idx = sum(thresholds <= self.rnd_state.random_integers(0, 100))
-            self.Ms = ms_dic[idx]
-            wind_speed *= self.Ms / self.cfg.regional_shielding_factor
+            self.ms = ms_dic[idx]
+            wind_speed *= self.ms / self.cfg.regional_shielding_factor
         else:
-            self.Ms = 1.0
+            self.ms = 1.0
 
         self.qz = 0.6 * 1.0e-3 * (wind_speed * self.house.mzcat) ** 2
 

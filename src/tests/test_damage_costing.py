@@ -122,7 +122,7 @@ class WaterIngressTestCase(unittest.TestCase):
 
     def test_water_ingress_costings(self):
 
-        file_water_ingress_costing = os.path.join(self.cfg.path_datafile,
+        file_water_ingress_costing = os.path.join(self.cfg.path_house_data,
                                                   'water_ingress_costing_data.csv')
         dic_ = {}
         tmp = pd.read_csv(file_water_ingress_costing)

@@ -21,7 +21,7 @@ class MyTestCase(unittest.TestCase):
         cls.rnd_state = np.random.RandomState(seed=13)
 
     def test_get_grid(self):
-        col, row = self.zone.get_grid_from_zone_location()
+        col, row = self.zone.get_grid_from_zone_location(self.zone.name)
         self.assertEquals(col, 13)  # N
         self.assertEquals(row, 11)  # 12
         self.assertEquals(self.zone.get_zone_location_from_grid((col, row)),
