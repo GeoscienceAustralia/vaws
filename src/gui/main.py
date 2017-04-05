@@ -18,7 +18,7 @@ from vaws.curve import vulnerability_lognorm, vulnerability_weibull
 from main_ui import Ui_main
 from vaws.simulation import process_commandline, set_logger, \
     simulate_wind_damage_to_houses
-from vaws.config import Config, INPUT_DIR
+from vaws.config import Config, INPUT_DIR, OUTPUT_DIR
 from vaws.version import VERSION_DESC
 from vaws.stats import compute_logarithmic_mean_stddev
 
@@ -678,12 +678,17 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
                 shutil.copytree(default_input,
                                 os.path.join(path_cfg, INPUT_DIR))
 
+            if not os.path.isdir(os.path.join(path_cfg, OUTPUT_DIR)):
+                os.mkdir(os.path.join(path_cfg, OUTPUT_DIR))
+
             settings = QSettings()
             settings.setValue("ScenarioFolder", QVariant(QString(path_cfg)))
             self.cfg.path_cfg = path_cfg
             self.cfg.cfg_file = os.path.join(path_cfg, file_suffix_name)
+            self.cfg.output_path = os.path.join(path_cfg, OUTPUT_DIR)
 
             self.cfg.save_config()
+            set_logger(self.cfg)
             self.update_ui_from_config()
         else:
             msg = 'No scenario name entered. Action cancelled'
@@ -858,7 +863,7 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
         except Exception as excep:
             logging.exception("Loading configuration caused exception")
 
-            msg = 'Unable to load previous scenario: %s\nCreating new scenario.' % fname
+            msg = 'Unable to load previous scenario: %s\nLoad cancelled.' % fname
             QMessageBox.warning(self, "VAWS Program Warning", unicode(msg))
 
     def okToContinue(self):

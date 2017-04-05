@@ -183,7 +183,7 @@ class Config(object):
             self.red_v = conf.getfloat(key, 'red_V')
             self.blue_v = conf.getfloat(key, 'blue_V')
         except ConfigParser.NoSectionError:
-            print('default value is used for heatmap')
+            logging.info('default value is used for heatmap')
 
         if not os.path.exists(self.path_output):
             os.makedirs(self.path_output)
@@ -231,7 +231,7 @@ class Config(object):
             thresholds = [0.1, 0.2, 0.5, 2.0]
             lower = [40.0, 35.0, 0.0, -20.0]
             upper = [60.0, 55.0, 40.0, 20.0]
-            print('default water ingress thresholds is used')
+            logging.info('default water ingress thresholds is used')
         self.water_ingress_given_di = pd.DataFrame(np.array([lower, upper]).T,
                                                    index=thresholds,
                                                    columns=['lower', 'upper'])
@@ -313,7 +313,7 @@ class Config(object):
         else:
             states = ['slight', 'medium', 'severe', 'complete']
             thresholds = [0.15, 0.45, 0.6, 0.9]
-            print('default fragility thresholds is used')
+            logging.info('default fragility thresholds is used')
         self.fragility_thresholds = pd.DataFrame(thresholds,
                                                  index=states,
                                                  columns=['threshold'])
@@ -715,7 +715,7 @@ class Config(object):
         try:
             self.wind_dir_index = self.__class__.wind_dir.index(wind_dir_str.upper())
         except ValueError:
-            print('8(i.e., RANDOM) is set for wind_dir_index by default')
+            logging.info('8(i.e., RANDOM) is set for wind_dir_index by default')
             self.wind_dir_index = 8
 
     def save_config(self):

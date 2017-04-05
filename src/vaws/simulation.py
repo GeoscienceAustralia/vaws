@@ -34,8 +34,8 @@ def simulate_wind_damage_to_houses(cfg, call_back=None):
 
     if cfg.parallel:
         cfg.parallel = False
-        print('parallel running is not implemented yet, '
-              'switched to serial mode')
+        logging.info('parallel running is not implemented yet, '
+                     'switched to serial mode')
 
     logging.info('Starting simulation in serial')
 
@@ -200,31 +200,30 @@ def show_results(self, output_folder=None, vRed=40, vBlue=80):
     self.plot_connection_damage(vRed, vBlue)
 
 
-def set_logger(conf, logging_level):
+def set_logger(options):
     """
     
     Args:
-        file_logger: 
-        logging_level: 
+        options: 
 
     Returns:
 
     """
-    if not logging_level:
-        return
 
-    file_logger = os.path.join(conf.path_output, 'log.txt')
+    path_cfg = os.path.dirname(os.path.realpath(options.config_filename))
 
     logger = logging.getLogger()
+    file_logger = os.path.join(path_cfg, 'output/log.txt')
     file_handler = logging.FileHandler(filename=file_logger, mode='w')
     formatter = logging.Formatter('%(levelname)s - %(message)s')
     file_handler.setFormatter(formatter)
     logger.addHandler(file_handler)
+
     try:
-        logger.setLevel(getattr(logging, logging_level.upper()))
+        logger.setLevel(getattr(logging, options.verbose.upper()))
     except AttributeError:
-        print('{} is not a logging level, '
-              'DEBUG is set instead'.format(logging_level))
+        logging.info('{} is not a logging level; DEBUG is set instead'.format(
+            options.verbose))
         logger.setLevel(logging.DEBUG)
 
 
@@ -251,13 +250,11 @@ def main():
 
     if options.config_filename:
 
-        conf = Config(cfg_file=options.config_filename)
-
         if options.verbose:
-            set_logger(conf, options.verbose)
+            set_logger(options)
 
+        conf = Config(cfg_file=options.config_filename)
         _ = simulate_wind_damage_to_houses(conf)
-
     else:
         print('Error: Must provide a config file to run')
         parser.print_help()
