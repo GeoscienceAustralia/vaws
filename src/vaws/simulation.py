@@ -200,31 +200,28 @@ def show_results(self, output_folder=None, vRed=40, vBlue=80):
     self.plot_connection_damage(vRed, vBlue)
 
 
-def set_logger(options):
+def set_logger(config, logging_level=logging.INFO):
     """
-    
+        
     Args:
-        options: 
-
+        options: Logging configuration 
+        logging_level: Level of messages that will be logged
     Returns:
-
     """
-
-    path_cfg = os.path.dirname(os.path.realpath(options.config_filename))
 
     logger = logging.getLogger()
-    file_logger = os.path.join(path_cfg, 'output/log.txt')
+    file_logger = os.path.join(config.path_cfg, 'output/log.txt')
     file_handler = logging.FileHandler(filename=file_logger, mode='w')
     formatter = logging.Formatter('%(levelname)s - %(message)s')
     file_handler.setFormatter(formatter)
     logger.addHandler(file_handler)
 
     try:
-        logger.setLevel(getattr(logging, options.verbose.upper()))
-    except AttributeError:
+        file_handler.setLevel(getattr(logging, logging_level.upper()))
+    except (AttributeError, TypeError):
         logging.info('{} is not a logging level; DEBUG is set instead'.format(
-            options.verbose))
-        logger.setLevel(logging.DEBUG)
+            logging_level))
+        file_handler.setLevel(logging.DEBUG)
 
 
 def process_commandline():
@@ -243,17 +240,16 @@ def process_commandline():
 
 
 def main():
-
     parser = process_commandline()
 
     (options, args) = parser.parse_args()
 
     if options.config_filename:
+        conf = Config(cfg_file=options.config_filename)
 
         if options.verbose:
-            set_logger(options)
+            set_logger(conf, options.verbose)
 
-        conf = Config(cfg_file=options.config_filename)
         _ = simulate_wind_damage_to_houses(conf)
     else:
         print('Error: Must provide a config file to run')
