@@ -183,6 +183,7 @@ def save_results_to_files(cfg, dic_panels):
                              vstep=21,
                              file_name=file_name)
 
+
 def show_results(self, output_folder=None, vRed=40, vBlue=80):
     if self.mplDict:
         self.mplDict['fragility'].axes.cla()
