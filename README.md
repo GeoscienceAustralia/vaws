@@ -3,8 +3,6 @@ It is recommended that you create a virtual conda environment to run the `vaws` 
 These instructions have been tested on `Redhat EL 6.7` and is expected to work for most newer versions of `Linux`. 
 Conda and the requirements can be installed using the following steps.
 
-set HTTPS_PROXY=https://u53337:password@10.7.64.209:8080
-
 1. Clone the VAWS repository 
 >```git clone git@github.com:GeoscienceAustralia/vaws.git```
 2. Download and install [Miniconda](https://conda.io/miniconda.html)
