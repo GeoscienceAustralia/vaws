@@ -7,4 +7,5 @@ export PYTHONPATH=${VAWS_DIR}/src:${PYTHONPATH}
 echo ${PYTHONPATH}
 
 echo "Starting vaws gui"
-python src/gui/main.py "$@"
+python ${VAWS_DIR}/src/vaws/simulation.py "$@"
+
