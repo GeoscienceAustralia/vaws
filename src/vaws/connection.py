@@ -26,10 +26,22 @@ class Connection(object):
         self.type_name = None
         self.zone_loc = None
         self.group_name = None
+        self.sub_group = None
+        self.section = None
+        self.grid = None
+        self.grid_raw = None
+        self.centroid = None
+        self.coords = None
 
         default_attr = {'type_name': self.type_name,
                         'zone_loc': self.zone_loc,
-                        'group_name': self.group_name}
+                        'group_name': self.group_name,
+                        'sub_group': self.sub_group,
+                        'section': self.section,
+                        'grid': self.grid,
+                        'grid_raw': self.grid_raw,
+                        'centroid': self.centroid,
+                        'coords': self.coords}
 
         default_attr.update(kwargs)
         for key, value in default_attr.iteritems():
@@ -39,11 +51,10 @@ class Connection(object):
         self._lognormal_dead_load = None
         self._influences = None
         self._influence_patch = None
-        self._grid = None  # zero-based col, row index
 
         self.strength = None
         self.dead_load = None
-        self.capacity = 0.0
+        self.capacity = -1.0  # default
         self.damaged = 0
         self.load = None
 
@@ -64,15 +75,6 @@ class Connection(object):
     def lognormal_dead_load(self, value):
         assert isinstance(value, tuple)
         self._lognormal_dead_load = value
-
-    @property
-    def grid(self):
-        return self._grid
-
-    @grid.setter
-    def grid(self, _tuple):
-        assert isinstance(_tuple, tuple)
-        self._grid = _tuple
 
     @property
     def influences(self):
@@ -344,11 +346,12 @@ class ConnectionTypeGroup(object):
     def damage_grid(self, _tuple):
 
         assert isinstance(_tuple, tuple)
-        no_rows, no_cols = _tuple
+        max_row_idx, max_col_idx = _tuple
 
         if self.dist_dir:
             self._damage_grid = -1 * np.ones(dtype=int,
-                                             shape=(no_rows, no_cols))
+                                             shape=(max_row_idx + 1,
+                                                    max_col_idx + 1))
         else:
             self._damage_grid = None
 

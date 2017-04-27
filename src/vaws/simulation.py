@@ -181,6 +181,8 @@ def save_results_to_files(cfg, dic_panels):
                              vmin=cfg.red_v,
                              vmax=cfg.blue_v,
                              vstep=21,
+                             xlim_max=cfg.df_house['length'].values,
+                             ylim_max=cfg.df_house['width'].values,
                              file_name=file_name)
 
 def show_results(self, output_folder=None, vRed=40, vBlue=80):

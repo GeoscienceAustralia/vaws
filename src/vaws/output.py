@@ -11,7 +11,8 @@ from matplotlib.collections import PatchCollection
 from vaws.zone import num2str
 
 
-def plot_heatmap(grouped, values, vmin, vmax, vstep, file_name=None):
+def plot_heatmap(grouped, values, vmin, vmax, vstep, xlim_max, ylim_max,
+                 file_name=None):
     """
 
     Args:
@@ -28,8 +29,8 @@ def plot_heatmap(grouped, values, vmin, vmax, vstep, file_name=None):
 
     group_key = grouped['group_name'].unique()[0]
 
-    xlim_max = 6
-    ylim_max = 8
+    # xlim_max = 6
+    # ylim_max = 8
 
     # xlim_max = (grouped['x_coord'] + 0.5 * grouped['width']).max()
     # ylim_max = (grouped['y_coord'] + 0.5 * grouped['height']).max()

@@ -1,5 +1,5 @@
-conn_name,type_name,zone_loc,edge
-1,sheetingeave,A1,2
+conn_name,type_name,zone_loc,section
+1,sheetingeave,A1,0
 2,sheeting,A2,0
 3,sheeting,A3,0
 4,sheeting,A4,0
@@ -8,4 +8,4 @@ conn_name,type_name,zone_loc,edge
 7,sheeting,A7,0
 8,sheeting,A8,0
 9,sheeting,A9,0
-10,sheetingeave,A10,1
+10,sheetingeave,A10,0

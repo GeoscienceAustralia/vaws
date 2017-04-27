@@ -19,6 +19,7 @@ from matplotlib.patches import Polygon
 
 from vaws.stats import compute_logarithmic_mean_stddev
 from vaws.damage_costing import Costing, WaterIngressCosting
+from vaws.zone import Zone
 
 OUTPUT_DIR = "output"
 INPUT_DIR = "input"
@@ -114,6 +115,7 @@ class Config(object):
         self.df_groups = None
         self.df_types = None
         self.df_connections = None
+        self.dic_sub_groups = None
         self.dic_influences = None
         self.dic_influence_patches = None
 
@@ -464,6 +466,10 @@ class Config(object):
         self.df_connections = self.read_connection_data(
             file_connections, self.df_types)
         self.list_connections = self.df_connections.index.tolist()
+        self.dic_sub_groups = self.df_connections.groupby('sub_group')['grid_max'].apply(
+            lambda x: x.unique()[0]).to_dict()
+        self.df_connections['group_idx'] = self.df_connections['group_name'].apply(
+            lambda x: self.list_groups.index(x))
 
         # influences
         self.dic_influences = self.read_influences(file_influences)
@@ -481,8 +487,8 @@ class Config(object):
         self.dic_water_ingress_costings = self.read_water_ingress_costing_data(
             file_water_ingress_costing, self.df_groups)
 
-    @staticmethod
-    def read_connection_data(file_connections, df_types):
+    @classmethod
+    def read_connection_data(cls, file_connections, df_types):
 
         dump = []
         with open(file_connections, 'r') as f:
@@ -515,7 +521,21 @@ class Config(object):
 
         _df['group_name'] = df_types.loc[_df['type_name'], 'group_name'].values
 
+        _df['sub_group'] = _df.apply(
+            lambda row: row['group_name'] + row['section'], axis=1)
+        _df['grid_raw'] = _df['zone_loc'].apply(Zone.get_grid_from_zone_location)
+        _df = _df.join(_df.groupby('sub_group')['grid_raw'].apply(
+            lambda x: tuple(map(min, *x))), on='sub_group', rsuffix='_min')
+        _df['grid'] = _df.apply(cls.get_diff_tuples,
+                                args=('grid_raw', 'grid_raw_min'), axis=1)
+        _df = _df.join(_df.groupby('sub_group')['grid'].apply(
+            lambda x: tuple(map(max, *x))), on='sub_group', rsuffix='_max')
+
         return _df
+
+    @staticmethod
+    def get_diff_tuples(row, key1, key2):
+        return tuple([row[key1][i] - row[key2][i] for i in range(2)])
 
     @staticmethod
     def read_damage_costing_data(file_damage_costing, df_groups):

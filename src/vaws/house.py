@@ -105,55 +105,54 @@ class House(object):
 
     def set_connections(self):
 
-        for group_name, item in self.cfg.df_groups.iterrows():
+        for (_, sub_group_name), grouped in self.cfg.df_connections.groupby(
+                by=['group_idx', 'sub_group']):
 
-            _id_type = self.cfg.df_types['group_name'] == group_name
-            _id_conn = self.cfg.df_connections['group_name'] == group_name
+            # sub_group
+            group_name = grouped['group_name'].values[0]
+            group_item = self.cfg.df_groups.loc[group_name]
+            _group = ConnectionTypeGroup(group_name=group_name,
+                                         **group_item)
+            _group.damage_grid = self.cfg.dic_sub_groups[sub_group_name]
 
-            for section, grouped in self.cfg.df_connections.loc[_id_conn].groupby('section'):
+            _group.costing = self.assign_costing(group_item['damage_scenario'])
+            costing_area_by_group = 0.0
 
-                _group = ConnectionTypeGroup(group_name=group_name, **item)
-                _group.damage_grid = self.roof_cols, self.roof_rows
+            _group.types = self.cfg.df_types.loc[
+                self.cfg.df_types.index.isin(grouped['type_name'])].to_dict('index')
 
-                _group.costing = self.assign_costing(item['damage_scenario'])
-                costing_area_by_group = 0.0
+            # linking with connections
+            for type_name, _type in _group.types.iteritems():
 
-                _in_conns = self.cfg.df_types.index.isin(grouped['type_name'])
-                df_selected_types = self.cfg.df_types.loc[_id_type & _in_conns]
-
-                _group.types = df_selected_types.to_dict('index')
+                _type.connections = grouped.loc[
+                    grouped['type_name'] == type_name].to_dict('index')
+                _group.no_connections = _type.no_connections
 
                 # linking with connections
-                for type_name, _type in _group.types.iteritems():
+                for connection_name, _connection in _type.connections.iteritems():
 
-                    df_selected_connections = grouped.loc[
-                        grouped['type_name'] == type_name]
+                    self.connections[connection_name] = _connection
+                    self.set_connection_property(_connection)
 
-                    _type.connections = df_selected_connections.to_dict('index')
-                    _group.no_connections = _type.no_connections
-
-                    # linking with connections
-                    for connection_name, _connection in _type.connections.iteritems():
-
-                        self.connections[connection_name] = _connection
-                        self.set_connection_property(_connection)
-
+                    try:
                         _group.damage_grid[_connection.grid] = 0  # intact
+                    except IndexError:
+                        print('{}:{}'.format(_group.damage_grid, _connection.grid))
 
-                        costing_area_by_group += _type.costing_area
+                    costing_area_by_group += _type.costing_area
 
-                        _group.connection_by_grid = _connection.grid, _connection
-                        _group.connection_by_name = _connection.name, _connection
+                    _group.connection_by_grid = _connection.grid, _connection
+                    _group.connection_by_name = _connection.name, _connection
 
-                        # linking connections either zones or connections\
-                        for _inf in _connection.influences.itervalues():
-                            try:
-                                _inf.source = self.zones[_inf.name]
-                            except KeyError:
-                                _inf.source = self.connections[_inf.name]
+                    # linking connections either zones or connections\
+                    for _inf in _connection.influences.itervalues():
+                        try:
+                            _inf.source = self.zones[_inf.name]
+                        except KeyError:
+                            _inf.source = self.connections[_inf.name]
 
                 _group.costing_area = costing_area_by_group
-                self.groups[group_name + str(section)] = _group
+                self.groups[sub_group_name] = _group
 
     def set_connection_property(self, _connection):
         """
@@ -171,9 +170,9 @@ class House(object):
         _connection.sample_dead_load(rnd_state=self.rnd_state)
 
         # _connection.grid = self.zones[_connection.zone_loc].grid
-        _connection.grid = Zone.get_grid_from_zone_location(
-            _connection.zone_loc)
-
+        # _connection.grid = Zone.get_grid_from_zone_location(
+        #    _connection.zone_loc)
+        # _connection.grid = _connection['grid']
         _connection.influences = self.cfg.dic_influences[_connection.name]
 
         if _connection.name in self.cfg.dic_influence_patches:
