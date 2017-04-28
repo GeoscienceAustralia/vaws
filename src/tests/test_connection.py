@@ -149,8 +149,8 @@ class MyTestCase(unittest.TestCase):
             try:
                 self.assertEqual(_conn.damaged, ref_dic[id_conn])
             except AssertionError:
-                print '{}: {} vs {}'.format(_conn.name, _conn.damaged,
-                                            ref_dic[id_conn])
+                print('{}: {} vs {}'.format(_conn.name, _conn.damaged,
+                                            ref_dic[id_conn]))
 
         # ref_prop = {'sheetinggable': 0.25, 'sheetingeave': 0.0,
         #            'sheetingcorner': 0.0, 'sheeting': 0.25}

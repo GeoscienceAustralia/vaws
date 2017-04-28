@@ -85,6 +85,7 @@ class Config(object):
         self.terrain_category = None
         self.regional_shielding_factor = 1.0
         self.wind_profile = None
+        self.profile_idx = None
         self.wind_dir_index = None
 
         self.construction_levels = OrderedDict()
@@ -172,6 +173,8 @@ class Config(object):
 
         self.read_house_data()
 
+        self.read_wind_profile(conf, key='wind_profile')
+
         self.read_construction_levels(conf, key='construction_levels')
 
         self.read_fragility_thresholds(conf, key='fragility_thresholds')
@@ -220,8 +223,6 @@ class Config(object):
         self.set_wind_dir_index(conf.get(key, 'wind_fixed_dir'))
         self.regional_shielding_factor = conf.getfloat(
             key, 'regional_shielding_factor')
-        self.set_terrain_category(conf.get(key, 'terrain_cat'))
-        self.set_wind_profile()
 
     def read_water_ingress(self, conf, key):
         if conf.has_section(key):
@@ -334,6 +335,25 @@ class Config(object):
         self.construction_levels[name] = OrderedDict(zip(
             ['probability', 'mean_factor', 'cov_factor'],
             [prob, mf, cf]))
+
+    def read_wind_profile(self, conf, key):
+
+        self.set_terrain_category(conf.get(key, 'terrain_cat'))
+
+        try:
+            float(self.terrain_category)
+        except ValueError:
+            _file = 'non_cyclonic.csv'
+        else:
+            _file = 'cyclonic_terrain_cat{}.csv'.format(self.terrain_category)
+
+        self.wind_profile = pd.read_csv(os.path.join(self.path_wind_profiles, _file),
+                                        skiprows=1,
+                                        header=None,
+                                        index_col=0).to_dict('list')
+
+        self.profile_idx = conf.get(key, 'profile_idx')
+
 
     def read_construction_levels(self, conf, key):
         if self.flags[key]:
@@ -699,20 +719,6 @@ class Config(object):
             logging.warn('Invalid terrain category: {}'.format(value))
         else:
             self.terrain_category = value
-
-    def set_wind_profile(self):
-
-        try:
-            float(self.terrain_category)
-        except ValueError:
-            _file = 'non_cyclonic.csv'
-        else:
-            _file = 'cyclonic_terrain_cat{}.csv'.format(self.terrain_category)
-
-        self.wind_profile = pd.read_csv(os.path.join(self.path_wind_profiles, _file),
-                                        skiprows=1,
-                                        header=None,
-                                        index_col=0).to_dict('list')
 
     def set_debris_types(self):
 
