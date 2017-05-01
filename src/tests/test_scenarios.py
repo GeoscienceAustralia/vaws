@@ -10,13 +10,13 @@ from vaws.config import Config
 import logging
 
 
-def simulation(house_damage, conn_capacity, wind_speeds):
+def simulation(house_damage, conn_capacity, wind_speeds, list_connections):
 
     # change it to conn to speed
-    conn_capacity2 = dict()
+    conn_capacity2 = {x: -1.0 for x in list_connections}
     for speed, conn_list in conn_capacity.iteritems():
         for _id in conn_list:
-            conn_capacity2.setdefault(_id, speed)
+            conn_capacity2.update({_id: speed})
 
     # compute zone pressures
     cpi = 0.0
@@ -173,17 +173,20 @@ class TestScenario2(unittest.TestCase):
     def test_damage_sheeting(self):
 
         conn_capacity = {40.0: [10],
-                         45.0: [9, 11],
-                         50.0: [8],
-                         55.0: [13, 6, 12],
-                         60.0: [5, 7, 14],
-                         65.0: [4, 15],
-                         70.0: [3, 16],
-                         75.0: [2, 17],
-                         80.0: [18, 1]}
+                         41.0: [9, 11],
+                         42.0: [8],
+                         43.0: [12],
+                         44.0: [7],
+                         48.0: [13, 6],
+                         49.0: [5, 14],
+                         50.0: [4, 15],
+                         51.0: [3, 16],
+                         52.0: [2, 17],
+                         53.0: [18, 1]}
 
         simulation(self.house_damage, conn_capacity,
-                   wind_speeds=np.arange(40.0, 120, 1.0))
+                   wind_speeds=np.arange(40.0, 120, 1.0),
+                   list_connections=range(1, 19))
 
 
 class TestScenario3(unittest.TestCase):
@@ -208,26 +211,37 @@ class TestScenario3(unittest.TestCase):
     def test_damage_batten(self):
 
         # ref data
-        conn_capacity = {50.0: [40, 43],
-                         65.0: [46, 34, 37, 49],
-                         70.0: [55, 36, 31, 52],
-                         75.0: [58, 42],
-                         80.0: [48],
-                         85.0: [54],
-                         90.0: [60, 39, 41, 44],
-                         95.0: [35],
-                         100.0: [47],
-                         105.0: [53],
-                         110.0: [59],
-                         115.0: [38, 45, 50],
-                         -1.0: range(1, 31)}
-        [conn_capacity[-1.0].append(x) for x in [32, 33, 51, 56, 57]]
+        conn_capacity = {40.0: [40],
+                         41.0: [43],
+                         49.0: [49],
+                         50.0: [37],
+                         51.0: [55],
+                         52.0: [31],
+                         53.0: [46],
+                         54.0: [34],
+                         55.0: [52],
+                         56.0: [58],
+                         60.0: [36],
+                         61.0: [42],
+                         62.0: [48],
+                         63.0: [54],
+                         64.0: [60],
+                         72.0: [39, 41, 44],
+                         73.0: [35, 50],
+                         74.0: [38, 47, 56],
+                         75.0: [32, 53],
+                         76.0: [59],
+                         93.0: [45],
+                         94.0: [33, 51],
+                         95.0: [57]}
 
         simulation(self.house_damage, conn_capacity,
-                   wind_speeds=np.arange(40.0, 120, 5.0))
+                   wind_speeds=np.arange(40.0, 120, 1.0),
+                   list_connections=range(1, 61))
 
 
 class TestScenario4(unittest.TestCase):
+
 
     @classmethod
     def setUpClass(cls):
@@ -250,19 +264,22 @@ class TestScenario4(unittest.TestCase):
 
         # ref data
         conn_capacity = {40.0: [10],
-                         45.0: [9, 11],
-                         50.0: [8, 31],
-                         55.0: [13, 12, 6],
-                         60.0: [5, 7, 14],
-                         65.0: [4, 15],
-                         70.0: [3, 16],
-                         75.0: [2, 17],
-                         80.0: [1, 18],
-                         -1.0: [19, 20, 21, 22, 23, 24, 26, 27, 28, 29,
-                                32, 33, 34, 35, 36, 25, 30]}
+                         41.0: [9, 11, 31],
+                         42.0: [8],
+                         46.0: [13],
+                         48.0: [6],
+                         62.0: [14],
+                         63.0: [15],
+                         64.0: [16],
+                         65.0: [17],
+                         67.0: [5],
+                         68.0: [4],
+                         69.0: [3],
+                         70.0: [2]}
 
         simulation(self.house_damage, conn_capacity,
-                   wind_speeds=np.arange(40.0, 120, 5.0))
+                   wind_speeds=np.arange(40.0, 120, 1.0),
+                   list_connections=range(1, 37))
 
 
 class TestScenario5(unittest.TestCase):
@@ -287,27 +304,21 @@ class TestScenario5(unittest.TestCase):
     def test_damage_sheeting_batten(self):
 
         # ref data 5
-        conn_capacity = {40.0: [],
-                         45.0: [],
-                         50.0: [31, 28],
-                         55.0: [25],
-                         60.0: [19],
-                         65.0: [22, 34],
-                         70.0: [24],
-                         75.0: [30],
-                         80.0: [36],
-                         90.0: [32, 27, 29],
-                         95.0: [26, 23],
-                         100.0: [35, 20],
-                         115.0: [33],
-                         -1.0: range(1, 19)}
-        conn_capacity[-1.0].append(21)
+        conn_capacity = {40.0: [28],
+                         41.0: [31],
+                         60.0: [24],
+                         72.0: [27, 29, 32],
+                         102.0: [23]}
 
         simulation(self.house_damage, conn_capacity,
-                   wind_speeds=np.arange(40.0, 120, 5.0))
+                   wind_speeds=np.arange(40.0, 120, 1.0),
+                   list_connections=range(1, 37))
 
 
 class TestScenario6(unittest.TestCase):
+    """
+    FIXME!! NEED TO CHECK THE RESULTS
+    """
 
     @classmethod
     def setUpClass(cls):
@@ -328,15 +339,18 @@ class TestScenario6(unittest.TestCase):
     def test_damage_sheeting_batten_rafter(self):
 
         conn_capacity = {40.0: [41, 43],
-                         70.0: [42],
-                         75.0: [40, 44],
-                         90.0: [46],
-                         95.0: [45],
-                         -1.0: range(1, 40)}
-        conn_capacity[-1.0].append(47)
+                         49.0: [46],
+                         50.0: [14, 15, 16, 17],
+                         64.0: [18],
+                         70.0: [31],
+                         71.0: [13],
+                         72.0: [8, 9, 10, 11],
+                         92.0: [30],
+                         93.0: [12]}
 
         simulation(self.house_damage, conn_capacity,
-                   wind_speeds=np.arange(40.0, 100.0, 5.0))
+                   wind_speeds=np.arange(40.0, 100.0, 1.0),
+                   list_connections=range(1, 48))
 
 
 class TestScenario7(unittest.TestCase):
@@ -361,19 +375,20 @@ class TestScenario7(unittest.TestCase):
     def test_damage_sheeting(self):
 
         # ref data 7
-        conn_capacity = {53.0: [10],
-                         54.0: [9],
-                         55.0: [8],
-                         56.0: [7],
-                         57.0: [6],
-                         58.0: [5],
-                         59.0: [4],
-                         60.0: [3],
-                         61.0: [2],
-                         62.0: [1]}
+        conn_capacity = {48.0: [10],
+                         49.0: [9],
+                         50.0: [8],
+                         51.0: [7],
+                         52.0: [6],
+                         53.0: [5],
+                         54.0: [4],
+                         55.0: [3],
+                         56.0: [2],
+                         57.0: [1]}
 
         simulation(self.house_damage, conn_capacity,
-                   wind_speeds=np.arange(40.0, 120, 1.0))
+                   wind_speeds=np.arange(40.0, 120, 1.0),
+                   list_connections=range(1, 11))
 
 
 class TestScenario8(unittest.TestCase):
@@ -401,16 +416,16 @@ class TestScenario8(unittest.TestCase):
         conn_capacity = {53.0: [1],
                          54.0: [2],
                          55.0: [3],
-                         56.0: [4],
+                         56.0: [4, 6],
                          57.0: [5],
-                         58.0: [6],
-                         59.0: [7],
-                         60.0: [8],
-                         61.0: [9],
-                         62.0: [10]}
+                         58.0: [7],
+                         59.0: [8],
+                         60.0: [9],
+                         61.0: [10]}
 
         simulation(self.house_damage, conn_capacity,
-                   wind_speeds=np.arange(40.0, 120, 1.0))
+                   wind_speeds=np.arange(40.0, 120, 1.0),
+                   list_connections=range(1, 11))
 
 
 class TestScenario9(unittest.TestCase):
@@ -435,20 +450,24 @@ class TestScenario9(unittest.TestCase):
     def test_damage_sheeting(self):
 
         # ref data 9
-        conn_capacity = {40.0: [7],
-                         45.0: [6, 8],
-                         46.0: [5, 9],
-                         47.0: [4],
-                         48.0: [10],
-                         49.0: [3],
-                         50.0: [2],
-                         51.0: [1]}
+        conn_capacity = {41.0: [7],
+                         42.0: [6],
+                         43.0: [8],
+                         44.0: [5, 9],
+                         45.0: [4, 10],
+                         46.0: [3],
+                         47.0: [2],
+                         48.0: [1]}
 
         simulation(self.house_damage, conn_capacity,
-                   wind_speeds=np.arange(40.0, 60.0, 1.0))
+                   wind_speeds=np.arange(40.0, 60.0, 1.0),
+                   list_connections=range(1, 11))
 
 
 class TestScenario10(unittest.TestCase):
+    """
+    FIXME!! NEED TO CHECK THE RESULTS
+    """
 
     @classmethod
     def setUpClass(cls):
@@ -470,18 +489,23 @@ class TestScenario10(unittest.TestCase):
     def test_damage_sheeting(self):
 
         # ref data 9
-        conn_capacity = {40.0: [8, 3],
-                         45.0: [7, 9, 2, 4],
-                         46.0: [5, 6],
-                         47.0: [1, 10],
-                         48.0: [],
-                         49.0: []}
+        conn_capacity = {41.0: [8, 3],
+                         42.0: [9],
+                         43.0: [7],
+                         44.0: [6],
+                         45.0: [10],
+                         46.0: [2, 4, 5],
+                         47.0: [1]}
 
         simulation(self.house_damage, conn_capacity,
-                   wind_speeds=np.arange(40.0, 60.0, 1.0))
+                   wind_speeds=np.arange(40.0, 60.0, 1.0),
+                   list_connections=range(1, 11))
 
 
 class TestScenario11(unittest.TestCase):
+    """
+    FIXME!! NEED TO CHECK THE RESULTS
+    """
 
     @classmethod
     def setUpClass(cls):
@@ -503,20 +527,25 @@ class TestScenario11(unittest.TestCase):
     def test_damage_batten(self):
 
         # ref data 11
-        conn_capacity = {47.0: [17],
-                         52.0: [16, 18],
-                         53.0: [15, 19],
-                         54.0: [14, 20],
-                         55.0: [13],
-                         56.0: [12],
-                         57.0: [11],
-                         -1.0: range(1, 11)}
+        conn_capacity = {43.0: [17],
+                         44.0: [16],
+                         45.0: [18],
+                         46.0: [15],
+                         47.0: [19],
+                         48.0: [14, 20],
+                         49.0: [13],
+                         50.0: [12],
+                         51.0: [11]}
 
         simulation(self.house_damage, conn_capacity,
-                   wind_speeds=np.arange(40.0, 120.0, 1.0))
+                   wind_speeds=np.arange(40.0, 120.0, 1.0),
+                   list_connections=range(1, 21))
 
 
 class TestScenario12(unittest.TestCase):
+    """
+    FIXME!! NEED TO CHECK THE RESULTS
+    """
 
     @classmethod
     def setUpClass(cls):
@@ -538,21 +567,24 @@ class TestScenario12(unittest.TestCase):
     def test_damage_batten(self):
 
         # ref data 11
-        conn_capacity = {87.0: [16, 18],
-                         88.0: [17],
-                         89.0: [15, 19],
-                         90.0: [14, 20],
-                         91.0: [13],
-                         92.0: [12],
-                         93.0: [11],
-                         -1.0: range(1, 11),
-                         40.0: [7]}
+        conn_capacity = {40.0: [7],
+                         53.0: [16],
+                         63.0: [15],
+                         64.0: [17],
+                         65.0: [14, 18],
+                         66.0: [19, 13],
+                         67.0: [12, 20],
+                         68.0: [11]}
 
         simulation(self.house_damage, conn_capacity,
-                   wind_speeds=np.arange(40.0, 120.0, 1.0))
+                   wind_speeds=np.arange(40.0, 120.0, 1.0),
+                   list_connections=range(1, 21))
 
 
 class TestScenario13(unittest.TestCase):
+    """
+    FIXME!! NEED TO CHECK THE RESULTS
+    """
 
     @classmethod
     def setUpClass(cls):
@@ -574,20 +606,24 @@ class TestScenario13(unittest.TestCase):
     def test_damage_batten(self):
 
         # ref data 11
-        conn_capacity = {46.0: [17],
-                         71.0: [16, 18],
-                         72.0: [15, 19],
-                         73.0: [14, 20],
-                         74.0: [13],
-                         75.0: [12],
-                         76.0: [11],
-                         -1.0: range(1, 11)}
+        conn_capacity = {40.0: [17],
+                         46.0: [16],
+                         47.0: [18],
+                         48.0: [15, 19],
+                         49.0: [14, 20],
+                         50.0: [13],
+                         51.0: [12],
+                         52.0: [11]}
 
         simulation(self.house_damage, conn_capacity,
-                   wind_speeds=np.arange(40.0, 120, 1.0))
+                   wind_speeds=np.arange(40.0, 120, 1.0),
+                   list_connections=range(1, 21))
 
 
 class TestScenario14(unittest.TestCase):
+    """
+    FIXME!! NEED TO CHECK THE RESULTS
+    """
 
     @classmethod
     def setUpClass(cls):
@@ -609,18 +645,19 @@ class TestScenario14(unittest.TestCase):
     def test_damage_batten(self):
 
         # ref data 11
-        conn_capacity = {47.0: [17],
-                         64.0: [16, 18],
-                         65.0: [19],
-                         71.0: [15],
-                         72.0: [20, 14],
-                         73.0: [13],
-                         74.0: [12],
-                         75.0: [11],
-                         -1.0: range(1, 11)}
+        conn_capacity = {43.0: [17],
+                         44.0: [16],
+                         45.0: [18],
+                         53.0: [19],
+                         54.0: [15],
+                         55.0: [20, 14],
+                         56.0: [13],
+                         57.0: [12],
+                         58.0: [11]}
 
         simulation(self.house_damage, conn_capacity,
-                   wind_speeds=np.arange(40.0, 120, 1.0))
+                   wind_speeds=np.arange(40.0, 120, 1.0),
+                   list_connections=range(1, 21))
 
 
 class TestScenario15(unittest.TestCase):
@@ -643,14 +680,14 @@ class TestScenario15(unittest.TestCase):
 
     def test_damage_sheeting_batten_rafter(self):
 
-        conn_capacity = {67.0: [25, 27],
-                         80.0: [2, 3, 4, 5, 8, 9, 10, 11],
-                         81.0: [1, 6, 7, 12],
-                         87.0: [26],
-                         -1.0: range(13, 25)}
+        conn_capacity = {68.0: [25, 27],
+                         81.0: [2, 3, 4, 5, 8, 9, 10, 11],
+                         82.0: [1, 6, 7, 12],
+                         88.0: [26]}
 
         simulation(self.house_damage, conn_capacity,
-                   wind_speeds=np.arange(40.0, 100.0, 1.0))
+                   wind_speeds=np.arange(40.0, 100.0, 1.0),
+                   list_connections=range(1, 28))
 
 
 class TestScenario16(unittest.TestCase):
@@ -673,31 +710,19 @@ class TestScenario16(unittest.TestCase):
 
     def test_damage_sheeting_batten_rafter(self):
 
-        conn_capacity = {72.0: [76],
-                         73.0: [88],
-                         74.0: [64, 100],
-                         75.0: [112],
-                         79.0: [14, 26, 38, 50],
-                         80.0: [13, 15, 25, 27, 37, 39, 49, 51],
-                         81.0: [16, 28, 40, 52],
-                         82.0: [17, 29, 41, 53, 124, 127, 130, 133],
-                         83.0: [18, 30, 42, 54, 126, 129, 132, 135]}
-
-        conn_capacity.update({-1.0: range(1, 13) +
-                                    range(19, 25) +
-                                    range(31, 37) +
-                                    range(43, 49) +
-                                    range(55, 61) +
-                                    range(61, 64) +
-                                    range(65, 76) +
-                                    range(77, 88) +
-                                    range(89, 100) +
-                                    range(101, 112) +
-                                    range(113, 124) +
-                                    [125, 128, 131, 134]})
+        conn_capacity = {73.0: [76],
+                         74.0: [88],
+                         75.0: [64, 100],
+                         76.0: [112],
+                         80.0: [14, 26, 38, 50],
+                         81.0: [13, 15, 25, 27, 37, 39, 49, 51],
+                         82.0: [16, 28, 40, 52],
+                         83.0: [17, 29, 41, 53, 124, 127, 130, 133],
+                         84.0: [18, 30, 42, 54, 126, 129, 132, 135]}
 
         simulation(self.house_damage, conn_capacity,
-                   wind_speeds=np.arange(70.0, 101.0, 1.0))
+                   wind_speeds=np.arange(70.0, 101.0, 1.0),
+                   list_connections=range(1, 136))
 
 
 class TestScenario16p1(unittest.TestCase):
@@ -720,32 +745,22 @@ class TestScenario16p1(unittest.TestCase):
 
     def test_damage_sheeting_batten_rafter(self):
 
-        conn_capacity = {72.0: [76],
-                         73.0: [88],
-                         74.0: [64, 100],
-                         75.0: [112],
-                         79.0: [14, 26, 38, 50],
-                         80.0: [13, 15, 25, 27, 37, 39, 49, 51, 33],
-                         81.0: [16, 28, 40, 52],
-                         82.0: [17, 29, 41, 53, 124, 127, 130, 133],
-                         83.0: [18, 30, 42, 54, 126, 129, 132, 135],
-                         88.0: [32, 34],
-                         89.0: [31, 35],
-                         90.0: [36]}
-
-        conn_capacity.update({-1.0: range(1, 13) +
-                                   range(19, 25) +
-                                   range(43, 49) +
-                                   range(55, 61) +
-                                   range(61, 64) +
-                                   range(65, 76) +
-                                   range(77, 88) +
-                                   range(89, 100) +
-                                   range(101, 112) +
-                                   range(113, 124) + [125, 128, 131, 134]})
+        conn_capacity = {73.0: [76],
+                         74.0: [88],
+                         75.0: [64, 100],
+                         76.0: [112],
+                         80.0: [14, 26, 38, 50],
+                         81.0: [13, 15, 25, 27, 37, 39, 49, 51, 33],
+                         82.0: [16, 28, 40, 52],
+                         83.0: [17, 29, 41, 53, 124, 127, 130, 133],
+                         84.0: [18, 30, 42, 54, 126, 129, 132, 135],
+                         89.0: [32, 34],
+                         90.0: [31, 35],
+                         91.0: [36]}
 
         simulation(self.house_damage, conn_capacity,
-                   wind_speeds=np.arange(70.0, 101.0, 1.0))
+                   wind_speeds=np.arange(70.0, 101.0, 1.0),
+                   list_connections=range(1, 136))
 
 
 class TestScenario17(unittest.TestCase):
@@ -768,33 +783,32 @@ class TestScenario17(unittest.TestCase):
 
     def test_damage_sheeting_batten_rafter(self):
 
-        conn_capacity = {-1.0: range(1, 133)}
-
-        conn_capacity.update({60.0: [64, 87, 100],
-                         61.0: [8, 31, 44],
-                         62.0: [7],
-                         63.0: [9],
-                         64.0: [86, 88],
-                         65.0: [32, 30],
-                         66.0: [29, 75, 105],
-                         67.0: [101],
-                         68.0: [109],
-                         69.0: [98],
-                         73.0: [45],
-                         74.0: [43],
-                         75.0: [3, 13, 21, 46],
-                         76.0: [4, 14, 22],
-                         77.0: [15, 23],
-                         78.0: [16, 24],
-                         81.0: [19, 49],
-                         82.0: [133, 135],
-                         83.0: [134, 136],
-                         88.0: [18, 48],
-                         89.0: [20, 50],
-                         90.0: [17, 47]})
+        conn_capacity = {61.0: [64, 87, 100],
+                         62.0: [8, 31, 44],
+                         63.0: [7],
+                         64.0: [9],
+                         65.0: [86, 88],
+                         66.0: [32, 30],
+                         67.0: [29, 75, 105],
+                         68.0: [101],
+                         69.0: [109],
+                         70.0: [98],
+                         74.0: [45],
+                         75.0: [43],
+                         76.0: [46, 59, 69, 77],
+                         77.0: [13, 3, 21],
+                         78.0: [14, 22, 4],
+                         79.0: [15, 23],
+                         80.0: [16, 24],
+                         83.0: [19, 49, 133, 135],
+                         84.0: [134, 136],
+                         90.0: [18, 48],
+                         91.0: [20, 50],
+                         92.0: [17, 47]}
 
         simulation(self.house_damage, conn_capacity,
-                   wind_speeds=np.arange(55.0, 101.0, 1.0))
+                   wind_speeds=np.arange(55.0, 101.0, 1.0),
+                   list_connections=range(1, 137))
 
 
 class TestScenario18(unittest.TestCase):
@@ -817,9 +831,7 @@ class TestScenario18(unittest.TestCase):
 
     def test_damage_sheeting_batten_rafter(self):
 
-        conn_capacity = {-1.0: range(1, 133)}
-
-        conn_capacity.update({69.0: [78],
+        conn_capacity = {70.0: [78],
                          71.0: [22],
                          72.0: [21, 23],
                          73.0: [24],
@@ -829,12 +841,13 @@ class TestScenario18(unittest.TestCase):
                          79.0: [9, 15, 31],
                          80.0: [16, 32],
                          83.0: [133, 135],
-                         84.0: [134, 136]})
+                         84.0: [134, 136]}
 
         simulation(self.house_damage, conn_capacity,
-                   wind_speeds=np.arange(55.0, 101.0, 1.0))
+                   wind_speeds=np.arange(55.0, 101.0, 1.0),
+                   list_connections=range(1, 137))
 
 if __name__ == '__main__':
-    suite = unittest.TestLoader().loadTestsFromTestCase(TestScenario18)
-    unittest.TextTestRunner(verbosity=2).run(suite)
-    #unittest.main(verbosity=2)
+    #suite = unittest.TestLoader().loadTestsFromTestCase(TestScenario3)
+    #unittest.TextTestRunner(verbosity=2).run(suite)
+    unittest.main(verbosity=2)
