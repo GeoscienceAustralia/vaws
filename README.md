@@ -1,25 +1,32 @@
-#### Virtual setup
-It is recommended that you create a `virtualenv` to run the `vaws` code. These instructions are for `ubuntu 14.04` and is expected to work for most newer versions of `ubuntu`. The `virtualenv` and the requirements can be installed using the following steps.
+#### Conda setup setup
+It is recommended that you create a virtual conda environment to run the `vaws` code.
+These instructions have been tested on `Redhat EL 6.7` and is expected to work for most newer versions of `Linux`. 
+Conda and the requirements can be installed using the following steps.
 
-    sudo pip install virtualenv
-    sudo apt-get -y build-dep matplotlib  # then enter your root password
-    virtualenv -p python2.7 ~/vaws_venv
-    source ~/vaws_venv/bin/activate
+1. Clone the VAWS repository 
+>```git clone git@github.com:GeoscienceAustralia/vaws.git```
+2. Download and install [Miniconda](https://conda.io/miniconda.html)
+3. Create a virtual environment called vaws_env with  
+>``` conda create --name vaws_env --file vaws.yml```
 
-Note, in the above, the first command `sudo apt-get -y build-dep matplotlib` installs all the build dependencies for `matplotlib`.
+> *Note: for windows use conda create --name vaws_env --file vaws_win.yml*
 
-#### Clone the repo:
+4. Activate the environment with
 
-Clone the repo:    
+>``` source activate vaws env```
 
-    git clone https://github.com/GeoscienceAustralia/vaws.git
-    
-This will prompt for your github username and password. Once you have entered them and you have access to this repo, `vaws` will clone in your current directory.
+> *Note: for windows use activate vaws_env*
 
-Once inside the `virtualenv`, navigate to the `vaws` code:
-    
-    cd vaws # This is where the requirements.txt exists
-    pip install -r requirements.txt
+Then use the build script for your environment 
+* Linux/Mac
+
+    cd gui  
+    ./build.sh
+     
+* Windows
+
+    cd gui  
+    ./build.cmd
 
 #### Inputs required to run the vaws:
 These files are not in repo and you will need access to these files to be able to run the code.
@@ -34,7 +41,9 @@ These files are not in repo and you will need access to these files to be able t
 Running the vaws code is simple.
     
     cd vaws
-    python transmission/sim_towers.py
+    ./vaws.sh
+    or for windows
+    ./vaws.cmd
 
 #### Run tests
 To run tests use either `nose` or `unittest`:

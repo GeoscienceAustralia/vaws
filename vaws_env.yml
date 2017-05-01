@@ -1,0 +1,85 @@
+name: vaws_env
+channels:
+- !!python/unicode
+  'defaults'
+dependencies:
+- !!python/unicode
+  'cairo=1.12.18=6'
+- !!python/unicode
+  'cycler=0.9.0=py27_0'
+- !!python/unicode
+  'dateutil=2.4.1=py27_0'
+- !!python/unicode
+  'fontconfig=2.11.1=6'
+- !!python/unicode
+  'freetype=2.5.5=0'
+- !!python/unicode
+  'hdf5=1.8.17=1'
+- !!python/unicode
+  'libgcc=5.2.0=0'
+- !!python/unicode
+  'libgfortran=3.0.0=1'
+- !!python/unicode
+  'libiconv=1.14=0'
+- !!python/unicode
+  'libpng=1.6.17=0'
+- !!python/unicode
+  'libxml2=2.9.4=0'
+- !!python/unicode
+  'matplotlib=1.5.1=np111py27_0'
+- !!python/unicode
+  'mkl=11.3.1=0'
+- !!python/unicode
+  'numexpr=2.5.2=np111py27_0'
+- !!python/unicode
+  'numpy=1.11.0=py27_0'
+- !!python/unicode
+  'openblas=0.2.19=0'
+- !!python/unicode
+  'openssl=1.0.2g=0'
+- !!python/unicode
+  'pandas=0.19.2=np111py27_1'
+- !!python/unicode
+  'pip=8.1.0=py27_0'
+- !!python/unicode
+  'pixman=0.32.6=0'
+- !!python/unicode
+  'pycairo=1.10.0=py27_0'
+- !!python/unicode
+  'pyparsing=2.0.3=py27_0'
+- !!python/unicode
+  'pyqt=4.11.4=py27_1'
+- !!python/unicode
+  'pytables=3.3.0=np111py27_0'
+- !!python/unicode
+  'python=2.7.11=0'
+- !!python/unicode
+  'python-dateutil=2.4.2=py27_0'
+- !!python/unicode
+  'pytz=2015.7=py27_0'
+- !!python/unicode
+  'qt=4.8.7=1'
+- !!python/unicode
+  'readline=6.2=2'
+- !!python/unicode
+  'scipy=0.17.0=np111py27_3'
+- !!python/unicode
+  'setuptools=20.2.2=py27_0'
+- !!python/unicode
+  'sip=4.16.9=py27_0'
+- !!python/unicode
+  'six=1.10.0=py27_0'
+- !!python/unicode
+  'sqlite=3.9.2=0'
+- !!python/unicode
+  'tk=8.5.18=0'
+- !!python/unicode
+  'wheel=0.29.0=py27_0'
+- !!python/unicode
+  'zlib=1.2.8=0'
+- pip:
+  - parmap==1.2.3
+  - shapely==1.5.17.post1
+  - tables==3.3.0
+prefix: !!python/unicode '/home/u53337/miniconda2/envs/vaws_env'
+
