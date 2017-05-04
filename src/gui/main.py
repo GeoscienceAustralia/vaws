@@ -944,7 +944,7 @@ def run_gui():
     else:
         set_logger(path_cfg, logging_level='warning')
 
-    initial_config = Config(cfg_file=options.config_filename)
+    initial_config = Config(cfg_file=initial_scenario)
 
     app = QApplication(sys.argv)
     app.setOrganizationName("Geoscience Australia")
