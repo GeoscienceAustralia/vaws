@@ -236,19 +236,10 @@ class House(object):
 
         """
 
-        try:
-            float(self.cfg.profile_idx)
-        except ValueError:
-            self.profile = self.rnd_state.random_integers(1, 10)
-        else:
-            self.profile = int(self.cfg.profile_idx)
+        self.profile = self.rnd_state.random_integers(1, 10)
 
-        if self.profile in self.cfg.wind_profile:
-            self.mzcat = np.interp(self.height, self.cfg.profile_heights,
-                                   self.cfg.wind_profile[self.profile])
-        else:
-            logging.error('{} not in cfg.wind_profile'.format(self.profile))
-
+        self.mzcat = np.interp(self.height, self.cfg.profile_heights,
+                               self.cfg.wind_profile[self.profile])
 
     def set_construction_level(self):
         """

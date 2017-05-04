@@ -30,7 +30,8 @@ SOURCE_DIR = os.path.dirname(__file__)
 VAWS_DIR = os.sep.join(SOURCE_DIR.split(os.sep)[:-2])
 SCENARIOS_DIR = os.path.join(VAWS_DIR, 'scenarios')
 CONFIG_TEMPL = "Scenarios (*.cfg)"
-DEFAULT_SCENARIO = os.path.join(SCENARIOS_DIR,'default/default.cfg')
+DEFAULT_SCENARIO = os.path.join(SCENARIOS_DIR, 'default/default.cfg')
+
 
 def progress_callback(percent_done):
     my_app.statusProgressBar.setValue(percent_done)
@@ -118,7 +119,7 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
         self.connect(self.ui.applyDisplayChangesButton, SIGNAL("clicked()"), self.updateDisplaySettings)
 
         # plot panel
-        self.connect(self.ui.fitLognormalCurve, SIGNAL("clicked()"), self.updateVulnCurveSettings)
+        # self.connect(self.ui.fitLognormalCurve, SIGNAL("clicked()"), self.updateVulnCurveSettings)
 
         self.statusBar().showMessage('Loading')
         self.house_results = []
@@ -261,9 +262,7 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
 
     def updateTerrainCategoryTable(self):
 
-        self.cfg.terrain_category = unicode(self.ui.terrainCategory.currentText())
-
-        self.cfg.set_wind_profile()
+        self.cfg.set_wind_profile(unicode(self.ui.terrainCategory.currentText()))
 
         self.ui.boundaryProfile.setEditTriggers(QTableWidget.NoEditTriggers)
         self.ui.boundaryProfile.setRowCount(len(self.cfg.profile_heights))
@@ -747,13 +746,13 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
                     self.cfg.flags.get('debris_staggered_sources'))
 
             # options
-            self.ui.redV.setValue(self.cfg.red_v)
-            self.ui.blueV.setValue(self.cfg.blue_v)
-            self.ui.seedRandom.setChecked(self.cfg.flags.get('random_seed'))
+            self.ui.redV.setValue(self.cfg.heatmap_vmin)
+            self.ui.blueV.setValue(self.cfg.heatmap_vmax)
+            # self.ui.seedRandom.setChecked(self.cfg.flags.get('random_seed'))
             self.ui.diffShielding.setChecked(self.cfg.flags.get('diff_shielding'))
             self.ui.waterIngress.setChecked(self.cfg.flags.get('water_ingress'))
 
-            self.ui.fitLognormalCurve.setChecked(self.cfg.flags.get('vul_fit_log'))
+            # self.ui.fitLognormalCurve.setChecked(self.cfg.flags.get('vul_fit_log'))
             # self.ui.distribution.setChecked(self.cfg.flags.get('dmg_distribute'))
             self.ui.actionRun.setEnabled(True)
             # self.ui.debrisExtension.setText('%f' % self.cfg.debris_extension)
@@ -804,7 +803,7 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
         new_cfg.set_region_name(unicode(self.ui.debrisRegion.currentText()))
         new_cfg.flags['plot_fragility'] = True
         new_cfg.flags['plot_vul'] = True
-        new_cfg.flags['random_seed'] = self.ui.seedRandom.isChecked()
+        # new_cfg.flags['random_seed'] = self.ui.seedRandom.isChecked()
         # new_cfg.flags['vul_fit_log'] = self.ui.fitLognormalCurve.isChecked())
         new_cfg.flags['water_ingress'] = self.ui.waterIngress.isChecked()
         # new_cfg.flags['dmg_distribute', self.ui.distribution.isChecked())
@@ -936,16 +935,16 @@ def run_gui():
             initial_scenario = unicode(settings.value("LastFile").toString())
         else:
             initial_scenario = DEFAULT_SCENARIO
-
-        initial_config = Config(cfg_file=initial_scenario)
-
     else:
-        initial_config = Config(cfg_file=options.config_filename)
+        initial_scenario = options.config_filename
 
+    path_cfg = os.path.dirname(os.path.realpath(initial_scenario))
     if options.verbose:
-        set_logger(initial_config, logging_level=options.verbose)
+        set_logger(path_cfg, logging_level=options.verbose)
     else:
-        set_logger(initial_config, logging_level='info')
+        set_logger(path_cfg, logging_level='warning')
+
+    initial_config = Config(cfg_file=options.config_filename)
 
     app = QApplication(sys.argv)
     app.setOrganizationName("Geoscience Australia")
@@ -953,8 +952,7 @@ def run_gui():
     app.setApplicationName("WindSim")
     splash_image = QPixmap()
 
-    source_dir = os.path.dirname(__file__)
-    splash_file = os.path.join(source_dir, 'images/splash/splash.png')
+    splash_file = os.path.join(SOURCE_DIR, 'images/splash/splash.png')
     if not splash_image.load(splash_file):
         raise Exception('Could not load splash image')
 
@@ -971,7 +969,6 @@ def run_gui():
     time.sleep(5)
     splash.finish(my_app)
     sys.exit(app.exec_())
-
 
 if __name__ == '__main__':
     run_gui()

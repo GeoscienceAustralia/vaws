@@ -200,7 +200,7 @@ class Debris(object):
             debris = self.cfg.debris_types[debris_type_str]
 
         except KeyError:
-            logging.warn('{} is not found in the debris types'.format(
+            logging.warning('{} is not found in the debris types'.format(
                 debris_type_str))
 
         else:
@@ -378,7 +378,7 @@ class Debris(object):
         try:
             assert 0.0 <= _mean <= 1.0
         except AssertionError:
-            logging.warn('{}:{}:{}'.format(_mean, param_b, flight_distance))
+            logging.warning('{}:{}:{}'.format(_mean, param_b, flight_distance))
 
         try:
             dispersion = max(1.0 / _mean, 1.0 / (1.0 - _mean)) + 3.0

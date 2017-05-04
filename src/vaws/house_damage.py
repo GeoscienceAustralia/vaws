@@ -61,13 +61,12 @@ class HouseDamage(object):
         # check damage by connection type group
         for _group in self.house.groups.itervalues():
 
-            if self.cfg.flags.get('conn_type_group_{}'.format(_group.name)):
-                _group.check_damage(wind_speed)
-                _group.cal_damaged_area()
+            _group.check_damage(wind_speed)
+            _group.cal_damaged_area()
 
-                if _group.damaged and self.cfg.flags.get('dmg_distribute_{}'.format(
-                        _group.name)):
-                    _group.distribute_damage()
+            if _group.damaged and self.cfg.flags.get('dmg_distribute_{}'.format(
+                    _group.name)):
+                _group.distribute_damage()
 
         self.check_house_collapse(wind_speed)
         self.cal_damage_index(wind_speed)

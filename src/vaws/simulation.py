@@ -121,7 +121,7 @@ def update_panels(cfg, dic_, list_results_by_speed, ispeed):
                        dic_['house']['di'].loc[ispeed - 1].mean(axis=0))
 
         if damage_incr < 0:
-            logging.warn('damage increment is less than zero')
+            logging.warning('damage increment is less than zero')
             damage_incr = 0.0
 
     return damage_incr
@@ -178,9 +178,9 @@ def save_results_to_files(cfg, dic_panels):
                                          '{}_id{}'.format(group_name, id_sim))
                 plot_heatmap(grouped,
                              df_.values,
-                             vmin=cfg.red_v,
-                             vmax=cfg.blue_v,
-                             vstep=21,
+                             vmin=cfg.heatmap_vmin,
+                             vmax=cfg.heatmap_vmax,
+                             vstep=cfg.heatmap_vstep,
                              xlim_max=cfg.df_house['length'].values,
                              ylim_max=cfg.df_house['width'].values,
                              file_name=file_name)
@@ -203,7 +203,7 @@ def show_results(self, output_folder=None, vRed=40, vBlue=80):
     self.plot_connection_damage(vRed, vBlue)
 
 
-def set_logger(config, logging_level=logging.INFO):
+def set_logger(path_cfg, logging_level):
     """
         
     Args:
@@ -212,19 +212,28 @@ def set_logger(config, logging_level=logging.INFO):
     Returns:
     """
 
+    # create logger
     logger = logging.getLogger()
-    file_logger = os.path.join(config.path_cfg, 'output/log.txt')
-    file_handler = logging.FileHandler(filename=file_logger, mode='w')
+
+    # create file handler
+    fh = logging.FileHandler(os.path.join(path_cfg, 'output', 'log.txt'),
+                             mode='w')
     formatter = logging.Formatter('%(levelname)s - %(message)s')
-    file_handler.setFormatter(formatter)
-    logger.addHandler(file_handler)
+    fh.setFormatter(formatter)
+    logger.addHandler(fh)
 
     try:
-        file_handler.setLevel(getattr(logging, logging_level.upper()))
+        logger.setLevel(getattr(logging, logging_level.upper()))
     except (AttributeError, TypeError):
-        logging.info('{} is not a logging level; DEBUG is set instead'.format(
+        logging.warning('{} is not valid; WARNING is set instead'.format(
             logging_level))
-        file_handler.setLevel(logging.DEBUG)
+        logger.setLevel(logging.WARNING)
+
+    # create console handler and set level to WARNING
+    ch = logging.StreamHandler()
+    ch.setLevel(logging.WARNING)
+    ch.setFormatter(formatter)
+    logger.addHandler(ch)
 
 
 def process_commandline():
@@ -248,12 +257,13 @@ def main():
     (options, args) = parser.parse_args()
 
     if options.config_filename:
-        conf = Config(cfg_file=options.config_filename)
-
+        path_cfg = os.path.dirname(os.path.realpath(options.config_filename))
         if options.verbose:
-            set_logger(conf, options.verbose)
+            set_logger(path_cfg, options.verbose)
 
+        conf = Config(cfg_file=options.config_filename)
         _ = simulate_wind_damage_to_houses(conf)
+
     else:
         print('Error: Must provide a config file to run')
         parser.print_help()
