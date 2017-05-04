@@ -743,7 +743,7 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
                 self.ui.flighttimeStddev.setText(
                     '{:.3f}'.format(self.cfg.flight_time_stddev))
                 self.ui.staggeredDebrisSources.setChecked(
-                    self.cfg.flags.get('debris_staggered_sources'))
+                    self.cfg.staggered_sources)
 
             # options
             self.ui.redV.setValue(self.cfg.heatmap_vmin)
@@ -801,6 +801,17 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
 
         # Debris section
         new_cfg.set_region_name(unicode(self.ui.debrisRegion.currentText()))
+        new_cfg.building_spacing = float(unicode(self.ui.buildingSpacing.currentText()))
+        new_cfg.debris_radius = self.ui.debrisRadius.value()
+        new_cfg.debris_angle = self.ui.debrisAngle.value()
+        # new_cfg.debris_extension = float(self.ui.debrisExtension.text())
+        new_cfg.source_items = self.ui.sourceItems.value()
+        if self.ui.flighttimeMean.text():
+            new_cfg.flight_time_mean = float(unicode(self.ui.flighttimeMean.text()))
+        if self.ui.flighttimeStddev.text():
+            new_cfg.flight_time_stddev = float(unicode(self.ui.flighttimeStddev.text()))
+        new_cfg.staggered_sources = self.ui.staggeredDebrisSources.isChecked()
+
         new_cfg.flags['plot_fragility'] = True
         new_cfg.flags['plot_vul'] = True
         # new_cfg.flags['random_seed'] = self.ui.seedRandom.isChecked()
@@ -809,23 +820,17 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
         # new_cfg.flags['dmg_distribute', self.ui.distribution.isChecked())
         new_cfg.flags['diff_shielding'] = self.ui.diffShielding.isChecked()
         new_cfg.flags['debris'] = self.ui.debris.isChecked()
-        new_cfg.flags['debris_staggered_sources'] = self.ui.staggeredDebrisSources.isChecked()
-        new_cfg.flags['construction_levels'] = self.ui.constructionEnabled.isChecked()
-        new_cfg.source_items = self.ui.sourceItems.value()
-        new_cfg.building_spacing = float(unicode(self.ui.buildingSpacing.currentText()))
-        new_cfg.debris_radius = self.ui.debrisRadius.value()
-        new_cfg.debris_angle = self.ui.debrisAngle.value()
-        # new_cfg.debris_extension = float(self.ui.debrisExtension.text())
-        new_cfg.flight_time_mean = float(unicode(self.ui.flighttimeMean.text()))
-        new_cfg.flight_time_stddev = float(unicode(self.ui.flighttimeStddev.text()))
 
         new_cfg.flight_time_log_mu, new_cfg.flight_time_log_std = \
             compute_logarithmic_mean_stddev(new_cfg.flight_time_mean,
-                                                  new_cfg.flight_time_stddev)
+                                            new_cfg.flight_time_stddev)
 
-        new_cfg.red_v = float(unicode(self.ui.redV.value()))
-        new_cfg.blue_v = float(unicode(self.ui.blueV.value()))
-        
+        # option section
+        new_cfg.heatmap_vmin = float(unicode(self.ui.redV.value()))
+        new_cfg.heatmap_vmax = float(unicode(self.ui.blueV.value()))
+
+        # construction section
+        new_cfg.flags['construction_levels'] = self.ui.constructionEnabled.isChecked()
         new_cfg.set_construction_level('low',
                                 float(unicode(self.ui.lowProb.value())), 
                                 float(unicode(self.ui.lowMean.value())), 
@@ -838,14 +843,15 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
                                 float(unicode(self.ui.highProb.value())), 
                                 float(unicode(self.ui.highMean.value())), 
                                 float(unicode(self.ui.highCov.value())))
-        
+
+        # fragility section
         new_cfg.fragility_thresholds['slight'] = float(self.ui.slight.value())
         new_cfg.fragility_thresholds['medium'] = float(self.ui.medium.value())
         new_cfg.fragility_thresholds['severe'] = float(self.ui.severe.value())
         new_cfg.fragility_thresholds['complete'] = float(self.ui.complete.value())
 
+        # house / groups section
         for irow, (index, ctg) in enumerate(self.cfg.df_groups.iterrows()):
-
             cellWidget = self.ui.connGroups.cellWidget(irow, 4)
             new_cfg.flags['conn_type_group_{}'.format(index)] = True \
                 if cellWidget.checkState() == Qt.Checked else False

@@ -825,9 +825,13 @@ class TestScenario18(unittest.TestCase):
 
     def test_damage_sheeting_batten_rafter(self):
 
-        conn_capacity = {69.0: [22],
-                         70.0: [21, 23],
-                         71.0: [24],
+        conn_capacity = {56.0: [78],
+                         65.0: [86, 70],
+                         66.0: [64],
+                         67.0: [60],
+                         69.0: [22],
+                         70.0: [21, 23, 59, 63, 69, 85],
+                         71.0: [24, 57, 77],
                          75.0: [3, 7, 13, 29],
                          76.0: [4, 8, 14, 30],
                          77.0: [9, 15, 31],
@@ -840,6 +844,6 @@ class TestScenario18(unittest.TestCase):
                    list_connections=range(1, 137))
 
 if __name__ == '__main__':
-    # suite = unittest.TestLoader().loadTestsFromTestCase(TestScenario5)
-    # unittest.TextTestRunner(verbosity=2).run(suite)
-    unittest.main(verbosity=2)
+    suite = unittest.TestLoader().loadTestsFromTestCase(TestScenario18)
+    unittest.TextTestRunner(verbosity=2).run(suite)
+    # unittest.main(verbosity=2)
