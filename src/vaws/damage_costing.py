@@ -77,7 +77,7 @@ class Costing(object):
                 setattr(self, '{}_repair'.format(key),
                         getattr(self, self.__class__.dic_costing[_value]))
 
-    def calculate_cost(self, x):
+    def compute_cost(self, x):
         assert 0.0 <= x <= 1.0
         envelop_costing = self.envelope_repair(x,
                                                self.envelope_coeff1,
@@ -175,13 +175,13 @@ class WaterIngressCosting(object):
                 self.cost = getattr(
                     Costing, self.__class__.dic_costing[self.formula_type])
 
-    def calculate_cost(self, x):
+    def compute_cost(self, x):
         assert 0.0 <= x <= 1.0
         return self.base_cost * self.cost(x,
                                           self.coeff1, self.coeff2, self.coeff3)
 
 
-def cal_water_ingress_given_damage(damage_index, wind_speed, df_water_ingress):
+def compute_water_ingress_given_damage(damage_index, wind_speed, df_water_ingress):
     """
 
     Args:

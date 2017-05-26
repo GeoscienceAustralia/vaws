@@ -214,7 +214,7 @@ class Debris(object):
             flight_time = self.rnd_state.lognormal(self.cfg.flight_time_log_mu,
                                                    self.cfg.flight_time_log_std)
 
-            flight_distance = self.cal_flight_distance(debris_type_str,
+            flight_distance = self.compute_flight_distance(debris_type_str,
                                                        flight_time,
                                                        frontal_area,
                                                        mass,
@@ -243,7 +243,7 @@ class Debris(object):
                 logging.debug('x:{}, y:{}: touched'.format(
                     pt_debris.x, pt_debris.y))
 
-                item_momentum = self.cal_debris_mementum(debris['cdav'],
+                item_momentum = self.compute_debris_mementum(debris['cdav'],
                                                          frontal_area,
                                                          flight_distance,
                                                          mass,
@@ -286,7 +286,7 @@ class Debris(object):
             else:
                 self.damaged_area += min(frontal_area, _coverage['area'])
 
-    def cal_flight_distance(self, debris_type_str, flight_time, frontal_area,
+    def compute_flight_distance(self, debris_type_str, flight_time, frontal_area,
                             mass, wind_speed, flag_poly=2):
         """
         calculate flight distance based on the methodology in Appendix of
@@ -340,7 +340,7 @@ class Debris(object):
 
             return convert_to_dim * less_dis
 
-    def cal_debris_mementum(self, cdav, frontal_area, flight_distance, mass,
+    def compute_debris_mementum(self, cdav, frontal_area, flight_distance, mass,
                             wind_speed, rnd_state):
         """
         calculate momentum of debris object

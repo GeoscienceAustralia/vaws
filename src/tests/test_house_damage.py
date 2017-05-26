@@ -62,7 +62,7 @@ class TestHouseDamage(unittest.TestCase):
             for group_name, group in self.house_damage.house.groups.iteritems():
                 group.damaged_area = dic_[group.name] * group.costing_area
 
-            self.house_damage.cal_damage_index(20.0)
+            self.house_damage.compute_damage_index(20.0)
 
             # for group_name, group in self.house_damage.house.groups.iteritems():
 

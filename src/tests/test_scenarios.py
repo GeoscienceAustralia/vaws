@@ -29,7 +29,7 @@ def simulation(house_damage, conn_capacity, wind_speeds, list_connections):
 
         logging.info('wind speed {:.3f}'.format(wind_speed))
 
-        house_damage.calculate_qz_ms(wind_speed)
+        house_damage.compute_qz_ms(wind_speed)
 
         for _zone in house_damage.house.zones.itervalues():
 
@@ -43,16 +43,19 @@ def simulation(house_damage, conn_capacity, wind_speeds, list_connections):
                                       ms,
                                       building_spacing)
 
+        for _connection in house_damage.house.connections.itervalues():
+            _connection.compute_load()
+
         # check damage by connection type group
         for _group in house_damage.house.groups.itervalues():
 
             _group.check_damage(wind_speed)
 
-            _group.cal_damaged_area()
+            _group.compute_damaged_area()
 
-            _group.distribute_damage()
+            _group.update_influence(house_damage.house)
 
-        house_damage.cal_damage_index(wind_speed)
+        house_damage.compute_damage_index(wind_speed)
 
     # compare with reference capacity
     for _id, _conn in house_damage.house.connections.iteritems():
@@ -123,7 +126,7 @@ class TestScenario1(unittest.TestCase):
 
         for _conn in self.house_damage.house.connections.itervalues():
 
-            _conn.cal_load()
+            _conn.compute_load()
 
             try:
                 self.assertAlmostEqual(ref_load[_conn.name], _conn.load,
@@ -817,10 +820,10 @@ class TestScenario18(unittest.TestCase):
         cls.house_damage = HouseDamage(cfg, seed=0)
 
         # set up logging
-        file_logger = os.path.join(cfg.path_output, 'log_test18.txt')
+        file_logger = os.path.join(cfg.path_output, 'log_test18_new.txt')
         logging.basicConfig(filename=file_logger,
                             filemode='w',
-                            level=logging.INFO,
+                            level=logging.DEBUG,
                             format='%(levelname)s %(message)s')
 
     def test_damage_sheeting_batten_rafter(self):
@@ -830,12 +833,12 @@ class TestScenario18(unittest.TestCase):
                          66.0: [64],
                          67.0: [60],
                          69.0: [22],
-                         70.0: [21, 23, 59, 63, 69, 85],
-                         71.0: [24, 57, 77],
+                         70.0: [21, 23, 59, 63, 69, 85, 77, 79],
+                         71.0: [24, 57, 80],
                          75.0: [3, 7, 13, 29],
                          76.0: [4, 8, 14, 30],
-                         77.0: [9, 15, 31],
-                         78.0: [16, 32],
+                         77.0: [9, 15, 31, 65, 71, 87],
+                         78.0: [16, 32, 72, 88],
                          82.0: [133, 135],
                          83.0: [134, 136]}
 

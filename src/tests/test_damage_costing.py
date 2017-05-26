@@ -6,7 +6,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 from vaws.damage_costing import Costing, WaterIngressCosting, \
-    cal_water_ingress_given_damage
+    compute_water_ingress_given_damage
 from vaws.config import Config
 
 
@@ -40,11 +40,11 @@ class MyTestCase(unittest.TestCase):
         self.assertAlmostEqual(self.costing1.envelope_coeff2, c2)
         self.assertAlmostEqual(self.costing1.envelope_coeff3, c3)
 
-        self.assertAlmostEqual(self.costing1.calculate_cost(0.0),
+        self.assertAlmostEqual(self.costing1.compute_cost(0.0),
                                0.0)
-        self.assertAlmostEqual(self.costing1.calculate_cost(0.5),
+        self.assertAlmostEqual(self.costing1.compute_cost(0.5),
                                451.5496, places=4)
-        self.assertAlmostEqual(self.costing1.calculate_cost(1.0),
+        self.assertAlmostEqual(self.costing1.compute_cost(1.0),
                                746.0250, places=4)
 
     def test_env_func_type2(self):
@@ -63,11 +63,11 @@ class MyTestCase(unittest.TestCase):
         self.assertAlmostEqual(self.costing2.envelope_coeff2, c2)
         self.assertAlmostEqual(self.costing2.envelope_coeff3, c3)
 
-        self.assertAlmostEqual(self.costing2.calculate_cost(0.0),
+        self.assertAlmostEqual(self.costing2.compute_cost(0.0),
                                0.0)
-        self.assertAlmostEqual(self.costing2.calculate_cost(0.5),
+        self.assertAlmostEqual(self.costing2.compute_cost(0.5),
                                15956.3916, places=4)
-        self.assertAlmostEqual(self.costing2.calculate_cost(1.0),
+        self.assertAlmostEqual(self.costing2.compute_cost(1.0),
                                27264.7029, places=4)
 
 class WaterIngressTestCase(unittest.TestCase):
@@ -79,7 +79,7 @@ class WaterIngressTestCase(unittest.TestCase):
             cfg_file=os.path.join(path,
                                   '../../scenarios/test_scenario16p1/test_scenario16p1.cfg'))
 
-    def test_cal_water_ingress_given_damage(self):
+    def test_compute_water_ingress_given_damage(self):
 
         di_array = [0, 0.15, 0.3, 0.7]
         speed_array = np.arange(20, 100, 1.0)
@@ -87,7 +87,8 @@ class WaterIngressTestCase(unittest.TestCase):
 
         for i, di in enumerate(di_array):
             for j, speed in enumerate(speed_array):
-                a[i, j] = cal_water_ingress_given_damage(di, speed, self.cfg.water_ingress_given_di)
+                a[i, j] = compute_water_ingress_given_damage(
+                    di, speed, self.cfg.water_ingress_given_di)
 
         plt.figure()
         for j in range(a.shape[0]):
@@ -144,7 +145,7 @@ class WaterIngressTestCase(unittest.TestCase):
             for i, wi in enumerate(wi_array):
                 for j, di in enumerate(di_array):
                     idx = np.argsort(np.abs(_df.index - wi))[0]
-                    a[i, j] = _df.iloc[idx]['costing'].calculate_cost(di)
+                    a[i, j] = _df.iloc[idx]['costing'].compute_cost(di)
 
             plt.figure()
             for j in range(a.shape[0]):

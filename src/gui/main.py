@@ -58,7 +58,7 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
 
         # scenario section
         self.ui.numHouses.setValidator(QIntValidator(1, 10000, self.ui.numHouses))
-        self.ui.houseName.addItems(self.cfg.df_house['name'].values)
+        self.ui.houseName.addItems(self.cfg.dic_house['name'])
         self.ui.houseName.setCurrentIndex(-1)
         self.ui.terrainCategory.addItems(self.cfg.terrain_categories)
         self.ui.terrainCategory.setCurrentIndex(-1)
@@ -157,26 +157,47 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
         
     def onSliderChanged(self, label, x):
         label.setText('{:d}'.format(x))
-        
+
     def updateVulnCurveSettings(self):
         if self.has_run:
             self.update_config_from_ui()
-            self.updateVulnCurve()
+            # self.updateVulnCurve()
             self.statusBar().showMessage(unicode('Curve Fit Updated'))
             
-    def updateVulnCurve(self):
+    def updateVulnCurve(self, df):
         # self.show_results(None, self.ui.redV.value(), self.ui.blueV.value())
 
-        df_dmg_idx = pd.read_hdf(self.cfg.file_house, 'house')['di']
+        # print(dir(self.ui.mplvuln.axes))
+
+        for _, col in df.iteritems():
+            self.ui.mplfrag.axes.plot(self.cfg.speeds, col.values, 'o', 0.3)
+
+        """
+
+        self.ui.mplvuln.axes.cla()
+        self.ui.mplvuln.axes.figure.canvas.draw()
+        for _, col in df_dmg_idx.iteritems():
+            self.ui.mplvuln.axes.plot(self.cfg.speeds, col.values, 'o')
+
+            self.ui.mplfrag.axes.legend()
+
+            self.ui.mplvuln.axes.plot(self.cfg.speeds,result[0][''])
+        self.ui.sumOfSquares.setText('{:.3f}'.format(0.11))
+        self.ui.coeff_1.setText('%f' % self.simulator.A_final[0])
+        self.ui.coeff_2.setText('%f' % self.simulator.A_final[1])
+        """
+
+    def updateFragCurve(self, df):
+        # self.show_results(None, self.ui.redV.value(), self.ui.blueV.value())
+
         df_fitted_curves = pd.read_csv(self.cfg.file_curve,
                                        names=['key', 'error', 'param1',
                                               'param2'], skiprows=1,
                                        index_col='key')
 
+        print('{}'.format(type(self.ui.mplfrag)))
         self.ui.mplfrag.axes.hold(True)
-        self.ui.mplfrag.axes.cla()
-        self.ui.mplfrag.axes.figure.canvas.draw()
-        for _, col in df_dmg_idx.iteritems():
+        for _, col in df.iteritems():
             self.ui.mplfrag.axes.plot(self.cfg.speeds, col.values, 'o', 0.3)
 
         for ds, value in self.cfg.fragility_thresholds.iterrows():
@@ -191,16 +212,6 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
                                           color=value['color'],
                                           linestyle='-', label=ds)
         self.ui.mplfrag.axes.legend()
-
-        # self.ui.mplvuln.axes.cla()
-        # self.ui.mplvuln.axes.figure.canvas.draw()
-        # for _, col in df_dmg_idx.iteritems():
-        #     self.ui.mplvuln.axes.plot(self.cfg.speeds, col.values, '-', 0.3)
-
-        # self.ui.mplvuln.axes.plot(self.cfg.speeds,result[0][''])
-        # self.ui.sumOfSquares.setText('%f' % self.simulator.ss)
-        # self.ui.coeff_1.setText('%f' % self.simulator.A_final[0])
-        # self.ui.coeff_2.setText('%f' % self.simulator.A_final[1])
 
     def updateDisplaySettings(self):
         if self.has_run:
@@ -377,19 +388,31 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
         self.statusBar().showMessage('Running Scenario')
         self.statusProgressBar.show()
         self.update_config_from_ui()
+
         self.ui.mplsheeting.axes.cla()
         self.ui.mplsheeting.axes.figure.canvas.draw()
+
         self.ui.mplbatten.axes.cla()
         self.ui.mplbatten.axes.figure.canvas.draw()
+
         self.ui.mplrafter.axes.cla()
         self.ui.mplrafter.axes.figure.canvas.draw()
+
         self.ui.connection_type_plot.axes.cla()
         self.ui.connection_type_plot.axes.figure.canvas.draw()
+
         self.ui.breaches_plot.axes.cla()
         self.ui.breaches_plot.axes.figure.canvas.draw()
+
         self.ui.wateringress_plot.axes.cla()
         self.ui.wateringress_plot.axes.figure.canvas.draw()
-        
+
+        self.ui.mplvuln.axes.cla()
+        self.ui.mplvuln.axes.figure.canvas.draw()
+
+        self.ui.mplfrag.axes.cla()
+        self.ui.mplfrag.axes.figure.canvas.draw()
+
         # run simulation with progress bar
         self.ui.actionStop.setEnabled(True)
         self.ui.actionRun.setEnabled(False)
@@ -403,18 +426,19 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
                                                                     call_back=progress_callback)
 
             if run_time is not None:
-                self.statusBar().showMessage(unicode('Simulation '
-                                                     'complete in {:0.3f}'.format(run_time)))
-                self.updateVulnCurve()
+                self.statusBar().showMessage(
+                    unicode('Simulation complete in {:0.3f}'.format(run_time)))
                 # TODO Finish drawing results
-                # self.updateHouseResultsTable(list_results)
+                self.updateVulnCurve(list_results['house']['di'])
+                self.updateFragCurve(list_results['house']['di'])
+                #self.updateHouseResultsTable(list_results)
                 # self.updateConnectionTable(list_results)
-                # self.updateConnectionTypePlots(list_results)
-                # self.updateBreachPlot(list_results)
-                # self.updateWaterIngressPlot(list_results)
+                # self.updateConnectionTypePlots()
+                # self.updateBreachPlot()
+                # self.updateWaterIngressPlot()
                 self.has_run = True
 
-        except IOError as err:
+        except IOError:
             msg = unicode('A report file is still open by another program, '
                           'unable to run simulation.')
             QMessageBox.warning(self, 'VAWS Program Warning', msg)
@@ -454,9 +478,8 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
         self.ui.wateringress_plot.axes.set_ylim((0))
         
     def updateBreachPlot(self):
-        self.statusBar().showMessage('Plotting Debris Results')        
+        self.statusBar().showMessage('Plotting Debris Results')
         self.ui.breaches_plot.axes.figure.clf()
-                
         # we'll have three seperate y axis running at different scales
         cumimpact_arr = []
         cumsupply_arr = []
@@ -501,8 +524,9 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
         
         host.legend(loc=2)
         self.ui.breaches_plot.axes.figure.canvas.draw()
-                
+
     def updateStrengthPlot(self):
+
         self.ui.connection_type_plot.axes.hold(False)
         
         obs_dict = {}
@@ -533,8 +557,9 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
         self.ui.connection_type_plot.axes.set_position([0.05, 0.20, 0.9, 0.75])
         self.ui.connection_type_plot.axes.figure.canvas.draw()     
         self.ui.connection_type_plot.axes.set_xlim((-0.5, len(xlabels)))
-        
+
     def updateTypeDamagePlot(self):
+
         self.ui.connection_type_damages_plot.axes.hold(False)
         
         obs_dict = {}
@@ -565,7 +590,7 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
         self.ui.connection_type_damages_plot.axes.set_position([0.05, 0.20, 0.9, 0.75])
         self.ui.connection_type_damages_plot.axes.figure.canvas.draw()     
         self.ui.connection_type_damages_plot.axes.set_xlim((-0.5, len(xlabels)))
-        
+
     def updateConnectionTypePlots(self):
         self.statusBar().showMessage('Plotting Connection Types')
         self.updateStrengthPlot()
@@ -650,7 +675,7 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
     def save_scenario(self):
         self.update_config_from_ui()
         self.cfg.save_config()
-        self.ui.statusbar.showMessage('Saved to file %s' % self.cfg.cfg_file)
+        self.ui.statusbar.showMessage('Saved to file {}'.format(self.cfg.cfg_file))
         self.update_ui_from_config()
         
     def save_as_scenario(self):
@@ -862,9 +887,11 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
         
     def file_load(self, fname):
         try:
+
+            path_cfg = os.path.dirname(os.path.realpath(fname))
+            set_logger(path_cfg, logging_level='warning')
             self.cfg = Config(fname)
             self.set_scenario(self.cfg)
-            set_logger(self.cfg, logging_level='info')
         except Exception as excep:
             logging.exception("Loading configuration caused exception")
 
@@ -935,14 +962,14 @@ def run_gui():
 
     (options, args) = parser.parse_args()
 
-    if not options.config_filename:
+    if not options.config_file:
         settings = QSettings()
         if settings.contains("LastFile"):
             initial_scenario = unicode(settings.value("LastFile").toString())
         else:
             initial_scenario = DEFAULT_SCENARIO
     else:
-        initial_scenario = options.config_filename
+        initial_scenario = options.config_file
 
     path_cfg = os.path.dirname(os.path.realpath(initial_scenario))
     if options.verbose:
@@ -978,6 +1005,3 @@ def run_gui():
 
 if __name__ == '__main__':
     run_gui()
-
-
-

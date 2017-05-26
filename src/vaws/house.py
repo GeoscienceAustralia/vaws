@@ -11,7 +11,6 @@ from collections import OrderedDict
 
 from vaws.connection import ConnectionTypeGroup
 from vaws.zone import Zone
-from vaws.stats import calc_big_a_b_values
 from vaws.config import Config
 from vaws.debris import Debris
 
@@ -27,6 +26,7 @@ class House(object):
         self.rnd_state = rnd_state
 
         # attributes assigned by self.read_house_data
+        self.name = None
         self.width = None
         self.height = None
         self.length = None
@@ -36,6 +36,8 @@ class House(object):
         self.cpe_k = None
         self.roof_rows = None
         self.roof_cols = None
+        self.big_a = None
+        self.big_b = None
 
         # debris related
         self.debris = None
@@ -49,16 +51,10 @@ class House(object):
         self.str_cov_factor = None
         self.mzcat = None
 
-        # constants
-        self.big_a = None
-        self.big_b = None
-
         self.groups = OrderedDict()  # list of conn type groups
-        self.connections = {}  # dict of connections with id
+        self.connections = {}  # dict of connections with name
         self.zones = {}  # dict of zones with id
-        self.factors_costing = {}  # dict of damage factoring with id
-        self.patches = {}
-        self.zone_by_grid = {}  # dict of zones with zone loc grid in tuple
+        # self.zone_by_grid = {}  # dict of zones with zone loc grid in tuple
 
         # init house
         self.read_house_data()
@@ -72,8 +68,8 @@ class House(object):
 
     def read_house_data(self):
 
-        for att in self.cfg.house_attributes:
-            setattr(self, att, self.cfg.df_house.at[0, att])
+        for key, value in self.cfg.dic_house.iteritems():
+            setattr(self, key, value)
 
     def set_zones(self):
 
@@ -101,58 +97,54 @@ class House(object):
                 rnd_state=self.rnd_state)
 
             self.zones[zone_name] = _zone
-            self.zone_by_grid[_zone.grid] = _zone
+            # self.zone_by_grid[_zone.grid] = _zone
 
     def set_connections(self):
 
-        for (_, sub_group_name), grouped in self.cfg.df_connections.groupby(
-                by=['group_idx', 'sub_group']):
+        for (_, sub_group_name), connections_by_sub_group in \
+                self.cfg.df_connections.groupby(by=['group_idx', 'sub_group']):
 
             # sub_group
-            group_name = grouped['group_name'].values[0]
-            group_item = self.cfg.df_groups.loc[group_name]
+            group_name = connections_by_sub_group['group_name'].values[0]
+            dic_group = self.cfg.df_groups.loc[group_name].to_dict()
+            dic_group['sub_group'] = sub_group_name
+
             _group = ConnectionTypeGroup(group_name=group_name,
-                                         **group_item)
-            _group.damage_grid = self.cfg.dic_sub_groups[sub_group_name]
+                                         **dic_group)
+            self.groups[sub_group_name] = _group
 
-            _group.costing = self.assign_costing(group_item['damage_scenario'])
-            costing_area_by_group = 0.0
-
-            _group.types = self.cfg.df_types.loc[
-                self.cfg.df_types.index.isin(grouped['type_name'])].to_dict('index')
+            _group.damage_grid = self.cfg.damage_grid_by_sub_group[sub_group_name]
+            _group.costing = self.assign_costing(dic_group['damage_scenario'])
+            _group.connections = connections_by_sub_group.to_dict('index')
 
             # linking with connections
-            for type_name, _type in _group.types.iteritems():
+            for connection_name, _connection in _group.connections.iteritems():
 
-                _type.connections = grouped.loc[
-                    grouped['type_name'] == type_name].to_dict('index')
-                _group.no_connections = _type.no_connections
+                self.connections[connection_name] = _connection
+                self.set_connection_property(_connection)
 
-                # linking with connections
-                for connection_name, _connection in _type.connections.iteritems():
+                try:
+                    _group.damage_grid[_connection.grid] = 0  # intact
+                except IndexError:
+                    logging.warning(
+                        'conn grid {} does not exist within group grid {}'.format(
+                            _connection.grid, _group.damage_grid))
 
-                    self.connections[connection_name] = _connection
-                    self.set_connection_property(_connection)
+                _group.connection_by_grid = _connection.grid, _connection
 
-                    try:
-                        _group.damage_grid[_connection.grid] = 0  # intact
-                    except IndexError:
-                        print('{}:{}'.format(_group.damage_grid, _connection.grid))
+                self.link_connection_to_influence(_connection)
 
-                    costing_area_by_group += _type.costing_area
-
-                    _group.connection_by_grid = _connection.grid, _connection
-                    _group.connection_by_name = _connection.name, _connection
-
-                    # linking connections either zones or connections\
-                    for _inf in _connection.influences.itervalues():
-                        try:
-                            _inf.source = self.zones[_inf.name]
-                        except KeyError:
-                            _inf.source = self.connections[_inf.name]
-
-                _group.costing_area = costing_area_by_group
-                self.groups[sub_group_name] = _group
+    def link_connection_to_influence(self, _connection):
+        # linking connections either zones or connections
+        for _inf in _connection.influences.itervalues():
+            try:
+                _inf.source = self.zones[_inf.name]
+            except KeyError:
+                try:
+                    _inf.source = self.connections[_inf.name]
+                except KeyError:
+                    logging.warning('unable to associate {} with {}'.format(
+                        _connection.name, _inf.name))
 
     def set_connection_property(self, _connection):
         """
@@ -166,18 +158,16 @@ class House(object):
         _connection.sample_strength(mean_factor=self.str_mean_factor,
                                     cov_factor=self.str_cov_factor,
                                     rnd_state=self.rnd_state)
-
         _connection.sample_dead_load(rnd_state=self.rnd_state)
 
-        # _connection.grid = self.zones[_connection.zone_loc].grid
-        # _connection.grid = Zone.get_grid_from_zone_location(
-        #    _connection.zone_loc)
-        # _connection.grid = _connection['grid']
         _connection.influences = self.cfg.dic_influences[_connection.name]
 
+        # influence_patches
         if _connection.name in self.cfg.dic_influence_patches:
             _connection.influence_patch = \
                 self.cfg.dic_influence_patches[_connection.name]
+        else:
+            _connection.influence_patch = {}
 
     def assign_costing(self, key):
         """
@@ -192,7 +182,7 @@ class House(object):
         if key in self.cfg.dic_costings:
             return self.cfg.dic_costings[key]
         else:
-            logging.error('{} not in cfg.dic_costings'.format(key))
+            logging.warning('{} not in cfg.dic_costings'.format(key))
 
     def set_debris(self):
 
@@ -217,8 +207,6 @@ class House(object):
             profile, mzcat
 
         """
-        self.big_a, self.big_b = calc_big_a_b_values(shape_k=self.cpe_k)
-
         # set wind_orientation
         if self.cfg.wind_dir_index == 8:
             self.wind_orientation = self.rnd_state.random_integers(0, 7)
@@ -247,20 +235,15 @@ class House(object):
         Returns: construction_level, str_mean_factor, str_cov_factor
 
         """
-        if self.cfg.flags['construction_levels']:
-            rv = self.rnd_state.random_integers(0, 100)
-            key, value, cum_prob = None, None, 0.0
-            for key, value in self.cfg.construction_levels.iteritems():
-                cum_prob += value['probability'] * 100.0
-                if rv <= cum_prob:
-                    break
-            self.construction_level = key
-            self.str_mean_factor = value['mean_factor']
-            self.str_cov_factor = value['cov_factor']
-        else:
-            self.construction_level = 'medium'
-            self.str_mean_factor = 1.0
-            self.str_cov_factor = 1.0
+        rv = self.rnd_state.random_integers(0, 100)
+        key, value, cum_prob = None, None, 0.0
+        for key, value in self.cfg.construction_levels.iteritems():
+            cum_prob += value['probability'] * 100.0
+            if rv <= cum_prob:
+                break
+        self.construction_level = key
+        self.str_mean_factor = value['mean_factor']
+        self.str_cov_factor = value['cov_factor']
 
 
 

@@ -25,10 +25,10 @@ class Zone(object):
         self.area = None
         self.cpi_alpha = None
         self.wall_dir = None
-        self.cpe_mean = dict()
-        self.cpe_str_mean = dict()
-        self.cpe_eave_mean = dict()
-        self.is_roof_edge = dict()
+        self.cpe_mean = {}
+        self.cpe_str_mean = {}
+        self.cpe_eave_mean = {}
+        self.is_roof_edge = {}
 
         default_attr = dict(area=self.area,
                             cpi_alpha=self.cpi_alpha,

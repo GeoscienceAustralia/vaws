@@ -1,9 +1,6 @@
 ParentGroup,FactorByGroup
-wallracking,wallcollapse
-debris,wallracking
-debris,wallcollapse
-wallcladding,debris
-wallcladding,wallracking
+wallracking_bracing,wallcollapse
+wallcladding,wallracking_bracing
 wallcladding,wallcollapse
 batten,rafter
 sheeting,rafter

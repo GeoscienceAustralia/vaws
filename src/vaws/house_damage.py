@@ -6,7 +6,7 @@ from collections import defaultdict
 
 from vaws.house import House
 from vaws.config import Config
-from vaws.damage_costing import cal_water_ingress_given_damage
+from vaws.damage_costing import compute_water_ingress_given_damage
 
 
 class HouseDamage(object):
@@ -17,7 +17,8 @@ class HouseDamage(object):
         assert isinstance(seed, int)
 
         self.cfg = cfg
-        self.rnd_state = np.random.RandomState(seed)
+        self.seed = seed
+        self.rnd_state = np.random.RandomState(self.seed)
 
         self.house = House(cfg, self.rnd_state)
 
@@ -37,41 +38,46 @@ class HouseDamage(object):
 
     def run_simulation(self, wind_speed):
 
-        logging.info('wind speed {:.3f}'.format(wind_speed))
+        if not self.collapse:
 
-        # only check if debris is ON
-        # cpi is computed here
+            logging.info('wind speed {:.3f}'.format(wind_speed))
 
-        if self.cfg.flags['debris']:
-            self.check_internal_pressurisation(wind_speed)
+            # only check if debris is ON
+            # cpi is computed here
 
-        # compute load by zone
-        self.calculate_qz_ms(wind_speed)
+            if self.cfg.flags['debris']:
+                self.check_internal_pressurisation(wind_speed)
 
-        # load = qz * (Cpe + Cpi) * A + Dead
-        for _zone in self.house.zones.itervalues():
+            # compute load by zone
+            self.compute_qz_ms(wind_speed)
 
-            _zone.calc_zone_pressures(self.house.wind_orientation,
-                                      self.cpi,
-                                      self.qz,
-                                      self.ms,
-                                      self.cfg.building_spacing,
-                                      self.cfg.flags['diff_shielding'])
+            # load = qz * (Cpe + Cpi) * A + dead_load
+            for _zone in self.house.zones.itervalues():
+                _zone.calc_zone_pressures(self.house.wind_orientation,
+                                          self.cpi,
+                                          self.qz,
+                                          self.ms,
+                                          self.cfg.building_spacing,
+                                          self.cfg.flags['diff_shielding'])
 
-        # check damage by connection type group
-        for _group in self.house.groups.itervalues():
+            for _connection in self.house.connections.itervalues():
+                _connection.compute_load()
 
-            _group.check_damage(wind_speed)
-            _group.cal_damaged_area()
+            # check damage by connection type group
+            for _group in self.house.groups.itervalues():
 
-            if _group.damaged and self.cfg.flags.get('dmg_distribute_{}'.format(
-                    _group.name)):
-                _group.distribute_damage()
+                _group.check_damage(wind_speed)
+                _group.compute_damaged_area()
 
-        self.check_house_collapse(wind_speed)
-        self.cal_damage_index(wind_speed)
+                # change influence / influence patch
+                if _group.damaged and self.cfg.flags.get('dmg_distribute_{}'.format(
+                        _group.name)):
+                    _group.update_influence(self.house)
 
-        self.fill_bucket()
+            self.check_house_collapse(wind_speed)
+            self.compute_damage_index(wind_speed)
+
+            self.fill_bucket()
 
         return copy.deepcopy(self.bucket)
 
@@ -108,7 +114,7 @@ class HouseDamage(object):
                 for key, value in _dic.iteritems():
                     self.bucket[item].at[key, att] = getattr(value, att)
 
-    def calculate_qz_ms(self, wind_speed):
+    def compute_qz_ms(self, wind_speed):
         """
         calculate qz, velocity pressure given wind velocity
         qz = 0.6*10-3*(Mz,cat*V)**2
@@ -165,18 +171,17 @@ class HouseDamage(object):
 
             for _group in self.house.groups.itervalues():
 
-                if 0 < _group.trigger_collapse_at <= _group.prop_damaged_group:
+                if 0 < _group.trigger_collapse_at <= _group.prop_damaged:
 
                     self.collapse = True
 
-                    # FIXME!! Don't understand WHY?
                     for _connection in self.house.connections.itervalues():
-                        _connection.set_damage(wind_speed)
-                    #
-                    # for _zone in self.house.zones:
-                    #     _zone.effective_area = 0.0
 
-    def cal_damage_index(self, wind_speed):
+                        if _connection.damaged == 0:
+                            _connection.damaged = 1
+                            _connection.capacity = wind_speed
+
+    def compute_damage_index(self, wind_speed):
         """
 
         Args:
@@ -187,7 +192,7 @@ class HouseDamage(object):
 
         Note:
 
-            1. sum of damaged area by each connection group
+            1. compute sum of damaged area by group 
             2. revised damage area by group by applying damage factoring
             3. calculate sum of revised damaged area by damage scenario
             4. apply costing modules
@@ -201,7 +206,12 @@ class HouseDamage(object):
             area_by_group[_group.name] += _group.damaged_area
             total_area_by_group[_group.name] += _group.costing_area
 
-        # prop_area_by_group
+        # remove group with zero costing area
+        for key, value in total_area_by_group.items():
+            if value == 0:
+                total_area_by_group.pop(key, None)
+                area_by_group.pop(key, None)
+
         prop_area_by_group = {key: value / total_area_by_group[key]
                               for key, value in area_by_group.iteritems()}
 
@@ -224,7 +234,7 @@ class HouseDamage(object):
         prop_area_by_scenario = {key: value / total_area_by_scenario[key]
                                  for key, value in area_by_scenario.iteritems()}
 
-        _list = [self.cfg.dic_costings[key].calculate_cost(value)
+        _list = [self.cfg.dic_costings[key].compute_cost(value)
                  for key, value in prop_area_by_scenario.iteritems()]
         self.repair_cost = np.array(_list).sum()
 
@@ -235,7 +245,7 @@ class HouseDamage(object):
         if self.di_except_water < 1.0 and self.cfg.flags['water_ingress']:
 
             # compute water ingress
-            water_ingress_perc = 100.0 * cal_water_ingress_given_damage(
+            water_ingress_perc = 100.0 * compute_water_ingress_given_damage(
                 self.di_except_water, wind_speed,
                 self.cfg.water_ingress_given_di)
 
@@ -251,7 +261,7 @@ class HouseDamage(object):
             idx = np.argsort(np.abs(_df.index - water_ingress_perc))[0]
 
             self.water_ingress_cost = \
-                _df.at[idx, 'costing'].calculate_cost(self.di_except_water)
+                _df.at[idx, 'costing'].compute_cost(self.di_except_water)
             _di = (self.repair_cost +
                    self.water_ingress_cost) / self.house.replace_cost
             self.di = min(_di, 1.0)

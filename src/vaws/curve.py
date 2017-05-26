@@ -21,7 +21,7 @@ def fit_vulnerability_curve(cfg, df_dmg_idx):
     xdata = (cfg.speeds[:, newaxis] * ones((1, cfg.no_sims))).flatten()
     ydata = df_dmg_idx.values.flatten()
 
-    fitted_curve = dict()
+    fitted_curve = {}
     for key, func_ in cfg.dic_obj_for_fitting.items():
 
         with warnings.catch_warnings():

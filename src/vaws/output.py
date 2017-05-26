@@ -108,7 +108,7 @@ def plot_heatmap(grouped, values, vmin, vmax, vstep, xlim_max, ylim_max,
 
     if file_name:
         fig.savefig('{}.png'.format(file_name), dpi=150)
-    plt.close(fig)
+    # plt.close(fig)
 
 
 def plot_curve(x_value, y_value, **kwargs):

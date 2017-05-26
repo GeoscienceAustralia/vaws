@@ -17,7 +17,7 @@ from collections import OrderedDict, defaultdict
 from scipy.stats import norm
 from matplotlib.patches import Polygon
 
-from vaws.stats import compute_logarithmic_mean_stddev
+from vaws.stats import compute_logarithmic_mean_stddev, calc_big_a_b_values
 from vaws.damage_costing import Costing, WaterIngressCosting
 from vaws.zone import Zone
 
@@ -31,14 +31,10 @@ HOUSE_DATA = os.path.join(INPUT_DIR, "house")
 class Config(object):
 
     # lookup table mapping (0-7) to wind direction (8: random)
-    wind_dir = ['S', 'SW', 'W', 'NW', 'N', 'NE', 'E', 'SE', 'Random']
+    wind_dir = ['S', 'SW', 'W', 'NW', 'N', 'NE', 'E', 'SE', 'RANDOM']
     terrain_categories = ['2', '2.5', '3', 'non_cyclonic']
     profile_heights = [3.0, 5.0, 7.0, 10.0, 12.0, 15.0, 17.0, 20.0, 25.0, 30.0]
     region_names = ['Capital_city', 'Tropical_town']
-
-    house_attributes = ['replace_cost', 'height', 'cpe_cov', 'cpe_k',
-                        'cpe_str_cov', 'length', 'width', 'roof_cols',
-                        'roof_rows']
 
     # model dependent attributes
     list_house_bucket = ['profile', 'wind_orientation', 'construction_level',
@@ -67,15 +63,8 @@ class Config(object):
 
         self.cfg_file = cfg_file
 
-        self.path_cfg = os.path.dirname(os.path.realpath(cfg_file))
-        self.path_output = os.path.join(self.path_cfg, OUTPUT_DIR)
-        self.path_house_data = os.path.join(self.path_cfg, HOUSE_DATA)
-        self.path_wind_profiles = os.path.join(self.path_cfg,
-                                               GUST_PROFILES_DATA)
-        self.path_debris = os.path.join(self.path_cfg, DEBRIS_DATA)
-
         self.house_name = None  # only used for gui display may be deleted later
-        self.parallel = None  # not used at the moment
+        # self.parallel = None  # not used at the moment
         self.no_sims = None
         self.wind_speed_min = 0.0
         self.wind_speed_max = 0.0
@@ -106,7 +95,7 @@ class Config(object):
         self.df_footprint = None
 
         # house data
-        self.df_house = None
+        self.dic_house = None
         self.df_zones = None
         self.df_zones_cpe_mean = None
         self.df_zones_cpe_eave_mean = None
@@ -116,7 +105,7 @@ class Config(object):
         self.df_groups = None
         self.df_types = None
         self.df_connections = None
-        self.dic_sub_groups = None
+        self.damage_grid_by_sub_group = None
         self.dic_influences = None
         self.dic_influence_patches = None
 
@@ -153,12 +142,19 @@ class Config(object):
         self.heatmap_vmax = 95.0
         self.heatmap_vstep = 21
 
-        self.flags = dict()
+        self.flags = {}
 
         if not os.path.isfile(cfg_file):
             msg = 'Error: file {} not found'.format(cfg_file)
             sys.exit(msg)
         else:
+            self.path_cfg = os.path.dirname(os.path.realpath(cfg_file))
+            self.path_output = os.path.join(self.path_cfg, OUTPUT_DIR)
+            self.path_house_data = os.path.join(self.path_cfg, HOUSE_DATA)
+            self.path_wind_profiles = os.path.join(self.path_cfg,
+                                                   GUST_PROFILES_DATA)
+            self.path_debris = os.path.join(self.path_cfg, DEBRIS_DATA)
+
             self.read_config()
             self.set_output_files()
 
@@ -204,7 +200,7 @@ class Config(object):
 
         """
         self.house_name = conf.get(key, 'house_name')
-        self.parallel = conf.getboolean(key, 'parallel')
+        # self.parallel = conf.getboolean(key, 'parallel')
         self.no_sims = conf.getint(key, 'no_simulations')
         self.wind_speed_min = conf.getfloat(key, 'wind_speed_min')
         self.wind_speed_max = conf.getfloat(key, 'wind_speed_max')
@@ -216,8 +212,6 @@ class Config(object):
         self.regional_shielding_factor = conf.getfloat(
             key, 'regional_shielding_factor')
         self.set_wind_profile(conf.get(key, 'terrain_cat'))
-        for item in ['debris', 'water_ingress']:
-            self.flags[item] = conf.getboolean(key, item)
 
     def read_water_ingress(self, conf, key):
         if conf.has_section(key):
@@ -288,7 +282,7 @@ class Config(object):
             try:
                 self.dic_walls = pd.read_csv(
                     os.path.join(self.path_house_data, 'walls.csv'),
-                    index_col='wall_name').to_dict()['wall_area']
+                    index_col='wall_name', skipinitialspace=True).to_dict()['wall_area']
             except TypeError:
                 self.dic_walls = {}
 
@@ -339,22 +333,10 @@ class Config(object):
                 self.construction_levels[level]['mean_factor'] = mean_factors[i]
                 self.construction_levels[level]['cov_factor'] = cov_factors[i]
         else:
-            self.construction_levels = OrderedDict()
-            self.construction_levels.setdefault('low', {})['probability'] = 0.33
-            self.construction_levels.setdefault('medium', {})[
-                'probability'] = 0.34
-            self.construction_levels.setdefault('high', {})[
-                'probability'] = 0.33
-
-            self.construction_levels['low']['mean_factor'] = 0.9
-            self.construction_levels['medium']['mean_factor'] = 1.0
-            self.construction_levels['high']['mean_factor'] = 1.1
-
-            self.construction_levels['low']['cov_factor'] = 0.58
-            self.construction_levels['medium']['cov_factor'] = 0.58
-            self.construction_levels['high']['cov_factor'] = 0.58
-
-            logging.info('default construction level distribution is used')
+            self.construction_levels = {'medium': {'probability': 1.0,
+                                                   'mean_factor': 1.0,
+                                                   'cov_factor': 0.58}}
+            logging.info('construction level is set to be medium')
 
     def read_heatmap(self, conf, key):
         for item in ['vmin', 'vmax', 'vstep']:
@@ -382,8 +364,10 @@ class Config(object):
     def read_house_data(self):
 
         # house data
-        self.df_house = pd.read_csv(
-            os.path.join(self.path_house_data, 'house_data.csv'))
+        self.dic_house = pd.read_csv(
+            os.path.join(self.path_house_data, 'house_data.csv')).to_dict('records')[0]
+        self.dic_house['big_a'], self.dic_house['big_b'] = \
+            calc_big_a_b_values(shape_k=self.dic_house['cpe_k'])
 
         # zone data
         self.df_zones = pd.read_csv(
@@ -425,7 +409,7 @@ class Config(object):
         self.df_connections = self.read_connection_data(
             os.path.join(self.path_house_data, 'connections.csv'), self.df_types)
         self.list_connections = self.df_connections.index.tolist()
-        self.dic_sub_groups = self.df_connections.groupby('sub_group')['grid_max'].apply(
+        self.damage_grid_by_sub_group = self.df_connections.groupby('sub_group')['grid_max'].apply(
             lambda x: x.unique()[0]).to_dict()
         self.df_connections['group_idx'] = self.df_connections['group_name'].apply(
             lambda x: self.list_groups.index(x))
@@ -483,12 +467,17 @@ class Config(object):
             logging.warning('No coordinates are provided')
 
         _df['group_name'] = df_types.loc[_df['type_name'], 'group_name'].values
-
         _df['sub_group'] = _df.apply(
             lambda row: row['group_name'] + row['section'], axis=1)
+        _df['costing_area'] = _df['type_name'].apply(
+            lambda x: df_types.loc[x, 'costing_area'])
+        for item in ['costing_area', 'lognormal_strength', 'lognormal_dead_load']:
+            _df[item] = _df['type_name'].apply(lambda x: df_types.loc[x, item])
+
         _df['grid_raw'] = _df['zone_loc'].apply(Zone.get_grid_from_zone_location)
         _df = _df.join(_df.groupby('sub_group')['grid_raw'].apply(
             lambda x: tuple(map(min, *x))), on='sub_group', rsuffix='_min')
+
         _df['grid'] = _df.apply(cls.get_diff_tuples,
                                 args=('grid_raw', 'grid_raw_min'), axis=1)
         _df = _df.join(_df.groupby('sub_group')['grid'].apply(
@@ -511,7 +500,8 @@ class Config(object):
 
         dic_costing_to_group = defaultdict(list)
         for key, value in df_groups['damage_scenario'].to_dict().iteritems():
-            dic_costing_to_group[value].append(key)
+            if len(value.split()) > 1:
+                dic_costing_to_group[value].append(key)
 
         _a = df_damage_costing.loc[df_damage_costing[
             'water_ingress_order'].sort_values().index, 'name']
@@ -538,7 +528,7 @@ class Config(object):
 
     @staticmethod
     def read_front_facing_walls(filename):
-        _dic = dict()
+        _dic = {}
         with open(filename, 'r') as f:
             next(f)  # skip the first line
             for line in f:
@@ -558,17 +548,17 @@ class Config(object):
         """
 
         Args:
-            filename: influences.csv
+            filename: damage_factorings.csv
             connection_name, zone1_name, zone1_infl, (.....)
         Returns: dictionary
 
         """
-        _dic = dict()
+        _dic = {}
         with open(filename, 'r') as f:
             next(f)  # skip the first line
             for line in f:
                 fields = line.strip().rstrip(',').split(',')
-                _dic.setdefault(fields[0], []).append(fields[1])
+                _dic.setdefault(fields[0].strip(), []).append(fields[1].strip())
 
         return _dic
 
@@ -582,7 +572,7 @@ class Config(object):
         Returns: dictionary
 
         """
-        _dic = dict()
+        _dic = {}
         with open(filename, 'r') as f:
             next(f)  # skip the first line
             for line in f:
@@ -594,12 +584,12 @@ class Config(object):
                         try:
                             key = int(value)
                         except ValueError:
-                            key = value
+                            key = value.strip()
                     elif i % 2:
                         try:
                             sub_key = int(value)
                         except ValueError:
-                            sub_key = value
+                            sub_key = value.strip()
                     elif key and sub_key:
                         _dic.setdefault(key, {})[sub_key] = float(value)
 
@@ -615,7 +605,7 @@ class Config(object):
         Returns: dictionary
 
         """
-        _dic = dict()
+        _dic = {}
         with open(filename, 'r') as f:
             next(f)  # skip the first line
             for line in f:
@@ -628,17 +618,17 @@ class Config(object):
                         try:
                             damaged_conn = int(value)
                         except ValueError:
-                            damaged_conn = value
+                            damaged_conn = value.strip()
                     elif i == 1:
                         try:
                             target_conn = int(value)
                         except ValueError:
-                            target_conn = value
+                            target_conn = value.strip()
                     elif i % 2 == 0:
                         try:
                             sub_key = int(value)
                         except ValueError:
-                            sub_key = value
+                            sub_key = value.strip()
                     elif damaged_conn and target_conn and sub_key:
                         _dic.setdefault(damaged_conn, {}
                                         ).setdefault(target_conn, {}
@@ -694,7 +684,7 @@ class Config(object):
         try:
             self.wind_dir_index = self.__class__.wind_dir.index(wind_dir_str.upper())
         except ValueError:
-            logging.info('8(i.e., RANDOM) is set for wind_dir_index by default')
+            logging.warning('8(i.e., RANDOM) is set for wind_dir_index by default')
             self.wind_dir_index = 8
 
     def save_config(self):
@@ -703,22 +693,28 @@ class Config(object):
 
         key = 'main'
         config.add_section(key)
-        config.set(key, 'path_datafile', self.path_house_data)
-        config.set(key, 'parallel', self.parallel)
+        # config.set(key, 'path_datafile', self.path_house_data)
+        # config.set(key, 'parallel', self.parallel)
         config.set(key, 'no_simulations', self.no_sims)
+        config.set(key, 'house_name', self.house_name)
+
+        config.set(key, 'wind_fixed_dir', self.__class__.wind_dir[self.wind_dir_index])
         config.set(key, 'wind_speed_min', self.wind_speed_min)
         config.set(key, 'wind_speed_max', self.wind_speed_max)
         config.set(key, 'wind_speed_steps', self.wind_speed_steps)
         config.set(key, 'terrain_cat', self.terrain_category)
-        config.set(key, 'house_name', self.house_name)
-        config.set(key, 'regional_shielding_factor',
-                   self.regional_shielding_factor)
-        config.set(key, 'wind_fixed_dir', self.__class__.wind_dir[self.wind_dir_index])
+        config.set(key, 'regional_shielding_factor', self.regional_shielding_factor)
 
         key = 'options'
         config.add_section(key)
         for sub_key in self.flags:
             config.set(key, sub_key, self.flags.get(sub_key))
+
+        key = 'heatmap'
+        config.add_section(key)
+        config.set(key, 'vmin', self.heatmap_vmin)
+        config.set(key, 'vmax', self.heatmap_vmax)
+        config.set(key, 'vstep', self.heatmap_vstep)
 
         key = 'fragility_thresholds'
         config.add_section(key)
@@ -730,6 +726,7 @@ class Config(object):
         key = 'debris'
         config.add_section(key)
         config.set(key, 'region_name', self.region_name)
+        config.set(key, 'staggered_sources', self.staggered_sources)
         config.set(key, 'source_items', self.source_items)
         config.set(key, 'building_spacing', self.building_spacing)
         config.set(key, 'debris_radius', self.debris_radius)
@@ -754,18 +751,15 @@ class Config(object):
         config.set(key, 'mean_factors', ', '.join(_mean_factor))
         config.set(key, 'cov_factors', ', '.join(_cov_factor))
 
+        key = 'water_ingress'
+        config.add_section(key)
+        config.set(key, 'thresholds', ', '.join(
+            [str(x) for x in self.water_ingress_given_di.index.values]))
+
+        for item in ['lower', 'upper']:
+            config.set(key, item, ', '.join(
+                [str(x) for x in self.water_ingress_given_di[item].values]))
+
         with open(self.cfg_file, 'wb') as configfile:
             config.write(configfile)
-
-
-def delete_keys_from_dict(dict_):
-    for key in dict_.keys():
-        if key.startswith('_'):
-            dict_.pop(key)
-
-    for v in dict_.values():
-        if isinstance(v, dict):
-            delete_keys_from_dict(v)
-
-    return dict_
 

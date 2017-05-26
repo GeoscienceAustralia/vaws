@@ -1,0 +1,10 @@
+ParentGroup,FactorByGroup
+wallracking,wallcollapse
+debris,wallracking
+debris,wallcollapse
+wallcladding,debris
+wallcladding,wallracking
+wallcladding,wallcollapse
+batten,rafter
+sheeting,rafter
+sheeting,batten

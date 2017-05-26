@@ -15,7 +15,7 @@ from vaws.curve import vulnerability_weibull, vulnerability_weibull_pdf
         """ Returns several results as data members
         """
 
-        # self.no_items_mean = self.cal_number_of_debris_items(incr_damage)
+        # self.no_items_mean = self.compute_number_of_debris_items(incr_damage)
 
         self.damaged_area = 0.0
         self.no_touched = 0
@@ -60,7 +60,7 @@ def generate_debris_item_alt(debris, wind_speed, source, rnd_state):
         flight_time = rnd_state.lognormal(self.cfg.flight_time_log_mu,
                                                self.cfg.flight_time_log_std)
 
-        flight_distance = cal_flight_distance(debris_type_str,
+        flight_distance = compute_flight_distance(debris_type_str,
                                                    flight_time,
                                                    frontal_area,
                                                    mass,
@@ -82,7 +82,7 @@ def generate_debris_item_alt(debris, wind_speed, source, rnd_state):
 
             no_touched += 1
 
-            item_momentum = self.cal_debris_mementum(debris['cdav'],
+            item_momentum = self.compute_debris_mementum(debris['cdav'],
                                                      frontal_area,
                                                      flight_distance,
                                                      mass,
@@ -310,13 +310,13 @@ class MyTestCase(unittest.TestCase):
         self.assertFalse(rect.contains(Point(10.88, 4.514)))
         self.assertFalse(rect.contains(Point(7.773, 12.66)))
 
-    def test_cal_debris_momentum(self):
+    def test_compute_debris_momentum(self):
 
         _debris = Debris(cfg=self.cfg)
 
         wind_speeds = np.arange(0.01, 120.0, 5.0)
         flight_time = np.exp(self.cfg.flight_time_log_mu)
-        momentum = dict()
+        momentum = {}
         rnd_state = np.random.RandomState(1)
 
         for _str, _value in self.cfg.debris_types.iteritems():
@@ -326,13 +326,13 @@ class MyTestCase(unittest.TestCase):
 
             momentum[_str] = np.zeros_like(wind_speeds)
             for i, wind_speed in enumerate(wind_speeds):
-                flight_distance = _debris.cal_flight_distance(_str,
+                flight_distance = _debris.compute_flight_distance(_str,
                                                flight_time,
                                                frontal_area,
                                                mass,
                                                wind_speed)
 
-                momentum[_str][i] = _debris.cal_debris_mementum(_value['cdav'],
+                momentum[_str][i] = _debris.compute_debris_mementum(_value['cdav'],
                                                          frontal_area,
                                                          flight_distance,
                                                          mass,
@@ -351,14 +351,14 @@ class MyTestCase(unittest.TestCase):
         plt.pause(1.0)
         plt.close()
 
-    def test_cal_flight_distance(self):
+    def test_compute_flight_distance(self):
 
         _debris = Debris(cfg=self.cfg)
 
         wind_speeds = np.arange(0.0, 120.0, 5.0)
         flight_time = np.exp(self.cfg.flight_time_log_mu)
-        flight_distance = dict()
-        flight_distance_poly5 = dict()
+        flight_distance = {}
+        flight_distance_poly5 = {}
 
         for _str, _value in self.cfg.debris_types.iteritems():
 
@@ -369,14 +369,14 @@ class MyTestCase(unittest.TestCase):
             flight_distance_poly5[_str] = np.zeros_like(wind_speeds)
             for i, wind_speed in enumerate(wind_speeds):
                 flight_distance[_str][i] = \
-                    _debris.cal_flight_distance(_str,
+                    _debris.compute_flight_distance(_str,
                                                flight_time,
                                                frontal_area,
                                                mass,
                                                wind_speed)
 
                 flight_distance_poly5[_str][i] = \
-                    _debris.cal_flight_distance(_str,
+                    _debris.compute_flight_distance(_str,
                                                flight_time,
                                                frontal_area,
                                                mass,

@@ -32,10 +32,10 @@ def simulate_wind_damage_to_houses(cfg, call_back=None):
     damage_incr = 0.0
     dic_panels = init_panels(cfg)
 
-    if cfg.parallel:
-        cfg.parallel = False
-        logging.info('parallel running is not implemented yet, '
-                     'switched to serial mode')
+    # if cfg.parallel:
+    #     cfg.parallel = False
+    #     logging.info('parallel running is not implemented yet, '
+    #                  'switched to serial mode')
 
     logging.info('Starting simulation in serial')
 
@@ -69,9 +69,10 @@ def simulate_wind_damage_to_houses(cfg, call_back=None):
 
     save_results_to_files(cfg, dic_panels)
 
-    logging.info('Time taken for simulation {}'.format(time.time()-tic))
+    elapsed = time.time()-tic
+    logging.info('Time taken for simulation {}'.format(elapsed))
 
-    return time.time()-tic, dic_panels
+    return elapsed, dic_panels
 
 
 def init_panels(cfg):
@@ -104,7 +105,7 @@ def update_panels(cfg, dic_, list_results_by_speed, ispeed):
                  cfg.list_debris_bucket)
     for att in list_atts:
         dic_['house'][att].at[ispeed] = [x['house'][att] for x in
-                                          list_results_by_speed]
+                                         list_results_by_speed]
 
     # components
     for item in cfg.list_components:
@@ -163,26 +164,34 @@ def save_results_to_files(cfg, dic_panels):
         with open(cfg.file_curve, 'w') as fid:
             fid.write(', error, param1, param2\n')
 
-    fitted_curve = fit_vulnerability_curve(cfg, dic_panels['house']['di'])
-    with open(cfg.file_curve, 'a') as f:
-        pd.DataFrame.from_dict(fitted_curve).transpose().to_csv(f, header=None)
+    if cfg.flags['plot_fragility']:
+        pass
+
+    if cfg.flags['plot_vulnerability']:
+        fitted_curve = fit_vulnerability_curve(cfg, dic_panels['house']['di'])
+        if not os.path.isfile(cfg.file_curve):
+            with open(cfg.file_curve, 'w') as fid:
+                fid.write(', error, param1, param2\n')
+        with open(cfg.file_curve, 'a') as f:
+            pd.DataFrame.from_dict(fitted_curve).transpose().to_csv(f, header=None)
 
     if cfg.flags['plot_connection_damage']:
 
         for group_name, grouped in cfg.df_connections.groupby('group_name'):
 
             for id_sim, df_ in dic_panels['connection']['capacity'].loc[
-                               grouped.index, cfg.wind_speed_steps - 1, :].iterrows():
-
+                               grouped.index, cfg.wind_speed_steps - 1,
+                               :].iterrows():
                 file_name = os.path.join(cfg.path_output,
-                                         '{}_id{}'.format(group_name, id_sim))
+                                         '{}_id{}'.format(group_name,
+                                                          id_sim))
                 plot_heatmap(grouped,
                              df_.values,
                              vmin=cfg.heatmap_vmin,
                              vmax=cfg.heatmap_vmax,
                              vstep=cfg.heatmap_vstep,
-                             xlim_max=cfg.df_house['length'].values,
-                             ylim_max=cfg.df_house['width'].values,
+                             xlim_max=cfg.dic_house['length'],
+                             ylim_max=cfg.dic_house['width'],
                              file_name=file_name)
 
 
@@ -194,7 +203,7 @@ def show_results(self, output_folder=None, vRed=40, vBlue=80):
         self.mplDict['vulnerability'].axes.figure.canvas.draw()
     if self.cfg.flags['dmg_plot_fragility']:
         self.plot_fragility(output_folder)
-    if self.cfg.flags['dmg_plot_vul']:
+    if self.cfg.flags['plot_vulnerability']:
         self.plot_vulnerability(output_folder)
         output.plot_wind_event_show(self.cfg.no_sims,
                                     self.cfg.wind_speed_min,
@@ -203,44 +212,49 @@ def show_results(self, output_folder=None, vRed=40, vBlue=80):
     self.plot_connection_damage(vRed, vBlue)
 
 
-def set_logger(path_cfg, logging_level):
+def set_logger(path_cfg, logging_level=None):
     """
         
     Args:
-        options: Logging configuration 
+        path_cfg: path of configuration file 
         logging_level: Level of messages that will be logged
     Returns:
     """
 
     # create logger
     logger = logging.getLogger()
-
-    # create file handler
-    fh = logging.FileHandler(os.path.join(path_cfg, 'output', 'log.txt'),
-                             mode='w')
+    logger.setLevel(logging.DEBUG)
     formatter = logging.Formatter('%(levelname)s - %(message)s')
-    fh.setFormatter(formatter)
-    logger.addHandler(fh)
-
-    try:
-        logger.setLevel(getattr(logging, logging_level.upper()))
-    except (AttributeError, TypeError):
-        logging.warning('{} is not valid; WARNING is set instead'.format(
-            logging_level))
-        logger.setLevel(logging.WARNING)
 
     # create console handler and set level to WARNING
     ch = logging.StreamHandler()
-    ch.setLevel(logging.WARNING)
     ch.setFormatter(formatter)
+    ch.setLevel(logging.WARNING)
     logger.addHandler(ch)
+
+    if logging_level:
+
+        # create file handler
+        path_logger = os.path.join(path_cfg, 'output')
+        if not os.path.exists(path_logger):
+            os.makedirs(path_logger)
+        fh = logging.FileHandler(os.path.join(path_logger, 'log.txt'), mode='w')
+        fh.setFormatter(formatter)
+        logger.addHandler(fh)
+
+        try:
+            fh.setLevel(getattr(logging, logging_level.upper()))
+        except (AttributeError, TypeError):
+            logging.warning('{} is not valid; WARNING is set instead'.format(
+                logging_level))
+            fh.setLevel(logging.WARNING)
 
 
 def process_commandline():
     usage = '%prog -c <config_file> [-v <logging_level>]'
     parser = OptionParser(usage=usage, version=VERSION_DESC)
     parser.add_option("-c", "--config",
-                      dest="config_filename",
+                      dest="config_file",
                       help="read configuration from FILE",
                       metavar="FILE")
     parser.add_option("-v", "--verbose",
@@ -256,12 +270,11 @@ def main():
 
     (options, args) = parser.parse_args()
 
-    if options.config_filename:
-        path_cfg = os.path.dirname(os.path.realpath(options.config_filename))
-        if options.verbose:
-            set_logger(path_cfg, options.verbose)
+    if options.config_file:
+        path_cfg = os.path.dirname(os.path.realpath(options.config_file))
+        set_logger(path_cfg, options.verbose)
 
-        conf = Config(cfg_file=options.config_filename)
+        conf = Config(cfg_file=options.config_file)
         _ = simulate_wind_damage_to_houses(conf)
 
     else:

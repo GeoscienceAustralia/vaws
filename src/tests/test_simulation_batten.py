@@ -307,7 +307,7 @@ class TestHouseDamage(unittest.TestCase):
     def test_distribute_damage_by_row(self):
 
         # each time check whether the sum of effective area is the same
-        ref_area = dict()
+        ref_area = {}
         for _zone in self.house_damage.house.zones.itervalues():
             ref_area.setdefault(_zone.name[0], []).append(_zone.area)
             ref_area.setdefault(_zone.name[1], []).append(_zone.area)
@@ -322,7 +322,7 @@ class TestHouseDamage(unittest.TestCase):
             self.house_damage.run_simulation(wind_speed)
 
             # check effective area
-            area = dict()
+            area = {}
             for _zone in self.house_damage.house.zones.itervalues():
                 area.setdefault(_zone.name[0], []).append(_zone.area)
                 area.setdefault(_zone.name[1], []).append(_zone.area)
