@@ -56,6 +56,7 @@ def plot_heatmap(grouped, values, vmin, vmax, vstep, xlim_max, ylim_max,
     ax2 = fig.add_axes([left, bottom, width, height])
 
     cmap = cm.jet_r
+    # cmap = cm.YlOrRd_r
     bounds = np.linspace(vmin, vmax, vstep)
     norm = colors.BoundaryNorm(bounds, cmap.N)
     cmap.set_under('gray')

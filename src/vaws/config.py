@@ -442,7 +442,7 @@ class Config(object):
             next(f)  # skip the first line
             for line in f:
                 fields = line.strip().rstrip(',').split(',')
-                tmp = [x for x in fields[:4]]
+                tmp = [x.strip() for x in fields[:4]]
                 _array = np.array([float(x) for x in fields[4:]])
                 if _array.size:
                     try:
