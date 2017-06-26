@@ -232,11 +232,11 @@ Wall debris damage,106.4,375.37,1,0.8862,-1.6957,1.8535,0,1,0,0,0,4
 
     def test_set_debris_types(self):
 
-        _dic = self.cfg.dic_debris_regions[self.cfg.region_name]
+        _dic = self.cfg.debris_regions[self.cfg.region_name]
 
         for key, value in self.cfg.debris_types.iteritems():
 
-            self.assertEqual(value['cdav'], self.cfg.dic_debris_types[key]['cdav'])
+            self.assertEqual(value['cdav'], self.cfg.debris_types[key]['cdav'])
             self.assertEqual(value['ratio'], _dic['{}_ratio'.format(key)])
 
             for item in ['frontalarea', 'mass']:

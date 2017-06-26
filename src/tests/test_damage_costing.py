@@ -77,7 +77,7 @@ class WaterIngressTestCase(unittest.TestCase):
         path = '/'.join(__file__.split('/')[:-1])
         cls.cfg = Config(
             cfg_file=os.path.join(path,
-                                  '../../scenarios/test_scenario16p1/test_scenario16p1.cfg'))
+                                  '../../scenarios/test_scenario16/test_scenario16.cfg'))
 
     def test_compute_water_ingress_given_damage(self):
 
@@ -115,7 +115,7 @@ class WaterIngressTestCase(unittest.TestCase):
                   99.0: 100.0}
 
         damage_name = 'Loss of roof sheeting'
-        _df = self.cfg.dic_water_ingress_costings[damage_name]
+        _df = self.cfg.water_ingress_costings[damage_name]
 
         for wi, expected in dic_wi.iteritems():
             idx = np.argsort(np.abs(_df.index - wi))[0]

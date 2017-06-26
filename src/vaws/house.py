@@ -4,6 +4,7 @@
         - imported from '../data/houses/subfolder' (so we need python constr)
 """
 
+import copy
 import numpy as np
 import logging
 from shapely.geometry import Polygon
@@ -68,24 +69,20 @@ class House(object):
 
     def read_house_data(self):
 
-        for key, value in self.cfg.dic_house.iteritems():
+        for key, value in self.cfg.house.iteritems():
             setattr(self, key, value)
 
     def set_zones(self):
 
-        for zone_name, item in self.cfg.df_zones.iterrows():
+        for _name, item in self.cfg.zones.iteritems():
 
-            dic_zone = item.to_dict()
-            dic_zone['cpe_mean'] = self.cfg.df_zones_cpe_mean.loc[
-                zone_name].to_dict()
-            dic_zone['cpe_str_mean'] = self.cfg.df_zones_cpe_str_mean.loc[
-                zone_name].to_dict()
-            dic_zone['cpe_eave_mean'] = self.cfg.df_zones_cpe_eave_mean.loc[
-                zone_name].to_dict()
-            dic_zone['is_roof_edge'] = self.cfg.df_zones_edge.loc[
-                zone_name].to_dict()
+            dic_zone = copy.deepcopy(item)
+            dic_zone['cpe_mean'] = self.cfg.zones_cpe_mean[_name]
+            dic_zone['cpe_str_mean'] = self.cfg.zones_cpe_str_mean[_name]
+            dic_zone['cpe_eave_mean'] = self.cfg.zones_cpe_eave_mean[_name]
+            dic_zone['is_roof_edge'] = self.cfg.zones_edge[_name]
 
-            _zone = Zone(zone_name=zone_name, **dic_zone)
+            _zone = Zone(zone_name=_name, **dic_zone)
 
             _zone.sample_zone_cpe(
                 wind_dir_index=self.wind_orientation,
@@ -96,17 +93,17 @@ class House(object):
                 big_b=self.big_b,
                 rnd_state=self.rnd_state)
 
-            self.zones[zone_name] = _zone
+            self.zones[_name] = _zone
             # self.zone_by_grid[_zone.grid] = _zone
 
     def set_connections(self):
 
         for (_, sub_group_name), connections_by_sub_group in \
-                self.cfg.df_connections.groupby(by=['group_idx', 'sub_group']):
+                self.cfg.connections.groupby(by=['group_idx', 'sub_group']):
 
             # sub_group
             group_name = connections_by_sub_group['group_name'].values[0]
-            dic_group = self.cfg.df_groups.loc[group_name].to_dict()
+            dic_group = copy.deepcopy(self.cfg.groups[group_name])
             dic_group['sub_group'] = sub_group_name
 
             _group = ConnectionTypeGroup(group_name=group_name,
@@ -160,12 +157,12 @@ class House(object):
                                     rnd_state=self.rnd_state)
         _connection.sample_dead_load(rnd_state=self.rnd_state)
 
-        _connection.influences = self.cfg.dic_influences[_connection.name]
+        _connection.influences = self.cfg.influences[_connection.name]
 
         # influence_patches
-        if _connection.name in self.cfg.dic_influence_patches:
+        if _connection.name in self.cfg.influence_patches:
             _connection.influence_patch = \
-                self.cfg.dic_influence_patches[_connection.name]
+                self.cfg.influence_patches[_connection.name]
         else:
             _connection.influence_patch = {}
 
@@ -179,10 +176,10 @@ class House(object):
 
         """
 
-        if key in self.cfg.dic_costings:
-            return self.cfg.dic_costings[key]
+        if key in self.cfg.costings:
+            return self.cfg.costings[key]
         else:
-            logging.warning('{} not in cfg.dic_costings'.format(key))
+            logging.warning('{} not in cfg.costings'.format(key))
 
     def set_debris(self):
 
@@ -190,7 +187,7 @@ class House(object):
             self.debris = Debris(self.cfg)
 
             points = []
-            for _, item in self.cfg.df_footprint.iterrows():
+            for item in self.cfg.footprint:
                 points.append((item[0], item[1]))
             self.footprint = Polygon(points)
 

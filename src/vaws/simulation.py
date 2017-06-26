@@ -6,6 +6,8 @@ import warnings
 
 # from pathos.multiprocessing import ProcessingPool
 import pandas as pd
+import h5py
+import numpy as np
 from optparse import OptionParser
 
 from vaws.house_damage import HouseDamage
@@ -80,20 +82,20 @@ def init_panels(cfg):
     dic_panels = dict()
 
     # house
-    list_atts = (cfg.list_house_bucket + cfg.list_house_damage_bucket +
-                 cfg.list_debris_bucket)
-    dic_panels['house'] = pd.Panel(dtype=float,
-                                   items=list_atts,
-                                   major_axis=range(cfg.wind_speed_steps),
-                                   minor_axis=range(cfg.no_sims))
+    for item in (cfg.list_house_bucket + cfg.list_house_damage_bucket +
+                 cfg.list_debris_bucket):
+        dic_panels.setdefault('house', {})[item] = np.empty(
+            shape=(cfg.wind_speed_steps, cfg.no_sims), dtype=float)
+
     # components
+    # dic[comp][att][_conn]
     for item in cfg.list_components:
+        dic_panels[item] = {}
         for att in getattr(cfg, 'list_{}_bucket'.format(item)):
-            dic_panels.setdefault(item, {})[att] = \
-                pd.Panel(dtype=float,
-                         items=getattr(cfg, 'list_{}s'.format(item)),
-                         major_axis=range(cfg.wind_speed_steps),
-                         minor_axis=range(cfg.no_sims))
+            dic_panels[item][att] = {}
+            for _conn in getattr(cfg, 'list_{}s'.format(item)):
+                dic_panels[item][att][_conn] = np.empty(
+                    shape=(cfg.wind_speed_steps, cfg.no_sims), dtype=float)
 
     return dic_panels
 
@@ -101,25 +103,27 @@ def init_panels(cfg):
 def update_panels(cfg, dic_, list_results_by_speed, ispeed):
 
     # house
-    list_atts = (cfg.list_house_bucket + cfg.list_house_damage_bucket +
-                 cfg.list_debris_bucket)
-    for att in list_atts:
-        dic_['house'][att].at[ispeed] = [x['house'][att] for x in
-                                         list_results_by_speed]
+    for att in (cfg.list_house_bucket + cfg.list_house_damage_bucket +
+                cfg.list_debris_bucket):
+        try:
+            dic_['house'][att][ispeed] = [x['house'][att] for x in
+                                          list_results_by_speed]
+        except ValueError:
+            print('{} can not be stored'.format(att))
 
     # components
     for item in cfg.list_components:
-        for key, value in dic_[item].iteritems():
-            for att in value.items.tolist():
-                value[att].at[ispeed] = [x[item].at[att, key] for x in
-                                          list_results_by_speed]
+        for att, chunk in dic_[item].iteritems():
+            for _conn, value in chunk.iteritems():
+                value[ispeed] = [x[item][_conn][att] for x in
+                                 list_results_by_speed]
 
     # compute damage index increment
     damage_incr = 0.0  # default value
 
     if ispeed:
-        damage_incr = (dic_['house']['di'].loc[ispeed].mean(axis=0) -
-                       dic_['house']['di'].loc[ispeed - 1].mean(axis=0))
+        damage_incr = (dic_['house']['di'][ispeed].mean(axis=0) -
+                       dic_['house']['di'][ispeed - 1].mean(axis=0))
 
         if damage_incr < 0:
             logging.warning('damage increment is less than zero')
@@ -140,21 +144,39 @@ def save_results_to_files(cfg, dic_panels):
     """
 
     # file_house ('house': Panel(attribute, wind_speed_steps, no_sims)
-    dic_panels['house'].to_hdf(cfg.file_house, key='house', mode='w')
+    with h5py.File(cfg.file_house, 'w') as hf:
+        for item, value in dic_panels['house'].iteritems():
+            hf.create_dataset(item, data=value)
+    # dic_panels['house'].to_hdf(cfg.file_house, key='house', mode='w')
 
-    with warnings.catch_warnings():
+    for item in cfg.list_components:
+        with h5py.File(getattr(cfg, 'file_{}'.format(item)), 'w') as hf:
+            for key, chunk in dic_panels[item].iteritems():
+                _group = hf.create_group(key)
+                for _conn, value in chunk.iteritems():
+                    _group.create_dataset(str(_conn), data=value)
 
-        warnings.simplefilter("ignore")
-        #  warnings.filterwarnings('error')
+        # # other components
+        # for item in cfg.list_components:
+        #     # file (key: Panel(attribute, wind_speed_steps, no_sims)
+        #     hdf = pd.HDFStore(getattr(cfg, 'file_{}'.format(item)), mode='w')
+        #     for key, value in dic_panels[item].iteritems():
+        #         hdf[str(key)] = value
 
-        # other components
-        for item in cfg.list_components:
-            # file (key: Panel(attribute, wind_speed_steps, no_sims)
-            hdf = pd.HDFStore(getattr(cfg, 'file_{}'.format(item)), mode='w')
-            for key, value in dic_panels[item].iteritems():
-                hdf[str(key)] = value
 
-            hdf.close()
+    # with warnings.catch_warnings():
+    #
+    #     warnings.simplefilter("ignore")
+    #     #  warnings.filterwarnings('error')
+    #
+    #     # other components
+    #     for item in cfg.list_components:
+    #         # file (key: Panel(attribute, wind_speed_steps, no_sims)
+    #         hdf = pd.HDFStore(getattr(cfg, 'file_{}'.format(item)), mode='w')
+    #         for key, value in dic_panels[item].iteritems():
+    #             hdf[str(key)] = value
+    #
+    #         hdf.close()
 
     # plot fragility and vulnerability curves
     frag_counted = fit_fragility_curves(cfg, dic_panels['house']['di'])
@@ -177,7 +199,7 @@ def save_results_to_files(cfg, dic_panels):
 
     if cfg.flags['plot_connection_damage']:
 
-        for group_name, grouped in cfg.df_connections.groupby('group_name'):
+        for group_name, grouped in cfg.connections.groupby('group_name'):
 
             for id_sim, df_ in dic_panels['connection']['capacity'].loc[
                                grouped.index, cfg.wind_speed_steps - 1,
@@ -190,8 +212,8 @@ def save_results_to_files(cfg, dic_panels):
                              vmin=cfg.heatmap_vmin,
                              vmax=cfg.heatmap_vmax,
                              vstep=cfg.heatmap_vstep,
-                             xlim_max=cfg.dic_house['length'],
-                             ylim_max=cfg.dic_house['width'],
+                             xlim_max=cfg.house['length'],
+                             ylim_max=cfg.house['width'],
                              file_name=file_name)
 
 

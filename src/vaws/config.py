@@ -92,26 +92,26 @@ class Config(object):
         self.flight_time_log_std = None
         self.debris_sources = None
         self.debris_types = None
-        self.df_footprint = None
+        self.footprint = None
 
         # house data
-        self.dic_house = None
-        self.df_zones = None
-        self.df_zones_cpe_mean = None
-        self.df_zones_cpe_eave_mean = None
-        self.df_zones_cpe_str_mean = None
-        self.df_zones_edge = None
+        self.house = None
+        self.zones = None
+        self.zones_cpe_mean = None
+        self.zones_cpe_eave_mean = None
+        self.zones_cpe_str_mean = None
+        self.zones_edge = None
 
-        self.df_groups = None
-        self.df_types = None
-        self.df_connections = None
+        self.groups = None
+        self.types = None
+        self.connections = None
         self.damage_grid_by_sub_group = None
-        self.dic_influences = None
-        self.dic_influence_patches = None
+        self.influences = None
+        self.influence_patches = None
 
         # debris related
-        self.dic_debris_regions = None
-        self.dic_debris_types = None
+        self.debris_regions = None
+        self.debris_types = None
 
         self.list_groups = None
         self.list_types = None
@@ -119,17 +119,17 @@ class Config(object):
         self.list_zones = None
 
         # damage costing
-        self.dic_costings = None
+        self.costings = None
         self.damage_order_by_water_ingress = None
-        self.dic_costing_to_group = None
-        self.dic_water_ingress_costings = None
-        self.dic_damage_factorings = None
+        self.costing_to_group = None
+        self.water_ingress_costings = None
+        self.damage_factorings = None
         self.water_ingress_given_di = None
 
         # debris related
-        self.dic_front_facing_walls = None
-        self.df_coverages = None
-        self.dic_walls = None
+        self.front_facing_walls = None
+        self.coverages = None
+        self.walls = None
 
         self.file_house = None
         self.file_group = None
@@ -233,10 +233,10 @@ class Config(object):
     def read_debris(self, conf, key):
 
         # global data
-        self.dic_debris_regions = pd.read_csv(
+        self.debris_regions = pd.read_csv(
             os.path.join(self.path_debris, 'debris_regions.csv'),
             index_col=0).to_dict('index')
-        self.dic_debris_types = pd.read_csv(
+        self.debris_types = pd.read_csv(
             os.path.join(self.path_debris, 'debris_types.csv'),
             index_col=0).to_dict('index')
 
@@ -244,9 +244,9 @@ class Config(object):
 
             from vaws.debris import Debris
 
-            self.df_footprint = pd.read_csv(
+            self.footprint = pd.read_csv(
                 os.path.join(self.path_house_data, 'footprint.csv'),
-                skiprows=1, header=None)
+                skiprows=1, header=None).values
 
             self.set_region_name(conf.get(key, 'region_name'))
             self.staggered_sources = conf.getboolean(key, 'staggered_sources')
@@ -267,26 +267,26 @@ class Config(object):
 
             self.set_debris_types()
 
-            self.df_coverages = pd.read_csv(
+            self.coverages = pd.read_csv(
                 os.path.join(self.path_house_data, 'coverages.csv'))
 
-            dic_coverage_types = pd.read_csv(
+            coverage_types = pd.read_csv(
                 os.path.join(self.path_house_data, 'coverage_types.csv'),
                 index_col='Name').to_dict('index')
 
-            if dic_coverage_types:
-                self.df_coverages['log_failure_momentum'] = \
-                    self.df_coverages.apply(self.get_lognormal_tuple,
-                                            args=(dic_coverage_types,), axis=1)
+            if coverage_types:
+                self.coverages['log_failure_momentum'] = \
+                    self.coverages.apply(self.get_lognormal_tuple,
+                                         args=(coverage_types,), axis=1)
 
             try:
-                self.dic_walls = pd.read_csv(
+                self.walls = pd.read_csv(
                     os.path.join(self.path_house_data, 'walls.csv'),
                     index_col='wall_name', skipinitialspace=True).to_dict()['wall_area']
             except TypeError:
-                self.dic_walls = {}
+                self.walls = {}
 
-            self.dic_front_facing_walls = self.read_front_facing_walls(
+            self.front_facing_walls = self.read_front_facing_walls(
                 os.path.join(self.path_house_data, 'front_facing_walls.csv'))
 
     def read_fragility_thresholds(self, conf, key):
@@ -364,78 +364,80 @@ class Config(object):
     def read_house_data(self):
 
         # house data
-        self.dic_house = pd.read_csv(
+        self.house = pd.read_csv(
             os.path.join(self.path_house_data, 'house_data.csv')).to_dict('records')[0]
-        self.dic_house['big_a'], self.dic_house['big_b'] = \
-            calc_big_a_b_values(shape_k=self.dic_house['cpe_k'])
+        self.house['big_a'], self.house['big_b'] = \
+            calc_big_a_b_values(shape_k=self.house['cpe_k'])
 
         # zone data
-        self.df_zones = pd.read_csv(
+        self.zones = pd.read_csv(
             os.path.join(self.path_house_data, 'zones.csv'),
             index_col='name', dtype={'cpi_alpha': float,
                                      'area': float,
-                                     'wall_dir': int})
-        self.list_zones = self.df_zones.index.tolist()
+                                     'wall_dir': int}).to_dict('index')
+        self.list_zones = self.zones.keys()
 
         names_ = ['name'] + range(8)
         for item in ['cpe_mean', 'cpe_str_mean', 'cpe_eave_mean', 'edge']:
             _value = pd.read_csv(
                 os.path.join(self.path_house_data, 'zones_{}.csv'.format(item)),
-                names=names_, index_col='name', skiprows=1)
-            setattr(self, 'df_zones_{}'.format(item), _value)
+                names=names_, index_col='name', skiprows=1).to_dict('index')
+            setattr(self, 'zones_{}'.format(item), _value)
 
-        self.df_groups = pd.read_csv(
-            os.path.join(self.path_house_data, 'conn_groups.csv'),
-            index_col='group_name')
-        self.list_groups = self.df_groups.index.tolist()
+        groups = pd.read_csv(os.path.join(
+            self.path_house_data, 'conn_groups.csv'), index_col='group_name')
+        self.groups = groups.to_dict('index')
+        self.list_groups = groups.index.tolist()
 
-        self.df_types = pd.read_csv(
+        types = pd.read_csv(
             os.path.join(self.path_house_data, 'conn_types.csv'),
             index_col='type_name')
-        self.list_types = self.df_types.index.tolist()
 
         # change arithmetic mean, std to logarithmic mean, std
-        self.df_types['lognormal_strength'] = self.df_types.apply(
+        types['lognormal_strength'] = types.apply(
             lambda row: compute_logarithmic_mean_stddev(row['strength_mean'],
                                                         row['strength_std']),
             axis=1)
 
-        self.df_types['lognormal_dead_load'] = self.df_types.apply(
+        types['lognormal_dead_load'] = types.apply(
             lambda row: compute_logarithmic_mean_stddev(row['dead_load_mean'],
                                                         row['dead_load_std']),
             axis=1)
 
+        self.types = types.to_dict('index')
+        self.list_types = types.index.tolist()
+
         # connections
-        self.df_connections = self.read_connection_data(
-            os.path.join(self.path_house_data, 'connections.csv'), self.df_types)
-        self.list_connections = self.df_connections.index.tolist()
-        self.damage_grid_by_sub_group = self.df_connections.groupby('sub_group')['grid_max'].apply(
+        self.connections = self.read_connection_data(
+            os.path.join(self.path_house_data, 'connections.csv'), types)
+        self.list_connections = self.connections.index.tolist()
+        self.damage_grid_by_sub_group = self.connections.groupby('sub_group')['grid_max'].apply(
             lambda x: x.unique()[0]).to_dict()
-        self.df_connections['group_idx'] = self.df_connections['group_name'].apply(
+        self.connections['group_idx'] = self.connections['group_name'].apply(
             lambda x: self.list_groups.index(x))
 
         # influences
-        self.dic_influences = self.read_influences(
+        self.influences = self.read_influences(
             os.path.join(self.path_house_data, 'influences.csv'))
 
-        self.dic_influence_patches = self.read_influence_patches(
+        self.influence_patches = self.read_influence_patches(
             os.path.join(self.path_house_data, 'influence_patches.csv'))
 
         # costing
-        self.dic_costings, self.dic_costing_to_group, self.damage_order_by_water_ingress = \
+        self.costings, self.costing_to_group, self.damage_order_by_water_ingress = \
             self.read_damage_costing_data(
                 os.path.join(self.path_house_data, 'damage_costing_data.csv'),
-                self.df_groups)
+                groups)
 
-        self.dic_damage_factorings = self.read_damage_factorings(
+        self.damage_factorings = self.read_damage_factorings(
             os.path.join(self.path_house_data, 'damage_factorings.csv'))
 
-        self.dic_water_ingress_costings = self.read_water_ingress_costing_data(
+        self.water_ingress_costings = self.read_water_ingress_costing_data(
             os.path.join(self.path_house_data, 'water_ingress_costing_data.csv'),
-            self.df_groups)
+            groups)
 
     @classmethod
-    def read_connection_data(cls, file_connections, df_types):
+    def read_connection_data(cls, file_connections, types):
 
         dump = []
         with open(file_connections, 'r') as f:
@@ -466,13 +468,13 @@ class Config(object):
         except AttributeError:
             logging.warning('No coordinates are provided')
 
-        _df['group_name'] = df_types.loc[_df['type_name'], 'group_name'].values
+        _df['group_name'] = types.loc[_df['type_name'], 'group_name'].values
         _df['sub_group'] = _df.apply(
             lambda row: row['group_name'] + row['section'], axis=1)
         _df['costing_area'] = _df['type_name'].apply(
-            lambda x: df_types.loc[x, 'costing_area'])
+            lambda x: types.loc[x, 'costing_area'])
         for item in ['costing_area', 'lognormal_strength', 'lognormal_dead_load']:
-            _df[item] = _df['type_name'].apply(lambda x: df_types.loc[x, item])
+            _df[item] = _df['type_name'].apply(lambda x: types.loc[x, item])
 
         _df['grid_raw'] = _df['zone_loc'].apply(Zone.get_grid_from_zone_location)
         _df = _df.join(_df.groupby('sub_group')['grid_raw'].apply(
@@ -490,35 +492,31 @@ class Config(object):
         return tuple([row[key1][i] - row[key2][i] for i in range(2)])
 
     @staticmethod
-    def read_damage_costing_data(file_damage_costing, df_groups):
-        dic_costing = {}
-        df_damage_costing = pd.read_csv(file_damage_costing)
-        for _, item in df_damage_costing.iterrows():
-            if df_groups['damage_scenario'].isin([item['name']]).any():
-                _name = item['name']
-                dic_costing[_name] = Costing(costing_name=_name, **item)
+    def read_damage_costing_data(file_damage_costing, groups):
+        costing = {}
+        damage_costing = pd.read_csv(file_damage_costing, index_col='name')
+        for key, item in damage_costing.iterrows():
+            if groups['damage_scenario'].isin([key]).any():
+                costing[key] = Costing(costing_name=key, **item)
 
-        dic_costing_to_group = defaultdict(list)
-        for key, value in df_groups['damage_scenario'].to_dict().iteritems():
+        costing_to_group = defaultdict(list)
+        for key, value in groups['damage_scenario'].to_dict().iteritems():
             if len(value.split()) > 1:
-                dic_costing_to_group[value].append(key)
+                costing_to_group[value].append(key)
 
-        _a = df_damage_costing.loc[df_damage_costing[
-            'water_ingress_order'].sort_values().index, 'name']
         damage_order_by_water_ingress = []
-        for i, value in _a.iteritems():
-            if df_damage_costing.at[i, 'water_ingress_order'] and \
-                    df_groups['damage_scenario'].isin([value]).any():
-                damage_order_by_water_ingress.append(value)
+        for item in damage_costing['water_ingress_order'].sort_values().index:
+            if groups['damage_scenario'].isin([item]).any():
+                damage_order_by_water_ingress.append(item)
 
-        return dic_costing, dic_costing_to_group, damage_order_by_water_ingress
+        return costing, costing_to_group, damage_order_by_water_ingress
 
     @staticmethod
-    def read_water_ingress_costing_data(file_water_ingress_costing, df_groups):
+    def read_water_ingress_costing_data(file_water_ingress_costing, groups):
         dic_ = {}
         tmp = pd.read_csv(file_water_ingress_costing)
         for key, grouped in tmp.groupby('name'):
-            if df_groups['damage_scenario'].isin([key]).any() or (key == 'WI only'):
+            if groups['damage_scenario'].isin([key]).any() or (key == 'WI only'):
                 grouped = grouped.set_index('water_ingress')
                 grouped['costing'] = grouped.apply(
                     lambda row: WaterIngressCosting(costing_name=key, **row),
@@ -665,8 +663,8 @@ class Config(object):
 
     def set_debris_types(self):
 
-        self.debris_types = copy.deepcopy(self.dic_debris_types)
-        _debris_region = self.dic_debris_regions[self.region_name]
+        self.debris_types = copy.deepcopy(self.debris_types)
+        _debris_region = self.debris_regions[self.region_name]
 
         for key in self.debris_types:
 

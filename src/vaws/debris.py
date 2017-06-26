@@ -117,19 +117,19 @@ class Debris(object):
         self._footprint = rotate(polygon_inst, angle[wind_dir_index])
 
         try:
-            self.front_facing_walls = self.cfg.dic_front_facing_walls[
+            self.front_facing_walls = self.cfg.front_facing_walls[
                 self.cfg.wind_dir[wind_dir_index]]
         except KeyError:
             self.front_facing_walls = []
         else:
             self.area_walls = 0.0
             for wall_name in self.front_facing_walls:
-                self.area_walls += self.cfg.dic_walls[wall_name]
+                self.area_walls += self.cfg.walls[wall_name]
 
-            id_ = self.cfg.df_coverages.apply(
+            id_ = self.cfg.coverages.apply(
                 lambda row: row['wall_name'] in self.front_facing_walls, axis=1)
 
-            self.coverages = self.cfg.df_coverages.loc[id_].copy()
+            self.coverages = self.cfg.coverages.loc[id_].copy()
 
             self.coverages['cum_prop_area'] = \
                 self.coverages['area'].cumsum() / self.area_walls

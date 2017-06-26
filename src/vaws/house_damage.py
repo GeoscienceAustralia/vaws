@@ -33,7 +33,7 @@ class HouseDamage(object):
         self.di = None
         self.di_except_water = None
 
-        self.bucket = dict()
+        self.bucket = {}
         self.init_bucket()
 
     def run_simulation(self, wind_speed):
@@ -84,15 +84,17 @@ class HouseDamage(object):
     def init_bucket(self):
 
         # house
-        for item in self.cfg.list_house_bucket + self.cfg.list_debris_bucket + \
-                self.cfg.list_house_damage_bucket:
+        for item in (self.cfg.list_house_bucket + self.cfg.list_debris_bucket +
+                     self.cfg.list_house_damage_bucket):
             self.bucket.setdefault('house', {})[item] = None
 
         # components
         for item in self.cfg.list_components:
-            _index = getattr(self.cfg, 'list_{}s'.format(item))
-            _columns = getattr(self.cfg, 'list_{}_bucket'.format(item))
-            self.bucket[item] = pd.DataFrame(index=_index, columns=_columns)
+            self.bucket[item] = {}
+            for _conn in getattr(self.cfg, 'list_{}s'.format(item)):
+                self.bucket[item][_conn] = {}
+                for att in getattr(self.cfg, 'list_{}_bucket'.format(item)):
+                    self.bucket[item][_conn][att] = None
 
     def fill_bucket(self):
 
@@ -111,8 +113,8 @@ class HouseDamage(object):
         for item in self.cfg.list_components:
             for att in getattr(self.cfg, 'list_{}_bucket'.format(item)):
                 _dic = getattr(self.house, '{}s'.format(item))
-                for key, value in _dic.iteritems():
-                    self.bucket[item].at[key, att] = getattr(value, att)
+                for _conn, value in _dic.iteritems():
+                    self.bucket[item][_conn, att] = getattr(value, att)
 
     def compute_qz_ms(self, wind_speed):
         """
@@ -217,14 +219,14 @@ class HouseDamage(object):
 
         # apply damage factoring
         revised_prop = copy.deepcopy(prop_area_by_group)
-        for _source, target_list in self.cfg.dic_damage_factorings.iteritems():
+        for _source, target_list in self.cfg.damage_factorings.iteritems():
             for _target in target_list:
                 revised_prop[_source] -= prop_area_by_group[_target]
 
         # sum of area by scenario
         area_by_scenario = defaultdict(int)
         total_area_by_scenario = defaultdict(int)
-        for scenario, _list in self.cfg.dic_costing_to_group.iteritems():
+        for scenario, _list in self.cfg.costing_to_group.iteritems():
             for _group in _list:
                 area_by_scenario[scenario] += \
                     max(revised_prop[_group], 0.0) * total_area_by_group[_group]
@@ -234,7 +236,7 @@ class HouseDamage(object):
         prop_area_by_scenario = {key: value / total_area_by_scenario[key]
                                  for key, value in area_by_scenario.iteritems()}
 
-        _list = [self.cfg.dic_costings[key].compute_cost(value)
+        _list = [self.cfg.costings[key].compute_cost(value)
                  for key, value in prop_area_by_scenario.iteritems()]
         self.repair_cost = np.array(_list).sum()
 
@@ -257,7 +259,7 @@ class HouseDamage(object):
                     break
 
             # finding index close to water ingress threshold
-            _df = self.cfg.dic_water_ingress_costings[damage_name]
+            _df = self.cfg.water_ingress_costings[damage_name]
             idx = np.argsort(np.abs(_df.index - water_ingress_perc))[0]
 
             self.water_ingress_cost = \

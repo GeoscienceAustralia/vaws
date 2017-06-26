@@ -101,7 +101,8 @@ dependencies:
 - memory_profiler=0.43=py27_0 
 - psutil=5.2.1=py27_0
 
-
+# added for h5py
+- h5py=2.5.0=np110py27_4
 
 - pip:
 #  - parmap==1.2.3
