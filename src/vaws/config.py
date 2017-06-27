@@ -40,14 +40,16 @@ class Config(object):
     list_house_bucket = ['profile', 'wind_orientation', 'construction_level',
                           'mzcat', 'str_mean_factor', 'str_cov_factor']
 
-    # model and wind dependent attributes
-    list_components = ['group', 'connection', 'zone']
-
     list_house_damage_bucket = ['qz', 'ms', 'cpi', 'cpi_wind_speed', 'collapse',
                                 'di', 'di_except_water', 'repair_cost',
                                 'water_ingress_cost']
 
     list_debris_bucket = ['no_items', 'no_touched', 'breached', 'damaged_area']
+
+    dic_att = {'construction_level': object}
+
+    # model and wind dependent attributes
+    list_components = ['group', 'connection', 'zone']
 
     list_group_bucket = ['damaged_area']
 
@@ -387,7 +389,7 @@ class Config(object):
         groups = pd.read_csv(os.path.join(
             self.path_house_data, 'conn_groups.csv'), index_col='group_name')
         self.groups = groups.to_dict('index')
-        self.list_groups = groups.index.tolist()
+        _list_groups = groups.index.tolist()
 
         types = pd.read_csv(
             os.path.join(self.path_house_data, 'conn_types.csv'),
@@ -414,7 +416,8 @@ class Config(object):
         self.damage_grid_by_sub_group = self.connections.groupby('sub_group')['grid_max'].apply(
             lambda x: x.unique()[0]).to_dict()
         self.connections['group_idx'] = self.connections['group_name'].apply(
-            lambda x: self.list_groups.index(x))
+            lambda x: _list_groups.index(x))
+        self.list_groups = self.connections['sub_group'].unique().tolist()
 
         # influences
         self.influences = self.read_influences(

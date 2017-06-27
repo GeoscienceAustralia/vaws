@@ -1,6 +1,5 @@
 import copy
 import logging
-import pandas as pd
 import numpy as np
 from collections import defaultdict
 
@@ -114,7 +113,7 @@ class HouseDamage(object):
             for att in getattr(self.cfg, 'list_{}_bucket'.format(item)):
                 _dic = getattr(self.house, '{}s'.format(item))
                 for _conn, value in _dic.iteritems():
-                    self.bucket[item][_conn, att] = getattr(value, att)
+                    self.bucket[item][_conn][att] = getattr(value, att)
 
     def compute_qz_ms(self, wind_speed):
         """
