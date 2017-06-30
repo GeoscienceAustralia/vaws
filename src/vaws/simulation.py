@@ -75,19 +75,19 @@ def init_bucket(cfg):
     bucket = dict()
 
     # house
-    for att in (cfg.list_house_bucket + cfg.list_house_damage_bucket +
-                 cfg.list_debris_bucket):
-        if att in cfg.dic_att:
-            bucket.setdefault('house', {})[att] = np.empty(
-                shape=(cfg.wind_speed_steps, cfg.no_sims), dtype=str)
-        else:
-            bucket.setdefault('house', {})[att] = np.empty(
-                shape=(cfg.wind_speed_steps, cfg.no_sims), dtype=float)
+    for item in ['house', 'house_damage', 'debris']:
+        for att in getattr(cfg, '{}_bucket'.format(item)):
+            if att in cfg.att_non_float:
+                bucket.setdefault(item, {})[att] = np.empty(
+                    shape=(cfg.wind_speed_steps, cfg.no_sims), dtype=str)
+            else:
+                bucket.setdefault(item, {})[att] = np.empty(
+                    shape=(cfg.wind_speed_steps, cfg.no_sims), dtype=float)
 
     # components: group, connection, zone
     for item in cfg.list_components:
         bucket[item] = {}
-        for att in getattr(cfg, 'list_{}_bucket'.format(item)):
+        for att in getattr(cfg, '{}_bucket'.format(item)):
             bucket[item][att] = {}
             for _conn in getattr(cfg, 'list_{}s'.format(item)):
                 bucket[item][att][_conn] = np.empty(
@@ -99,9 +99,9 @@ def init_bucket(cfg):
 def update_bucket(cfg, dic_, results_by_speed, ispeed):
 
     # house
-    for att in (cfg.list_house_bucket + cfg.list_house_damage_bucket +
-                cfg.list_debris_bucket):
-        dic_['house'][att][ispeed] = [x['house'][att] for x in results_by_speed]
+    for item in ['house', 'house_damage', 'debris']:
+        for att in getattr(cfg, '{}_bucket'.format(item)):
+            dic_[item][att][ispeed] = [x[item][att] for x in results_by_speed]
 
     # components
     for item in cfg.list_components:
@@ -113,8 +113,8 @@ def update_bucket(cfg, dic_, results_by_speed, ispeed):
     damage_incr = 0.0  # default value
 
     if ispeed:
-        damage_incr = (dic_['house']['di'][ispeed].mean(axis=0) -
-                       dic_['house']['di'][ispeed - 1].mean(axis=0))
+        damage_incr = (dic_['house_damage']['di'][ispeed].mean(axis=0) -
+                       dic_['house_damage']['di'][ispeed - 1].mean(axis=0))
 
         if damage_incr < 0:
             logging.warning('damage increment is less than zero')
@@ -136,8 +136,10 @@ def save_results_to_files(cfg, bucket):
 
     # file_house
     with h5py.File(cfg.file_house, 'w') as hf:
-        for item, value in bucket['house'].iteritems():
-            hf.create_dataset(item, data=value)
+        for item in ['house', 'house_damage', 'debris']:
+            _group = hf.create_group(item)
+            for att, value in bucket[item].iteritems():
+                _group.create_dataset(att, data=value)
 
     # file_group, file_connection, file_zone
     for item in cfg.list_components:
@@ -150,7 +152,7 @@ def save_results_to_files(cfg, bucket):
     # plot fragility and vulnerability curves
 
     if cfg.flags['plot_fragility']:
-        frag_counted = fit_fragility_curves(cfg, bucket['house']['di'])
+        frag_counted = fit_fragility_curves(cfg, bucket['house_damage']['di'])
         if frag_counted:
             pd.DataFrame.from_dict(frag_counted).transpose().to_csv(
                 cfg.file_curve)
@@ -159,7 +161,7 @@ def save_results_to_files(cfg, bucket):
                 fid.write(', error, param1, param2\n')
 
     if cfg.flags['plot_vulnerability']:
-        fitted_curve = fit_vulnerability_curve(cfg, bucket['house']['di'])
+        fitted_curve = fit_vulnerability_curve(cfg, bucket['house_damage']['di'])
         if not os.path.isfile(cfg.file_curve):
             with open(cfg.file_curve, 'w') as fid:
                 fid.write(', error, param1, param2\n')

@@ -37,26 +37,26 @@ class Config(object):
     region_names = ['Capital_city', 'Tropical_town']
 
     # model dependent attributes
-    list_house_bucket = ['profile', 'wind_orientation', 'construction_level',
+    house_bucket = ['profile', 'wind_orientation', 'construction_level',
                           'mzcat', 'str_mean_factor', 'str_cov_factor']
 
-    list_house_damage_bucket = ['qz', 'ms', 'cpi', 'cpi_wind_speed', 'collapse',
+    house_damage_bucket = ['qz', 'ms', 'cpi', 'cpi_wind_speed', 'collapse',
                                 'di', 'di_except_water', 'repair_cost',
                                 'water_ingress_cost']
 
-    list_debris_bucket = ['no_items', 'no_touched', 'breached', 'damaged_area']
+    debris_bucket = ['no_items', 'no_touched', 'breached', 'damaged_area']
 
-    dic_att = {'construction_level': object}
+    att_non_float = ['construction_level']
 
     # model and wind dependent attributes
     list_components = ['group', 'connection', 'zone']
 
-    list_group_bucket = ['damaged_area']
+    group_bucket = ['damaged_area']
 
-    list_connection_bucket = ['damaged', 'capacity', 'load', 'strength',
+    connection_bucket = ['damaged', 'capacity', 'load', 'strength',
                               'dead_load']
 
-    list_zone_bucket = ['pressure', 'cpe', 'cpe_str', 'cpe_eave']
+    zone_bucket = ['pressure', 'cpe', 'cpe_str', 'cpe_eave']
 
     dic_obj_for_fitting = {'weibull': 'vulnerability_weibull',
                            'lognorm': 'vulnerability_lognorm'}

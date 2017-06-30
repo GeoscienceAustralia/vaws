@@ -122,6 +122,10 @@ class Zone(object):
         diff_shielding = dsn / dsd
 
         # either cpe or cpe_str should be zero, and cpe_eave is counted once
+        try:
+            assert self.cpe * self.cpe_str == 0.0
+        except AssertionError:
+            logging.warning('Either cpe or cpe_str should be zero for zone {}'.format(self.name))
         self.pressure = qz * (self.cpe + self.cpe_str - self.cpi_alpha * cpi
                               - self.cpe_eave) * diff_shielding
 

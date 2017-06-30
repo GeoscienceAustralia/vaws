@@ -16,7 +16,6 @@ from numpy import rint, random, array
 from math import pow, radians, tan, sqrt, exp
 from shapely.geometry import Point, Polygon, LineString
 from shapely.affinity import rotate
-# from shapely.ops import cascaded_union
 
 
 class Debris(object):

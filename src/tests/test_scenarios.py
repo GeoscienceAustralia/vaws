@@ -93,7 +93,7 @@ class TestScenario1(unittest.TestCase):
         # formatter = logging.Formatter('%(asctime)s %(levelname)s %(message)s')
         # hdlr.setFormatter(formatter)
         # cls.logger.addHandler(hdlr)
-        # cls.logger.setLevel(logging.DEBUG)
+        # cls.logger.setLevel(logging.INFO)
 
     # @classmethod
     # def tearDown(cls):
@@ -161,7 +161,7 @@ class TestScenario2(unittest.TestCase):
         # formatter = logging.Formatter('%(asctime)s %(levelname)s %(message)s')
         # hdlr.setFormatter(formatter)
         # cls.logger.addHandler(hdlr)
-        # cls.logger.setLevel(logging.DEBUG)
+        # cls.logger.setLevel(logging.INFO)
 
     # @classmethod
     # def tearDown(cls):
@@ -172,16 +172,16 @@ class TestScenario2(unittest.TestCase):
     def test_damage_sheeting(self):
 
         conn_capacity = {40.0: [10],
-                         41.0: [9, 11],
-                         42.0: [8],
-                         43.0: [12],
-                         44.0: [7],
-                         47.0: [13, 6],
-                         48.0: [5, 14],
-                         49.0: [4, 15],
-                         50.0: [3, 16],
-                         51.0: [2, 17],
-                         52.0: [18, 1]}
+                         45.0: [9, 11],
+                         46.0: [8],
+                         48.0: [12],
+                         49.0: [7],
+                         53.0: [13, 6],
+                         54.0: [5, 14],
+                         55.0: [4, 15],
+                         56.0: [3, 16],
+                         57.0: [2, 17],
+                         58.0: [18, 1]}
 
         simulation(self.house_damage, conn_capacity,
                    wind_speeds=np.arange(40.0, 120, 1.0),
@@ -204,34 +204,32 @@ class TestScenario3(unittest.TestCase):
         file_logger = os.path.join(cfg.path_output, 'log_test3.txt')
         logging.basicConfig(filename=file_logger,
                             filemode='w',
-                            level=logging.DEBUG,
+                            level=logging.INFO,
                             format='%(levelname)s %(message)s')
 
     def test_damage_batten(self):
 
         # ref data
-        conn_capacity = {40.0: [40, 43],
-                         48.0: [49],
-                         49.0: [37],
-                         50.0: [55],
-                         51.0: [31],
-                         52.0: [46],
-                         53.0: [34],
-                         54.0: [52],
-                         55.0: [58],
-                         59.0: [36],
-                         60.0: [42],
-                         61.0: [48],
-                         62.0: [54],
-                         63.0: [60],
-                         71.0: [39, 41, 44],
-                         72.0: [35, 50],
-                         73.0: [38, 47, 56],
-                         74.0: [32, 53],
-                         75.0: [59],
-                         91.0: [45],
-                         92.0: [33, 51],
-                         93.0: [57]}
+        conn_capacity = {44.0: [43],
+                         47.0: [40],
+                         57.0: [49, 37],
+                         58.0: [55, 31],
+                         64.0: [46],
+                         65.0: [34],
+                         66.0: [36, 52],
+                         67.0: [58, 42],
+                         68.0: [48],
+                         69.0: [54],
+                         70.0: [60],
+                         87.0: [39, 41, 44],
+                         88.0: [35],
+                         89.0: [47],
+                         90.0: [53],
+                         91.0: [59],
+                         112.0: [38, 45, 50],
+                         113.0: [32, 33, 56],
+                         114.0: [51],
+                         115.0: [57]}
 
         simulation(self.house_damage, conn_capacity,
                    wind_speeds=np.arange(40.0, 120, 1.0),
@@ -255,25 +253,28 @@ class TestScenario4(unittest.TestCase):
         file_logger = os.path.join(cfg.path_output, 'log_test4.txt')
         logging.basicConfig(filename=file_logger,
                             filemode='w',
-                            level=logging.DEBUG,
+                            level=logging.INFO,
                             format='%(levelname)s %(message)s')
 
     def test_damage_sheeting_batten(self):
 
         # ref data
-        conn_capacity = {40.0: [10, 31, 28],
-                         41.0: [9, 11, 25],
-                         42.0: [8, 19, 26, 30],
-                         43.0: [12, 24],
-                         44.0: [7],
-                         45.0: [13],
-                         46.0: [14, 32],
-                         47.0: [6, 15, 33],
-                         48.0: [16, 5, 34],
-                         49.0: [17, 4, 35],
-                         50.0: [3, 18, 21, 36],
-                         51.0: [2, 20],
-                         52.0: [1]}
+        conn_capacity = {40.0: [10],
+                         44.0: [31],
+                         45.0: [9, 11, 25],
+                         46.0: [8, 19],
+                         47.0: [47, 30],
+                         48.0: [12, 24],
+                         49.0: [7],
+                         50.0: [13],
+                         51.0: [14, 32],
+                         52.0: [15, 33],
+                         53.0: [6, 16, 34],
+                         54.0: [5, 17, 35],
+                         55.0: [4, 18, 36],
+                         56.0: [3],
+                         57.0: [2, 20],
+                         58.0: [1]}
 
         simulation(self.house_damage, conn_capacity,
                    wind_speeds=np.arange(40.0, 120, 1.0),
@@ -296,25 +297,26 @@ class TestScenario5(unittest.TestCase):
         file_logger = os.path.join(cfg.path_output, 'log_test5.txt')
         logging.basicConfig(filename=file_logger,
                             filemode='w',
-                            level=logging.DEBUG,
+                            level=logging.INFO,
                             format='%(levelname)s %(message)s')
 
     def test_damage_sheeting_batten(self):
 
         # ref data 5
-        conn_capacity = {40.0: [28, 31],
-                         41.0: [25],
-                         42.0: [19],
-                         52.0: [34],
-                         53.0: [22],
-                         59.0: [24],
-                         60.0: [30],
-                         61.0: [36],
-                         71.0: [27, 29, 32],
-                         72.0: [23, 26],
-                         73.0: [20, 35],
-                         91.0: [33],
-                         92.0: [21],
+        conn_capacity = {44.0: [31],
+                         45.0: [25],
+                         46.0: [19],
+                         47.0: [28],
+                         64.0: [34],
+                         65.0: [22],
+                         66.0: [24],
+                         67.0: [30],
+                         68.0: [36],
+                         87.0: [27, 29, 32],
+                         88.0: [23, 26],
+                         89.0: [20, 35],
+                         112.0: [33],
+                         113.0: [21],
                          }
 
         simulation(self.house_damage, conn_capacity,
@@ -340,7 +342,7 @@ class TestScenario6(unittest.TestCase):
         file_logger = os.path.join(cfg.path_output, 'log_test6.txt')
         logging.basicConfig(filename=file_logger,
                             filemode='w',
-                            level=logging.DEBUG,
+                            level=logging.INFO,
                             format='%(levelname)s %(message)s')
 
     def test_damage_sheeting_batten_rafter(self):
@@ -374,22 +376,22 @@ class TestScenario7(unittest.TestCase):
         file_logger = os.path.join(cfg.path_output, 'log_test7.txt')
         logging.basicConfig(filename=file_logger,
                             filemode='w',
-                            level=logging.DEBUG,
+                            level=logging.INFO,
                             format='%(levelname)s %(message)s')
 
     def test_damage_sheeting(self):
 
         # ref data 7
-        conn_capacity = {47.0: [10],
-                         48.0: [9],
-                         49.0: [8],
-                         50.0: [7],
-                         51.0: [6],
-                         52.0: [5],
-                         53.0: [4],
-                         54.0: [3],
-                         55.0: [2],
-                         56.0: [1]}
+        conn_capacity = {53.0: [10],
+                         54.0: [9],
+                         55.0: [8],
+                         56.0: [7],
+                         57.0: [6],
+                         58.0: [5],
+                         59.0: [4],
+                         60.0: [3],
+                         61.0: [2],
+                         62.0: [1]}
 
         simulation(self.house_damage, conn_capacity,
                    wind_speeds=np.arange(40.0, 100, 1.0),
@@ -412,21 +414,22 @@ class TestScenario8(unittest.TestCase):
         file_logger = os.path.join(cfg.path_output, 'log_test8.txt')
         logging.basicConfig(filename=file_logger,
                             filemode='w',
-                            level=logging.DEBUG,
+                            level=logging.INFO,
                             format='%(levelname)s %(message)s')
 
     def test_damage_sheeting(self):
 
         # ref data
-        conn_capacity = {52.0: [1],
-                         53.0: [2],
-                         54.0: [3],
-                         55.0: [4, 6],
-                         56.0: [5],
-                         57.0: [7],
-                         58.0: [8],
-                         59.0: [9],
-                         60.0: [10]}
+        conn_capacity = {53: [1],
+                         54.0: [2],
+                         55.0: [3],
+                         56.0: [4],
+                         57.0: [5],
+                         58.0: [6],
+                         59.0: [7],
+                         60.0: [8],
+                         61.0: [9],
+                         62.0: [10]}
 
         simulation(self.house_damage, conn_capacity,
                    wind_speeds=np.arange(40.0, 120, 1.0),
@@ -449,20 +452,20 @@ class TestScenario9(unittest.TestCase):
         file_logger = os.path.join(cfg.path_output, 'log_test9.txt')
         logging.basicConfig(filename=file_logger,
                             filemode='w',
-                            level=logging.DEBUG,
+                            level=logging.INFO,
                             format='%(levelname)s %(message)s')
 
     def test_damage_sheeting(self):
 
         # ref data 9
         conn_capacity = {40.0: [7],
-                         41.0: [6],
-                         42.0: [8],
-                         43.0: [5, 9],
-                         44.0: [4, 10],
-                         45.0: [3],
-                         46.0: [2],
-                         47.0: [1]}
+                         45.0: [6, 8],
+                         46.0: [5, 9],
+                         47.0: [4],
+                         48.0: [10],
+                         49.0: [3],
+                         50.0: [2],
+                         51.0: [1]}
 
         simulation(self.house_damage, conn_capacity,
                    wind_speeds=np.arange(40.0, 60.0, 1.0),
@@ -488,19 +491,16 @@ class TestScenario10(unittest.TestCase):
         file_logger = os.path.join(cfg.path_output, 'log_test10.txt')
         logging.basicConfig(filename=file_logger,
                             filemode='w',
-                            level=logging.DEBUG,
+                            level=logging.INFO,
                             format='%(levelname)s %(message)s')
 
     def test_damage_sheeting(self):
 
         # ref data 9
         conn_capacity = {40.0: [8, 3],
-                         42.0: [9],
-                         43.0: [7],
-                         44.0: [6],
-                         45.0: [10, 2, 4],
-                         46.0: [5],
-                         47.0: [1]}
+                         45.0: [9, 7, 2, 4],
+                         46.0: [6, 5],
+                         47.0: [10, 1]}
 
         simulation(self.house_damage, conn_capacity,
                    wind_speeds=np.arange(40.0, 60.0, 1.0),
@@ -526,21 +526,19 @@ class TestScenario11(unittest.TestCase):
         file_logger = os.path.join(cfg.path_output, 'log_test11.txt')
         logging.basicConfig(filename=file_logger,
                             filemode='w',
-                            level=logging.DEBUG,
+                            level=logging.INFO,
                             format='%(levelname)s %(message)s')
 
     def test_damage_batten(self):
 
         # ref data 11
         conn_capacity = {42.0: [17],
-                         43.0: [16],
-                         44.0: [18],
-                         45.0: [15],
-                         46.0: [19],
-                         47.0: [14, 20],
-                         48.0: [13],
-                         49.0: [12],
-                         50.0: [11]}
+                         49.0: [16, 18],
+                         50.0: [15, 19],
+                         51.0: [14, 20],
+                         52.0: [13],
+                         53.0: [12],
+                         54.0: [11]}
 
         simulation(self.house_damage, conn_capacity,
                    wind_speeds=np.arange(40.0, 120.0, 1.0),
@@ -566,20 +564,20 @@ class TestScenario12(unittest.TestCase):
         file_logger = os.path.join(cfg.path_output, 'log_test12.txt')
         logging.basicConfig(filename=file_logger,
                             filemode='w',
-                            level=logging.DEBUG,
+                            level=logging.INFO,
                             format='%(levelname)s %(message)s')
 
     def test_damage_batten(self):
 
         # ref data 12
         conn_capacity = {40.0: [7],
-                         52.0: [16],
-                         62.0: [15],
-                         63.0: [17],
-                         64.0: [14, 18],
-                         65.0: [19, 13],
-                         66.0: [12, 20],
-                         67.0: [11]}
+                         87.0: [16, 18],
+                         88.0: [17],
+                         89.0: [15, 19],
+                         90.0: [14, 20],
+                         91.0: [13],
+                         92.0: [12],
+                         93.0: [11]}
 
         simulation(self.house_damage, conn_capacity,
                    wind_speeds=np.arange(40.0, 120.0, 1.0),
@@ -605,20 +603,19 @@ class TestScenario13(unittest.TestCase):
         file_logger = os.path.join(cfg.path_output, 'log_test13.txt')
         logging.basicConfig(filename=file_logger,
                             filemode='w',
-                            level=logging.DEBUG,
+                            level=logging.INFO,
                             format='%(levelname)s %(message)s')
 
     def test_damage_batten(self):
 
         # ref data 11
         conn_capacity = {40.0: [17],
-                         46.0: [16],
-                         47.0: [18],
-                         48.0: [15, 19],
-                         49.0: [14, 20],
-                         50.0: [13],
-                         51.0: [12],
-                         52.0: [11]}
+                         64.0: [16, 18],
+                         65.0: [15, 19],
+                         66.0: [14, 20],
+                         67.0: [13],
+                         68.0: [12],
+                         69.0: [11]}
 
         simulation(self.house_damage, conn_capacity,
                    wind_speeds=np.arange(40.0, 120, 1.0),
@@ -644,21 +641,20 @@ class TestScenario14(unittest.TestCase):
         file_logger = os.path.join(cfg.path_output, 'log_test14.txt')
         logging.basicConfig(filename=file_logger,
                             filemode='w',
-                            level=logging.DEBUG,
+                            level=logging.INFO,
                             format='%(levelname)s %(message)s')
 
     def test_damage_batten(self):
 
         # ref data 11
         conn_capacity = {42.0: [17],
-                         44.0: [16],
-                         45.0: [18],
-                         53.0: [19],
-                         54.0: [15],
-                         55.0: [20, 14],
-                         56.0: [13],
-                         57.0: [12],
-                         58.0: [11]}
+                         59.0: [18, 16],
+                         60.0: [19],
+                         65.0: [15],
+                         66.0: [20, 14],
+                         67.0: [13],
+                         68.0: [12],
+                         69.0: [11]}
 
         simulation(self.house_damage, conn_capacity,
                    wind_speeds=np.arange(40.0, 120, 1.0),
@@ -680,7 +676,7 @@ class TestScenario15(unittest.TestCase):
         file_logger = os.path.join(cfg.path_output, 'log_test15.txt')
         logging.basicConfig(filename=file_logger,
                             filemode='w',
-                            level=logging.DEBUG,
+                            level=logging.INFO,
                             format='%(levelname)s %(message)s')
 
     def test_damage_sheeting_batten_rafter(self):
@@ -711,7 +707,7 @@ class TestScenario16(unittest.TestCase):
         file_logger = os.path.join(cfg.path_output, 'log_test16.txt')
         logging.basicConfig(filename=file_logger,
                             filemode='w',
-                            level=logging.DEBUG,
+                            level=logging.INFO,
                             format='%(levelname)s %(message)s')
 
     def test_damage_sheeting_batten_rafter(self):
@@ -752,7 +748,7 @@ class TestScenario17(unittest.TestCase):
         file_logger = os.path.join(cfg.path_output, 'log_test17.txt')
         logging.basicConfig(filename=file_logger,
                             filemode='w',
-                            level=logging.DEBUG,
+                            level=logging.INFO,
                             format='%(levelname)s %(message)s')
 
     def test_damage_sheeting_batten_rafter(self):
@@ -801,10 +797,10 @@ class TestScenario18(unittest.TestCase):
         cls.house_damage = HouseDamage(cfg, seed=0)
 
         # set up logging
-        file_logger = os.path.join(cfg.path_output, 'log_test18_new.txt')
+        file_logger = os.path.join(cfg.path_output, 'log_test18.txt')
         logging.basicConfig(filename=file_logger,
                             filemode='w',
-                            level=logging.DEBUG,
+                            level=logging.INFO,
                             format='%(levelname)s %(message)s')
 
     def test_damage_sheeting_batten_rafter(self):
@@ -828,6 +824,6 @@ class TestScenario18(unittest.TestCase):
                    list_connections=range(1, 137))
 
 if __name__ == '__main__':
-    suite = unittest.TestLoader().loadTestsFromTestCase(TestScenario18)
+    suite = unittest.TestLoader().loadTestsFromTestCase(TestScenario14)
     unittest.TextTestRunner(verbosity=2).run(suite)
     # unittest.main(verbosity=2)

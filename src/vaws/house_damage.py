@@ -83,34 +83,34 @@ class HouseDamage(object):
     def init_bucket(self):
 
         # house
-        for item in (self.cfg.list_house_bucket + self.cfg.list_debris_bucket +
-                     self.cfg.list_house_damage_bucket):
-            self.bucket.setdefault('house', {})[item] = None
+        for item in ['house', 'house_damage', 'debris']:
+            for att in getattr(self.cfg, '{}_bucket'.format(item)):
+                self.bucket.setdefault(item, {})[att] = None
 
         # components
         for item in self.cfg.list_components:
             self.bucket[item] = {}
             for _conn in getattr(self.cfg, 'list_{}s'.format(item)):
                 self.bucket[item][_conn] = {}
-                for att in getattr(self.cfg, 'list_{}_bucket'.format(item)):
+                for att in getattr(self.cfg, '{}_bucket'.format(item)):
                     self.bucket[item][_conn][att] = None
 
     def fill_bucket(self):
 
         # house
-        for item in self.cfg.list_house_damage_bucket:
-            self.bucket['house'][item] = getattr(self, item)
-
-        for item in self.cfg.list_house_bucket:
+        for item in self.cfg.house_bucket:
             self.bucket['house'][item] = getattr(self.house, item)
 
+        for item in self.cfg.house_damage_bucket:
+            self.bucket['house_damage'][item] = getattr(self, item)
+
         if self.cfg.flags['debris']:
-            for item in self.cfg.list_debris_bucket:
-                self.bucket['house'][item] = getattr(self.house.debris, item)
+            for item in self.cfg.debris_bucket:
+                self.bucket['debris'][item] = getattr(self.house.debris, item)
 
         # components
         for item in self.cfg.list_components:
-            for att in getattr(self.cfg, 'list_{}_bucket'.format(item)):
+            for att in getattr(self.cfg, '{}_bucket'.format(item)):
                 _dic = getattr(self.house, '{}s'.format(item))
                 for _conn, value in _dic.iteritems():
                     self.bucket[item][_conn][att] = getattr(value, att)
