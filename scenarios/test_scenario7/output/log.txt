@@ -1,0 +1,5265 @@
+INFO - Starting simulation in serial
+INFO - wind speed 40.000
+DEBUG - computing load of connection 1
+DEBUG - load by A1: 1.00 x 0.405 x -0.096
+DEBUG - dead load: 0.000
+DEBUG - computing load of connection 2
+DEBUG - load by A2: 1.00 x 0.810 x -0.096
+DEBUG - dead load: 0.000
+DEBUG - computing load of connection 3
+DEBUG - load by A3: 1.00 x 0.810 x -0.096
+DEBUG - dead load: 0.000
+DEBUG - computing load of connection 4
+DEBUG - load by A4: 1.00 x 0.810 x -0.096
+DEBUG - dead load: 0.000
+DEBUG - computing load of connection 5
+DEBUG - load by A5: 1.00 x 0.810 x -0.096
+DEBUG - dead load: 0.000
+DEBUG - computing load of connection 6
+DEBUG - load by A6: 1.00 x 0.810 x -0.096
+DEBUG - dead load: 0.000
+DEBUG - computing load of connection 7
+DEBUG - load by A7: 1.00 x 0.810 x -0.096
+DEBUG - dead load: 0.000
+DEBUG - computing load of connection 8
+DEBUG - load by A8: 1.00 x 0.810 x -0.096
+DEBUG - dead load: 0.000
+DEBUG - computing load of connection 9
+DEBUG - load by A9: 1.00 x 0.810 x -0.960
+DEBUG - dead load: 0.000
+DEBUG - computing load of connection 10
+DEBUG - load by A10: 1.00 x 0.405 x -6.721
+DEBUG - dead load: 0.000
+INFO - group sheeting: damaged area: 0.000, prop damaged: 0.00
+INFO - repair_cost:0.000, water:0.000, di_except_water:0.000, di:0.000
+INFO - wind speed 41.000
+DEBUG - computing load of connection 1
+DEBUG - load by A1: 1.00 x 0.405 x -0.101
+DEBUG - dead load: 0.000
+DEBUG - computing load of connection 2
+DEBUG - load by A2: 1.00 x 0.810 x -0.101
+DEBUG - dead load: 0.000
+DEBUG - computing load of connection 3
+DEBUG - load by A3: 1.00 x 0.810 x -0.101
+DEBUG - dead load: 0.000
+DEBUG - computing load of connection 4
+DEBUG - load by A4: 1.00 x 0.810 x -0.101
+DEBUG - dead load: 0.000
+DEBUG - computing load of connection 5
+DEBUG - load by A5: 1.00 x 0.810 x -0.101
+DEBUG - dead load: 0.000
+DEBUG - computing load of connection 6
+DEBUG - load by A6: 1.00 x 0.810 x -0.101
+DEBUG - dead load: 0.000
+DEBUG - computing load of connection 7
+DEBUG - load by A7: 1.00 x 0.810 x -0.101
+DEBUG - dead load: 0.000
+DEBUG - computing load of connection 8
+DEBUG - load by A8: 1.00 x 0.810 x -0.101
+DEBUG - dead load: 0.000
+DEBUG - computing load of connection 9
+DEBUG - load by A9: 1.00 x 0.810 x -1.009
+DEBUG - dead load: 0.000
+DEBUG - computing load of connection 10
+DEBUG - load by A10: 1.00 x 0.405 x -7.061
+DEBUG - dead load: 0.000
+INFO - group sheeting: damaged area: 0.000, prop damaged: 0.00
+INFO - repair_cost:0.000, water:0.000, di_except_water:0.000, di:0.000
+INFO - wind speed 42.000
+DEBUG - computing load of connection 1
+DEBUG - load by A1: 1.00 x 0.405 x -0.106
+DEBUG - dead load: 0.000
+DEBUG - computing load of connection 2
+DEBUG - load by A2: 1.00 x 0.810 x -0.106
+DEBUG - dead load: 0.000
+DEBUG - computing load of connection 3
+DEBUG - load by A3: 1.00 x 0.810 x -0.106
+DEBUG - dead load: 0.000
+DEBUG - computing load of connection 4
+DEBUG - load by A4: 1.00 x 0.810 x -0.106
+DEBUG - dead load: 0.000
+DEBUG - computing load of connection 5
+DEBUG - load by A5: 1.00 x 0.810 x -0.106
+DEBUG - dead load: 0.000
+DEBUG - computing load of connection 6
+DEBUG - load by A6: 1.00 x 0.810 x -0.106
+DEBUG - dead load: 0.000
+DEBUG - computing load of connection 7
+DEBUG - load by A7: 1.00 x 0.810 x -0.106
+DEBUG - dead load: 0.000
+DEBUG - computing load of connection 8
+DEBUG - load by A8: 1.00 x 0.810 x -0.106
+DEBUG - dead load: 0.000
+DEBUG - computing load of connection 9
+DEBUG - load by A9: 1.00 x 0.810 x -1.059
+DEBUG - dead load: 0.000
+DEBUG - computing load of connection 10
+DEBUG - load by A10: 1.00 x 0.405 x -7.410
+DEBUG - dead load: 0.000
+INFO - group sheeting: damaged area: 0.000, prop damaged: 0.00
+INFO - repair_cost:0.000, water:0.000, di_except_water:0.000, di:0.000
+INFO - wind speed 43.000
+DEBUG - computing load of connection 1
+DEBUG - load by A1: 1.00 x 0.405 x -0.111
+DEBUG - dead load: 0.000
+DEBUG - computing load of connection 2
+DEBUG - load by A2: 1.00 x 0.810 x -0.111
+DEBUG - dead load: 0.000
+DEBUG - computing load of connection 3
+DEBUG - load by A3: 1.00 x 0.810 x -0.111
+DEBUG - dead load: 0.000
+DEBUG - computing load of connection 4
+DEBUG - load by A4: 1.00 x 0.810 x -0.111
+DEBUG - dead load: 0.000
+DEBUG - computing load of connection 5
+DEBUG - load by A5: 1.00 x 0.810 x -0.111
+DEBUG - dead load: 0.000
+DEBUG - computing load of connection 6
+DEBUG - load by A6: 1.00 x 0.810 x -0.111
+DEBUG - dead load: 0.000
+DEBUG - computing load of connection 7
+DEBUG - load by A7: 1.00 x 0.810 x -0.111
+DEBUG - dead load: 0.000
+DEBUG - computing load of connection 8
+DEBUG - load by A8: 1.00 x 0.810 x -0.111
+DEBUG - dead load: 0.000
+DEBUG - computing load of connection 9
+DEBUG - load by A9: 1.00 x 0.810 x -1.110
+DEBUG - dead load: 0.000
+DEBUG - computing load of connection 10
+DEBUG - load by A10: 1.00 x 0.405 x -7.767
+DEBUG - dead load: 0.000
+INFO - group sheeting: damaged area: 0.000, prop damaged: 0.00
+INFO - repair_cost:0.000, water:0.000, di_except_water:0.000, di:0.000
+INFO - wind speed 44.000
+DEBUG - computing load of connection 1
+DEBUG - load by A1: 1.00 x 0.405 x -0.116
+DEBUG - dead load: 0.000
+DEBUG - computing load of connection 2
+DEBUG - load by A2: 1.00 x 0.810 x -0.116
+DEBUG - dead load: 0.000
+DEBUG - computing load of connection 3
+DEBUG - load by A3: 1.00 x 0.810 x -0.116
+DEBUG - dead load: 0.000
+DEBUG - computing load of connection 4
+DEBUG - load by A4: 1.00 x 0.810 x -0.116
+DEBUG - dead load: 0.000
+DEBUG - computing load of connection 5
+DEBUG - load by A5: 1.00 x 0.810 x -0.116
+DEBUG - dead load: 0.000
+DEBUG - computing load of connection 6
+DEBUG - load by A6: 1.00 x 0.810 x -0.116
+DEBUG - dead load: 0.000
+DEBUG - computing load of connection 7
+DEBUG - load by A7: 1.00 x 0.810 x -0.116
+DEBUG - dead load: 0.000
+DEBUG - computing load of connection 8
+DEBUG - load by A8: 1.00 x 0.810 x -0.116
+DEBUG - dead load: 0.000
+DEBUG - computing load of connection 9
+DEBUG - load by A9: 1.00 x 0.810 x -1.162
+DEBUG - dead load: 0.000
+DEBUG - computing load of connection 10
+DEBUG - load by A10: 1.00 x 0.405 x -8.132
+DEBUG - dead load: 0.000
+INFO - group sheeting: damaged area: 0.000, prop damaged: 0.00
+INFO - repair_cost:0.000, water:0.000, di_except_water:0.000, di:0.000
+INFO - wind speed 45.000
+DEBUG - computing load of connection 1
+DEBUG - load by A1: 1.00 x 0.405 x -0.122
+DEBUG - dead load: 0.000
+DEBUG - computing load of connection 2
+DEBUG - load by A2: 1.00 x 0.810 x -0.122
+DEBUG - dead load: 0.000
+DEBUG - computing load of connection 3
+DEBUG - load by A3: 1.00 x 0.810 x -0.122
+DEBUG - dead load: 0.000
+DEBUG - computing load of connection 4
+DEBUG - load by A4: 1.00 x 0.810 x -0.122
+DEBUG - dead load: 0.000
+DEBUG - computing load of connection 5
+DEBUG - load by A5: 1.00 x 0.810 x -0.122
+DEBUG - dead load: 0.000
+DEBUG - computing load of connection 6
+DEBUG - load by A6: 1.00 x 0.810 x -0.122
+DEBUG - dead load: 0.000
+DEBUG - computing load of connection 7
+DEBUG - load by A7: 1.00 x 0.810 x -0.122
+DEBUG - dead load: 0.000
+DEBUG - computing load of connection 8
+DEBUG - load by A8: 1.00 x 0.810 x -0.122
+DEBUG - dead load: 0.000
+DEBUG - computing load of connection 9
+DEBUG - load by A9: 1.00 x 0.810 x -1.215
+DEBUG - dead load: 0.000
+DEBUG - computing load of connection 10
+DEBUG - load by A10: 1.00 x 0.405 x -8.506
+DEBUG - dead load: 0.000
+INFO - group sheeting: damaged area: 0.000, prop damaged: 0.00
+INFO - repair_cost:0.000, water:0.000, di_except_water:0.000, di:0.000
+INFO - wind speed 46.000
+DEBUG - computing load of connection 1
+DEBUG - load by A1: 1.00 x 0.405 x -0.127
+DEBUG - dead load: 0.000
+DEBUG - computing load of connection 2
+DEBUG - load by A2: 1.00 x 0.810 x -0.127
+DEBUG - dead load: 0.000
+DEBUG - computing load of connection 3
+DEBUG - load by A3: 1.00 x 0.810 x -0.127
+DEBUG - dead load: 0.000
+DEBUG - computing load of connection 4
+DEBUG - load by A4: 1.00 x 0.810 x -0.127
+DEBUG - dead load: 0.000
+DEBUG - computing load of connection 5
+DEBUG - load by A5: 1.00 x 0.810 x -0.127
+DEBUG - dead load: 0.000
+DEBUG - computing load of connection 6
+DEBUG - load by A6: 1.00 x 0.810 x -0.127
+DEBUG - dead load: 0.000
+DEBUG - computing load of connection 7
+DEBUG - load by A7: 1.00 x 0.810 x -0.127
+DEBUG - dead load: 0.000
+DEBUG - computing load of connection 8
+DEBUG - load by A8: 1.00 x 0.810 x -0.127
+DEBUG - dead load: 0.000
+DEBUG - computing load of connection 9
+DEBUG - load by A9: 1.00 x 0.810 x -1.270
+DEBUG - dead load: 0.000
+DEBUG - computing load of connection 10
+DEBUG - load by A10: 1.00 x 0.405 x -8.888
+DEBUG - dead load: 0.000
+INFO - group sheeting: damaged area: 0.000, prop damaged: 0.00
+INFO - repair_cost:0.000, water:0.000, di_except_water:0.000, di:0.000
+INFO - wind speed 47.000
+DEBUG - computing load of connection 1
+DEBUG - load by A1: 1.00 x 0.405 x -0.133
+DEBUG - dead load: 0.000
+DEBUG - computing load of connection 2
+DEBUG - load by A2: 1.00 x 0.810 x -0.133
+DEBUG - dead load: 0.000
+DEBUG - computing load of connection 3
+DEBUG - load by A3: 1.00 x 0.810 x -0.133
+DEBUG - dead load: 0.000
+DEBUG - computing load of connection 4
+DEBUG - load by A4: 1.00 x 0.810 x -0.133
+DEBUG - dead load: 0.000
+DEBUG - computing load of connection 5
+DEBUG - load by A5: 1.00 x 0.810 x -0.133
+DEBUG - dead load: 0.000
+DEBUG - computing load of connection 6
+DEBUG - load by A6: 1.00 x 0.810 x -0.133
+DEBUG - dead load: 0.000
+DEBUG - computing load of connection 7
+DEBUG - load by A7: 1.00 x 0.810 x -0.133
+DEBUG - dead load: 0.000
+DEBUG - computing load of connection 8
+DEBUG - load by A8: 1.00 x 0.810 x -0.133
+DEBUG - dead load: 0.000
+DEBUG - computing load of connection 9
+DEBUG - load by A9: 1.00 x 0.810 x -1.326
+DEBUG - dead load: 0.000
+DEBUG - computing load of connection 10
+DEBUG - load by A10: 1.00 x 0.405 x -9.279
+DEBUG - dead load: 0.000
+INFO - group sheeting: damaged area: 0.000, prop damaged: 0.00
+INFO - repair_cost:0.000, water:0.000, di_except_water:0.000, di:0.000
+INFO - wind speed 48.000
+DEBUG - computing load of connection 1
+DEBUG - load by A1: 1.00 x 0.405 x -0.138
+DEBUG - dead load: 0.000
+DEBUG - computing load of connection 2
+DEBUG - load by A2: 1.00 x 0.810 x -0.138
+DEBUG - dead load: 0.000
+DEBUG - computing load of connection 3
+DEBUG - load by A3: 1.00 x 0.810 x -0.138
+DEBUG - dead load: 0.000
+DEBUG - computing load of connection 4
+DEBUG - load by A4: 1.00 x 0.810 x -0.138
+DEBUG - dead load: 0.000
+DEBUG - computing load of connection 5
+DEBUG - load by A5: 1.00 x 0.810 x -0.138
+DEBUG - dead load: 0.000
+DEBUG - computing load of connection 6
+DEBUG - load by A6: 1.00 x 0.810 x -0.138
+DEBUG - dead load: 0.000
+DEBUG - computing load of connection 7
+DEBUG - load by A7: 1.00 x 0.810 x -0.138
+DEBUG - dead load: 0.000
+DEBUG - computing load of connection 8
+DEBUG - load by A8: 1.00 x 0.810 x -0.138
+DEBUG - dead load: 0.000
+DEBUG - computing load of connection 9
+DEBUG - load by A9: 1.00 x 0.810 x -1.383
+DEBUG - dead load: 0.000
+DEBUG - computing load of connection 10
+DEBUG - load by A10: 1.00 x 0.405 x -9.678
+DEBUG - dead load: 0.000
+INFO - group sheeting: damaged area: 0.000, prop damaged: 0.00
+INFO - repair_cost:0.000, water:0.000, di_except_water:0.000, di:0.000
+INFO - wind speed 49.000
+DEBUG - computing load of connection 1
+DEBUG - load by A1: 1.00 x 0.405 x -0.144
+DEBUG - dead load: 0.000
+DEBUG - computing load of connection 2
+DEBUG - load by A2: 1.00 x 0.810 x -0.144
+DEBUG - dead load: 0.000
+DEBUG - computing load of connection 3
+DEBUG - load by A3: 1.00 x 0.810 x -0.144
+DEBUG - dead load: 0.000
+DEBUG - computing load of connection 4
+DEBUG - load by A4: 1.00 x 0.810 x -0.144
+DEBUG - dead load: 0.000
+DEBUG - computing load of connection 5
+DEBUG - load by A5: 1.00 x 0.810 x -0.144
+DEBUG - dead load: 0.000
+DEBUG - computing load of connection 6
+DEBUG - load by A6: 1.00 x 0.810 x -0.144
+DEBUG - dead load: 0.000
+DEBUG - computing load of connection 7
+DEBUG - load by A7: 1.00 x 0.810 x -0.144
+DEBUG - dead load: 0.000
+DEBUG - computing load of connection 8
+DEBUG - load by A8: 1.00 x 0.810 x -0.144
+DEBUG - dead load: 0.000
+DEBUG - computing load of connection 9
+DEBUG - load by A9: 1.00 x 0.810 x -1.441
+DEBUG - dead load: 0.000
+DEBUG - computing load of connection 10
+DEBUG - load by A10: 1.00 x 0.405 x -10.085
+DEBUG - dead load: 0.000
+INFO - group sheeting: damaged area: 0.000, prop damaged: 0.00
+INFO - repair_cost:0.000, water:0.000, di_except_water:0.000, di:0.000
+INFO - wind speed 50.000
+DEBUG - computing load of connection 1
+DEBUG - load by A1: 1.00 x 0.405 x -0.150
+DEBUG - dead load: 0.000
+DEBUG - computing load of connection 2
+DEBUG - load by A2: 1.00 x 0.810 x -0.150
+DEBUG - dead load: 0.000
+DEBUG - computing load of connection 3
+DEBUG - load by A3: 1.00 x 0.810 x -0.150
+DEBUG - dead load: 0.000
+DEBUG - computing load of connection 4
+DEBUG - load by A4: 1.00 x 0.810 x -0.150
+DEBUG - dead load: 0.000
+DEBUG - computing load of connection 5
+DEBUG - load by A5: 1.00 x 0.810 x -0.150
+DEBUG - dead load: 0.000
+DEBUG - computing load of connection 6
+DEBUG - load by A6: 1.00 x 0.810 x -0.150
+DEBUG - dead load: 0.000
+DEBUG - computing load of connection 7
+DEBUG - load by A7: 1.00 x 0.810 x -0.150
+DEBUG - dead load: 0.000
+DEBUG - computing load of connection 8
+DEBUG - load by A8: 1.00 x 0.810 x -0.150
+DEBUG - dead load: 0.000
+DEBUG - computing load of connection 9
+DEBUG - load by A9: 1.00 x 0.810 x -1.500
+DEBUG - dead load: 0.000
+DEBUG - computing load of connection 10
+DEBUG - load by A10: 1.00 x 0.405 x -10.501
+DEBUG - dead load: 0.000
+INFO - group sheeting: damaged area: 0.000, prop damaged: 0.00
+INFO - repair_cost:0.000, water:0.000, di_except_water:0.000, di:0.000
+INFO - wind speed 51.000
+DEBUG - computing load of connection 1
+DEBUG - load by A1: 1.00 x 0.405 x -0.156
+DEBUG - dead load: 0.000
+DEBUG - computing load of connection 2
+DEBUG - load by A2: 1.00 x 0.810 x -0.156
+DEBUG - dead load: 0.000
+DEBUG - computing load of connection 3
+DEBUG - load by A3: 1.00 x 0.810 x -0.156
+DEBUG - dead load: 0.000
+DEBUG - computing load of connection 4
+DEBUG - load by A4: 1.00 x 0.810 x -0.156
+DEBUG - dead load: 0.000
+DEBUG - computing load of connection 5
+DEBUG - load by A5: 1.00 x 0.810 x -0.156
+DEBUG - dead load: 0.000
+DEBUG - computing load of connection 6
+DEBUG - load by A6: 1.00 x 0.810 x -0.156
+DEBUG - dead load: 0.000
+DEBUG - computing load of connection 7
+DEBUG - load by A7: 1.00 x 0.810 x -0.156
+DEBUG - dead load: 0.000
+DEBUG - computing load of connection 8
+DEBUG - load by A8: 1.00 x 0.810 x -0.156
+DEBUG - dead load: 0.000
+DEBUG - computing load of connection 9
+DEBUG - load by A9: 1.00 x 0.810 x -1.561
+DEBUG - dead load: 0.000
+DEBUG - computing load of connection 10
+DEBUG - load by A10: 1.00 x 0.405 x -10.925
+DEBUG - dead load: 0.000
+INFO - group sheeting: damaged area: 0.000, prop damaged: 0.00
+INFO - repair_cost:0.000, water:0.000, di_except_water:0.000, di:0.000
+INFO - wind speed 52.000
+DEBUG - computing load of connection 1
+DEBUG - load by A1: 1.00 x 0.405 x -0.162
+DEBUG - dead load: 0.000
+DEBUG - computing load of connection 2
+DEBUG - load by A2: 1.00 x 0.810 x -0.162
+DEBUG - dead load: 0.000
+DEBUG - computing load of connection 3
+DEBUG - load by A3: 1.00 x 0.810 x -0.162
+DEBUG - dead load: 0.000
+DEBUG - computing load of connection 4
+DEBUG - load by A4: 1.00 x 0.810 x -0.162
+DEBUG - dead load: 0.000
+DEBUG - computing load of connection 5
+DEBUG - load by A5: 1.00 x 0.810 x -0.162
+DEBUG - dead load: 0.000
+DEBUG - computing load of connection 6
+DEBUG - load by A6: 1.00 x 0.810 x -0.162
+DEBUG - dead load: 0.000
+DEBUG - computing load of connection 7
+DEBUG - load by A7: 1.00 x 0.810 x -0.162
+DEBUG - dead load: 0.000
+DEBUG - computing load of connection 8
+DEBUG - load by A8: 1.00 x 0.810 x -0.162
+DEBUG - dead load: 0.000
+DEBUG - computing load of connection 9
+DEBUG - load by A9: 1.00 x 0.810 x -1.623
+DEBUG - dead load: 0.000
+DEBUG - computing load of connection 10
+DEBUG - load by A10: 1.00 x 0.405 x -11.358
+DEBUG - dead load: 0.000
+INFO - group sheeting: damaged area: 0.000, prop damaged: 0.00
+INFO - repair_cost:0.000, water:0.000, di_except_water:0.000, di:0.000
+INFO - wind speed 53.000
+DEBUG - computing load of connection 1
+DEBUG - load by A1: 1.00 x 0.405 x -0.169
+DEBUG - dead load: 0.000
+DEBUG - computing load of connection 2
+DEBUG - load by A2: 1.00 x 0.810 x -0.169
+DEBUG - dead load: 0.000
+DEBUG - computing load of connection 3
+DEBUG - load by A3: 1.00 x 0.810 x -0.169
+DEBUG - dead load: 0.000
+DEBUG - computing load of connection 4
+DEBUG - load by A4: 1.00 x 0.810 x -0.169
+DEBUG - dead load: 0.000
+DEBUG - computing load of connection 5
+DEBUG - load by A5: 1.00 x 0.810 x -0.169
+DEBUG - dead load: 0.000
+DEBUG - computing load of connection 6
+DEBUG - load by A6: 1.00 x 0.810 x -0.169
+DEBUG - dead load: 0.000
+DEBUG - computing load of connection 7
+DEBUG - load by A7: 1.00 x 0.810 x -0.169
+DEBUG - dead load: 0.000
+DEBUG - computing load of connection 8
+DEBUG - load by A8: 1.00 x 0.810 x -0.169
+DEBUG - dead load: 0.000
+DEBUG - computing load of connection 9
+DEBUG - load by A9: 1.00 x 0.810 x -1.686
+DEBUG - dead load: 0.000
+DEBUG - computing load of connection 10
+DEBUG - load by A10: 1.00 x 0.405 x -11.799
+DEBUG - dead load: 0.000
+INFO - connection 10 of sheeting0 damaged at 53.000 b/c -4.779 > 4.620
+INFO - group sheeting: damaged area: 0.405, prop damaged: 0.10
+DEBUG - rows of intact zones:[0 1 2 3 4 5 6 7 8]
+DEBUG - col: Influence of connection 9 is updated: connection 10 with 1.00
+INFO - repair_cost:724.490, water:0.000, di_except_water:0.988, di:0.988
+INFO - wind speed 54.000
+DEBUG - computing load of connection 1
+DEBUG - load by A1: 1.00 x 0.405 x -0.175
+DEBUG - dead load: 0.000
+DEBUG - computing load of connection 2
+DEBUG - load by A2: 1.00 x 0.810 x -0.175
+DEBUG - dead load: 0.000
+DEBUG - computing load of connection 3
+DEBUG - load by A3: 1.00 x 0.810 x -0.175
+DEBUG - dead load: 0.000
+DEBUG - computing load of connection 4
+DEBUG - load by A4: 1.00 x 0.810 x -0.175
+DEBUG - dead load: 0.000
+DEBUG - computing load of connection 5
+DEBUG - load by A5: 1.00 x 0.810 x -0.175
+DEBUG - dead load: 0.000
+DEBUG - computing load of connection 6
+DEBUG - load by A6: 1.00 x 0.810 x -0.175
+DEBUG - dead load: 0.000
+DEBUG - computing load of connection 7
+DEBUG - load by A7: 1.00 x 0.810 x -0.175
+DEBUG - dead load: 0.000
+DEBUG - computing load of connection 8
+DEBUG - load by A8: 1.00 x 0.810 x -0.175
+DEBUG - dead load: 0.000
+DEBUG - computing load of connection 9
+DEBUG - load by A9: 1.00 x 0.810 x -1.750
+DEBUG - load by A10: 1.00 x 0.405 x -12.248
+DEBUG - dead load: 0.000
+INFO - connection 9 of sheeting0 damaged at 54.000 b/c -6.378 > 2.695
+INFO - group sheeting: damaged area: 1.215, prop damaged: 0.20
+DEBUG - rows of intact zones:[0 1 2 3 4 5 6 7]
+DEBUG - col: Influence of connection 8 is updated: connection 9 with 1.00
+DEBUG - rows of intact zones:[0 1 2 3 4 5 6 7]
+DEBUG - col: Influence of connection 8 is updated: connection 10 with 1.00
+DEBUG - rows of intact zones:[0 1 2 3 4 5 6 7]
+DEBUG - col: Influence of connection 8 is updated: connection 9 with 1.00
+DEBUG - rows of intact zones:[0 1 2 3 4 5 6 7]
+DEBUG - col: Influence of connection 8 is updated: connection 10 with 1.00
+INFO - repair_cost:2045.115, water:0.000, di_except_water:1.000, di:1.000
+INFO - wind speed 55.000
+DEBUG - computing load of connection 1
+DEBUG - load by A1: 1.00 x 0.405 x -0.182
+DEBUG - dead load: 0.000
+DEBUG - computing load of connection 2
+DEBUG - load by A2: 1.00 x 0.810 x -0.182
+DEBUG - dead load: 0.000
+DEBUG - computing load of connection 3
+DEBUG - load by A3: 1.00 x 0.810 x -0.182
+DEBUG - dead load: 0.000
+DEBUG - computing load of connection 4
+DEBUG - load by A4: 1.00 x 0.810 x -0.182
+DEBUG - dead load: 0.000
+DEBUG - computing load of connection 5
+DEBUG - load by A5: 1.00 x 0.810 x -0.182
+DEBUG - dead load: 0.000
+DEBUG - computing load of connection 6
+DEBUG - load by A6: 1.00 x 0.810 x -0.182
+DEBUG - dead load: 0.000
+DEBUG - computing load of connection 7
+DEBUG - load by A7: 1.00 x 0.810 x -0.182
+DEBUG - dead load: 0.000
+DEBUG - computing load of connection 8
+DEBUG - load by A9: 1.00 x 0.810 x -1.815
+DEBUG - load by A8: 1.00 x 0.810 x -0.182
+DEBUG - load by A10: 1.00 x 0.405 x -12.706
+DEBUG - dead load: 0.000
+INFO - connection 8 of sheeting0 damaged at 55.000 b/c -6.763 > 2.695
+INFO - group sheeting: damaged area: 2.025, prop damaged: 0.30
+DEBUG - rows of intact zones:[0 1 2 3 4 5 6]
+DEBUG - col: Influence of connection 7 is updated: connection 8 with 1.00
+DEBUG - rows of intact zones:[0 1 2 3 4 5 6]
+DEBUG - col: Influence of connection 7 is updated: connection 9 with 1.00
+DEBUG - rows of intact zones:[0 1 2 3 4 5 6]
+DEBUG - col: Influence of connection 7 is updated: connection 10 with 1.00
+DEBUG - rows of intact zones:[0 1 2 3 4 5 6]
+DEBUG - col: Influence of connection 7 is updated: connection 8 with 1.00
+DEBUG - rows of intact zones:[0 1 2 3 4 5 6]
+DEBUG - col: Influence of connection 7 is updated: connection 9 with 1.00
+DEBUG - rows of intact zones:[0 1 2 3 4 5 6]
+DEBUG - col: Influence of connection 7 is updated: connection 10 with 1.00
+DEBUG - rows of intact zones:[0 1 2 3 4 5 6]
+DEBUG - col: Influence of connection 7 is updated: connection 8 with 1.00
+DEBUG - rows of intact zones:[0 1 2 3 4 5 6]
+DEBUG - col: Influence of connection 7 is updated: connection 9 with 1.00
+DEBUG - rows of intact zones:[0 1 2 3 4 5 6]
+DEBUG - col: Influence of connection 7 is updated: connection 10 with 1.00
+INFO - repair_cost:3212.485, water:0.000, di_except_water:1.000, di:1.000
+INFO - wind speed 56.000
+DEBUG - computing load of connection 1
+DEBUG - load by A1: 1.00 x 0.405 x -0.188
+DEBUG - dead load: 0.000
+DEBUG - computing load of connection 2
+DEBUG - load by A2: 1.00 x 0.810 x -0.188
+DEBUG - dead load: 0.000
+DEBUG - computing load of connection 3
+DEBUG - load by A3: 1.00 x 0.810 x -0.188
+DEBUG - dead load: 0.000
+DEBUG - computing load of connection 4
+DEBUG - load by A4: 1.00 x 0.810 x -0.188
+DEBUG - dead load: 0.000
+DEBUG - computing load of connection 5
+DEBUG - load by A5: 1.00 x 0.810 x -0.188
+DEBUG - dead load: 0.000
+DEBUG - computing load of connection 6
+DEBUG - load by A6: 1.00 x 0.810 x -0.188
+DEBUG - dead load: 0.000
+DEBUG - computing load of connection 7
+DEBUG - load by A9: 1.00 x 0.810 x -1.882
+DEBUG - load by A8: 1.00 x 0.810 x -0.188
+DEBUG - load by A10: 1.00 x 0.405 x -13.172
+DEBUG - load by A7: 1.00 x 0.810 x -0.188
+DEBUG - dead load: 0.000
+INFO - connection 7 of sheeting0 damaged at 56.000 b/c -7.164 > 2.695
+INFO - group sheeting: damaged area: 2.835, prop damaged: 0.40
+DEBUG - rows of intact zones:[0 1 2 3 4 5]
+DEBUG - col: Influence of connection 6 is updated: connection 7 with 1.00
+DEBUG - rows of intact zones:[0 1 2 3 4 5]
+DEBUG - col: Influence of connection 6 is updated: connection 8 with 1.00
+DEBUG - rows of intact zones:[0 1 2 3 4 5]
+DEBUG - col: Influence of connection 6 is updated: connection 9 with 1.00
+DEBUG - rows of intact zones:[0 1 2 3 4 5]
+DEBUG - col: Influence of connection 6 is updated: connection 10 with 1.00
+DEBUG - rows of intact zones:[0 1 2 3 4 5]
+DEBUG - col: Influence of connection 6 is updated: connection 7 with 1.00
+DEBUG - rows of intact zones:[0 1 2 3 4 5]
+DEBUG - col: Influence of connection 6 is updated: connection 8 with 1.00
+DEBUG - rows of intact zones:[0 1 2 3 4 5]
+DEBUG - col: Influence of connection 6 is updated: connection 9 with 1.00
+DEBUG - rows of intact zones:[0 1 2 3 4 5]
+DEBUG - col: Influence of connection 6 is updated: connection 10 with 1.00
+DEBUG - rows of intact zones:[0 1 2 3 4 5]
+DEBUG - col: Influence of connection 6 is updated: connection 7 with 1.00
+DEBUG - rows of intact zones:[0 1 2 3 4 5]
+DEBUG - col: Influence of connection 6 is updated: connection 8 with 1.00
+DEBUG - rows of intact zones:[0 1 2 3 4 5]
+DEBUG - col: Influence of connection 6 is updated: connection 9 with 1.00
+DEBUG - rows of intact zones:[0 1 2 3 4 5]
+DEBUG - col: Influence of connection 6 is updated: connection 10 with 1.00
+DEBUG - rows of intact zones:[0 1 2 3 4 5]
+DEBUG - col: Influence of connection 6 is updated: connection 7 with 1.00
+DEBUG - rows of intact zones:[0 1 2 3 4 5]
+DEBUG - col: Influence of connection 6 is updated: connection 8 with 1.00
+DEBUG - rows of intact zones:[0 1 2 3 4 5]
+DEBUG - col: Influence of connection 6 is updated: connection 9 with 1.00
+DEBUG - rows of intact zones:[0 1 2 3 4 5]
+DEBUG - col: Influence of connection 6 is updated: connection 10 with 1.00
+INFO - repair_cost:4248.062, water:0.000, di_except_water:1.000, di:1.000
+INFO - wind speed 57.000
+DEBUG - computing load of connection 1
+DEBUG - load by A1: 1.00 x 0.405 x -0.195
+DEBUG - dead load: 0.000
+DEBUG - computing load of connection 2
+DEBUG - load by A2: 1.00 x 0.810 x -0.195
+DEBUG - dead load: 0.000
+DEBUG - computing load of connection 3
+DEBUG - load by A3: 1.00 x 0.810 x -0.195
+DEBUG - dead load: 0.000
+DEBUG - computing load of connection 4
+DEBUG - load by A4: 1.00 x 0.810 x -0.195
+DEBUG - dead load: 0.000
+DEBUG - computing load of connection 5
+DEBUG - load by A5: 1.00 x 0.810 x -0.195
+DEBUG - dead load: 0.000
+DEBUG - computing load of connection 6
+DEBUG - load by A9: 1.00 x 0.810 x -1.950
+DEBUG - load by A8: 1.00 x 0.810 x -0.195
+DEBUG - load by A10: 1.00 x 0.405 x -13.647
+DEBUG - load by A7: 1.00 x 0.810 x -0.195
+DEBUG - load by A6: 1.00 x 0.810 x -0.195
+DEBUG - dead load: 0.000
+INFO - connection 6 of sheeting0 damaged at 57.000 b/c -7.580 > 2.695
+INFO - group sheeting: damaged area: 3.645, prop damaged: 0.50
+DEBUG - rows of intact zones:[0 1 2 3 4]
+DEBUG - col: Influence of connection 5 is updated: connection 6 with 1.00
+DEBUG - rows of intact zones:[0 1 2 3 4]
+DEBUG - col: Influence of connection 5 is updated: connection 7 with 1.00
+DEBUG - rows of intact zones:[0 1 2 3 4]
+DEBUG - col: Influence of connection 5 is updated: connection 8 with 1.00
+DEBUG - rows of intact zones:[0 1 2 3 4]
+DEBUG - col: Influence of connection 5 is updated: connection 9 with 1.00
+DEBUG - rows of intact zones:[0 1 2 3 4]
+DEBUG - col: Influence of connection 5 is updated: connection 10 with 1.00
+DEBUG - rows of intact zones:[0 1 2 3 4]
+DEBUG - col: Influence of connection 5 is updated: connection 6 with 1.00
+DEBUG - rows of intact zones:[0 1 2 3 4]
+DEBUG - col: Influence of connection 5 is updated: connection 7 with 1.00
+DEBUG - rows of intact zones:[0 1 2 3 4]
+DEBUG - col: Influence of connection 5 is updated: connection 8 with 1.00
+DEBUG - rows of intact zones:[0 1 2 3 4]
+DEBUG - col: Influence of connection 5 is updated: connection 9 with 1.00
+DEBUG - rows of intact zones:[0 1 2 3 4]
+DEBUG - col: Influence of connection 5 is updated: connection 10 with 1.00
+DEBUG - rows of intact zones:[0 1 2 3 4]
+DEBUG - col: Influence of connection 5 is updated: connection 6 with 1.00
+DEBUG - rows of intact zones:[0 1 2 3 4]
+DEBUG - col: Influence of connection 5 is updated: connection 7 with 1.00
+DEBUG - rows of intact zones:[0 1 2 3 4]
+DEBUG - col: Influence of connection 5 is updated: connection 8 with 1.00
+DEBUG - rows of intact zones:[0 1 2 3 4]
+DEBUG - col: Influence of connection 5 is updated: connection 9 with 1.00
+DEBUG - rows of intact zones:[0 1 2 3 4]
+DEBUG - col: Influence of connection 5 is updated: connection 10 with 1.00
+DEBUG - rows of intact zones:[0 1 2 3 4]
+DEBUG - col: Influence of connection 5 is updated: connection 6 with 1.00
+DEBUG - rows of intact zones:[0 1 2 3 4]
+DEBUG - col: Influence of connection 5 is updated: connection 7 with 1.00
+DEBUG - rows of intact zones:[0 1 2 3 4]
+DEBUG - col: Influence of connection 5 is updated: connection 8 with 1.00
+DEBUG - rows of intact zones:[0 1 2 3 4]
+DEBUG - col: Influence of connection 5 is updated: connection 9 with 1.00
+DEBUG - rows of intact zones:[0 1 2 3 4]
+DEBUG - col: Influence of connection 5 is updated: connection 10 with 1.00
+DEBUG - rows of intact zones:[0 1 2 3 4]
+DEBUG - col: Influence of connection 5 is updated: connection 6 with 1.00
+DEBUG - rows of intact zones:[0 1 2 3 4]
+DEBUG - col: Influence of connection 5 is updated: connection 7 with 1.00
+DEBUG - rows of intact zones:[0 1 2 3 4]
+DEBUG - col: Influence of connection 5 is updated: connection 8 with 1.00
+DEBUG - rows of intact zones:[0 1 2 3 4]
+DEBUG - col: Influence of connection 5 is updated: connection 9 with 1.00
+DEBUG - rows of intact zones:[0 1 2 3 4]
+DEBUG - col: Influence of connection 5 is updated: connection 10 with 1.00
+INFO - repair_cost:5173.309, water:0.000, di_except_water:1.000, di:1.000
+INFO - wind speed 58.000
+DEBUG - computing load of connection 1
+DEBUG - load by A1: 1.00 x 0.405 x -0.202
+DEBUG - dead load: 0.000
+DEBUG - computing load of connection 2
+DEBUG - load by A2: 1.00 x 0.810 x -0.202
+DEBUG - dead load: 0.000
+DEBUG - computing load of connection 3
+DEBUG - load by A3: 1.00 x 0.810 x -0.202
+DEBUG - dead load: 0.000
+DEBUG - computing load of connection 4
+DEBUG - load by A4: 1.00 x 0.810 x -0.202
+DEBUG - dead load: 0.000
+DEBUG - computing load of connection 5
+DEBUG - load by A5: 1.00 x 0.810 x -0.202
+DEBUG - load by A10: 1.00 x 0.405 x -14.130
+DEBUG - load by A7: 1.00 x 0.810 x -0.202
+DEBUG - load by A6: 1.00 x 0.810 x -0.202
+DEBUG - load by A9: 1.00 x 0.810 x -2.019
+DEBUG - load by A8: 1.00 x 0.810 x -0.202
+DEBUG - dead load: 0.000
+INFO - connection 5 of sheeting0 damaged at 58.000 b/c -8.012 > 2.695
+INFO - group sheeting: damaged area: 4.455, prop damaged: 0.60
+DEBUG - rows of intact zones:[0 1 2 3]
+DEBUG - col: Influence of connection 4 is updated: connection 5 with 1.00
+DEBUG - rows of intact zones:[0 1 2 3]
+DEBUG - col: Influence of connection 4 is updated: connection 6 with 1.00
+DEBUG - rows of intact zones:[0 1 2 3]
+DEBUG - col: Influence of connection 4 is updated: connection 7 with 1.00
+DEBUG - rows of intact zones:[0 1 2 3]
+DEBUG - col: Influence of connection 4 is updated: connection 8 with 1.00
+DEBUG - rows of intact zones:[0 1 2 3]
+DEBUG - col: Influence of connection 4 is updated: connection 9 with 1.00
+DEBUG - rows of intact zones:[0 1 2 3]
+DEBUG - col: Influence of connection 4 is updated: connection 10 with 1.00
+DEBUG - rows of intact zones:[0 1 2 3]
+DEBUG - col: Influence of connection 4 is updated: connection 5 with 1.00
+DEBUG - rows of intact zones:[0 1 2 3]
+DEBUG - col: Influence of connection 4 is updated: connection 6 with 1.00
+DEBUG - rows of intact zones:[0 1 2 3]
+DEBUG - col: Influence of connection 4 is updated: connection 7 with 1.00
+DEBUG - rows of intact zones:[0 1 2 3]
+DEBUG - col: Influence of connection 4 is updated: connection 8 with 1.00
+DEBUG - rows of intact zones:[0 1 2 3]
+DEBUG - col: Influence of connection 4 is updated: connection 9 with 1.00
+DEBUG - rows of intact zones:[0 1 2 3]
+DEBUG - col: Influence of connection 4 is updated: connection 10 with 1.00
+DEBUG - rows of intact zones:[0 1 2 3]
+DEBUG - col: Influence of connection 4 is updated: connection 5 with 1.00
+DEBUG - rows of intact zones:[0 1 2 3]
+DEBUG - col: Influence of connection 4 is updated: connection 6 with 1.00
+DEBUG - rows of intact zones:[0 1 2 3]
+DEBUG - col: Influence of connection 4 is updated: connection 7 with 1.00
+DEBUG - rows of intact zones:[0 1 2 3]
+DEBUG - col: Influence of connection 4 is updated: connection 8 with 1.00
+DEBUG - rows of intact zones:[0 1 2 3]
+DEBUG - col: Influence of connection 4 is updated: connection 9 with 1.00
+DEBUG - rows of intact zones:[0 1 2 3]
+DEBUG - col: Influence of connection 4 is updated: connection 10 with 1.00
+DEBUG - rows of intact zones:[0 1 2 3]
+DEBUG - col: Influence of connection 4 is updated: connection 5 with 1.00
+DEBUG - rows of intact zones:[0 1 2 3]
+DEBUG - col: Influence of connection 4 is updated: connection 6 with 1.00
+DEBUG - rows of intact zones:[0 1 2 3]
+DEBUG - col: Influence of connection 4 is updated: connection 7 with 1.00
+DEBUG - rows of intact zones:[0 1 2 3]
+DEBUG - col: Influence of connection 4 is updated: connection 8 with 1.00
+DEBUG - rows of intact zones:[0 1 2 3]
+DEBUG - col: Influence of connection 4 is updated: connection 9 with 1.00
+DEBUG - rows of intact zones:[0 1 2 3]
+DEBUG - col: Influence of connection 4 is updated: connection 10 with 1.00
+DEBUG - rows of intact zones:[0 1 2 3]
+DEBUG - col: Influence of connection 4 is updated: connection 5 with 1.00
+DEBUG - rows of intact zones:[0 1 2 3]
+DEBUG - col: Influence of connection 4 is updated: connection 6 with 1.00
+DEBUG - rows of intact zones:[0 1 2 3]
+DEBUG - col: Influence of connection 4 is updated: connection 7 with 1.00
+DEBUG - rows of intact zones:[0 1 2 3]
+DEBUG - col: Influence of connection 4 is updated: connection 8 with 1.00
+DEBUG - rows of intact zones:[0 1 2 3]
+DEBUG - col: Influence of connection 4 is updated: connection 9 with 1.00
+DEBUG - rows of intact zones:[0 1 2 3]
+DEBUG - col: Influence of connection 4 is updated: connection 10 with 1.00
+DEBUG - rows of intact zones:[0 1 2 3]
+DEBUG - col: Influence of connection 4 is updated: connection 5 with 1.00
+DEBUG - rows of intact zones:[0 1 2 3]
+DEBUG - col: Influence of connection 4 is updated: connection 6 with 1.00
+DEBUG - rows of intact zones:[0 1 2 3]
+DEBUG - col: Influence of connection 4 is updated: connection 7 with 1.00
+DEBUG - rows of intact zones:[0 1 2 3]
+DEBUG - col: Influence of connection 4 is updated: connection 8 with 1.00
+DEBUG - rows of intact zones:[0 1 2 3]
+DEBUG - col: Influence of connection 4 is updated: connection 9 with 1.00
+DEBUG - rows of intact zones:[0 1 2 3]
+DEBUG - col: Influence of connection 4 is updated: connection 10 with 1.00
+INFO - repair_cost:6009.689, water:0.000, di_except_water:1.000, di:1.000
+INFO - wind speed 59.000
+DEBUG - computing load of connection 1
+DEBUG - load by A1: 1.00 x 0.405 x -0.209
+DEBUG - dead load: 0.000
+DEBUG - computing load of connection 2
+DEBUG - load by A2: 1.00 x 0.810 x -0.209
+DEBUG - dead load: 0.000
+DEBUG - computing load of connection 3
+DEBUG - load by A3: 1.00 x 0.810 x -0.209
+DEBUG - dead load: 0.000
+DEBUG - computing load of connection 4
+DEBUG - load by A5: 1.00 x 0.810 x -0.209
+DEBUG - load by A4: 1.00 x 0.810 x -0.209
+DEBUG - load by A7: 1.00 x 0.810 x -0.209
+DEBUG - load by A6: 1.00 x 0.810 x -0.209
+DEBUG - load by A9: 1.00 x 0.810 x -2.089
+DEBUG - load by A8: 1.00 x 0.810 x -0.209
+DEBUG - load by A10: 1.00 x 0.405 x -14.622
+DEBUG - dead load: 0.000
+INFO - connection 4 of sheeting0 damaged at 59.000 b/c -8.460 > 2.695
+INFO - group sheeting: damaged area: 5.265, prop damaged: 0.70
+DEBUG - rows of intact zones:[0 1 2]
+DEBUG - col: Influence of connection 3 is updated: connection 4 with 1.00
+DEBUG - rows of intact zones:[0 1 2]
+DEBUG - col: Influence of connection 3 is updated: connection 5 with 1.00
+DEBUG - rows of intact zones:[0 1 2]
+DEBUG - col: Influence of connection 3 is updated: connection 6 with 1.00
+DEBUG - rows of intact zones:[0 1 2]
+DEBUG - col: Influence of connection 3 is updated: connection 7 with 1.00
+DEBUG - rows of intact zones:[0 1 2]
+DEBUG - col: Influence of connection 3 is updated: connection 8 with 1.00
+DEBUG - rows of intact zones:[0 1 2]
+DEBUG - col: Influence of connection 3 is updated: connection 9 with 1.00
+DEBUG - rows of intact zones:[0 1 2]
+DEBUG - col: Influence of connection 3 is updated: connection 10 with 1.00
+DEBUG - rows of intact zones:[0 1 2]
+DEBUG - col: Influence of connection 3 is updated: connection 4 with 1.00
+DEBUG - rows of intact zones:[0 1 2]
+DEBUG - col: Influence of connection 3 is updated: connection 5 with 1.00
+DEBUG - rows of intact zones:[0 1 2]
+DEBUG - col: Influence of connection 3 is updated: connection 6 with 1.00
+DEBUG - rows of intact zones:[0 1 2]
+DEBUG - col: Influence of connection 3 is updated: connection 7 with 1.00
+DEBUG - rows of intact zones:[0 1 2]
+DEBUG - col: Influence of connection 3 is updated: connection 8 with 1.00
+DEBUG - rows of intact zones:[0 1 2]
+DEBUG - col: Influence of connection 3 is updated: connection 9 with 1.00
+DEBUG - rows of intact zones:[0 1 2]
+DEBUG - col: Influence of connection 3 is updated: connection 10 with 1.00
+DEBUG - rows of intact zones:[0 1 2]
+DEBUG - col: Influence of connection 3 is updated: connection 4 with 1.00
+DEBUG - rows of intact zones:[0 1 2]
+DEBUG - col: Influence of connection 3 is updated: connection 5 with 1.00
+DEBUG - rows of intact zones:[0 1 2]
+DEBUG - col: Influence of connection 3 is updated: connection 6 with 1.00
+DEBUG - rows of intact zones:[0 1 2]
+DEBUG - col: Influence of connection 3 is updated: connection 7 with 1.00
+DEBUG - rows of intact zones:[0 1 2]
+DEBUG - col: Influence of connection 3 is updated: connection 8 with 1.00
+DEBUG - rows of intact zones:[0 1 2]
+DEBUG - col: Influence of connection 3 is updated: connection 9 with 1.00
+DEBUG - rows of intact zones:[0 1 2]
+DEBUG - col: Influence of connection 3 is updated: connection 10 with 1.00
+DEBUG - rows of intact zones:[0 1 2]
+DEBUG - col: Influence of connection 3 is updated: connection 4 with 1.00
+DEBUG - rows of intact zones:[0 1 2]
+DEBUG - col: Influence of connection 3 is updated: connection 5 with 1.00
+DEBUG - rows of intact zones:[0 1 2]
+DEBUG - col: Influence of connection 3 is updated: connection 6 with 1.00
+DEBUG - rows of intact zones:[0 1 2]
+DEBUG - col: Influence of connection 3 is updated: connection 7 with 1.00
+DEBUG - rows of intact zones:[0 1 2]
+DEBUG - col: Influence of connection 3 is updated: connection 8 with 1.00
+DEBUG - rows of intact zones:[0 1 2]
+DEBUG - col: Influence of connection 3 is updated: connection 9 with 1.00
+DEBUG - rows of intact zones:[0 1 2]
+DEBUG - col: Influence of connection 3 is updated: connection 10 with 1.00
+DEBUG - rows of intact zones:[0 1 2]
+DEBUG - col: Influence of connection 3 is updated: connection 4 with 1.00
+DEBUG - rows of intact zones:[0 1 2]
+DEBUG - col: Influence of connection 3 is updated: connection 5 with 1.00
+DEBUG - rows of intact zones:[0 1 2]
+DEBUG - col: Influence of connection 3 is updated: connection 6 with 1.00
+DEBUG - rows of intact zones:[0 1 2]
+DEBUG - col: Influence of connection 3 is updated: connection 7 with 1.00
+DEBUG - rows of intact zones:[0 1 2]
+DEBUG - col: Influence of connection 3 is updated: connection 8 with 1.00
+DEBUG - rows of intact zones:[0 1 2]
+DEBUG - col: Influence of connection 3 is updated: connection 9 with 1.00
+DEBUG - rows of intact zones:[0 1 2]
+DEBUG - col: Influence of connection 3 is updated: connection 10 with 1.00
+DEBUG - rows of intact zones:[0 1 2]
+DEBUG - col: Influence of connection 3 is updated: connection 4 with 1.00
+DEBUG - rows of intact zones:[0 1 2]
+DEBUG - col: Influence of connection 3 is updated: connection 5 with 1.00
+DEBUG - rows of intact zones:[0 1 2]
+DEBUG - col: Influence of connection 3 is updated: connection 6 with 1.00
+DEBUG - rows of intact zones:[0 1 2]
+DEBUG - col: Influence of connection 3 is updated: connection 7 with 1.00
+DEBUG - rows of intact zones:[0 1 2]
+DEBUG - col: Influence of connection 3 is updated: connection 8 with 1.00
+DEBUG - rows of intact zones:[0 1 2]
+DEBUG - col: Influence of connection 3 is updated: connection 9 with 1.00
+DEBUG - rows of intact zones:[0 1 2]
+DEBUG - col: Influence of connection 3 is updated: connection 10 with 1.00
+DEBUG - rows of intact zones:[0 1 2]
+DEBUG - col: Influence of connection 3 is updated: connection 4 with 1.00
+DEBUG - rows of intact zones:[0 1 2]
+DEBUG - col: Influence of connection 3 is updated: connection 5 with 1.00
+DEBUG - rows of intact zones:[0 1 2]
+DEBUG - col: Influence of connection 3 is updated: connection 6 with 1.00
+DEBUG - rows of intact zones:[0 1 2]
+DEBUG - col: Influence of connection 3 is updated: connection 7 with 1.00
+DEBUG - rows of intact zones:[0 1 2]
+DEBUG - col: Influence of connection 3 is updated: connection 8 with 1.00
+DEBUG - rows of intact zones:[0 1 2]
+DEBUG - col: Influence of connection 3 is updated: connection 9 with 1.00
+DEBUG - rows of intact zones:[0 1 2]
+DEBUG - col: Influence of connection 3 is updated: connection 10 with 1.00
+INFO - repair_cost:6778.664, water:0.000, di_except_water:1.000, di:1.000
+INFO - wind speed 60.000
+DEBUG - computing load of connection 1
+DEBUG - load by A1: 1.00 x 0.405 x -0.216
+DEBUG - dead load: 0.000
+DEBUG - computing load of connection 2
+DEBUG - load by A2: 1.00 x 0.810 x -0.216
+DEBUG - dead load: 0.000
+DEBUG - computing load of connection 3
+DEBUG - load by A3: 1.00 x 0.810 x -0.216
+DEBUG - load by A5: 1.00 x 0.810 x -0.216
+DEBUG - load by A4: 1.00 x 0.810 x -0.216
+DEBUG - load by A7: 1.00 x 0.810 x -0.216
+DEBUG - load by A6: 1.00 x 0.810 x -0.216
+DEBUG - load by A9: 1.00 x 0.810 x -2.160
+DEBUG - load by A8: 1.00 x 0.810 x -0.216
+DEBUG - load by A10: 1.00 x 0.405 x -15.121
+DEBUG - dead load: 0.000
+INFO - connection 3 of sheeting0 damaged at 60.000 b/c -8.924 > 2.695
+INFO - group sheeting: damaged area: 6.075, prop damaged: 0.80
+DEBUG - rows of intact zones:[0 1]
+DEBUG - col: Influence of connection 2 is updated: connection 3 with 1.00
+DEBUG - rows of intact zones:[0 1]
+DEBUG - col: Influence of connection 2 is updated: connection 4 with 1.00
+DEBUG - rows of intact zones:[0 1]
+DEBUG - col: Influence of connection 2 is updated: connection 5 with 1.00
+DEBUG - rows of intact zones:[0 1]
+DEBUG - col: Influence of connection 2 is updated: connection 6 with 1.00
+DEBUG - rows of intact zones:[0 1]
+DEBUG - col: Influence of connection 2 is updated: connection 7 with 1.00
+DEBUG - rows of intact zones:[0 1]
+DEBUG - col: Influence of connection 2 is updated: connection 8 with 1.00
+DEBUG - rows of intact zones:[0 1]
+DEBUG - col: Influence of connection 2 is updated: connection 9 with 1.00
+DEBUG - rows of intact zones:[0 1]
+DEBUG - col: Influence of connection 2 is updated: connection 10 with 1.00
+DEBUG - rows of intact zones:[0 1]
+DEBUG - col: Influence of connection 2 is updated: connection 3 with 1.00
+DEBUG - rows of intact zones:[0 1]
+DEBUG - col: Influence of connection 2 is updated: connection 4 with 1.00
+DEBUG - rows of intact zones:[0 1]
+DEBUG - col: Influence of connection 2 is updated: connection 5 with 1.00
+DEBUG - rows of intact zones:[0 1]
+DEBUG - col: Influence of connection 2 is updated: connection 6 with 1.00
+DEBUG - rows of intact zones:[0 1]
+DEBUG - col: Influence of connection 2 is updated: connection 7 with 1.00
+DEBUG - rows of intact zones:[0 1]
+DEBUG - col: Influence of connection 2 is updated: connection 8 with 1.00
+DEBUG - rows of intact zones:[0 1]
+DEBUG - col: Influence of connection 2 is updated: connection 9 with 1.00
+DEBUG - rows of intact zones:[0 1]
+DEBUG - col: Influence of connection 2 is updated: connection 10 with 1.00
+DEBUG - rows of intact zones:[0 1]
+DEBUG - col: Influence of connection 2 is updated: connection 3 with 1.00
+DEBUG - rows of intact zones:[0 1]
+DEBUG - col: Influence of connection 2 is updated: connection 4 with 1.00
+DEBUG - rows of intact zones:[0 1]
+DEBUG - col: Influence of connection 2 is updated: connection 5 with 1.00
+DEBUG - rows of intact zones:[0 1]
+DEBUG - col: Influence of connection 2 is updated: connection 6 with 1.00
+DEBUG - rows of intact zones:[0 1]
+DEBUG - col: Influence of connection 2 is updated: connection 7 with 1.00
+DEBUG - rows of intact zones:[0 1]
+DEBUG - col: Influence of connection 2 is updated: connection 8 with 1.00
+DEBUG - rows of intact zones:[0 1]
+DEBUG - col: Influence of connection 2 is updated: connection 9 with 1.00
+DEBUG - rows of intact zones:[0 1]
+DEBUG - col: Influence of connection 2 is updated: connection 10 with 1.00
+DEBUG - rows of intact zones:[0 1]
+DEBUG - col: Influence of connection 2 is updated: connection 3 with 1.00
+DEBUG - rows of intact zones:[0 1]
+DEBUG - col: Influence of connection 2 is updated: connection 4 with 1.00
+DEBUG - rows of intact zones:[0 1]
+DEBUG - col: Influence of connection 2 is updated: connection 5 with 1.00
+DEBUG - rows of intact zones:[0 1]
+DEBUG - col: Influence of connection 2 is updated: connection 6 with 1.00
+DEBUG - rows of intact zones:[0 1]
+DEBUG - col: Influence of connection 2 is updated: connection 7 with 1.00
+DEBUG - rows of intact zones:[0 1]
+DEBUG - col: Influence of connection 2 is updated: connection 8 with 1.00
+DEBUG - rows of intact zones:[0 1]
+DEBUG - col: Influence of connection 2 is updated: connection 9 with 1.00
+DEBUG - rows of intact zones:[0 1]
+DEBUG - col: Influence of connection 2 is updated: connection 10 with 1.00
+DEBUG - rows of intact zones:[0 1]
+DEBUG - col: Influence of connection 2 is updated: connection 3 with 1.00
+DEBUG - rows of intact zones:[0 1]
+DEBUG - col: Influence of connection 2 is updated: connection 4 with 1.00
+DEBUG - rows of intact zones:[0 1]
+DEBUG - col: Influence of connection 2 is updated: connection 5 with 1.00
+DEBUG - rows of intact zones:[0 1]
+DEBUG - col: Influence of connection 2 is updated: connection 6 with 1.00
+DEBUG - rows of intact zones:[0 1]
+DEBUG - col: Influence of connection 2 is updated: connection 7 with 1.00
+DEBUG - rows of intact zones:[0 1]
+DEBUG - col: Influence of connection 2 is updated: connection 8 with 1.00
+DEBUG - rows of intact zones:[0 1]
+DEBUG - col: Influence of connection 2 is updated: connection 9 with 1.00
+DEBUG - rows of intact zones:[0 1]
+DEBUG - col: Influence of connection 2 is updated: connection 10 with 1.00
+DEBUG - rows of intact zones:[0 1]
+DEBUG - col: Influence of connection 2 is updated: connection 3 with 1.00
+DEBUG - rows of intact zones:[0 1]
+DEBUG - col: Influence of connection 2 is updated: connection 4 with 1.00
+DEBUG - rows of intact zones:[0 1]
+DEBUG - col: Influence of connection 2 is updated: connection 5 with 1.00
+DEBUG - rows of intact zones:[0 1]
+DEBUG - col: Influence of connection 2 is updated: connection 6 with 1.00
+DEBUG - rows of intact zones:[0 1]
+DEBUG - col: Influence of connection 2 is updated: connection 7 with 1.00
+DEBUG - rows of intact zones:[0 1]
+DEBUG - col: Influence of connection 2 is updated: connection 8 with 1.00
+DEBUG - rows of intact zones:[0 1]
+DEBUG - col: Influence of connection 2 is updated: connection 9 with 1.00
+DEBUG - rows of intact zones:[0 1]
+DEBUG - col: Influence of connection 2 is updated: connection 10 with 1.00
+DEBUG - rows of intact zones:[0 1]
+DEBUG - col: Influence of connection 2 is updated: connection 3 with 1.00
+DEBUG - rows of intact zones:[0 1]
+DEBUG - col: Influence of connection 2 is updated: connection 4 with 1.00
+DEBUG - rows of intact zones:[0 1]
+DEBUG - col: Influence of connection 2 is updated: connection 5 with 1.00
+DEBUG - rows of intact zones:[0 1]
+DEBUG - col: Influence of connection 2 is updated: connection 6 with 1.00
+DEBUG - rows of intact zones:[0 1]
+DEBUG - col: Influence of connection 2 is updated: connection 7 with 1.00
+DEBUG - rows of intact zones:[0 1]
+DEBUG - col: Influence of connection 2 is updated: connection 8 with 1.00
+DEBUG - rows of intact zones:[0 1]
+DEBUG - col: Influence of connection 2 is updated: connection 9 with 1.00
+DEBUG - rows of intact zones:[0 1]
+DEBUG - col: Influence of connection 2 is updated: connection 10 with 1.00
+DEBUG - rows of intact zones:[0 1]
+DEBUG - col: Influence of connection 2 is updated: connection 3 with 1.00
+DEBUG - rows of intact zones:[0 1]
+DEBUG - col: Influence of connection 2 is updated: connection 4 with 1.00
+DEBUG - rows of intact zones:[0 1]
+DEBUG - col: Influence of connection 2 is updated: connection 5 with 1.00
+DEBUG - rows of intact zones:[0 1]
+DEBUG - col: Influence of connection 2 is updated: connection 6 with 1.00
+DEBUG - rows of intact zones:[0 1]
+DEBUG - col: Influence of connection 2 is updated: connection 7 with 1.00
+DEBUG - rows of intact zones:[0 1]
+DEBUG - col: Influence of connection 2 is updated: connection 8 with 1.00
+DEBUG - rows of intact zones:[0 1]
+DEBUG - col: Influence of connection 2 is updated: connection 9 with 1.00
+DEBUG - rows of intact zones:[0 1]
+DEBUG - col: Influence of connection 2 is updated: connection 10 with 1.00
+INFO - repair_cost:7501.696, water:0.000, di_except_water:1.000, di:1.000
+INFO - wind speed 61.000
+DEBUG - computing load of connection 1
+DEBUG - load by A1: 1.00 x 0.405 x -0.223
+DEBUG - dead load: 0.000
+DEBUG - computing load of connection 2
+DEBUG - load by A3: 1.00 x 0.810 x -0.223
+DEBUG - load by A2: 1.00 x 0.810 x -0.223
+DEBUG - load by A5: 1.00 x 0.810 x -0.223
+DEBUG - load by A4: 1.00 x 0.810 x -0.223
+DEBUG - load by A7: 1.00 x 0.810 x -0.223
+DEBUG - load by A6: 1.00 x 0.810 x -0.223
+DEBUG - load by A9: 1.00 x 0.810 x -2.233
+DEBUG - load by A8: 1.00 x 0.810 x -0.223
+DEBUG - load by A10: 1.00 x 0.405 x -15.630
+DEBUG - dead load: 0.000
+INFO - connection 2 of sheeting0 damaged at 61.000 b/c -9.405 > 2.695
+INFO - group sheeting: damaged area: 6.885, prop damaged: 0.90
+DEBUG - rows of intact zones:[0]
+DEBUG - col: Influence of connection 1 is updated: connection 2 with 1.00
+DEBUG - rows of intact zones:[0]
+DEBUG - col: Influence of connection 1 is updated: connection 3 with 1.00
+DEBUG - rows of intact zones:[0]
+DEBUG - col: Influence of connection 1 is updated: connection 4 with 1.00
+DEBUG - rows of intact zones:[0]
+DEBUG - col: Influence of connection 1 is updated: connection 5 with 1.00
+DEBUG - rows of intact zones:[0]
+DEBUG - col: Influence of connection 1 is updated: connection 6 with 1.00
+DEBUG - rows of intact zones:[0]
+DEBUG - col: Influence of connection 1 is updated: connection 7 with 1.00
+DEBUG - rows of intact zones:[0]
+DEBUG - col: Influence of connection 1 is updated: connection 8 with 1.00
+DEBUG - rows of intact zones:[0]
+DEBUG - col: Influence of connection 1 is updated: connection 9 with 1.00
+DEBUG - rows of intact zones:[0]
+DEBUG - col: Influence of connection 1 is updated: connection 10 with 1.00
+DEBUG - rows of intact zones:[0]
+DEBUG - col: Influence of connection 1 is updated: connection 2 with 1.00
+DEBUG - rows of intact zones:[0]
+DEBUG - col: Influence of connection 1 is updated: connection 3 with 1.00
+DEBUG - rows of intact zones:[0]
+DEBUG - col: Influence of connection 1 is updated: connection 4 with 1.00
+DEBUG - rows of intact zones:[0]
+DEBUG - col: Influence of connection 1 is updated: connection 5 with 1.00
+DEBUG - rows of intact zones:[0]
+DEBUG - col: Influence of connection 1 is updated: connection 6 with 1.00
+DEBUG - rows of intact zones:[0]
+DEBUG - col: Influence of connection 1 is updated: connection 7 with 1.00
+DEBUG - rows of intact zones:[0]
+DEBUG - col: Influence of connection 1 is updated: connection 8 with 1.00
+DEBUG - rows of intact zones:[0]
+DEBUG - col: Influence of connection 1 is updated: connection 9 with 1.00
+DEBUG - rows of intact zones:[0]
+DEBUG - col: Influence of connection 1 is updated: connection 10 with 1.00
+DEBUG - rows of intact zones:[0]
+DEBUG - col: Influence of connection 1 is updated: connection 2 with 1.00
+DEBUG - rows of intact zones:[0]
+DEBUG - col: Influence of connection 1 is updated: connection 3 with 1.00
+DEBUG - rows of intact zones:[0]
+DEBUG - col: Influence of connection 1 is updated: connection 4 with 1.00
+DEBUG - rows of intact zones:[0]
+DEBUG - col: Influence of connection 1 is updated: connection 5 with 1.00
+DEBUG - rows of intact zones:[0]
+DEBUG - col: Influence of connection 1 is updated: connection 6 with 1.00
+DEBUG - rows of intact zones:[0]
+DEBUG - col: Influence of connection 1 is updated: connection 7 with 1.00
+DEBUG - rows of intact zones:[0]
+DEBUG - col: Influence of connection 1 is updated: connection 8 with 1.00
+DEBUG - rows of intact zones:[0]
+DEBUG - col: Influence of connection 1 is updated: connection 9 with 1.00
+DEBUG - rows of intact zones:[0]
+DEBUG - col: Influence of connection 1 is updated: connection 10 with 1.00
+DEBUG - rows of intact zones:[0]
+DEBUG - col: Influence of connection 1 is updated: connection 2 with 1.00
+DEBUG - rows of intact zones:[0]
+DEBUG - col: Influence of connection 1 is updated: connection 3 with 1.00
+DEBUG - rows of intact zones:[0]
+DEBUG - col: Influence of connection 1 is updated: connection 4 with 1.00
+DEBUG - rows of intact zones:[0]
+DEBUG - col: Influence of connection 1 is updated: connection 5 with 1.00
+DEBUG - rows of intact zones:[0]
+DEBUG - col: Influence of connection 1 is updated: connection 6 with 1.00
+DEBUG - rows of intact zones:[0]
+DEBUG - col: Influence of connection 1 is updated: connection 7 with 1.00
+DEBUG - rows of intact zones:[0]
+DEBUG - col: Influence of connection 1 is updated: connection 8 with 1.00
+DEBUG - rows of intact zones:[0]
+DEBUG - col: Influence of connection 1 is updated: connection 9 with 1.00
+DEBUG - rows of intact zones:[0]
+DEBUG - col: Influence of connection 1 is updated: connection 10 with 1.00
+DEBUG - rows of intact zones:[0]
+DEBUG - col: Influence of connection 1 is updated: connection 2 with 1.00
+DEBUG - rows of intact zones:[0]
+DEBUG - col: Influence of connection 1 is updated: connection 3 with 1.00
+DEBUG - rows of intact zones:[0]
+DEBUG - col: Influence of connection 1 is updated: connection 4 with 1.00
+DEBUG - rows of intact zones:[0]
+DEBUG - col: Influence of connection 1 is updated: connection 5 with 1.00
+DEBUG - rows of intact zones:[0]
+DEBUG - col: Influence of connection 1 is updated: connection 6 with 1.00
+DEBUG - rows of intact zones:[0]
+DEBUG - col: Influence of connection 1 is updated: connection 7 with 1.00
+DEBUG - rows of intact zones:[0]
+DEBUG - col: Influence of connection 1 is updated: connection 8 with 1.00
+DEBUG - rows of intact zones:[0]
+DEBUG - col: Influence of connection 1 is updated: connection 9 with 1.00
+DEBUG - rows of intact zones:[0]
+DEBUG - col: Influence of connection 1 is updated: connection 10 with 1.00
+DEBUG - rows of intact zones:[0]
+DEBUG - col: Influence of connection 1 is updated: connection 2 with 1.00
+DEBUG - rows of intact zones:[0]
+DEBUG - col: Influence of connection 1 is updated: connection 3 with 1.00
+DEBUG - rows of intact zones:[0]
+DEBUG - col: Influence of connection 1 is updated: connection 4 with 1.00
+DEBUG - rows of intact zones:[0]
+DEBUG - col: Influence of connection 1 is updated: connection 5 with 1.00
+DEBUG - rows of intact zones:[0]
+DEBUG - col: Influence of connection 1 is updated: connection 6 with 1.00
+DEBUG - rows of intact zones:[0]
+DEBUG - col: Influence of connection 1 is updated: connection 7 with 1.00
+DEBUG - rows of intact zones:[0]
+DEBUG - col: Influence of connection 1 is updated: connection 8 with 1.00
+DEBUG - rows of intact zones:[0]
+DEBUG - col: Influence of connection 1 is updated: connection 9 with 1.00
+DEBUG - rows of intact zones:[0]
+DEBUG - col: Influence of connection 1 is updated: connection 10 with 1.00
+DEBUG - rows of intact zones:[0]
+DEBUG - col: Influence of connection 1 is updated: connection 2 with 1.00
+DEBUG - rows of intact zones:[0]
+DEBUG - col: Influence of connection 1 is updated: connection 3 with 1.00
+DEBUG - rows of intact zones:[0]
+DEBUG - col: Influence of connection 1 is updated: connection 4 with 1.00
+DEBUG - rows of intact zones:[0]
+DEBUG - col: Influence of connection 1 is updated: connection 5 with 1.00
+DEBUG - rows of intact zones:[0]
+DEBUG - col: Influence of connection 1 is updated: connection 6 with 1.00
+DEBUG - rows of intact zones:[0]
+DEBUG - col: Influence of connection 1 is updated: connection 7 with 1.00
+DEBUG - rows of intact zones:[0]
+DEBUG - col: Influence of connection 1 is updated: connection 8 with 1.00
+DEBUG - rows of intact zones:[0]
+DEBUG - col: Influence of connection 1 is updated: connection 9 with 1.00
+DEBUG - rows of intact zones:[0]
+DEBUG - col: Influence of connection 1 is updated: connection 10 with 1.00
+DEBUG - rows of intact zones:[0]
+DEBUG - col: Influence of connection 1 is updated: connection 2 with 1.00
+DEBUG - rows of intact zones:[0]
+DEBUG - col: Influence of connection 1 is updated: connection 3 with 1.00
+DEBUG - rows of intact zones:[0]
+DEBUG - col: Influence of connection 1 is updated: connection 4 with 1.00
+DEBUG - rows of intact zones:[0]
+DEBUG - col: Influence of connection 1 is updated: connection 5 with 1.00
+DEBUG - rows of intact zones:[0]
+DEBUG - col: Influence of connection 1 is updated: connection 6 with 1.00
+DEBUG - rows of intact zones:[0]
+DEBUG - col: Influence of connection 1 is updated: connection 7 with 1.00
+DEBUG - rows of intact zones:[0]
+DEBUG - col: Influence of connection 1 is updated: connection 8 with 1.00
+DEBUG - rows of intact zones:[0]
+DEBUG - col: Influence of connection 1 is updated: connection 9 with 1.00
+DEBUG - rows of intact zones:[0]
+DEBUG - col: Influence of connection 1 is updated: connection 10 with 1.00
+DEBUG - rows of intact zones:[0]
+DEBUG - col: Influence of connection 1 is updated: connection 2 with 1.00
+DEBUG - rows of intact zones:[0]
+DEBUG - col: Influence of connection 1 is updated: connection 3 with 1.00
+DEBUG - rows of intact zones:[0]
+DEBUG - col: Influence of connection 1 is updated: connection 4 with 1.00
+DEBUG - rows of intact zones:[0]
+DEBUG - col: Influence of connection 1 is updated: connection 5 with 1.00
+DEBUG - rows of intact zones:[0]
+DEBUG - col: Influence of connection 1 is updated: connection 6 with 1.00
+DEBUG - rows of intact zones:[0]
+DEBUG - col: Influence of connection 1 is updated: connection 7 with 1.00
+DEBUG - rows of intact zones:[0]
+DEBUG - col: Influence of connection 1 is updated: connection 8 with 1.00
+DEBUG - rows of intact zones:[0]
+DEBUG - col: Influence of connection 1 is updated: connection 9 with 1.00
+DEBUG - rows of intact zones:[0]
+DEBUG - col: Influence of connection 1 is updated: connection 10 with 1.00
+INFO - repair_cost:8200.248, water:0.000, di_except_water:1.000, di:1.000
+INFO - wind speed 62.000
+DEBUG - computing load of connection 1
+DEBUG - load by A1: 1.00 x 0.405 x -0.231
+DEBUG - load by A3: 1.00 x 0.810 x -0.231
+DEBUG - load by A2: 1.00 x 0.810 x -0.231
+DEBUG - load by A5: 1.00 x 0.810 x -0.231
+DEBUG - load by A4: 1.00 x 0.810 x -0.231
+DEBUG - load by A7: 1.00 x 0.810 x -0.231
+DEBUG - load by A6: 1.00 x 0.810 x -0.231
+DEBUG - load by A9: 1.00 x 0.810 x -2.307
+DEBUG - load by A8: 1.00 x 0.810 x -0.231
+DEBUG - load by A10: 1.00 x 0.405 x -16.146
+DEBUG - dead load: 0.000
+INFO - connection 1 of sheeting0 damaged at 62.000 b/c -9.809 > 4.620
+INFO - group sheeting: damaged area: 7.290, prop damaged: 1.00
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+INFO - repair_cost:8547.052, water:0.000, di_except_water:1.000, di:1.000
+INFO - wind speed 63.000
+INFO - group sheeting: damaged area: 7.290, prop damaged: 1.00
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+INFO - repair_cost:8547.052, water:0.000, di_except_water:1.000, di:1.000
+INFO - wind speed 64.000
+INFO - group sheeting: damaged area: 7.290, prop damaged: 1.00
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+INFO - repair_cost:8547.052, water:0.000, di_except_water:1.000, di:1.000
+INFO - wind speed 65.000
+INFO - group sheeting: damaged area: 7.290, prop damaged: 1.00
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+INFO - repair_cost:8547.052, water:0.000, di_except_water:1.000, di:1.000
+INFO - wind speed 66.000
+INFO - group sheeting: damaged area: 7.290, prop damaged: 1.00
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+INFO - repair_cost:8547.052, water:0.000, di_except_water:1.000, di:1.000
+INFO - wind speed 67.000
+INFO - group sheeting: damaged area: 7.290, prop damaged: 1.00
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+INFO - repair_cost:8547.052, water:0.000, di_except_water:1.000, di:1.000
+INFO - wind speed 68.000
+INFO - group sheeting: damaged area: 7.290, prop damaged: 1.00
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+INFO - repair_cost:8547.052, water:0.000, di_except_water:1.000, di:1.000
+INFO - wind speed 69.000
+INFO - group sheeting: damaged area: 7.290, prop damaged: 1.00
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+INFO - repair_cost:8547.052, water:0.000, di_except_water:1.000, di:1.000
+INFO - wind speed 70.000
+INFO - group sheeting: damaged area: 7.290, prop damaged: 1.00
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+INFO - repair_cost:8547.052, water:0.000, di_except_water:1.000, di:1.000
+INFO - wind speed 71.000
+INFO - group sheeting: damaged area: 7.290, prop damaged: 1.00
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+INFO - repair_cost:8547.052, water:0.000, di_except_water:1.000, di:1.000
+INFO - wind speed 72.000
+INFO - group sheeting: damaged area: 7.290, prop damaged: 1.00
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+INFO - repair_cost:8547.052, water:0.000, di_except_water:1.000, di:1.000
+INFO - wind speed 73.000
+INFO - group sheeting: damaged area: 7.290, prop damaged: 1.00
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+INFO - repair_cost:8547.052, water:0.000, di_except_water:1.000, di:1.000
+INFO - wind speed 74.000
+INFO - group sheeting: damaged area: 7.290, prop damaged: 1.00
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+INFO - repair_cost:8547.052, water:0.000, di_except_water:1.000, di:1.000
+INFO - wind speed 75.000
+INFO - group sheeting: damaged area: 7.290, prop damaged: 1.00
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+INFO - repair_cost:8547.052, water:0.000, di_except_water:1.000, di:1.000
+INFO - wind speed 76.000
+INFO - group sheeting: damaged area: 7.290, prop damaged: 1.00
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+INFO - repair_cost:8547.052, water:0.000, di_except_water:1.000, di:1.000
+INFO - wind speed 77.000
+INFO - group sheeting: damaged area: 7.290, prop damaged: 1.00
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+INFO - repair_cost:8547.052, water:0.000, di_except_water:1.000, di:1.000
+INFO - wind speed 78.000
+INFO - group sheeting: damaged area: 7.290, prop damaged: 1.00
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+INFO - repair_cost:8547.052, water:0.000, di_except_water:1.000, di:1.000
+INFO - wind speed 79.000
+INFO - group sheeting: damaged area: 7.290, prop damaged: 1.00
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+INFO - repair_cost:8547.052, water:0.000, di_except_water:1.000, di:1.000
+INFO - wind speed 80.000
+INFO - group sheeting: damaged area: 7.290, prop damaged: 1.00
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+INFO - repair_cost:8547.052, water:0.000, di_except_water:1.000, di:1.000
+INFO - wind speed 81.000
+INFO - group sheeting: damaged area: 7.290, prop damaged: 1.00
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+INFO - repair_cost:8547.052, water:0.000, di_except_water:1.000, di:1.000
+INFO - wind speed 82.000
+INFO - group sheeting: damaged area: 7.290, prop damaged: 1.00
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+INFO - repair_cost:8547.052, water:0.000, di_except_water:1.000, di:1.000
+INFO - wind speed 83.000
+INFO - group sheeting: damaged area: 7.290, prop damaged: 1.00
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+INFO - repair_cost:8547.052, water:0.000, di_except_water:1.000, di:1.000
+INFO - wind speed 84.000
+INFO - group sheeting: damaged area: 7.290, prop damaged: 1.00
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+INFO - repair_cost:8547.052, water:0.000, di_except_water:1.000, di:1.000
+INFO - wind speed 85.000
+INFO - group sheeting: damaged area: 7.290, prop damaged: 1.00
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+INFO - repair_cost:8547.052, water:0.000, di_except_water:1.000, di:1.000
+INFO - wind speed 86.000
+INFO - group sheeting: damaged area: 7.290, prop damaged: 1.00
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+INFO - repair_cost:8547.052, water:0.000, di_except_water:1.000, di:1.000
+INFO - wind speed 87.000
+INFO - group sheeting: damaged area: 7.290, prop damaged: 1.00
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+INFO - repair_cost:8547.052, water:0.000, di_except_water:1.000, di:1.000
+INFO - wind speed 88.000
+INFO - group sheeting: damaged area: 7.290, prop damaged: 1.00
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+INFO - repair_cost:8547.052, water:0.000, di_except_water:1.000, di:1.000
+INFO - wind speed 89.000
+INFO - group sheeting: damaged area: 7.290, prop damaged: 1.00
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+INFO - repair_cost:8547.052, water:0.000, di_except_water:1.000, di:1.000
+INFO - wind speed 90.000
+INFO - group sheeting: damaged area: 7.290, prop damaged: 1.00
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+INFO - repair_cost:8547.052, water:0.000, di_except_water:1.000, di:1.000
+INFO - wind speed 91.000
+INFO - group sheeting: damaged area: 7.290, prop damaged: 1.00
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+INFO - repair_cost:8547.052, water:0.000, di_except_water:1.000, di:1.000
+INFO - wind speed 92.000
+INFO - group sheeting: damaged area: 7.290, prop damaged: 1.00
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+INFO - repair_cost:8547.052, water:0.000, di_except_water:1.000, di:1.000
+INFO - wind speed 93.000
+INFO - group sheeting: damaged area: 7.290, prop damaged: 1.00
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+INFO - repair_cost:8547.052, water:0.000, di_except_water:1.000, di:1.000
+INFO - wind speed 94.000
+INFO - group sheeting: damaged area: 7.290, prop damaged: 1.00
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+INFO - repair_cost:8547.052, water:0.000, di_except_water:1.000, di:1.000
+INFO - wind speed 95.000
+INFO - group sheeting: damaged area: 7.290, prop damaged: 1.00
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+INFO - repair_cost:8547.052, water:0.000, di_except_water:1.000, di:1.000
+INFO - wind speed 96.000
+INFO - group sheeting: damaged area: 7.290, prop damaged: 1.00
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+INFO - repair_cost:8547.052, water:0.000, di_except_water:1.000, di:1.000
+INFO - wind speed 97.000
+INFO - group sheeting: damaged area: 7.290, prop damaged: 1.00
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+INFO - repair_cost:8547.052, water:0.000, di_except_water:1.000, di:1.000
+INFO - wind speed 98.000
+INFO - group sheeting: damaged area: 7.290, prop damaged: 1.00
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+INFO - repair_cost:8547.052, water:0.000, di_except_water:1.000, di:1.000
+INFO - wind speed 99.000
+INFO - group sheeting: damaged area: 7.290, prop damaged: 1.00
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+INFO - repair_cost:8547.052, water:0.000, di_except_water:1.000, di:1.000
+INFO - wind speed 100.000
+INFO - group sheeting: damaged area: 7.290, prop damaged: 1.00
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+DEBUG - rows of intact zones:[]
+INFO - repair_cost:8547.052, water:0.000, di_except_water:1.000, di:1.000
+INFO - Time taken for simulation 0.8340280056

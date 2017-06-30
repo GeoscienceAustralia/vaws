@@ -1,0 +1,70 @@
+INFO wind speed 40.000
+INFO connection 3 of sheeting0 damaged at 40.000 b/c -2.721 > 2.694
+INFO connection 8 of sheeting0 damaged at 40.000 b/c -2.719 > 2.694
+INFO group sheeting: damaged area: 1.620, prop damaged: 0.20
+INFO repair_cost:2646.616, water:0.000, di_except_water:1.000, di:1.000
+INFO wind speed 41.000
+INFO group sheeting: damaged area: 1.620, prop damaged: 0.20
+INFO repair_cost:2646.616, water:0.000, di_except_water:1.000, di:1.000
+INFO wind speed 42.000
+INFO group sheeting: damaged area: 1.620, prop damaged: 0.20
+INFO repair_cost:2646.616, water:0.000, di_except_water:1.000, di:1.000
+INFO wind speed 43.000
+INFO group sheeting: damaged area: 1.620, prop damaged: 0.20
+INFO repair_cost:2646.616, water:0.000, di_except_water:1.000, di:1.000
+INFO wind speed 44.000
+INFO group sheeting: damaged area: 1.620, prop damaged: 0.20
+INFO repair_cost:2646.616, water:0.000, di_except_water:1.000, di:1.000
+INFO wind speed 45.000
+INFO connection 2 of sheeting0 damaged at 45.000 b/c -2.705 > 2.695
+INFO connection 4 of sheeting0 damaged at 45.000 b/c -2.706 > 2.695
+INFO connection 7 of sheeting0 damaged at 45.000 b/c -2.705 > 2.695
+INFO connection 9 of sheeting0 damaged at 45.000 b/c -2.705 > 2.695
+INFO group sheeting: damaged area: 4.860, prop damaged: 0.60
+INFO repair_cost:6401.260, water:0.000, di_except_water:1.000, di:1.000
+INFO wind speed 46.000
+INFO connection 5 of sheeting0 damaged at 46.000 b/c -2.930 > 2.696
+INFO connection 6 of sheeting0 damaged at 46.000 b/c -2.930 > 2.694
+INFO group sheeting: damaged area: 6.480, prop damaged: 0.80
+INFO repair_cost:7852.691, water:0.000, di_except_water:1.000, di:1.000
+INFO wind speed 47.000
+INFO connection 1 of sheeting0 damaged at 47.000 b/c -6.065 > 4.620
+INFO connection 10 of sheeting0 damaged at 47.000 b/c -6.063 > 4.620
+INFO group sheeting: damaged area: 7.290, prop damaged: 1.00
+INFO repair_cost:8547.052, water:0.000, di_except_water:1.000, di:1.000
+INFO wind speed 48.000
+INFO group sheeting: damaged area: 7.290, prop damaged: 1.00
+INFO repair_cost:8547.052, water:0.000, di_except_water:1.000, di:1.000
+INFO wind speed 49.000
+INFO group sheeting: damaged area: 7.290, prop damaged: 1.00
+INFO repair_cost:8547.052, water:0.000, di_except_water:1.000, di:1.000
+INFO wind speed 50.000
+INFO group sheeting: damaged area: 7.290, prop damaged: 1.00
+INFO repair_cost:8547.052, water:0.000, di_except_water:1.000, di:1.000
+INFO wind speed 51.000
+INFO group sheeting: damaged area: 7.290, prop damaged: 1.00
+INFO repair_cost:8547.052, water:0.000, di_except_water:1.000, di:1.000
+INFO wind speed 52.000
+INFO group sheeting: damaged area: 7.290, prop damaged: 1.00
+INFO repair_cost:8547.052, water:0.000, di_except_water:1.000, di:1.000
+INFO wind speed 53.000
+INFO group sheeting: damaged area: 7.290, prop damaged: 1.00
+INFO repair_cost:8547.052, water:0.000, di_except_water:1.000, di:1.000
+INFO wind speed 54.000
+INFO group sheeting: damaged area: 7.290, prop damaged: 1.00
+INFO repair_cost:8547.052, water:0.000, di_except_water:1.000, di:1.000
+INFO wind speed 55.000
+INFO group sheeting: damaged area: 7.290, prop damaged: 1.00
+INFO repair_cost:8547.052, water:0.000, di_except_water:1.000, di:1.000
+INFO wind speed 56.000
+INFO group sheeting: damaged area: 7.290, prop damaged: 1.00
+INFO repair_cost:8547.052, water:0.000, di_except_water:1.000, di:1.000
+INFO wind speed 57.000
+INFO group sheeting: damaged area: 7.290, prop damaged: 1.00
+INFO repair_cost:8547.052, water:0.000, di_except_water:1.000, di:1.000
+INFO wind speed 58.000
+INFO group sheeting: damaged area: 7.290, prop damaged: 1.00
+INFO repair_cost:8547.052, water:0.000, di_except_water:1.000, di:1.000
+INFO wind speed 59.000
+INFO group sheeting: damaged area: 7.290, prop damaged: 1.00
+INFO repair_cost:8547.052, water:0.000, di_except_water:1.000, di:1.000

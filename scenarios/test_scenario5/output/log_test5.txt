@@ -1,0 +1,338 @@
+INFO wind speed 40.000
+INFO group sheeting: damaged area: 0.000, prop damaged: 0.00
+INFO group batten: damaged area: 0.000, prop damaged: 0.00
+INFO repair_cost:0.000, water:0.000, di_except_water:0.000, di:0.000
+INFO wind speed 41.000
+INFO group sheeting: damaged area: 0.000, prop damaged: 0.00
+INFO group batten: damaged area: 0.000, prop damaged: 0.00
+INFO repair_cost:0.000, water:0.000, di_except_water:0.000, di:0.000
+INFO wind speed 42.000
+INFO group sheeting: damaged area: 0.000, prop damaged: 0.00
+INFO group batten: damaged area: 0.000, prop damaged: 0.00
+INFO repair_cost:0.000, water:0.000, di_except_water:0.000, di:0.000
+INFO wind speed 43.000
+INFO group sheeting: damaged area: 0.000, prop damaged: 0.00
+INFO group batten: damaged area: 0.000, prop damaged: 0.00
+INFO repair_cost:0.000, water:0.000, di_except_water:0.000, di:0.000
+INFO wind speed 44.000
+INFO group sheeting: damaged area: 0.000, prop damaged: 0.00
+INFO connection 31 of batten0 damaged at 44.000 b/c -3.622 > 3.600
+INFO group batten: damaged area: 0.405, prop damaged: 0.06
+INFO repair_cost:1333.058, water:0.000, di_except_water:0.397, di:0.397
+INFO wind speed 45.000
+INFO group sheeting: damaged area: 0.000, prop damaged: 0.00
+INFO connection 25 of batten0 damaged at 45.000 b/c -4.183 > 3.600
+INFO group batten: damaged area: 0.810, prop damaged: 0.11
+INFO repair_cost:2608.013, water:0.000, di_except_water:0.777, di:0.777
+INFO wind speed 46.000
+INFO group sheeting: damaged area: 0.000, prop damaged: 0.00
+INFO connection 19 of batten0 damaged at 46.000 b/c -4.576 > 3.600
+INFO group batten: damaged area: 1.035, prop damaged: 0.17
+INFO repair_cost:3292.141, water:0.000, di_except_water:0.981, di:0.981
+INFO wind speed 47.000
+INFO group sheeting: damaged area: 0.000, prop damaged: 0.00
+INFO connection 28 of batten0 damaged at 47.000 b/c -3.758 > 3.600
+INFO group batten: damaged area: 1.845, prop damaged: 0.22
+INFO repair_cost:5619.603, water:0.000, di_except_water:1.000, di:1.000
+INFO wind speed 48.000
+INFO group sheeting: damaged area: 0.000, prop damaged: 0.00
+INFO group batten: damaged area: 1.845, prop damaged: 0.22
+INFO repair_cost:5619.603, water:0.000, di_except_water:1.000, di:1.000
+INFO wind speed 49.000
+INFO group sheeting: damaged area: 0.000, prop damaged: 0.00
+INFO group batten: damaged area: 1.845, prop damaged: 0.22
+INFO repair_cost:5619.603, water:0.000, di_except_water:1.000, di:1.000
+INFO wind speed 50.000
+INFO group sheeting: damaged area: 0.000, prop damaged: 0.00
+INFO group batten: damaged area: 1.845, prop damaged: 0.22
+INFO repair_cost:5619.603, water:0.000, di_except_water:1.000, di:1.000
+INFO wind speed 51.000
+INFO group sheeting: damaged area: 0.000, prop damaged: 0.00
+INFO group batten: damaged area: 1.845, prop damaged: 0.22
+INFO repair_cost:5619.603, water:0.000, di_except_water:1.000, di:1.000
+INFO wind speed 52.000
+INFO group sheeting: damaged area: 0.000, prop damaged: 0.00
+INFO group batten: damaged area: 1.845, prop damaged: 0.22
+INFO repair_cost:5619.603, water:0.000, di_except_water:1.000, di:1.000
+INFO wind speed 53.000
+INFO group sheeting: damaged area: 0.000, prop damaged: 0.00
+INFO group batten: damaged area: 1.845, prop damaged: 0.22
+INFO repair_cost:5619.603, water:0.000, di_except_water:1.000, di:1.000
+INFO wind speed 54.000
+INFO group sheeting: damaged area: 0.000, prop damaged: 0.00
+INFO group batten: damaged area: 1.845, prop damaged: 0.22
+INFO repair_cost:5619.603, water:0.000, di_except_water:1.000, di:1.000
+INFO wind speed 55.000
+INFO group sheeting: damaged area: 0.000, prop damaged: 0.00
+INFO group batten: damaged area: 1.845, prop damaged: 0.22
+INFO repair_cost:5619.603, water:0.000, di_except_water:1.000, di:1.000
+INFO wind speed 56.000
+INFO group sheeting: damaged area: 0.000, prop damaged: 0.00
+INFO group batten: damaged area: 1.845, prop damaged: 0.22
+INFO repair_cost:5619.603, water:0.000, di_except_water:1.000, di:1.000
+INFO wind speed 57.000
+INFO group sheeting: damaged area: 0.000, prop damaged: 0.00
+INFO group batten: damaged area: 1.845, prop damaged: 0.22
+INFO repair_cost:5619.603, water:0.000, di_except_water:1.000, di:1.000
+INFO wind speed 58.000
+INFO group sheeting: damaged area: 0.000, prop damaged: 0.00
+INFO group batten: damaged area: 1.845, prop damaged: 0.22
+INFO repair_cost:5619.603, water:0.000, di_except_water:1.000, di:1.000
+INFO wind speed 59.000
+INFO group sheeting: damaged area: 0.000, prop damaged: 0.00
+INFO group batten: damaged area: 1.845, prop damaged: 0.22
+INFO repair_cost:5619.603, water:0.000, di_except_water:1.000, di:1.000
+INFO wind speed 60.000
+INFO group sheeting: damaged area: 0.000, prop damaged: 0.00
+INFO group batten: damaged area: 1.845, prop damaged: 0.22
+INFO repair_cost:5619.603, water:0.000, di_except_water:1.000, di:1.000
+INFO wind speed 61.000
+INFO group sheeting: damaged area: 0.000, prop damaged: 0.00
+INFO group batten: damaged area: 1.845, prop damaged: 0.22
+INFO repair_cost:5619.603, water:0.000, di_except_water:1.000, di:1.000
+INFO wind speed 62.000
+INFO group sheeting: damaged area: 0.000, prop damaged: 0.00
+INFO group batten: damaged area: 1.845, prop damaged: 0.22
+INFO repair_cost:5619.603, water:0.000, di_except_water:1.000, di:1.000
+INFO wind speed 63.000
+INFO group sheeting: damaged area: 0.000, prop damaged: 0.00
+INFO group batten: damaged area: 1.845, prop damaged: 0.22
+INFO repair_cost:5619.603, water:0.000, di_except_water:1.000, di:1.000
+INFO wind speed 64.000
+INFO group sheeting: damaged area: 0.000, prop damaged: 0.00
+INFO connection 34 of batten0 damaged at 64.000 b/c -3.683 > 3.600
+INFO group batten: damaged area: 2.655, prop damaged: 0.28
+INFO repair_cost:7750.412, water:0.000, di_except_water:1.000, di:1.000
+INFO wind speed 65.000
+INFO group sheeting: damaged area: 0.000, prop damaged: 0.00
+INFO connection 22 of batten0 damaged at 65.000 b/c -7.495 > 3.600
+INFO group batten: damaged area: 3.060, prop damaged: 0.33
+INFO repair_cost:8748.357, water:0.000, di_except_water:1.000, di:1.000
+INFO wind speed 66.000
+INFO group sheeting: damaged area: 0.000, prop damaged: 0.00
+INFO connection 24 of batten0 damaged at 66.000 b/c -3.705 > 3.600
+INFO group batten: damaged area: 3.285, prop damaged: 0.39
+INFO repair_cost:9284.627, water:0.000, di_except_water:1.000, di:1.000
+INFO wind speed 67.000
+INFO group sheeting: damaged area: 0.000, prop damaged: 0.00
+INFO connection 30 of batten0 damaged at 67.000 b/c -3.927 > 3.600
+INFO group batten: damaged area: 3.690, prop damaged: 0.44
+INFO repair_cost:10218.916, water:0.000, di_except_water:1.000, di:1.000
+INFO wind speed 68.000
+INFO group sheeting: damaged area: 0.000, prop damaged: 0.00
+INFO connection 36 of batten0 damaged at 68.000 b/c -4.157 > 3.600
+INFO group batten: damaged area: 4.095, prop damaged: 0.50
+INFO repair_cost:11115.497, water:0.000, di_except_water:1.000, di:1.000
+INFO wind speed 69.000
+INFO group sheeting: damaged area: 0.000, prop damaged: 0.00
+INFO group batten: damaged area: 4.095, prop damaged: 0.50
+INFO repair_cost:11115.497, water:0.000, di_except_water:1.000, di:1.000
+INFO wind speed 70.000
+INFO group sheeting: damaged area: 0.000, prop damaged: 0.00
+INFO group batten: damaged area: 4.095, prop damaged: 0.50
+INFO repair_cost:11115.497, water:0.000, di_except_water:1.000, di:1.000
+INFO wind speed 71.000
+INFO group sheeting: damaged area: 0.000, prop damaged: 0.00
+INFO group batten: damaged area: 4.095, prop damaged: 0.50
+INFO repair_cost:11115.497, water:0.000, di_except_water:1.000, di:1.000
+INFO wind speed 72.000
+INFO group sheeting: damaged area: 0.000, prop damaged: 0.00
+INFO group batten: damaged area: 4.095, prop damaged: 0.50
+INFO repair_cost:11115.497, water:0.000, di_except_water:1.000, di:1.000
+INFO wind speed 73.000
+INFO group sheeting: damaged area: 0.000, prop damaged: 0.00
+INFO group batten: damaged area: 4.095, prop damaged: 0.50
+INFO repair_cost:11115.497, water:0.000, di_except_water:1.000, di:1.000
+INFO wind speed 74.000
+INFO group sheeting: damaged area: 0.000, prop damaged: 0.00
+INFO group batten: damaged area: 4.095, prop damaged: 0.50
+INFO repair_cost:11115.497, water:0.000, di_except_water:1.000, di:1.000
+INFO wind speed 75.000
+INFO group sheeting: damaged area: 0.000, prop damaged: 0.00
+INFO group batten: damaged area: 4.095, prop damaged: 0.50
+INFO repair_cost:11115.497, water:0.000, di_except_water:1.000, di:1.000
+INFO wind speed 76.000
+INFO group sheeting: damaged area: 0.000, prop damaged: 0.00
+INFO group batten: damaged area: 4.095, prop damaged: 0.50
+INFO repair_cost:11115.497, water:0.000, di_except_water:1.000, di:1.000
+INFO wind speed 77.000
+INFO group sheeting: damaged area: 0.000, prop damaged: 0.00
+INFO group batten: damaged area: 4.095, prop damaged: 0.50
+INFO repair_cost:11115.497, water:0.000, di_except_water:1.000, di:1.000
+INFO wind speed 78.000
+INFO group sheeting: damaged area: 0.000, prop damaged: 0.00
+INFO group batten: damaged area: 4.095, prop damaged: 0.50
+INFO repair_cost:11115.497, water:0.000, di_except_water:1.000, di:1.000
+INFO wind speed 79.000
+INFO group sheeting: damaged area: 0.000, prop damaged: 0.00
+INFO group batten: damaged area: 4.095, prop damaged: 0.50
+INFO repair_cost:11115.497, water:0.000, di_except_water:1.000, di:1.000
+INFO wind speed 80.000
+INFO group sheeting: damaged area: 0.000, prop damaged: 0.00
+INFO group batten: damaged area: 4.095, prop damaged: 0.50
+INFO repair_cost:11115.497, water:0.000, di_except_water:1.000, di:1.000
+INFO wind speed 81.000
+INFO group sheeting: damaged area: 0.000, prop damaged: 0.00
+INFO group batten: damaged area: 4.095, prop damaged: 0.50
+INFO repair_cost:11115.497, water:0.000, di_except_water:1.000, di:1.000
+INFO wind speed 82.000
+INFO group sheeting: damaged area: 0.000, prop damaged: 0.00
+INFO group batten: damaged area: 4.095, prop damaged: 0.50
+INFO repair_cost:11115.497, water:0.000, di_except_water:1.000, di:1.000
+INFO wind speed 83.000
+INFO group sheeting: damaged area: 0.000, prop damaged: 0.00
+INFO group batten: damaged area: 4.095, prop damaged: 0.50
+INFO repair_cost:11115.497, water:0.000, di_except_water:1.000, di:1.000
+INFO wind speed 84.000
+INFO group sheeting: damaged area: 0.000, prop damaged: 0.00
+INFO group batten: damaged area: 4.095, prop damaged: 0.50
+INFO repair_cost:11115.497, water:0.000, di_except_water:1.000, di:1.000
+INFO wind speed 85.000
+INFO group sheeting: damaged area: 0.000, prop damaged: 0.00
+INFO group batten: damaged area: 4.095, prop damaged: 0.50
+INFO repair_cost:11115.497, water:0.000, di_except_water:1.000, di:1.000
+INFO wind speed 86.000
+INFO group sheeting: damaged area: 0.000, prop damaged: 0.00
+INFO group batten: damaged area: 4.095, prop damaged: 0.50
+INFO repair_cost:11115.497, water:0.000, di_except_water:1.000, di:1.000
+INFO wind speed 87.000
+INFO group sheeting: damaged area: 0.000, prop damaged: 0.00
+INFO connection 32 of batten0 damaged at 87.000 b/c -3.679 > 3.600
+INFO connection 27 of batten0 damaged at 87.000 b/c -3.679 > 3.600
+INFO connection 29 of batten0 damaged at 87.000 b/c -3.679 > 3.600
+INFO group batten: damaged area: 6.525, prop damaged: 0.67
+INFO repair_cost:15843.903, water:0.000, di_except_water:1.000, di:1.000
+INFO wind speed 88.000
+INFO group sheeting: damaged area: 0.000, prop damaged: 0.00
+INFO connection 23 of batten0 damaged at 88.000 b/c -3.764 > 3.600
+INFO connection 26 of batten0 damaged at 88.000 b/c -4.140 > 3.600
+INFO group batten: damaged area: 7.740, prop damaged: 0.78
+INFO repair_cost:17902.703, water:0.000, di_except_water:1.000, di:1.000
+INFO wind speed 89.000
+INFO group sheeting: damaged area: 0.000, prop damaged: 0.00
+INFO connection 35 of batten0 damaged at 89.000 b/c -6.159 > 3.600
+INFO connection 20 of batten0 damaged at 89.000 b/c -5.101 > 3.600
+INFO group batten: damaged area: 8.955, prop damaged: 0.89
+INFO repair_cost:19848.420, water:0.000, di_except_water:1.000, di:1.000
+INFO wind speed 90.000
+INFO group sheeting: damaged area: 0.000, prop damaged: 0.00
+INFO group batten: damaged area: 8.955, prop damaged: 0.89
+INFO repair_cost:19848.420, water:0.000, di_except_water:1.000, di:1.000
+INFO wind speed 91.000
+INFO group sheeting: damaged area: 0.000, prop damaged: 0.00
+INFO group batten: damaged area: 8.955, prop damaged: 0.89
+INFO repair_cost:19848.420, water:0.000, di_except_water:1.000, di:1.000
+INFO wind speed 92.000
+INFO group sheeting: damaged area: 0.000, prop damaged: 0.00
+INFO group batten: damaged area: 8.955, prop damaged: 0.89
+INFO repair_cost:19848.420, water:0.000, di_except_water:1.000, di:1.000
+INFO wind speed 93.000
+INFO group sheeting: damaged area: 0.000, prop damaged: 0.00
+INFO group batten: damaged area: 8.955, prop damaged: 0.89
+INFO repair_cost:19848.420, water:0.000, di_except_water:1.000, di:1.000
+INFO wind speed 94.000
+INFO group sheeting: damaged area: 0.000, prop damaged: 0.00
+INFO group batten: damaged area: 8.955, prop damaged: 0.89
+INFO repair_cost:19848.420, water:0.000, di_except_water:1.000, di:1.000
+INFO wind speed 95.000
+INFO group sheeting: damaged area: 0.000, prop damaged: 0.00
+INFO group batten: damaged area: 8.955, prop damaged: 0.89
+INFO repair_cost:19848.420, water:0.000, di_except_water:1.000, di:1.000
+INFO wind speed 96.000
+INFO group sheeting: damaged area: 0.000, prop damaged: 0.00
+INFO group batten: damaged area: 8.955, prop damaged: 0.89
+INFO repair_cost:19848.420, water:0.000, di_except_water:1.000, di:1.000
+INFO wind speed 97.000
+INFO group sheeting: damaged area: 0.000, prop damaged: 0.00
+INFO group batten: damaged area: 8.955, prop damaged: 0.89
+INFO repair_cost:19848.420, water:0.000, di_except_water:1.000, di:1.000
+INFO wind speed 98.000
+INFO group sheeting: damaged area: 0.000, prop damaged: 0.00
+INFO group batten: damaged area: 8.955, prop damaged: 0.89
+INFO repair_cost:19848.420, water:0.000, di_except_water:1.000, di:1.000
+INFO wind speed 99.000
+INFO group sheeting: damaged area: 0.000, prop damaged: 0.00
+INFO group batten: damaged area: 8.955, prop damaged: 0.89
+INFO repair_cost:19848.420, water:0.000, di_except_water:1.000, di:1.000
+INFO wind speed 100.000
+INFO group sheeting: damaged area: 0.000, prop damaged: 0.00
+INFO group batten: damaged area: 8.955, prop damaged: 0.89
+INFO repair_cost:19848.420, water:0.000, di_except_water:1.000, di:1.000
+INFO wind speed 101.000
+INFO group sheeting: damaged area: 0.000, prop damaged: 0.00
+INFO group batten: damaged area: 8.955, prop damaged: 0.89
+INFO repair_cost:19848.420, water:0.000, di_except_water:1.000, di:1.000
+INFO wind speed 102.000
+INFO group sheeting: damaged area: 0.000, prop damaged: 0.00
+INFO group batten: damaged area: 8.955, prop damaged: 0.89
+INFO repair_cost:19848.420, water:0.000, di_except_water:1.000, di:1.000
+INFO wind speed 103.000
+INFO group sheeting: damaged area: 0.000, prop damaged: 0.00
+INFO group batten: damaged area: 8.955, prop damaged: 0.89
+INFO repair_cost:19848.420, water:0.000, di_except_water:1.000, di:1.000
+INFO wind speed 104.000
+INFO group sheeting: damaged area: 0.000, prop damaged: 0.00
+INFO group batten: damaged area: 8.955, prop damaged: 0.89
+INFO repair_cost:19848.420, water:0.000, di_except_water:1.000, di:1.000
+INFO wind speed 105.000
+INFO group sheeting: damaged area: 0.000, prop damaged: 0.00
+INFO group batten: damaged area: 8.955, prop damaged: 0.89
+INFO repair_cost:19848.420, water:0.000, di_except_water:1.000, di:1.000
+INFO wind speed 106.000
+INFO group sheeting: damaged area: 0.000, prop damaged: 0.00
+INFO group batten: damaged area: 8.955, prop damaged: 0.89
+INFO repair_cost:19848.420, water:0.000, di_except_water:1.000, di:1.000
+INFO wind speed 107.000
+INFO group sheeting: damaged area: 0.000, prop damaged: 0.00
+INFO group batten: damaged area: 8.955, prop damaged: 0.89
+INFO repair_cost:19848.420, water:0.000, di_except_water:1.000, di:1.000
+INFO wind speed 108.000
+INFO group sheeting: damaged area: 0.000, prop damaged: 0.00
+INFO group batten: damaged area: 8.955, prop damaged: 0.89
+INFO repair_cost:19848.420, water:0.000, di_except_water:1.000, di:1.000
+INFO wind speed 109.000
+INFO group sheeting: damaged area: 0.000, prop damaged: 0.00
+INFO group batten: damaged area: 8.955, prop damaged: 0.89
+INFO repair_cost:19848.420, water:0.000, di_except_water:1.000, di:1.000
+INFO wind speed 110.000
+INFO group sheeting: damaged area: 0.000, prop damaged: 0.00
+INFO group batten: damaged area: 8.955, prop damaged: 0.89
+INFO repair_cost:19848.420, water:0.000, di_except_water:1.000, di:1.000
+INFO wind speed 111.000
+INFO group sheeting: damaged area: 0.000, prop damaged: 0.00
+INFO group batten: damaged area: 8.955, prop damaged: 0.89
+INFO repair_cost:19848.420, water:0.000, di_except_water:1.000, di:1.000
+INFO wind speed 112.000
+INFO group sheeting: damaged area: 0.000, prop damaged: 0.00
+INFO connection 33 of batten0 damaged at 112.000 b/c -3.658 > 3.600
+INFO group batten: damaged area: 9.765, prop damaged: 0.94
+INFO repair_cost:21116.265, water:0.000, di_except_water:1.000, di:1.000
+INFO wind speed 113.000
+INFO group sheeting: damaged area: 0.000, prop damaged: 0.00
+INFO connection 21 of batten0 damaged at 113.000 b/c -7.137 > 3.600
+INFO group batten: damaged area: 10.170, prop damaged: 1.00
+INFO repair_cost:21748.941, water:0.000, di_except_water:1.000, di:1.000
+INFO wind speed 114.000
+INFO group sheeting: damaged area: 0.000, prop damaged: 0.00
+INFO group batten: damaged area: 10.170, prop damaged: 1.00
+INFO repair_cost:21748.941, water:0.000, di_except_water:1.000, di:1.000
+INFO wind speed 115.000
+INFO group sheeting: damaged area: 0.000, prop damaged: 0.00
+INFO group batten: damaged area: 10.170, prop damaged: 1.00
+INFO repair_cost:21748.941, water:0.000, di_except_water:1.000, di:1.000
+INFO wind speed 116.000
+INFO group sheeting: damaged area: 0.000, prop damaged: 0.00
+INFO group batten: damaged area: 10.170, prop damaged: 1.00
+INFO repair_cost:21748.941, water:0.000, di_except_water:1.000, di:1.000
+INFO wind speed 117.000
+INFO group sheeting: damaged area: 0.000, prop damaged: 0.00
+INFO group batten: damaged area: 10.170, prop damaged: 1.00
+INFO repair_cost:21748.941, water:0.000, di_except_water:1.000, di:1.000
+INFO wind speed 118.000
+INFO group sheeting: damaged area: 0.000, prop damaged: 0.00
+INFO group batten: damaged area: 10.170, prop damaged: 1.00
+INFO repair_cost:21748.941, water:0.000, di_except_water:1.000, di:1.000
+INFO wind speed 119.000
+INFO group sheeting: damaged area: 0.000, prop damaged: 0.00
+INFO group batten: damaged area: 10.170, prop damaged: 1.00
+INFO repair_cost:21748.941, water:0.000, di_except_water:1.000, di:1.000
