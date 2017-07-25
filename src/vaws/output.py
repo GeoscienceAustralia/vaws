@@ -1,14 +1,11 @@
 """
     output.py - output module, postprocess and plot display engine
 """
-import os
 import matplotlib.pyplot as plt
 import numpy as np
 
 from matplotlib import cm, colorbar, colors, ticker
 from matplotlib.collections import PatchCollection
-
-from vaws.zone import num2str
 
 
 def plot_heatmap(grouped, values, vmin, vmax, vstep, xlim_max, ylim_max,

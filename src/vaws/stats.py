@@ -45,6 +45,7 @@ def sample_gev(mean_est, cov_est, big_a, big_b, shape_k, rnd_state=None):
 """
     assert shape_k > 0
     a, u = calc_parameters_gev(mean_est, cov_est, big_a, big_b)
+
     return copysign(genextreme.rvs(shape_k, loc=u, scale=a, size=1,
                                    random_state=rnd_state)[0], mean_est)
 
@@ -138,6 +139,7 @@ def sample_lognorm_given_mean_stddev(m, stddev, rnd_state):
 
     """
     mu_, std_ = compute_logarithmic_mean_stddev(m, stddev)
+
     return sample_lognormal(mu_, std_, rnd_state)
 
 
@@ -154,5 +156,6 @@ def compute_arithmetic_mean_stddev(m, stddev):
     assert stddev >= 0, 'std can not be less than zero'
     mean_x = exp(m + 0.5 * stddev * stddev)
     std_x = mean_x * sqrt(exp(stddev**2.0) - 1.0)
+
     return mean_x, std_x
 

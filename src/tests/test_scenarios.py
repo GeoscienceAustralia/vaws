@@ -238,7 +238,6 @@ class TestScenario3(unittest.TestCase):
 
 class TestScenario4(unittest.TestCase):
 
-
     @classmethod
     def setUpClass(cls):
 

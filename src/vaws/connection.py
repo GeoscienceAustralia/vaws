@@ -73,8 +73,8 @@ class Connection(object):
 
         self._influences = {}
         for key, value in _dic.iteritems():
-            self._influences[key] = Influence(infl_name=key,
-                                              infl_coeff=value)
+            self._influences[key] = Influence(name=key,
+                                              coeff=value)
 
     @property
     def influence_patch(self):
@@ -125,7 +125,7 @@ class Connection(object):
 
         if not self.damaged:
 
-            logging.debug('computing load of connection {}'.format(self.name))
+            logging.debug('computing load at connection {}'.format(self.name))
 
             for _inf in self.influences.itervalues():
 
@@ -170,10 +170,10 @@ class Connection(object):
 
             logging.info(
                 'connection {} of {} damaged at {:.3f} '
-                'b/c {:.3f} > {:.3f}'.format(self.name, self.sub_group, wind_speed,
-                                             self.load, self.strength))
+                'b/c {:.3f} < {:.3f}'.format(self.name, self.sub_group,
+                                             wind_speed, self.strength, self.load))
 
-    def update_influence(self, source_connection, infl_coeff):
+    def update_influence(self, source_connection, influence_coeff):
         """
 
         Args:
@@ -185,18 +185,18 @@ class Connection(object):
         """
 
         # looking at influences
-        for _id, _infl in source_connection.influences.iteritems():
+        for _id, _influence in source_connection.influences.iteritems():
 
             # update influence coeff
-            updated_coeff = infl_coeff * _infl.coeff
+            updated_coeff = influence_coeff * _influence.coeff
 
             if _id in self.influences:
                 self.influences[_id].coeff += updated_coeff
 
             else:
                 self.influences.update(
-                    {_id: Influence(infl_coeff=updated_coeff, infl_name=_id)})
-                self.influences[_id].source = _infl.source
+                    {_id: Influence(coeff=updated_coeff, name=_id)})
+                self.influences[_id].source = _influence.source
 
         # logging.debug('influences of {}:{:.2f}'.format(self.name,
         #                                                _inf.coeff))
@@ -261,8 +261,7 @@ class ConnectionTypeGroup(object):
             _connection = Connection(connection_name=key, **value)
             self._connections[key] = _connection
             self.costing_area += _connection.costing_area
-
-        self.no_connections += len(self._connections)
+            self.no_connections += 1
 
     @property
     def damage_grid(self):
@@ -300,16 +299,19 @@ class ConnectionTypeGroup(object):
 
         """
 
-        num_damaged = 0
-        self.damaged_area = 0.0
-        for _connection in self.connections.itervalues():
-            num_damaged += _connection.damaged
-            self.damaged_area += _connection.costing_area * _connection.damaged
+        if self.prop_damaged < 1.0:
 
-        try:
-            self.prop_damaged = float(num_damaged) / self.no_connections
-        except ZeroDivisionError:
-            self.prop_damaged = 0.0
+            num_damaged = 0
+            self.damaged_area = 0.0
+
+            for _connection in self.connections.itervalues():
+                num_damaged += _connection.damaged
+                self.damaged_area += _connection.costing_area * _connection.damaged
+
+            try:
+                self.prop_damaged = float(num_damaged) / self.no_connections
+            except ZeroDivisionError:
+                self.prop_damaged = 0.0
 
         logging.info('group {}: damaged area: {:.3f}, prop damaged: {:.2f}'.format(
             self.name, self.damaged_area, self.prop_damaged))
@@ -385,34 +387,35 @@ class ConnectionTypeGroup(object):
                 intact_left = intact[np.where(col > intact)[0]]
                 intact_right = intact[np.where(col < intact)[0]]
 
-                logging.debug('rows of intact zones:{}'.format(intact))
+                logging.debug('rows of intact zones: {}'.format(intact))
 
                 if intact_left.size * intact_right.size > 0:
-                    infl_coeff = 0.5
+                    influence_coeff = 0.5
                 else:
-                    infl_coeff = 1.0
+                    influence_coeff = 1.0
 
                 try:
                     target_connection = self.connection_by_grid[row, intact_right[0]]
                 except IndexError:
                     pass
                 else:
-                    target_connection.update_influence(source_connection, infl_coeff)
-                    logging.debug('col: Influence of connection {} is updated: '
+                    target_connection.update_influence(source_connection,
+                                                       influence_coeff)
+                    logging.debug('Influence of connection {} is updated: '
                                   'connection {} with {:.2f}'.format(target_connection.name,
                                                                source_connection.name,
-                                                               infl_coeff))
+                                                               influence_coeff))
 
                 try:
                     target_connection = self.connection_by_grid[row, intact_left[-1]]
                 except IndexError:
                     pass
                 else:
-                    target_connection.update_influence(source_connection, infl_coeff)
-                    logging.debug('col: Influence of connection {} is updated: '
+                    target_connection.update_influence(source_connection, influence_coeff)
+                    logging.debug('Influence of connection {} is updated: '
                                   'connection {} with {:.2f}'.format(target_connection.name,
                                                                source_connection.name,
-                                                               infl_coeff))
+                                                               influence_coeff))
 
                 # empty the influence of source connection
                 source_connection.influences.clear()
@@ -433,34 +436,34 @@ class ConnectionTypeGroup(object):
                 intact_left = intact[np.where(row > intact)[0]]
                 intact_right = intact[np.where(row < intact)[0]]
 
-                logging.debug('cols of intact connections:{}'.format(intact))
+                logging.debug('cols of intact connections: {}'.format(intact))
 
                 if intact_left.size * intact_right.size > 0:
-                    infl_coeff = 0.5  # can be prop. to distance later
+                    influence_coeff = 0.5  # can be prop. to distance later
                 else:
-                    infl_coeff = 1.0
+                    influence_coeff = 1.0
 
                 try:
                     target_connection = self.connection_by_grid[intact_right[0], col]
                 except IndexError:
                     pass
                 else:
-                    target_connection.update_influence(source_connection, infl_coeff)
-                    logging.debug('row: Influence of connection {} is updated: '
+                    target_connection.update_influence(source_connection, influence_coeff)
+                    logging.debug('Influence of connection {} is updated: '
                                   'connection {} with {:.2f}'.format(target_connection.name,
                                                                source_connection.name,
-                                                               infl_coeff))
+                                                               influence_coeff))
 
                 try:
                     target_connection = self.connection_by_grid[intact_left[-1], col]
                 except IndexError:
                     pass
                 else:
-                    target_connection.update_influence(source_connection, infl_coeff)
-                    logging.debug('row: Influence of connection {} is updated: '
+                    target_connection.update_influence(source_connection, influence_coeff)
+                    logging.debug('Influence of connection {} is updated: '
                                   'connection {} with {:.2f}'.format(target_connection.name,
                                                                source_connection.name,
-                                                               infl_coeff))
+                                                               influence_coeff))
 
                 # empty the influence of source connection
                 source_connection.influences.clear()
@@ -479,33 +482,33 @@ class ConnectionTypeGroup(object):
         Returns:
 
         """
-        for target_name, infl_dic in damaged_connection.influence_patch.iteritems():
+        for _name, _dic in damaged_connection.influence_patch.iteritems():
 
             try:
-                target_connection = house_inst.connections[target_name]
+                target_connection = house_inst.connections[_name]
             except KeyError:
-                logging.error('{} is not found when {} is damaged'.format(target_name,
-                                                                          damaged_connection.name))
+                logging.error('target connection {} is not found'
+                              'when {} is damaged'.format(_name, damaged_connection.name))
             else:
-                target_connection.influences = infl_dic
+                target_connection.influences = _dic
                 house_inst.link_connection_to_influence(target_connection)
 
                 logging.debug(
                     'Influence of connection {} is updated by connection {}'
-                    .format(target_name, damaged_connection.name))
+                    .format(_name, damaged_connection.name))
 
 
 class Influence(object):
-    def __init__(self, infl_name=None, infl_coeff=None):
+    def __init__(self, name=None, coeff=None):
         """
 
         Args:
-            infl_name:
-            infl_coeff:
+            name:
+            coeff:
         """
 
-        self.coeff = infl_coeff
-        self.name = infl_name  # source connection or zone id
+        self.name = name  # source connection or zone id
+        self.coeff = coeff
         self._source = None
 
     @property

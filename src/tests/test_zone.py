@@ -1,7 +1,7 @@
 import unittest
 import numpy as np
 
-from vaws.zone import Zone, num2str, str2num
+from vaws.zone import Zone, str2num
 
 
 class MyTestCase(unittest.TestCase):
@@ -24,8 +24,8 @@ class MyTestCase(unittest.TestCase):
         col, row = self.zone.get_grid_from_zone_location(self.zone.name)
         self.assertEquals(col, 13)  # N
         self.assertEquals(row, 11)  # 12
-        self.assertEquals(self.zone.get_zone_location_from_grid((col, row)),
-                          self.zone.name)
+        # self.assertEquals(self.zone.get_zone_location_from_grid((col, row)),
+        #                  self.zone.name)
 
     def test_is_wall(self):
         self.assertEqual(self.zone.is_wall_zone, False)
@@ -55,9 +55,9 @@ class MyTestCase(unittest.TestCase):
 
         self.assertAlmostEqual(self.zone.pressure, -0.1276, places=4)
 
-    def test_num2str(self):
-        self.assertEqual(num2str(1), 'A')
-        self.assertEqual(num2str(27), 'AA')
+    # def test_num2str(self):
+    #     self.assertEqual(num2str(1), 'A')
+    #     self.assertEqual(num2str(27), 'AA')
 
     def test_str2num(self):
         self.assertEqual(str2num('B'), 2)

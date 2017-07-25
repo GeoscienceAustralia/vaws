@@ -42,19 +42,17 @@ class Zone(object):
         for key, value in default_attr.iteritems():
             setattr(self, key, value)
 
-        self.grid = self.get_grid_from_zone_location(self.name)
-
-        self.distributed = None
-        self.cpe = None
-        self.cpe_str = None
-        self.cpe_eave = None
-
-        self.pressure = None
-
+        # FIXME
+        # should be a better way to identify wall zone
         if len(self.name) > 3 and self.name[0] == 'W':
             self.is_wall_zone = True
         else:
             self.is_wall_zone = False
+
+        self.cpe = None
+        self.cpe_str = None
+        self.cpe_eave = None
+        self.pressure = None
 
     def sample_zone_cpe(self, wind_dir_index, cpe_cov, cpe_k,
                         cpe_str_cov, big_a, big_b, rnd_state):
@@ -101,8 +99,7 @@ class Zone(object):
             flag_diff_shielding: flag for differential shielding (default: False)
 
         Returns:
-            pz : zone pressure applied for sheeting and batten
-            pz_struct: zone pressure applied for rafter
+            pressure : zone pressure
 
         """
 
@@ -125,24 +122,24 @@ class Zone(object):
         try:
             assert self.cpe * self.cpe_str == 0.0
         except AssertionError:
-            logging.warning('Either cpe or cpe_str should be zero for zone {}'.format(self.name))
+            logging.warning('Either cpe or cpe_str should be zero for {}'.format(self.name))
         self.pressure = qz * (self.cpe + self.cpe_str - self.cpi_alpha * cpi
                               - self.cpe_eave) * diff_shielding
 
-    @staticmethod
-    def get_zone_location_from_grid(_zone_grid):
-        """
-        Create a string location (eg 'A10') from zero based grid refs (col=0,
-        row=9)
-
-        Args:
-            _zone_grid: tuple
-
-        Returns: string location
-
-        """
-        assert isinstance(_zone_grid, tuple)
-        return num2str(_zone_grid[0] + 1) + str(_zone_grid[1] + 1)
+    # @staticmethod
+    # def get_zone_location_from_grid(_zone_grid):
+    #     """
+    #     Create a string location (eg 'A10') from zero based grid refs (col=0,
+    #     row=9)
+    #
+    #     Args:
+    #         _zone_grid: tuple
+    #
+    #     Returns: string location
+    #
+    #     """
+    #     assert isinstance(_zone_grid, tuple)
+    #     return num2str(_zone_grid[0] + 1) + str(_zone_grid[1] + 1)
 
     @staticmethod
     def get_grid_from_zone_location(_zone_name):
@@ -175,15 +172,15 @@ def str2num(s):
     return n
 
 
-def num2str(n):
-    """
-    n: number
-    return string
-    """
-    div = n
-    string = ''
-    while div > 0:
-        module = (div-1) % 26
-        string = chr(65 + module) + string
-        div = int((div-module)/26)
-    return string
+# def num2str(n):
+#     """
+#     n: number
+#     return string
+#     """
+#     div = n
+#     string = ''
+#     while div > 0:
+#         module = (div-1) % 26
+#         string = chr(65 + module) + string
+#         div = int((div-module)/26)
+#     return string

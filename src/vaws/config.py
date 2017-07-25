@@ -38,11 +38,11 @@ class Config(object):
 
     # model dependent attributes
     house_bucket = ['profile', 'wind_orientation', 'construction_level',
-                          'mzcat', 'str_mean_factor', 'str_cov_factor']
+                    'mzcat', 'str_mean_factor', 'str_cov_factor']
 
     house_damage_bucket = ['qz', 'ms', 'cpi', 'cpi_wind_speed', 'collapse',
-                                'di', 'di_except_water', 'repair_cost',
-                                'water_ingress_cost']
+                           'di', 'di_except_water', 'repair_cost',
+                           'water_ingress_cost']
 
     debris_bucket = ['no_items', 'no_touched', 'breached', 'damaged_area']
 
@@ -53,8 +53,7 @@ class Config(object):
 
     group_bucket = ['damaged_area']
 
-    connection_bucket = ['damaged', 'capacity', 'load', 'strength',
-                              'dead_load']
+    connection_bucket = ['damaged', 'capacity', 'load', 'strength', 'dead_load']
 
     zone_bucket = ['pressure', 'cpe', 'cpe_str', 'cpe_eave']
 
@@ -453,7 +452,8 @@ class Config(object):
                     try:
                         _array = np.reshape(_array, (-1, 2))
                     except ValueError:
-                        logging.warning('Coordinates are incomplete: _array')
+                        logging.warning(
+                            'Coordinates are incomplete: {}'.format(_array))
                     else:
                         tmp.append(Polygon(_array))
                 else:
@@ -642,7 +642,7 @@ class Config(object):
             assert value in self.__class__.region_names
         except AssertionError:
             self.region_name = 'Capital_city'
-            logging.info('Capital_city is set for region_name by default')
+            logging.info('Capital_city is set for region_name')
         else:
             self.region_name = value
 
@@ -685,7 +685,7 @@ class Config(object):
         try:
             self.wind_dir_index = self.__class__.wind_dir.index(wind_dir_str.upper())
         except ValueError:
-            logging.warning('8(i.e., RANDOM) is set for wind_dir_index by default')
+            logging.warning('8(i.e., RANDOM) is set for wind_dir_index')
             self.wind_dir_index = 8
 
     def save_config(self):

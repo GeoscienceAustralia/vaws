@@ -151,9 +151,10 @@ class HouseDamage(object):
         """
 
         self.house.debris.run(wind_speed)
-        logging.debug('no_items_mean: {}, no_items:{}'.format(
-            self.house.debris.no_items_mean,
-            self.house.debris.no_items))
+
+        # logging.debug('no_items_mean: {}, no_items:{}'.format(
+        #     self.house.debris.no_items_mean,
+        #     self.house.debris.no_items))
 
         if self.cpi < 0.7 and self.house.debris.breached:
             self.cpi = 0.7
@@ -216,6 +217,9 @@ class HouseDamage(object):
         prop_area_by_group = {key: value / total_area_by_group[key]
                               for key, value in area_by_group.iteritems()}
 
+        # TODO
+        # include DEBRIS when debris is ON
+
         # apply damage factoring
         revised_prop = copy.deepcopy(prop_area_by_group)
         for _source, target_list in self.cfg.damage_factorings.iteritems():
@@ -270,6 +274,7 @@ class HouseDamage(object):
         else:
             self.di = self.di_except_water
 
-        logging.info('repair_cost:{:.3f}, water:{:.3f}, '
-                     'di_except_water:{:.3f}, di:{:.3f}'.format(
-            self.repair_cost, self.water_ingress_cost, self.di_except_water, self.di))
+        logging.info('At {}, repair_cost: {:.3f}, cost by water: {:.3f}, '
+                     'di except water:{:.3f}, di: {:.3f}'.format(
+            wind_speed, self.repair_cost, self.water_ingress_cost,
+            self.di_except_water, self.di))

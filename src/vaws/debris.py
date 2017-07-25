@@ -199,8 +199,7 @@ class Debris(object):
             debris = self.cfg.debris_types[debris_type_str]
 
         except KeyError:
-            logging.warning('{} is not found in the debris types'.format(
-                debris_type_str))
+            logging.warning('invalid debris type: {}'.format(debris_type_str))
 
         else:
 
@@ -214,10 +213,10 @@ class Debris(object):
                                                    self.cfg.flight_time_log_std)
 
             flight_distance = self.compute_flight_distance(debris_type_str,
-                                                       flight_time,
-                                                       frontal_area,
-                                                       mass,
-                                                       wind_speed)
+                                                           flight_time,
+                                                           frontal_area,
+                                                           mass,
+                                                           wind_speed)
 
             # logging.debug('debris type:{}, area:{}, time:{}, distance:{}'.format(
             #    debris_type_str, frontal_area, flight_time, flight_distance))
@@ -239,17 +238,18 @@ class Debris(object):
             if line_debris.intersects(self.footprint):
 
                 self.no_touched += 1
-                logging.debug('x:{}, y:{}: touched'.format(
-                    pt_debris.x, pt_debris.y))
 
                 item_momentum = self.compute_debris_mementum(debris['cdav'],
-                                                         frontal_area,
-                                                         flight_distance,
-                                                         mass,
-                                                         wind_speed,
-                                                         self.rnd_state)
+                                                             frontal_area,
+                                                             flight_distance,
+                                                             mass,
+                                                             wind_speed,
+                                                             self.rnd_state)
 
                 self.check_debris_impact(frontal_area, item_momentum)
+
+                logging.debug('debris impact from {}, {}'.format(
+                    pt_debris.x, pt_debris.y))
 
     def check_debris_impact(self, frontal_area, item_momentum):
         """
@@ -274,19 +274,18 @@ class Debris(object):
 
         if _capacity < item_momentum:
 
-            logging.debug(
-                'coverage type:{}, capacity:{}, demand:{}'.format(
-                    _coverage['description'], _capacity, item_momentum))
-
             if _coverage['description'] == 'window':
                 self.breached = True
                 self.damaged_area += _coverage['area']
-
             else:
                 self.damaged_area += min(frontal_area, _coverage['area'])
 
-    def compute_flight_distance(self, debris_type_str, flight_time, frontal_area,
-                            mass, wind_speed, flag_poly=2):
+            logging.debug(
+                'breached at {} b/c {} < {}'.format(
+                    _coverage['description'], _capacity, item_momentum))
+
+    def compute_flight_distance(self, debris_type_str, flight_time,
+                                frontal_area, mass, wind_speed, flag_poly=2):
         """
         calculate flight distance based on the methodology in Appendix of
         Lin and Vanmarcke (2008)
@@ -308,7 +307,6 @@ class Debris(object):
         """
         try:
             assert wind_speed > 0
-
         except AssertionError:
             return 0.0
 
@@ -340,7 +338,7 @@ class Debris(object):
             return convert_to_dim * less_dis
 
     def compute_debris_mementum(self, cdav, frontal_area, flight_distance, mass,
-                            wind_speed, rnd_state):
+                                wind_speed, rnd_state):
         """
         calculate momentum of debris object
 
@@ -377,7 +375,9 @@ class Debris(object):
         try:
             assert 0.0 <= _mean <= 1.0
         except AssertionError:
-            logging.warning('{}:{}:{}'.format(_mean, param_b, flight_distance))
+            logging.warning('invalid mean of beta dist.: {} with b: {},'
+                            'flight_distance: {}'.format(_mean, param_b,
+                                                         flight_distance))
 
         try:
             dispersion = max(1.0 / _mean, 1.0 / (1.0 - _mean)) + 3.0
