@@ -58,7 +58,7 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
 
         # scenario section
         self.ui.numHouses.setValidator(QIntValidator(1, 10000, self.ui.numHouses))
-        self.ui.houseName.addItems(self.cfg.dic_house['name'])
+        self.ui.houseName.addItems(self.cfg.house_name)
         self.ui.houseName.setCurrentIndex(-1)
         self.ui.terrainCategory.addItems(self.cfg.terrain_categories)
         self.ui.terrainCategory.setCurrentIndex(-1)
@@ -164,13 +164,13 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
             # self.updateVulnCurve()
             self.statusBar().showMessage(unicode('Curve Fit Updated'))
             
-    def updateVulnCurve(self, df):
+    def updateVulnCurve(self, _array):
         # self.show_results(None, self.ui.redV.value(), self.ui.blueV.value())
 
         # print(dir(self.ui.mplvuln.axes))
 
-        for _, col in df.iteritems():
-            self.ui.mplfrag.axes.plot(self.cfg.speeds, col.values, 'o', 0.3)
+        for col in _array.T:
+            self.ui.mplfrag.axes.plot(self.cfg.speeds, col, 'o', 0.3)
 
         """
 
@@ -187,7 +187,7 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
         self.ui.coeff_2.setText('%f' % self.simulator.A_final[1])
         """
 
-    def updateFragCurve(self, df):
+    def updateFragCurve(self, _array):
         # self.show_results(None, self.ui.redV.value(), self.ui.blueV.value())
 
         df_fitted_curves = pd.read_csv(self.cfg.file_curve,
@@ -195,10 +195,9 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
                                               'param2'], skiprows=1,
                                        index_col='key')
 
-        print('{}'.format(type(self.ui.mplfrag)))
         self.ui.mplfrag.axes.hold(True)
-        for _, col in df.iteritems():
-            self.ui.mplfrag.axes.plot(self.cfg.speeds, col.values, 'o', 0.3)
+        for col in _array.T:
+            self.ui.mplfrag.axes.plot(self.cfg.speeds, col, 'o', 0.3)
 
         for ds, value in self.cfg.fragility_thresholds.iterrows():
             try:
@@ -291,8 +290,8 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
 
     def updateConnectionTypeTable(self):
         # load up connection types grid
-        setupTable(self.ui.connectionsTypes, self.cfg.df_types)
-        for irow, (index, ctype) in enumerate(self.cfg.df_types.iterrows()):
+        setupTable(self.ui.connectionsTypes, self.cfg.types)
+        for irow, (index, ctype) in enumerate(self.cfg.types.iteritems()):
             self.ui.connectionsTypes.setItem(irow, 0, QTableWidgetItem(index))
             self.ui.connectionsTypes.setItem(irow, 1, QTableWidgetItem('{:.3f}'.format(ctype['lognormal_strength'][0])))
             self.ui.connectionsTypes.setItem(irow, 2, QTableWidgetItem('{:.3f}'.format(ctype['lognormal_strength'][1])))
@@ -303,23 +302,26 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
         finiTable(self.ui.connectionsTypes)
         
     def updateZonesTable(self):
-        setupTable(self.ui.zones, self.cfg.df_zones)
+        setupTable(self.ui.zones, self.cfg.zones)
 
-        for irow, (index, z) in enumerate(self.cfg.df_zones.iterrows()):
+        for irow, (index, z) in enumerate(self.cfg.zones.iteritems()):
             self.ui.zones.setItem(irow, 0, QTableWidgetItem(index))
             self.ui.zones.setItem(irow, 1, QTableWidgetItem('{:.3f}'.format(z['area'])))
             self.ui.zones.setItem(irow, 2, QTableWidgetItem('{:.3f}'.format(z['cpi_alpha'])))
-            for dir in range(8):
-                self.ui.zones.setItem(irow, 3+dir, QTableWidgetItem('{:.3f}'.format(self.cfg.df_zones_cpe_mean[dir][index])))
-            for dir in range(8):
-                self.ui.zones.setItem(irow, 11+dir, QTableWidgetItem('{:.3f}'.format(self.cfg.df_zones_cpe_str_mean[dir][index])))
-            for dir in range(8):
-                self.ui.zones.setItem(irow, 19+dir, QTableWidgetItem('{:.3f}'.format(self.cfg.df_zones_cpe_eave_mean[dir][index])))
+            for _dir in range(8):
+                self.ui.zones.setItem(irow, 3 + _dir,
+                                      QTableWidgetItem('{:.3f}'.format(self.cfg.zones_cpe_mean[index][_dir])))
+            for _dir in range(8):
+                self.ui.zones.setItem(irow, 11 + _dir,
+                                      QTableWidgetItem('{:.3f}'.format(self.cfg.zones_cpe_str_mean[index][_dir])))
+            for _dir in range(8):
+                self.ui.zones.setItem(irow, 19 + _dir,
+                                      QTableWidgetItem('{:.3f}'.format(self.cfg.zones_cpe_eave_mean[index][_dir])))
         finiTable(self.ui.zones)
     
     def updateConnectionGroupTable(self):
-        setupTable(self.ui.connGroups, self.cfg.df_groups)
-        for irow, (index, ctg) in enumerate(self.cfg.df_groups.iterrows()):
+        setupTable(self.ui.connGroups, self.cfg.groups)
+        for irow, (index, ctg) in enumerate(self.cfg.groups.iteritems()):
             self.ui.connGroups.setItem(irow, 0, QTableWidgetItem(index))
             self.ui.connGroups.setItem(irow, 1, QTableWidgetItem('{:d}'.format(ctg['dist_order'])))
             self.ui.connGroups.setItem(irow, 2, QTableWidgetItem(ctg['dist_dir']))
@@ -341,9 +343,9 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
         self.updateConnectionTypeTable()
         
         # load up damage scenarios grid
-        setupTable(self.ui.damageScenarios, self.cfg.dic_costings)
+        setupTable(self.ui.damageScenarios, self.cfg.costings)
 
-        for irow, (name, _inst) in enumerate(self.cfg.dic_costings.iteritems()):
+        for irow, (name, _inst) in enumerate(self.cfg.costings.iteritems()):
             self.ui.damageScenarios.setItem(irow, 0, QTableWidgetItem(name))
             self.ui.damageScenarios.setItem(irow, 1, QTableWidgetItem('{:.3f}'.format(_inst.surface_area)))
             self.ui.damageScenarios.setItem(irow, 2, QTableWidgetItem('{:.3f}'.format(_inst.envelope_repair_rate)))
@@ -352,8 +354,8 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
         finiTable(self.ui.damageScenarios)
         
         # load up connections grid
-        setupTable(self.ui.connections, self.cfg.df_connections)
-        for irow, (index, c) in enumerate(self.cfg.df_connections.iterrows()):
+        setupTable(self.ui.connections, self.cfg.connections)
+        for irow, (index, c) in enumerate(self.cfg.connections.iterrows()):
             self.ui.connections.setItem(irow, 0, QTableWidgetItem(c['group_name']))
             self.ui.connections.setItem(irow, 1, QTableWidgetItem(c['type_name']))
             self.ui.connections.setItem(irow, 2, QTableWidgetItem(c['zone_loc']))
@@ -422,15 +424,15 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
 
         # attempt to run the simulator, being careful with exceptions...
         try:
-            run_time, list_results = simulate_wind_damage_to_houses(self.cfg,
-                                                                    call_back=progress_callback)
+            run_time, bucket = simulate_wind_damage_to_houses(self.cfg,
+                                                              call_back=progress_callback)
 
             if run_time is not None:
                 self.statusBar().showMessage(
                     unicode('Simulation complete in {:0.3f}'.format(run_time)))
                 # TODO Finish drawing results
-                self.updateVulnCurve(list_results['house']['di'])
-                self.updateFragCurve(list_results['house']['di'])
+                self.updateVulnCurve(bucket['house_damage']['di'])
+                self.updateFragCurve(bucket['house_damage']['di'])
                 #self.updateHouseResultsTable(list_results)
                 # self.updateConnectionTable(list_results)
                 # self.updateConnectionTypePlots()
@@ -876,7 +878,7 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
         new_cfg.fragility_thresholds['complete'] = float(self.ui.complete.value())
 
         # house / groups section
-        for irow, (index, ctg) in enumerate(self.cfg.df_groups.iterrows()):
+        for irow, (index, ctg) in enumerate(self.cfg.groups.iteritems()):
             cellWidget = self.ui.connGroups.cellWidget(irow, 4)
             new_cfg.flags['conn_type_group_{}'.format(index)] = True \
                 if cellWidget.checkState() == Qt.Checked else False
