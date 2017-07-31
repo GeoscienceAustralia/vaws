@@ -266,7 +266,7 @@ class HouseDamage(object):
             idx = np.argsort(np.abs(_df.index - water_ingress_perc))[0]
 
             self.water_ingress_cost = \
-                _df.at[idx, 'costing'].compute_cost(self.di_except_water)
+                _df['costing'].values[idx].compute_cost(self.di_except_water)
             _di = (self.repair_cost +
                    self.water_ingress_cost) / self.house.replace_cost
             self.di = min(_di, 1.0)

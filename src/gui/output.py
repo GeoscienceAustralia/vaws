@@ -236,45 +236,47 @@ def plot_damage_show(plotKey, v_damaged_at, numCols, numRows, v_min, v_max):
     fig.canvas.draw()    
 
 
-def plot_wind_event_damage(v, di):
-    mplDict['vulnerability'].axes.scatter(v, di, s=8, marker='+', label='_nolegend_')
+def plot_wind_event_damage(mp_widget, v, di):
+    mp_widget.axes.scatter(v, di, s=8, marker='+', label='_nolegend_')
 
 
-def plot_wind_event_mean(v, di):
-    mplDict['vulnerability'].axes.scatter(v, di, s=20, c='r', marker='o', label="Means")
+def plot_wind_event_mean(mp_widget, v, di):
+    mp_widget.axes.scatter(v, di, s=20, c='r', marker='o', label="Means")
 
 
-def plot_fitted_curve(v, di, label="Fitted Curve", alpha=1.0, col='b'):
-    mplDict['vulnerability'].axes.plot(v, di, label=label, alpha=alpha, c=col)
+def plot_fitted_curve(mp_widget, v, di, label="Fitted Curve", alpha=1.0, col='b'):
+    mp_widget.axes.plot(v, di, label=label, alpha=alpha, c=col, linestyle='-')
 
 
-def plot_model_curve(v, di, label="Model Curve"):
-    mplDict['vulnerability'].axes.plot(v, di, label=label)
+def plot_model_curve(mp_widget, v, di, label="Model Curve"):
+    mp_widget.axes.plot(v, di, label=label)
 
 
-def plot_wind_event_show(num_iters, Vmin, Vmax, output_folder):
-    mplDict['vulnerability'].axes.set_title('Vulnerability Curve (n = %d)' % (num_iters))
-    mplDict['vulnerability'].axes.set_xlabel('Impact Wind speed (m/s)')
-    mplDict['vulnerability'].axes.set_ylabel('Damage Index')
-    mplDict['vulnerability'].axes.set_xlim((Vmin, Vmax))
-    mplDict['vulnerability'].axes.set_ylim((0.0, 1.1))
-    mplDict['vulnerability'].axes.figure.canvas.draw()
+def plot_wind_event_show(mp_widget, num_iters, Vmin, Vmax):
+    mp_widget.axes.set_title('Vulnerability Curve (n = %d)' % (num_iters))
+    mp_widget.axes.set_xlabel('Impact Wind speed (m/s)')
+    mp_widget.axes.set_ylabel('Damage Index')
+    mp_widget.axes.set_xlim((Vmin, Vmax))
+    mp_widget.axes.set_ylim((0.0, 1.1))
+    mp_widget.axes.figure.canvas.draw()
     
 
 def plot_fragility_curve(v, fl, label, alpha=1.0, col='b'):
     mplDict['fragility'].axes.plot(v, fl, label=label, c=col, alpha=alpha)
 
 
-def plot_fragility_show(num_iters, Vmin, Vmax, output_folder):
-    mplDict['fragility'].axes.set_title('Fragility Curve (n = %d)' % num_iters)
-    mplDict['fragility'].axes.set_xlabel('Impact Wind speed (m/s)')
-    mplDict['fragility'].axes.set_ylabel('Probability of Damage State')
-    mplDict['fragility'].axes.set_xlim((Vmin, Vmax))
-    mplDict['fragility'].axes.set_ylim((0.0, 1.0))
-    legend = mplDict['fragility'].axes.legend(loc=2, fancybox=True, shadow=True)
-    for ltxt in legend.get_texts():
-        ltxt.set_fontsize('small')
-    mplDict['fragility'].axes.figure.canvas.draw()
+def plot_fragility_show(mp_widget, num_iters, Vmin, Vmax):
+    mp_widget.axes.set_title('Fragility Curve (n = %d)' % num_iters)
+    mp_widget.axes.set_xlabel('Impact Wind speed (m/s)')
+    mp_widget.axes.set_ylabel('Probability of Damage State')
+    mp_widget.axes.set_xlim((Vmin, Vmax))
+    mp_widget.axes.set_ylim((0.0, 1.0))
+    mp_widget.axes.legend(loc=2,
+                          fancybox=True,
+                          shadow=True,
+                          fontsize='small')
+
+    mp_widget.axes.figure.canvas.draw()
 
 
 def format_coord(x, y):
