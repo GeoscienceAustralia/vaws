@@ -560,7 +560,6 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
         self.ui.breaches_plot.axes.figure.canvas.draw()
 
     def updateStrengthPlot(self, bucket):
-        from itertools import chain
         self.ui.connection_type_plot.axes.hold(False)
         
         conn_results_dict = {}
@@ -578,12 +577,13 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
         conn_sampled_strength = bucket['connection']['strength']
 
         for connection_strength in conn_sampled_strength.iterkeys():
-            connection_type_name = connection_type_ref[connection_strength]
-            strength_array = bucket['connection']['strength'][connection_strength].flatten()
-            conn_results_dict[connection_type_name]['sampled_strength'].append(strength_array)
+            connection_type_name = connection_type_ref[connection_strength-1]
+            strength_array = conn_sampled_strength[connection_strength]
+            conn_results_dict[connection_type_name]['sampled_strength'] = numpy.append(conn_results_dict[connection_type_name]['sampled_strength'],
+                                                                                       strength_array)
         
-        for (ct_num, ct) in enumerate(self.cfg.house.conn_types):
-            obs_arr = conn_results_dict[ct.connection_type]
+        for ct_num, connection_type in enumerate(conn_results_dict.iterkeys()):
+            obs_arr = conn_results_dict[connection_type]['sampled_strength']
             if len(obs_arr) > 0:                
                 self.ui.connection_type_plot.axes.scatter([ct_num]*len(obs_arr), obs_arr, s=8, marker='+')
                 self.ui.connection_type_plot.axes.hold(True)
@@ -591,8 +591,8 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
         
         xlabels = []
         xticks = []
-        for (ct_num, ct) in enumerate(self.cfg.house.conn_types):
-            xlabels.append(ct.connection_type)
+        for ct_num, connection_type in enumerate(conn_results_dict.iterkeys()):
+            xlabels.append(connection_type)
             xticks.append(ct_num)
         
         self.ui.connection_type_plot.axes.set_xticks(xticks)
@@ -605,27 +605,38 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
     def updateTypeDamagePlot(self, bucket):
 
         self.ui.connection_type_damages_plot.axes.hold(False)
+
+        conn_results_dict = {}
+        connection_type_ref = []
+        CONNECTION_TYPE = 1
+        for connection in self.cfg.connections.itertuples():
+            connection_type_ref.append(connection[CONNECTION_TYPE])
+            if connection[CONNECTION_TYPE] not in conn_results_dict:
+                conn_results_dict[connection[CONNECTION_TYPE]] = list()
+
+        connection_damage = bucket['connection']['capacity']
+
+        for con_idx, connection_type in enumerate(connection_type_ref):
+            for house_number in range(self.cfg.no_sims):
+                comp_type_capacity = connection_damage[con_idx+1][:, house_number]
+                if comp_type_capacity[-1] != -1:
+                    # we need to find the wind step where the connection failed
+                    break_step = numpy.where(comp_type_capacity == comp_type_capacity[-1])[0][0]
+                    break_speed = self.cfg.speeds[break_step]
+                else:
+                    break_speed = 0
+                conn_results_dict[connection_type].append(break_speed)
         
-        obs_dict = {}
-        for ct in self.cfg.house.conn_types:
-            obs_dict[ct.connection_type] = []
-        for hr in self.house_results:
-            for cr in hr[4]:
-                connection_type_name = cr[0]
-                broke_at_v = cr[2]
-                obs_dict[connection_type_name].append(broke_at_v)
-        
-        for (ct_num, ct) in enumerate(self.cfg.house.conn_types):
-            obs_arr = obs_dict[ct.connection_type]
-            if len(obs_arr) > 0:                
+        for ct_num, obs_arr in enumerate(conn_results_dict.itervalues()):
+            if len(obs_arr) > 0:
                 self.ui.connection_type_damages_plot.axes.scatter([ct_num]*len(obs_arr), obs_arr, s=8, marker='+')
                 self.ui.connection_type_damages_plot.axes.hold(True)
                 self.ui.connection_type_damages_plot.axes.scatter([ct_num], numpy.mean(obs_arr), s=20, c='r', marker='o')
         
         xlabels = []
         xticks = []
-        for (ct_num, ct) in enumerate(self.cfg.house.conn_types):
-            xlabels.append(ct.connection_type)
+        for (ct_num, con_key) in enumerate(conn_results_dict.iterkeys()):
+            xlabels.append(con_key)
             xticks.append(ct_num)
         
         self.ui.connection_type_damages_plot.axes.set_xticks(xticks)
