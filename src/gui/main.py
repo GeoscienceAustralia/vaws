@@ -21,6 +21,10 @@ from vaws.simulation import process_commandline, set_logger, \
 from vaws.config import Config, INPUT_DIR, OUTPUT_DIR
 from vaws.version import VERSION_DESC
 from vaws.stats import compute_logarithmic_mean_stddev
+from gui.output import plot_wind_event_damage, plot_wind_event_mean, \
+                        plot_wind_event_show, plot_fitted_curve, plot_fragility_show
+
+import vaws.debris as debris
 
 from mixins import PersistSizePosMixin, setupTable, finiTable
 
@@ -58,8 +62,7 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
 
         # scenario section
         self.ui.numHouses.setValidator(QIntValidator(1, 10000, self.ui.numHouses))
-        self.ui.houseName.addItems(self.cfg.house_name)
-        self.ui.houseName.setCurrentIndex(-1)
+        self.ui.houseName.setText(self.cfg.house['name'])
         self.ui.terrainCategory.addItems(self.cfg.terrain_categories)
         self.ui.terrainCategory.setCurrentIndex(-1)
         self.ui.windDirection.addItems(self.cfg.wind_dir)
@@ -119,7 +122,7 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
         self.connect(self.ui.applyDisplayChangesButton, SIGNAL("clicked()"), self.updateDisplaySettings)
 
         # plot panel
-        # self.connect(self.ui.fitLognormalCurve, SIGNAL("clicked()"), self.updateVulnCurveSettings)
+        self.connect(self.ui.fitLognormalCurve, SIGNAL("clicked()"), self.updateVulnCurveSettings)
 
         self.statusBar().showMessage('Loading')
         self.house_results = []
@@ -150,45 +153,71 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
                 self.ui.zones.setCurrentCell(irow, 0)
                 break
 
-    def onConnectionsDoubleClicked(self, row, col):
-        connection_name = unicode(self.ui.connections.item(row, 0).text())
-        self.selected_conn = house.connByNameMap[connection_name]
-        self.showConnectionViewer() 
-        
     def onSliderChanged(self, label, x):
         label.setText('{:d}'.format(x))
 
     def updateVulnCurveSettings(self):
-        if self.has_run:
+        if not self.has_run:
+            return
+
+        if self.ui.fitLognormalCurve.isChecked():
             self.update_config_from_ui()
-            # self.updateVulnCurve()
+            df_fitted_curves = pd.read_csv(self.cfg.file_curve,
+                                           names=['key', 'error', 'param1',
+                                                  'param2'], skiprows=1,
+                                           index_col='key')
+
+            param_1 = df_fitted_curves.at['lognorm', 'param1']
+            param_2 = df_fitted_curves.at['lognorm', 'param2']
+
+            try:
+                y = vulnerability_lognorm(self.cfg.speeds, param_1, param_2)
+            except KeyError as msg:
+                logging.warning(msg)
+            else:
+                plot_fitted_curve(self.ui.mplvuln, self.cfg.speeds, y)
+                self.ui.mplvuln.axes.figure.canvas.draw()
+
+            self.ui.coeff_1.setText('%f' % param_1)
+            self.ui.coeff_2.setText('%f' % param_2)
             self.statusBar().showMessage(unicode('Curve Fit Updated'))
             
     def updateVulnCurve(self, _array):
-        # self.show_results(None, self.ui.redV.value(), self.ui.blueV.value())
+        self.ui.mplvuln.axes.hold(True)
 
-        # print(dir(self.ui.mplvuln.axes))
+        plot_wind_event_show(self.ui.mplvuln, self.cfg.no_sims, self.cfg.speeds[0], self.cfg.speeds[-1])
 
+        mean_cols = numpy.mean(_array.T, axis=0)
+        plot_wind_event_mean(self.ui.mplvuln, self.cfg.speeds, mean_cols)
+
+        # plot the individuals
         for col in _array.T:
-            self.ui.mplfrag.axes.plot(self.cfg.speeds, col, 'o', 0.3)
+            plot_wind_event_damage(self.ui.mplvuln, self.cfg.speeds, col)
 
-        """
+        df_fitted_curves = pd.read_csv(self.cfg.file_curve,
+                                       names=['key', 'error', 'param1',
+                                              'param2'], skiprows=1,
+                                       index_col='key')
 
-        self.ui.mplvuln.axes.cla()
-        self.ui.mplvuln.axes.figure.canvas.draw()
-        for _, col in df_dmg_idx.iteritems():
-            self.ui.mplvuln.axes.plot(self.cfg.speeds, col.values, 'o')
+        param_1 = df_fitted_curves.at['weibull', 'param1']
+        param_2 = df_fitted_curves.at['weibull', 'param2']
 
-            self.ui.mplfrag.axes.legend()
+        try:
+            y = vulnerability_weibull(self.cfg.speeds,param_1,param_2)
+        except KeyError as msg:
+            logging.warning(msg)
+        else:
+            plot_fitted_curve(self.ui.mplvuln,
+                              self.cfg.speeds,
+                              y,
+                              col='r')
 
-            self.ui.mplvuln.axes.plot(self.cfg.speeds,result[0][''])
+        self.ui.coeff_1.setText('%f' % param_1)
+        self.ui.coeff_2.setText('%f' % param_2)
         self.ui.sumOfSquares.setText('{:.3f}'.format(0.11))
-        self.ui.coeff_1.setText('%f' % self.simulator.A_final[0])
-        self.ui.coeff_2.setText('%f' % self.simulator.A_final[1])
-        """
 
     def updateFragCurve(self, _array):
-        # self.show_results(None, self.ui.redV.value(), self.ui.blueV.value())
+        plot_fragility_show(self.ui.mplfrag, self.cfg.no_sims, self.cfg.speeds[0], self.cfg.speeds[-1])
 
         df_fitted_curves = pd.read_csv(self.cfg.file_curve,
                                        names=['key', 'error', 'param1',
@@ -207,10 +236,17 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
             except KeyError as msg:
                 logging.warning(msg)
             else:
-                self.ui.mplfrag.axes.plot(self.cfg.speeds, y,
-                                          color=value['color'],
-                                          linestyle='-', label=ds)
-        self.ui.mplfrag.axes.legend()
+                plot_fitted_curve(self.ui.mplfrag,
+                                  self.cfg.speeds, y,
+                                  col=value['color'],
+                                  label=ds)
+
+        self.ui.mplfrag.axes.legend(loc=2,
+                                    fancybox=True,
+                                    shadow=True,
+                                    fontsize='small')
+
+
 
     def updateDisplaySettings(self):
         if self.has_run:
@@ -227,7 +263,7 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
         finiTable(self.ui.debrisTypes)
 
         # load up debris regions
-        _debris_region = self.cfg.dic_debris_regions[self.cfg.region_name]
+        _debris_region = self.cfg.debris_regions[self.cfg.region_name]
         setupTable(self.ui.debrisRegions, _debris_region)
 
         for i, key1 in enumerate(self.cfg.debris_types):
@@ -333,11 +369,6 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
             self.ui.connGroups.setCellWidget(irow, 4, cellWidget)
         finiTable(self.ui.connGroups)
 
-    def onHouseChanged(self, selectedHouseName):
-        # called whenever a house is selected (including by initial scenario)
-        self.cfg.house_name = unicode(selectedHouseName)
-        self.update_house_panel()
-
     def update_house_panel(self):
         self.updateConnectionGroupTable()
         self.updateConnectionTypeTable()
@@ -430,12 +461,13 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
             if run_time is not None:
                 self.statusBar().showMessage(
                     unicode('Simulation complete in {:0.3f}'.format(run_time)))
-                # TODO Finish drawing results
+
                 self.updateVulnCurve(bucket['house_damage']['di'])
                 self.updateFragCurve(bucket['house_damage']['di'])
-                #self.updateHouseResultsTable(list_results)
-                # self.updateConnectionTable(list_results)
-                # self.updateConnectionTypePlots()
+                self.updateHouseResultsTable(bucket)
+                self.updateConnectionTable(bucket)
+                self.updateConnectionTypePlots(bucket)
+                # TODO Finish drawing results
                 # self.updateBreachPlot()
                 # self.updateWaterIngressPlot()
                 self.has_run = True
@@ -527,21 +559,31 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
         host.legend(loc=2)
         self.ui.breaches_plot.axes.figure.canvas.draw()
 
-    def updateStrengthPlot(self):
-
+    def updateStrengthPlot(self, bucket):
         self.ui.connection_type_plot.axes.hold(False)
         
-        obs_dict = {}
-        for ct in self.cfg.house.conn_types:
-            obs_dict[ct.connection_type] = []
-        for hr in self.house_results:
-            for cr in hr[4]:
-                connection_type_name = cr[0]
-                sampled_strength = cr[3]
-                obs_dict[connection_type_name].append(sampled_strength)
+        conn_results_dict = {}
+        connection_type_ref = []
+        CONNECTION_TYPE = 1
+        for connection in self.cfg.connections.itertuples():
+            connection_type_ref.append(connection[CONNECTION_TYPE])
+            if connection[CONNECTION_TYPE] not in conn_results_dict:
+                conn_results_dict[connection[CONNECTION_TYPE]] = {}
+                conn_results_dict[connection[CONNECTION_TYPE]]['ct_num'] = 1
+                conn_results_dict[connection[CONNECTION_TYPE]]['sampled_strength'] = numpy.empty(0)
+            else:
+                conn_results_dict[connection[CONNECTION_TYPE]]['ct_num'] += 1
+
+        conn_sampled_strength = bucket['connection']['strength']
+
+        for connection_strength in conn_sampled_strength.iterkeys():
+            connection_type_name = connection_type_ref[connection_strength-1]
+            strength_array = conn_sampled_strength[connection_strength]
+            conn_results_dict[connection_type_name]['sampled_strength'] = numpy.append(conn_results_dict[connection_type_name]['sampled_strength'],
+                                                                                       strength_array)
         
-        for (ct_num, ct) in enumerate(self.cfg.house.conn_types):
-            obs_arr = obs_dict[ct.connection_type]
+        for ct_num, connection_type in enumerate(conn_results_dict.iterkeys()):
+            obs_arr = conn_results_dict[connection_type]['sampled_strength']
             if len(obs_arr) > 0:                
                 self.ui.connection_type_plot.axes.scatter([ct_num]*len(obs_arr), obs_arr, s=8, marker='+')
                 self.ui.connection_type_plot.axes.hold(True)
@@ -549,8 +591,8 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
         
         xlabels = []
         xticks = []
-        for (ct_num, ct) in enumerate(self.cfg.house.conn_types):
-            xlabels.append(ct.connection_type)
+        for ct_num, connection_type in enumerate(conn_results_dict.iterkeys()):
+            xlabels.append(connection_type)
             xticks.append(ct_num)
         
         self.ui.connection_type_plot.axes.set_xticks(xticks)
@@ -560,30 +602,41 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
         self.ui.connection_type_plot.axes.figure.canvas.draw()     
         self.ui.connection_type_plot.axes.set_xlim((-0.5, len(xlabels)))
 
-    def updateTypeDamagePlot(self):
+    def updateTypeDamagePlot(self, bucket):
 
         self.ui.connection_type_damages_plot.axes.hold(False)
+
+        conn_results_dict = {}
+        connection_type_ref = []
+        CONNECTION_TYPE = 1
+        for connection in self.cfg.connections.itertuples():
+            connection_type_ref.append(connection[CONNECTION_TYPE])
+            if connection[CONNECTION_TYPE] not in conn_results_dict:
+                conn_results_dict[connection[CONNECTION_TYPE]] = list()
+
+        connection_damage = bucket['connection']['capacity']
+
+        for con_idx, connection_type in enumerate(connection_type_ref):
+            for house_number in range(self.cfg.no_sims):
+                comp_type_capacity = connection_damage[con_idx+1][:, house_number]
+                if comp_type_capacity[-1] != -1:
+                    # we need to find the wind step where the connection failed
+                    break_step = numpy.where(comp_type_capacity == comp_type_capacity[-1])[0][0]
+                    break_speed = self.cfg.speeds[break_step]
+                else:
+                    break_speed = 0
+                conn_results_dict[connection_type].append(break_speed)
         
-        obs_dict = {}
-        for ct in self.cfg.house.conn_types:
-            obs_dict[ct.connection_type] = []
-        for hr in self.house_results:
-            for cr in hr[4]:
-                connection_type_name = cr[0]
-                broke_at_v = cr[2]
-                obs_dict[connection_type_name].append(broke_at_v)
-        
-        for (ct_num, ct) in enumerate(self.cfg.house.conn_types):
-            obs_arr = obs_dict[ct.connection_type]
-            if len(obs_arr) > 0:                
+        for ct_num, obs_arr in enumerate(conn_results_dict.itervalues()):
+            if len(obs_arr) > 0:
                 self.ui.connection_type_damages_plot.axes.scatter([ct_num]*len(obs_arr), obs_arr, s=8, marker='+')
                 self.ui.connection_type_damages_plot.axes.hold(True)
                 self.ui.connection_type_damages_plot.axes.scatter([ct_num], numpy.mean(obs_arr), s=20, c='r', marker='o')
         
         xlabels = []
         xticks = []
-        for (ct_num, ct) in enumerate(self.cfg.house.conn_types):
-            xlabels.append(ct.connection_type)
+        for (ct_num, con_key) in enumerate(conn_results_dict.iterkeys()):
+            xlabels.append(con_key)
             xticks.append(ct_num)
         
         self.ui.connection_type_damages_plot.axes.set_xticks(xticks)
@@ -593,27 +646,47 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
         self.ui.connection_type_damages_plot.axes.figure.canvas.draw()     
         self.ui.connection_type_damages_plot.axes.set_xlim((-0.5, len(xlabels)))
 
-    def updateConnectionTypePlots(self):
+    def updateConnectionTypePlots(self, bucket):
         self.statusBar().showMessage('Plotting Connection Types')
-        self.updateStrengthPlot()
-        self.updateTypeDamagePlot()
+        self.updateStrengthPlot(bucket)
+        self.updateTypeDamagePlot(bucket)
 
-    def updateConnectionTable(self):
+    def updateConnectionTable(self, bucket):
         self.statusBar().showMessage('Updating Connections Table')
-        for irow, c in enumerate(self.cfg.house.connections):
-            self.ui.connections.setItem(irow, 4, QTableWidgetItem('{:.3f}'.format(c.result_failure_v)))
-            self.ui.connections.setItem(irow, 5, QTableWidgetItem("%d" % c.result_failure_v_i))
-        
-    def updateHouseResultsTable(self):
+
+        connections_damaged = bucket['connection']['damaged']
+        for irow, connection in enumerate(self.cfg.connections.itertuples()):
+            failure_count = numpy.count_nonzero(connections_damaged[irow+1])
+            failure_mean = numpy.mean(connections_damaged[irow+1])
+            self.ui.connections.setItem(irow, 4, QTableWidgetItem('{:.3}'.format(failure_mean)))
+            self.ui.connections.setItem(irow, 5, QTableWidgetItem('{}'.format(failure_count)))
+
+    def updateHouseResultsTable(self, bucket):
         self.statusBar().showMessage('Updating Zone Results')
         self.ui.zoneResults.clear()
-        for (house_num, hr) in enumerate(self.house_results):
-            parent = QTreeWidgetItem(self.ui.zoneResults, ['H%d (%s/%.3f/%s)'%(house_num+1, config.Config.dirs[hr[2]], hr[3], hr[5]),
+
+        house_data = bucket['house']
+        house_damage_data = bucket['house_damage']
+
+        for house_num in range(self.cfg.no_sims):
+            mean_wind_dir = int(numpy.mean(house_data['wind_orientation'][:, house_num]))
+            mean_wind_speed = numpy.mean(house_damage_data['cpi_wind_speed'][:, house_num])
+            construction_level = numpy.unique(house_data['construction_level'][:, house_num])[0]
+            parent = QTreeWidgetItem(self.ui.zoneResults, ['H{} ({}/{:.3}/{})'.format(house_num+1,
+                                                                                      self.cfg.wind_dir[mean_wind_dir],
+                                                                                      mean_wind_speed,
+                                                                                      construction_level),
                                                            '', '', '', ''])
-            zone_results_dict = hr[0]      
-            for zr_key in sorted(zone_results_dict):
-                zr = zone_results_dict[zr_key]
-                QTreeWidgetItem(parent, ['', zr[0], '%.3f'%zr[1], '%.3f'%zr[2], '%.3f'%zr[3]])
+            zone_results_dict = bucket['zone']
+            for zr_key in sorted(self.cfg.zones):
+                zone_cpe = numpy.mean(zone_results_dict['cpe'][zr_key][:, 1])
+                zone_cpe_str = numpy.mean(zone_results_dict['cpe_str'][zr_key][:, 1])
+                zone_cpe_eave = numpy.mean(zone_results_dict['cpe_eave'][zr_key][:, 1])
+                QTreeWidgetItem(parent, ['',
+                                         zr_key,
+                                         '{:.3}'.format(zone_cpe),
+                                         '{:.3}'.format(zone_cpe_str),
+                                         '{:.3}'.format(zone_cpe_eave)])
                 
         self.ui.zoneResults.resizeColumnToContents(0)
         self.ui.zoneResults.resizeColumnToContents(1)
@@ -623,37 +696,58 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
         self.ui.zoneResults.resizeColumnToContents(5)
                 
         self.statusBar().showMessage('Updating Connection Results')
+
         self.ui.connectionResults.clear()
-        for (house_num, hr) in enumerate(self.house_results):
-            parent = QTreeWidgetItem(self.ui.connectionResults, ['H%d (%s/%.3f/%s)'%(house_num+1, scenario.Scenario.dirs[hr[2]], hr[3], hr[5])])
-            for cr in hr[4]:
-                damage_report = cr[5]
-                load = damage_report.get('load', 0)
-                
+        for house_num in range(self.cfg.no_sims):
+            mean_wind_dir = int(numpy.mean(house_data['wind_orientation'][:, house_num]))
+            mean_wind_speed = numpy.mean(house_damage_data['cpi_wind_speed'][:, house_num])
+            construction_level = numpy.unique(house_data['construction_level'][:, house_num])[0]
+            parent = QTreeWidgetItem(self.ui.connectionResults,
+                                     ['H{} ({}/{:.3}/{})'.format(house_num+1,
+                                                                 self.cfg.wind_dir[mean_wind_dir],
+                                                                 mean_wind_speed,
+                                                                 construction_level),
+                                      '', '', '', ''])
+
+            connection_results = bucket['connection']
+
+            for connection in self.cfg.connections.itertuples():
+                house_conn_capacity = connection_results['capacity'][connection[0]][:, house_num]
+                first_break = -1 # -1 means it didn't break
+                if house_conn_capacity[-1] != -1:
+                    # we need to find the wind step where the connection failed
+                    first_break = numpy.where(house_conn_capacity == house_conn_capacity[-1])[0][0]
+
+                house_conn_capacity = connection_results['capacity'][connection[0]][first_break, house_num]
+                house_conn_load = connection_results['load'][connection[0]][first_break, house_num]
+                house_conn_dead_load = connection_results['dead_load'][connection[0]][first_break, house_num]
+                house_conn_strength = connection_results['strength'][connection[0]][first_break, house_num]
+
                 load_desc = ''
-                if load == 99.9:
+                if house_conn_load == 99.9:
                     load_desc = 'collapse'
-                elif load != 0:
-                    load_desc = '%.3f' % load
-                
-                conn_parent = QTreeWidgetItem(parent, ['%s_%s'%(cr[0], cr[1]), 
-                                                       '%.3f'%cr[2] if cr[2] != 0 else '', 
-                                                       '%.3f'%cr[3], 
-                                                       '%.3f'%cr[4],
-                                                       load_desc]) 
-                for infl_dict in damage_report.get('infls', {}):
-                    QTreeWidgetItem(conn_parent, ['%.3f(%s) = %.3f(i) * %.3f(area) * %.3f(pz)' % (infl_dict['load'], 
-                                                                                                  infl_dict['name'],
-                                                                                                  infl_dict['infl'],
-                                                                                                  infl_dict['area'],
-                                                                                                  infl_dict['pz'])])
+                elif house_conn_load != 0:
+                    load_desc = '%.3f' % house_conn_load
+
+                conn_parent = QTreeWidgetItem(parent, ['{}_{}'.format(connection[1], connection[2]),
+                                                       '%.3f'%house_conn_capacity if house_conn_capacity != 0 else '',
+                                                       '%.3f'%house_conn_strength,
+                                                       '%.3f'%house_conn_dead_load,
+                                                       load_desc])
+
+                # TODO for infl_dict in damage_report.get('infls', {}):
+                #     QTreeWidgetItem(conn_parent, ['%.3f(%s) = %.3f(i) * %.3f(area) * %.3f(pz)' % (infl_dict['load'],
+                #                                                                                   infl_dict['name'],
+                #                                                                                   infl_dict['infl'],
+                #                                                                                   infl_dict['area'],
+                #                                                                                   infl_dict['pz'])])
         self.ui.connectionResults.resizeColumnToContents(1)
         self.ui.connectionResults.resizeColumnToContents(2)
         self.ui.connectionResults.resizeColumnToContents(3)
         self.ui.connectionResults.resizeColumnToContents(4)
         header_view = self.ui.connectionResults.header()
         header_view.resizeSection(0, 350)
-                            
+
     def open_scenario(self):
         settings = QSettings()
         # Set the path to the default
@@ -744,7 +838,7 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
 
             # Scenario
             self.ui.numHouses.setText('{:d}'.format(self.cfg.no_sims))
-            self.ui.houseName.setCurrentIndex(self.ui.houseName.findText(self.cfg.house_name))
+            self.ui.houseName.setText(self.cfg.house_name)
             self.ui.terrainCategory.setCurrentIndex(
                     self.ui.terrainCategory.findText(self.cfg.terrain_category))
             self.ui.regionalShielding.setText('{:.1f}'.format(
@@ -779,7 +873,7 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
             self.ui.diffShielding.setChecked(self.cfg.flags.get('diff_shielding'))
             self.ui.waterIngress.setChecked(self.cfg.flags.get('water_ingress'))
 
-            # self.ui.fitLognormalCurve.setChecked(self.cfg.flags.get('vul_fit_log'))
+            self.ui.fitLognormalCurve.setChecked(self.cfg.flags.get('vul_fit_log', False))
             # self.ui.distribution.setChecked(self.cfg.flags.get('dmg_distribute'))
             self.ui.actionRun.setEnabled(True)
             # self.ui.debrisExtension.setText('%f' % self.cfg.debris_extension)
@@ -818,7 +912,7 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
 
         # Scenario section
         new_cfg.no_sims = int(self.ui.numHouses.text())
-        # new_cfg.house_name = (unicode(self.ui.houseName.currentText()))
+        new_cfg.house_name = (unicode(self.ui.houseName.text()))
         new_cfg.terrain_category = unicode(self.ui.terrainCategory.currentText())
         new_cfg.regional_shielding_factor = float(unicode(self.ui.regionalShielding.text()))
         new_cfg.wind_speed_min = self.ui.windMin.value()
@@ -842,7 +936,7 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
         new_cfg.flags['plot_fragility'] = True
         new_cfg.flags['plot_vul'] = True
         # new_cfg.flags['random_seed'] = self.ui.seedRandom.isChecked()
-        # new_cfg.flags['vul_fit_log'] = self.ui.fitLognormalCurve.isChecked())
+        new_cfg.flags['vul_fit_log'] = self.ui.fitLognormalCurve.isChecked()
         new_cfg.flags['water_ingress'] = self.ui.waterIngress.isChecked()
         # new_cfg.flags['dmg_distribute', self.ui.distribution.isChecked())
         new_cfg.flags['diff_shielding'] = self.ui.diffShielding.isChecked()
@@ -889,7 +983,6 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
         
     def file_load(self, fname):
         try:
-
             path_cfg = os.path.dirname(os.path.realpath(fname))
             set_logger(path_cfg, logging_level='warning')
             self.cfg = Config(fname)

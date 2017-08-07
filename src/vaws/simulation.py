@@ -159,7 +159,7 @@ def save_results_to_files(cfg, bucket):
             with open(cfg.file_curve, 'w') as fid:
                 fid.write(', error, param1, param2\n')
 
-    if cfg.flags['plot_vulnerability']:
+    if cfg.flags['plot_vul']:
         fitted_curve = fit_vulnerability_curve(cfg, bucket['house_damage']['di'])
         if not os.path.isfile(cfg.file_curve):
             with open(cfg.file_curve, 'w') as fid:
@@ -188,7 +188,7 @@ def save_results_to_files(cfg, bucket):
                              file_name=file_name)
 
 
-def show_results(self, output_folder=None, vRed=40, vBlue=80):
+def show_results(output_folder=None, vRed=40, vBlue=80):
     if self.mplDict:
         self.mplDict['fragility'].axes.cla()
         self.mplDict['fragility'].axes.figure.canvas.draw()

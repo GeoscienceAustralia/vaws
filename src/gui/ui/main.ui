@@ -84,9 +84,6 @@
             </property>
            </widget>
           </item>
-          <item row="1" column="1">
-           <widget class="QComboBox" name="houseName"/>
-          </item>
           <item row="2" column="0">
            <widget class="QLabel" name="label_16">
             <property name="text">
@@ -246,6 +243,9 @@
           </item>
           <item row="7" column="1">
            <widget class="QComboBox" name="windDirection"/>
+          </item>
+          <item row="1" column="1">
+           <widget class="QLineEdit" name="houseName"/>
           </item>
          </layout>
         </widget>
@@ -1525,7 +1525,7 @@
        </sizepolicy>
       </property>
       <property name="currentIndex">
-       <number>2</number>
+       <number>0</number>
       </property>
       <widget class="QWidget" name="tab_13">
        <attribute name="title">
@@ -1618,7 +1618,7 @@
            </attribute>
            <layout class="QHBoxLayout" name="horizontalLayout_31">
             <item>
-             <widget class="MatplotlibWidget" name="connection_type_plot"/>
+             <widget class="MatplotlibWidget" name="connection_type_plot" native="true"/>
             </item>
            </layout>
           </widget>
@@ -1628,7 +1628,7 @@
            </attribute>
            <layout class="QHBoxLayout" name="horizontalLayout_24">
             <item>
-             <widget class="MatplotlibWidget" name="connection_type_damages_plot"/>
+             <widget class="MatplotlibWidget" name="connection_type_damages_plot" native="true"/>
             </item>
            </layout>
           </widget>
@@ -1655,7 +1655,7 @@
            </attribute>
            <layout class="QHBoxLayout" name="horizontalLayout_14">
             <item>
-             <widget class="MatplotlibWidget" name="mplsheeting"/>
+             <widget class="MatplotlibWidget" name="mplsheeting" native="true"/>
             </item>
            </layout>
           </widget>
@@ -1665,7 +1665,7 @@
            </attribute>
            <layout class="QHBoxLayout" name="horizontalLayout_7">
             <item>
-             <widget class="MatplotlibWidget" name="mplbatten"/>
+             <widget class="MatplotlibWidget" name="mplbatten" native="true"/>
             </item>
            </layout>
           </widget>
@@ -1675,7 +1675,7 @@
            </attribute>
            <layout class="QHBoxLayout" name="horizontalLayout_12">
             <item>
-             <widget class="MatplotlibWidget" name="mplrafter"/>
+             <widget class="MatplotlibWidget" name="mplrafter" native="true"/>
             </item>
            </layout>
           </widget>
@@ -1685,7 +1685,7 @@
            </attribute>
            <layout class="QHBoxLayout" name="horizontalLayout_33">
             <item>
-             <widget class="MatplotlibWidget" name="mplwallracking"/>
+             <widget class="MatplotlibWidget" name="mplwallracking" native="true"/>
             </item>
            </layout>
           </widget>
@@ -1695,7 +1695,7 @@
            </attribute>
            <layout class="QHBoxLayout" name="horizontalLayout_34">
             <item>
-             <widget class="MatplotlibWidget" name="mplwallcladding"/>
+             <widget class="MatplotlibWidget" name="mplwallcladding" native="true"/>
             </item>
            </layout>
           </widget>
@@ -1705,7 +1705,7 @@
            </attribute>
            <layout class="QHBoxLayout" name="horizontalLayout_38">
             <item>
-             <widget class="MatplotlibWidget" name="mplwallcollapse"/>
+             <widget class="MatplotlibWidget" name="mplwallcollapse" native="true"/>
             </item>
            </layout>
           </widget>
@@ -1715,7 +1715,7 @@
            </attribute>
            <layout class="QHBoxLayout" name="horizontalLayout_35">
             <item>
-             <widget class="MatplotlibWidget" name="mplpiers"/>
+             <widget class="MatplotlibWidget" name="mplpiers" native="true"/>
             </item>
            </layout>
           </widget>
@@ -1798,7 +1798,7 @@
                </layout>
               </item>
               <item>
-               <widget class="MatplotlibWidget" name="mplvuln"/>
+               <widget class="MatplotlibWidget" name="mplvuln" native="true"/>
               </item>
              </layout>
             </item>
@@ -1810,7 +1810,7 @@
            </attribute>
            <layout class="QHBoxLayout" name="horizontalLayout_9">
             <item>
-             <widget class="MatplotlibWidget" name="mplfrag"/>
+             <widget class="MatplotlibWidget" name="mplfrag" native="true"/>
             </item>
            </layout>
           </widget>
@@ -1820,7 +1820,7 @@
            </attribute>
            <layout class="QHBoxLayout" name="horizontalLayout_4">
             <item>
-             <widget class="MatplotlibWidget" name="wateringress_plot"/>
+             <widget class="MatplotlibWidget" name="wateringress_plot" native="true"/>
             </item>
            </layout>
           </widget>
@@ -1830,7 +1830,7 @@
            </attribute>
            <layout class="QHBoxLayout" name="horizontalLayout_11">
             <item>
-             <widget class="MatplotlibWidget" name="breaches_plot"/>
+             <widget class="MatplotlibWidget" name="breaches_plot" native="true"/>
             </item>
            </layout>
           </widget>
@@ -1848,7 +1848,7 @@
      <x>0</x>
      <y>0</y>
      <width>1005</width>
-     <height>19</height>
+     <height>15</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFile">
