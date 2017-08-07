@@ -41,23 +41,24 @@ class HouseDamage(object):
 
             logging.info('wind speed {:.3f}'.format(wind_speed))
 
-            # only check if debris is ON
             # cpi is computed here
-
-            if self.cfg.flags['debris']:
-                self.check_internal_pressurisation(wind_speed)
+            self.check_internal_pressurisation(wind_speed)
 
             # compute load by zone
             self.compute_qz_ms(wind_speed)
 
             # load = qz * (Cpe + Cpi) * A + dead_load
             for _zone in self.house.zones.itervalues():
-                _zone.calc_zone_pressures(self.house.wind_orientation,
-                                          self.cpi,
-                                          self.qz,
-                                          self.ms,
-                                          self.cfg.building_spacing,
-                                          self.cfg.flags['diff_shielding'])
+                _zone.calc_zone_pressure(self.house.wind_orientation,
+                                         self.cpi,
+                                         self.qz,
+                                         self.ms,
+                                         self.cfg.building_spacing,
+                                         self.cfg.flags['diff_shielding'])
+
+            if self.house.coverages is not None:
+                for _, _ps in self.house.coverages.iterrows():
+                    _ps['coverage'].check_damage(self.qz, self.cpi, wind_speed)
 
             for _connection in self.house.connections.itervalues():
                 _connection.compute_load()
@@ -150,15 +151,16 @@ class HouseDamage(object):
 
         """
 
-        self.house.debris.run(wind_speed)
+        if self.cfg.flags['debris']:
+            self.house.debris.run(wind_speed)
 
         # logging.debug('no_items_mean: {}, no_items:{}'.format(
         #     self.house.debris.no_items_mean,
         #     self.house.debris.no_items))
 
-        if self.cpi < 0.7 and self.house.debris.breached:
-            self.cpi = 0.7
-            self.cpi_wind_speed = wind_speed
+        # area of breached coverages
+        if self.house.coverages is not None:
+            self.house.assign_cpi()
 
     def check_house_collapse(self, wind_speed):
         """
@@ -278,3 +280,6 @@ class HouseDamage(object):
                      'di except water:{:.3f}, di: {:.3f}'.format(
             wind_speed, self.repair_cost, self.water_ingress_cost,
             self.di_except_water, self.di))
+
+    # @staticmethod
+    # def get_cpi_for_dominant_opening(ratio, ):

@@ -24,7 +24,6 @@ class Zone(object):
 
         self.area = None
         self.cpi_alpha = None
-        self.wall_dir = None
         self.cpe_mean = {}
         self.cpe_str_mean = {}
         self.cpe_eave_mean = {}
@@ -32,7 +31,7 @@ class Zone(object):
 
         default_attr = dict(area=self.area,
                             cpi_alpha=self.cpi_alpha,
-                            wall_dir=self.wall_dir,
+                            # wall_dir=self.wall_dir,
                             cpe_mean=self.cpe_mean,
                             cpe_str_mean=self.cpe_str_mean,
                             cpe_eave_mean=self.cpe_eave_mean,
@@ -49,13 +48,14 @@ class Zone(object):
         else:
             self.is_wall_zone = False
 
+        self.diff_shielding = None
         self.cpe = None
         self.cpe_str = None
         self.cpe_eave = None
         self.pressure = None
 
-    def sample_zone_cpe(self, wind_dir_index, cpe_cov, cpe_k,
-                        cpe_str_cov, big_a, big_b, rnd_state):
+    def sample_cpe(self, wind_dir_index, cpe_cov, cpe_k,
+                   cpe_str_cov, big_a, big_b, rnd_state):
 
         """
         Sample external Zone Pressures for sheeting, structure and eaves Cpe,
@@ -84,8 +84,8 @@ class Zone(object):
         self.cpe_eave = sample_gev(self.cpe_eave_mean[wind_dir_index],
                                    cpe_str_cov, big_a, big_b, cpe_k, rnd_state)
 
-    def calc_zone_pressures(self, wind_dir_index, cpi, qz, Ms, building_spacing,
-                            flag_diff_shielding=False):
+    def calc_zone_pressure(self, wind_dir_index, cpi, qz, ms, building_spacing,
+                           flag_diff_shielding=False):
         """
         Determine wind pressure loads (Cpe) on each zone (to be distributed onto
         connections)
@@ -94,7 +94,7 @@ class Zone(object):
             wind_dir_index:
             cpi: internal pressure coeff
             qz:
-            Ms:
+            ms:
             building_spacing:
             flag_diff_shielding: flag for differential shielding (default: False)
 
@@ -103,20 +103,9 @@ class Zone(object):
 
         """
 
-        dsn, dsd = 1.0, 1.0
-
-        if building_spacing > 0 and flag_diff_shielding:
-            front_facing = self.is_roof_edge[wind_dir_index]
-            if building_spacing == 40 and Ms >= 1.0 and front_facing == 0:
-                dsd = Ms ** 2.0
-            elif building_spacing == 20 and front_facing == 1:
-                dsd = Ms ** 2.0
-                if Ms <= 0.85:
-                    dsn = 0.7 ** 2.0
-                else:
-                    dsn = 0.8 ** 2.0
-
-        diff_shielding = dsn / dsd
+        self.diff_shielding = self.calc_diff_shielding(ms, building_spacing,
+                                                       flag_diff_shielding,
+                                                       wind_dir_index)
 
         # either cpe or cpe_str should be zero, and cpe_eave is counted once
         try:
@@ -124,7 +113,25 @@ class Zone(object):
         except AssertionError:
             logging.warning('Either cpe or cpe_str should be zero for {}'.format(self.name))
         self.pressure = qz * (self.cpe + self.cpe_str - self.cpi_alpha * cpi
-                              - self.cpe_eave) * diff_shielding
+                              - self.cpe_eave) * self.diff_shielding
+
+    def calc_diff_shielding(self, ms, building_spacing, flag_diff_shielding,
+                            wind_dir_index):
+
+        dsn, dsd = 1.0, 1.0
+
+        if building_spacing > 0 and flag_diff_shielding:
+            front_facing = self.is_roof_edge[wind_dir_index]
+            if building_spacing == 40 and ms >= 1.0 and front_facing == 0:
+                dsd = ms ** 2.0
+            elif building_spacing == 20 and front_facing == 1:
+                dsd = ms ** 2.0
+                if ms <= 0.85:
+                    dsn = 0.7 ** 2.0
+                else:
+                    dsn = 0.8 ** 2.0
+
+        return dsn / dsd
 
     # @staticmethod
     # def get_zone_location_from_grid(_zone_grid):

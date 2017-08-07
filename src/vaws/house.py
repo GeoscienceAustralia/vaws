@@ -13,7 +13,7 @@ from collections import OrderedDict
 from vaws.connection import ConnectionTypeGroup
 from vaws.zone import Zone
 from vaws.config import Config
-from vaws.debris import Debris
+from vaws.debris import Debris, Coverage
 
 
 class House(object):
@@ -55,17 +55,20 @@ class House(object):
         self.groups = OrderedDict()  # list of conn type groups
         self.connections = {}  # dict of connections with name
         self.zones = {}  # dict of zones with id
+        self.coverages = None  # pd.dataframe of coverages
         # self.zone_by_grid = {}  # dict of zones with zone loc grid in tuple
 
         # init house
         self.read_house_data()
 
-        # house is consisting of connections, and zones
+        # house is consisting of connections, coverages, and zones
         self.set_house_wind_params()
-        self.set_debris()
-
+        self.set_coverages()
         self.set_zones()
         self.set_connections()
+
+        if self.cfg.flags['debris']:
+            self.set_debris()
 
     def read_house_data(self):
 
@@ -84,7 +87,7 @@ class House(object):
 
             _zone = Zone(zone_name=_name, **dic_zone)
 
-            _zone.sample_zone_cpe(
+            _zone.sample_cpe(
                 wind_dir_index=self.wind_orientation,
                 cpe_cov=self.cpe_cov,
                 cpe_k=self.cpe_k,
@@ -140,7 +143,7 @@ class House(object):
                 try:
                     _inf.source = self.connections[_inf.name]
                 except KeyError:
-                    logging.warning('unable to associate {} with {}'.format(
+                    logging.warning('unable to associate {} with {} wrt influence'.format(
                         _connection.name, _inf.name))
 
     def set_connection_property(self, _connection):
@@ -183,16 +186,126 @@ class House(object):
 
     def set_debris(self):
 
-        if self.cfg.flags['debris']:
-            self.debris = Debris(self.cfg)
+        self.debris = Debris(self.cfg)
 
-            points = []
-            for item in self.cfg.footprint:
-                points.append((item[0], item[1]))
-            self.footprint = Polygon(points)
+        points = []
+        for item in self.cfg.footprint:
+            points.append((item[0], item[1]))
+        self.footprint = Polygon(points)
 
-            self.debris.footprint = self.footprint, self.wind_orientation
-            self.debris.rnd_state = self.rnd_state
+        self.debris.footprint = self.footprint, self.wind_orientation
+
+        self.debris.rnd_state = self.rnd_state
+
+        self.debris.coverages = self.coverages
+
+    def set_coverages(self):
+
+        if self.cfg.coverages is not None:
+
+            self.coverages = self.cfg.coverages.copy()
+
+            self.coverages['direction'] = self.coverages['wall_name'].apply(
+                self.assign_windward)
+
+            for _name, item in self.coverages.iterrows():
+
+                item['cpe_mean'] = self.cfg.coverages_cpe_mean[_name]
+                _coverage = Coverage(coverage_name=_name, **item)
+
+                _coverage.sample_cpe(
+                    wind_dir_index=self.wind_orientation,
+                    cpe_cov=self.cpe_cov,
+                    cpe_k=self.cpe_k,
+                    cpe_str_cov=self.cpe_str_cov,
+                    big_a=self.big_a,
+                    big_b=self.big_b,
+                    rnd_state=self.rnd_state)
+
+                _coverage.sample_strength(rnd_state=self.rnd_state)
+
+                self.coverages.loc[_name, 'coverage'] = _coverage
+
+    def assign_windward(self, wall_name):
+
+        windward_dir = self.cfg.wind_dir[self.wind_orientation]
+        windward = self.cfg.front_facing_walls[windward_dir]
+
+        leeward = self.cfg.front_facing_walls[self.cfg.wind_dir[
+            (self.wind_orientation + 4) % 8]]
+
+        side1, side2 = None, None
+        if len(windward_dir) == 1:
+            side1 = self.cfg.front_facing_walls[self.cfg.wind_dir[
+                (self.wind_orientation + 2) % 8]]
+            side2 = self.cfg.front_facing_walls[self.cfg.wind_dir[
+                (self.wind_orientation + 6) % 8]]
+
+        # assign windward, leeward, side
+        if wall_name in windward:
+            return 'windward'
+        elif wall_name in leeward:
+            return 'leeward'
+        elif wall_name in side1:
+            return 'side1'
+        elif wall_name in side2:
+            return 'side2'
+
+    def assign_cpi(self):
+
+        self.coverages['breached_area'] = \
+            self.coverages['coverage'].apply(lambda x: x.breached_area)
+
+        # need to confirm whether max by coverage or wall
+
+        breached_area_by_wall = \
+            self.coverages.groupby('direction')['breached_area'].sum()
+
+        # check if opening is dominant or non-dominant
+        max_breached = breached_area_by_wall[breached_area_by_wall ==
+                                             breached_area_by_wall.max()]
+
+        # cpi
+        if len(max_breached) == 1:  # dominant opening
+
+            area_else = breached_area_by_wall.sum() - max_breached.iloc[0]
+            ratio = max_breached.iloc[0] / area_else
+
+            row = (self.cfg.dominant_opening_ratio_thresholds < ratio).sum()
+            direction = max_breached.index[0]
+
+            cpi = self.cfg.cpi_table_for_dominant_opening[row][direction]
+
+            if row > 1:  # factor with Cpe
+
+                # cpe where the largest opening
+                breached_area = self.coverages.loc[
+                    self.coverages['direction'] == direction, 'breached_area']
+                max_area = breached_area[breached_area == breached_area.max()]
+                cpe_array = np.array([self.coverages.loc[i, 'coverage'].cpe
+                                      for i in max_area.keys()])
+                max_cpe = max(cpe_array.min(), cpe_array.max(), key=abs)
+                cpi *= max_cpe
+
+            logging.debug('cpi for bldg with dominant opening: {}'.format(cpi))
+
+        elif len(max_breached) == 4:  # all equal openings
+            if max_breached.iloc[0]:
+                cpi = -0.3
+            else:
+                cpi = 0.0
+
+            logging.debug('cpi for bldg without dominant opening: {}'.format(cpi))
+
+        else:
+            if breached_area_by_wall['windward']:
+                cpi = 0.2
+            else:
+                cpi = -0.3
+
+            logging.debug('cpi for bldg without dominant opening: {}'.format(cpi))
+
+        return cpi
 
     def set_house_wind_params(self):
         """

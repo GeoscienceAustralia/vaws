@@ -1,5 +1,6 @@
 import unittest
 import os
+import copy
 import numpy as np
 import matplotlib.pyplot as plt
 from descartes import PolygonPatch
@@ -7,8 +8,9 @@ from shapely.geometry import Point, Polygon, LineString
 import logging
 
 from vaws.config import Config
-from vaws.debris import Debris
+from vaws.debris import Debris, Coverage
 from vaws.curve import vulnerability_weibull, vulnerability_weibull_pdf
+from vaws.simulation import set_logger
 
 '''
     def run_alt(self, wind_speed):
@@ -119,9 +121,13 @@ class MyTestCase(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         path = '/'.join(__file__.split('/')[:-1])
-        cfg_file = os.path.join(path, '../../scenarios/test_roof_sheeting2/test_roof_sheeting2.cfg')
+
+        cls.path_scenario = os.path.join(path,
+                                         '../../scenarios/test_roof_sheeting2')
+        set_logger(cls.path_scenario, 'debug')
+
+        cfg_file = os.path.join(cls.path_scenario, 'test_roof_sheeting2.cfg')
         cls.cfg = Config(cfg_file=cfg_file)
-        cls.path_output = cls.cfg.path_output
 
         cls.footprint_inst = Polygon([(-6.5, 4.0), (6.5, 4.0), (6.5, -4.0),
                                       (-6.5, -4.0), (-6.5, 4.0)])
@@ -281,7 +287,7 @@ class MyTestCase(unittest.TestCase):
         plt.close()
 
     def test_footprint_non_rect(self):
-        """ Not working yet """
+        # Not working yet 
 
         footprint_inst = Polygon(
             [(-6.5, 4.0), (6.5, 4.0), (6.5, 0.0), (0.0, 0.0),
@@ -309,7 +315,7 @@ class MyTestCase(unittest.TestCase):
         self.assertFalse(rect.contains(Point(-100, -1.56)))
         self.assertFalse(rect.contains(Point(10.88, 4.514)))
         self.assertFalse(rect.contains(Point(7.773, 12.66)))
-
+    
     def test_compute_debris_momentum(self):
 
         _debris = Debris(cfg=self.cfg)
@@ -332,12 +338,8 @@ class MyTestCase(unittest.TestCase):
                                                mass,
                                                wind_speed)
 
-                momentum[_str][i] = _debris.compute_debris_mementum(_value['cdav'],
-                                                         frontal_area,
-                                                         flight_distance,
-                                                         mass,
-                                                         wind_speed,
-                                                         rnd_state)
+                momentum[_str][i] = _debris.compute_debris_momentum(
+                    _value['cdav'], frontal_area, flight_distance, mass, wind_speed, rnd_state)
 
         dic_ = {'Compact': 'b', 'Sheet': 'r', 'Rod': 'g'}
         plt.figure()
@@ -404,22 +406,32 @@ class MyTestCase(unittest.TestCase):
     def test_run(self):
 
         # set up logging
-        file_logger = os.path.join(self.path_output, 'log_debris.txt')
-        logging.basicConfig(filename=file_logger,
-                            filemode='w',
-                            level=logging.DEBUG,
-                            format='%(levelname)s %(message)s')
+        # file_logger = os.path.join(self.path_output, 'log_debris.txt')
+        # logging.basicConfig(filename=file_logger,
+        #                     filemode='w',
+        #                     level=logging.DEBUG,
+        #                     format='%(levelname)s %(message)s')
 
-        _debris = Debris(cfg=self.cfg, )
+        _coverages = self.cfg.coverages.copy()
+
+        for _name, item in _coverages.iterrows():
+
+            item['cpe_mean'] = self.cfg.coverages_cpe_mean[_name]
+            _coverage = Coverage(coverage_name=_name, **item)
+            _coverages.loc[_name, 'coverage'] = _coverage
+
+        _debris = Debris(cfg=self.cfg)
         _debris.footprint = (self.footprint_inst, 0)
         rnd_state = np.random.RandomState(1)
         _debris.rnd_state = rnd_state
+        _debris.coverages = _coverages
+
         wind_speeds = np.arange(0.0, 120.0, 5.0)
         incr_speed = wind_speeds[1] - wind_speeds[0]
 
-        breached = []
-        damaged_area = []
+        print('{}'.format(_debris.area))
 
+        damaged_area = []
         for wind_speed in wind_speeds:
 
             incr_damage = vulnerability_weibull_pdf(x=wind_speed,
@@ -429,11 +441,16 @@ class MyTestCase(unittest.TestCase):
             _debris.no_items_mean = incr_damage
 
             _debris.run(wind_speed)
-            breached.append(_debris.breached)
-            damaged_area.append(_debris.damaged_area)
+
+            breached_area = np.sum([x.breached_area for x in _debris.coverages.itervalues()])
+
+            damaged_area.append(breached_area)
+
+        print('{}'.format(damaged_area))
 
         plt.figure()
-        plt.plot(wind_speeds, np.array(damaged_area).cumsum() / _debris.area_walls * 100.0, '-')
+        plt.plot(wind_speeds, np.array(damaged_area) / _debris.area * 100.0, '-')
+        plt.title('test_run')
         # plt.show()
         plt.pause(1.0)
         plt.close()
@@ -504,11 +521,20 @@ class MyTestCase(unittest.TestCase):
 
         self.cfg.source_items = 100
 
+        _coverages = self.cfg.coverages.copy()
+
+        for _name, item in _coverages.iterrows():
+
+            item['cpe_mean'] = self.cfg.coverages_cpe_mean[_name]
+            _coverage = Coverage(coverage_name=_name, **item)
+            _coverages.loc[_name, 'coverage'] = _coverage
+
         _debris = Debris(cfg=self.cfg)
         _debris.footprint = (self.footprint_inst, 0)
 
         rnd_state = np.random.RandomState(1)
         _debris.rnd_state = rnd_state
+        _debris.coverages = _coverages
 
         incr_speed = self.cfg.speeds[1] - self.cfg.speeds[0]
 
