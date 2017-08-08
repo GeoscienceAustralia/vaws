@@ -22,9 +22,11 @@ from vaws.config import Config, INPUT_DIR, OUTPUT_DIR
 from vaws.version import VERSION_DESC
 from vaws.stats import compute_logarithmic_mean_stddev
 from gui.output import plot_wind_event_damage, plot_wind_event_mean, \
-                        plot_wind_event_show, plot_fitted_curve, plot_fragility_show
+                        plot_wind_event_show, plot_fitted_curve, \
+                        plot_fragility_show, plot_damage_show, plot_wall_damage_show 
 
 import vaws.debris as debris
+from vaws.zone import Zone
 
 from mixins import PersistSizePosMixin, setupTable, finiTable
 
@@ -250,7 +252,7 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
 
     def updateDisplaySettings(self):
         if self.has_run:
-            self.simulator.plot_connection_damage(self.ui.redV.value(), self.ui.blueV.value())
+            self.plot_connection_damage(self.ui.redV.value(), self.ui.blueV.value())
             
     def updateGlobalData(self):
 
@@ -467,9 +469,10 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
                 self.updateHouseResultsTable(bucket)
                 self.updateConnectionTable(bucket)
                 self.updateConnectionTypePlots(bucket)
-                # TODO Finish drawing results
-                # self.updateBreachPlot()
+                self.updateHeatmap(bucket)
                 # self.updateWaterIngressPlot()
+                # TODO Complete when model finished
+                # self.updateBreachPlot(bucket)
                 self.has_run = True
 
         except IOError:
@@ -489,6 +492,94 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
             self.ui.actionSave_Scenario.setEnabled(True)
             self.ui.actionSave_Scenario_As.setEnabled(True)
             self.statusBar().showMessage('Ready')
+
+    def updateHeatmap(self, bucket):
+        red_v = self.ui.redV.value()
+        blue_v = self.ui.blueV.value()
+        connByZoneTypeMap = {}
+        group_widget = {'sheeting': self.ui.mplsheeting,
+                       'batten': self.ui.mplbatten,
+                       'rafter': self.ui.mplrafter,
+                       'piersgroup': self.ui.mplpiers,
+                       'wallracking': self.ui.mplwallracking}
+
+        for group_name, grouped in self.cfg.connections.groupby('group_name'):
+            if group_name not in group_widget:
+                continue
+
+            vgrid = numpy.ones((self.cfg.house['roof_rows'], self.cfg.house['roof_cols']),
+                               dtype=numpy.float32) * blue_v + 10.0
+
+            connection_capacities = numpy.array([bucket['connection']['capacity'][i] for i in grouped.index])
+            for conn_index, (conn_id, connection) in enumerate(grouped.iterrows()):
+                gridCol, gridRow = Zone.get_grid_from_zone_location(connection['zone_loc'])
+                real_values = connection_capacities[conn_index, -1, connection_capacities[conn_index, -1] > 0]
+                if len(real_values) < 1:
+                    continue
+
+                mean_connection_capacity = numpy.mean(real_values)
+                if mean_connection_capacity > 0:
+                    vgrid[gridRow][gridCol] = mean_connection_capacity
+
+            plot_damage_show(group_widget[group_name], vgrid,
+                             self.cfg.house['roof_rows'], self.cfg.house['roof_cols'],
+                             red_v, blue_v)
+
+        wall_major_rows = 2
+        wall_major_cols = self.cfg.house['roof_cols']
+        wall_minor_rows = 2
+        wall_minor_cols = 8
+
+        for group_name, grouped in self.cfg.connections.groupby('group_name'):
+            if group_name not in ('wallcladding', 'wallcollapse'):
+                continue
+
+            v_south_grid = numpy.ones((wall_major_rows, wall_major_cols), dtype=numpy.float32) * blue_v + 10.0
+            v_north_grid = numpy.ones((wall_major_rows, wall_major_cols), dtype=numpy.float32) * blue_v + 10.0
+            v_west_grid = numpy.ones((wall_minor_rows, wall_minor_cols), dtype=numpy.float32) * blue_v + 10.0
+            v_east_grid = numpy.ones((wall_minor_rows, wall_minor_cols), dtype=numpy.float32) * blue_v + 10.0
+    
+            # construct south grid
+            for gridCol in range(0, wall_major_cols):
+                for gridRow in range(0, wall_major_rows):
+                    colChar = chr(ord('A') + gridCol)
+                    loc = 'WS%s%d' % (colChar, gridRow + 1)
+                    conn = connByZoneTypeMap[loc].get(group_name)
+
+                if conn and conn.result_failure_v > 0:
+                    v_south_grid[gridRow][gridCol] = conn.result_failure_v
+
+            # construct north grid
+            for gridCol in range(0, wall_major_cols):
+                for gridRow in range(0, wall_major_rows):
+                    colChar = chr(ord('A') + gridCol)
+                    loc = 'WN%s%d' % (colChar, gridRow + 1)
+                    conn = connByZoneTypeMap[loc].get(group_name)
+
+                if conn and conn.result_failure_v > 0:
+                    v_north_grid[gridRow][gridCol] = conn.result_failure_v
+
+            # construct west grid
+            for gridCol in range(0, wall_minor_cols):
+                for gridRow in range(0, wall_minor_rows):
+                    loc = 'WW%d%d' % (gridCol + 2, gridRow + 1)
+                    conn = connByZoneTypeMap[loc].get(group_name)
+
+                    if conn and conn.result_failure_v > 0:
+                        v_west_grid[gridRow][gridCol] = conn.result_failure_v
+
+            # construct east grid
+            for gridCol in range(0, wall_minor_cols):
+                for gridRow in range(0, wall_minor_rows):
+                    loc = 'WE%d%d' % (gridCol + 2, gridRow + 1)
+                    conn = connByZoneTypeMap[loc].get(group_name)
+
+                    if conn and conn.result_failure_v > 0:
+                        v_east_grid[gridRow][gridCol] = conn.result_failure_v
+
+            plot_wall_damage_show(group_name,v_south_grid, v_north_grid, v_west_grid,
+                                  v_east_grid, wall_major_cols, wall_major_rows,
+                                  wall_minor_cols, wall_minor_rows,red_v, blue_v)
 
     def updateWaterIngressPlot(self):
         self.statusBar().showMessage('Plotting Water Ingress')
@@ -511,7 +602,7 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
         self.ui.wateringress_plot.axes.set_xlim((speeds[0], speeds[len(speeds)-1]))
         self.ui.wateringress_plot.axes.set_ylim((0))
         
-    def updateBreachPlot(self):
+    def updateBreachPlot(self, bucket):
         self.statusBar().showMessage('Plotting Debris Results')
         self.ui.breaches_plot.axes.figure.clf()
         # we'll have three seperate y axis running at different scales
@@ -850,19 +941,21 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
 
             # Debris
             self.ui.debris.setChecked(self.cfg.flags.get('debris'))
-            if self.cfg.flags['debris']:
+            if self.cfg.region_name:
                 self.ui.debrisRegion.setCurrentIndex(
                     self.ui.debrisRegion.findText(self.cfg.region_name))
+            if self.cfg.building_spacing:
                 self.ui.buildingSpacing.setCurrentIndex(
                     self.ui.buildingSpacing.findText(
                         '{:.1f}'.format(self.cfg.building_spacing)))
-                self.ui.sourceItems.setValue(self.cfg.source_items)
-                self.ui.debrisRadius.setValue(self.cfg.debris_radius)
-                self.ui.debrisAngle.setValue(self.cfg.debris_angle)
-                self.ui.flighttimeMean.setText(
-                    '{:.3f}'.format(self.cfg.flight_time_mean))
-                self.ui.flighttimeStddev.setText(
-                    '{:.3f}'.format(self.cfg.flight_time_stddev))
+            self.ui.sourceItems.setValue(self.cfg.source_items)
+            self.ui.debrisRadius.setValue(self.cfg.debris_radius)
+            self.ui.debrisAngle.setValue(self.cfg.debris_angle)
+            self.ui.flighttimeMean.setText(
+                '{:.3f}'.format(self.cfg.flight_time_mean))
+            self.ui.flighttimeStddev.setText(
+                '{:.3f}'.format(self.cfg.flight_time_stddev))
+            if self.cfg.staggered_sources:
                 self.ui.staggeredDebrisSources.setChecked(
                     self.cfg.staggered_sources)
 

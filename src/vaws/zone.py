@@ -126,20 +126,20 @@ class Zone(object):
         self.pressure = qz * (self.cpe + self.cpe_str - self.cpi_alpha * cpi
                               - self.cpe_eave) * diff_shielding
 
-    # @staticmethod
-    # def get_zone_location_from_grid(_zone_grid):
-    #     """
-    #     Create a string location (eg 'A10') from zero based grid refs (col=0,
-    #     row=9)
-    #
-    #     Args:
-    #         _zone_grid: tuple
-    #
-    #     Returns: string location
-    #
-    #     """
-    #     assert isinstance(_zone_grid, tuple)
-    #     return num2str(_zone_grid[0] + 1) + str(_zone_grid[1] + 1)
+    @staticmethod
+    def get_zone_location_from_grid(_zone_grid):
+        """
+        Create a string location (eg 'A10') from zero based grid refs (col=0,
+        row=9)
+
+        Args:
+            _zone_grid: tuple
+
+        Returns: string location
+
+        """
+        assert isinstance(_zone_grid, tuple)
+        return num2str(_zone_grid[0] + 1) + str(_zone_grid[1] + 1)
 
     @staticmethod
     def get_grid_from_zone_location(_zone_name):
@@ -172,15 +172,15 @@ def str2num(s):
     return n
 
 
-# def num2str(n):
-#     """
-#     n: number
-#     return string
-#     """
-#     div = n
-#     string = ''
-#     while div > 0:
-#         module = (div-1) % 26
-#         string = chr(65 + module) + string
-#         div = int((div-module)/26)
-#     return string
+def num2str(n):
+    """
+    n: number
+    return string
+    """
+    div = n
+    string = ''
+    while div > 0:
+        module = (div-1) % 26
+        string = chr(65 + module) + string
+        div = int((div-module)/26)
+    return string

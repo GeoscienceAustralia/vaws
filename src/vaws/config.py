@@ -241,6 +241,8 @@ class Config(object):
             os.path.join(self.path_debris, 'debris_types.csv'),
             index_col=0).to_dict('index')
 
+        self.set_region_name(conf.get(key, 'region_name'))
+
         if self.flags[key]:
 
             from vaws.debris import Debris
@@ -249,7 +251,6 @@ class Config(object):
                 os.path.join(self.path_house_data, 'footprint.csv'),
                 skiprows=1, header=None).values
 
-            self.set_region_name(conf.get(key, 'region_name'))
             self.staggered_sources = conf.getboolean(key, 'staggered_sources')
             self.source_items = conf.getint(key, 'source_items')
             for item in ['building_spacing', 'debris_radius', 'debris_angle',
