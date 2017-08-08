@@ -70,6 +70,7 @@ class MyTestCase(unittest.TestCase):
         self.assertAlmostEqual(self.costing2.compute_cost(1.0),
                                27264.7029, places=4)
 
+
 class WaterIngressTestCase(unittest.TestCase):
 
     @classmethod

@@ -84,33 +84,9 @@ class MyTestCase(unittest.TestCase):
         self.assertEquals(len(self.house.connections), 60)
 
         # sheeting
-        # self.assertEquals(len(self.house.groups['sheeting0'].types['sheetinggable'].connections), 4)
-        # self.assertEqual(self.house.groups['sheeting0'].types['sheetinggable'].no_connections, 4)
-        #
-        # self.assertEquals(len(self.house.groups['sheeting0'].types['sheetingeave'].connections), 8)
-        # self.assertEqual(self.house.groups['sheeting0'].types['sheetingeave'].no_connections, 8)
-        #
-        # self.assertEquals(len(self.house.groups['sheeting0'].types['sheetingcorner'].connections), 2)
-        # self.assertEqual(self.house.groups['sheeting0'].types['sheetingcorner'].no_connections, 2)
-        #
-        # self.assertEquals(len(self.house.groups['sheeting0'].types['sheeting'].connections), 16)
-        # self.assertEqual(self.house.groups['sheeting0'].types['sheeting'].no_connections, 16)
-
         self.assertEqual(self.house.groups['sheeting0'].no_connections, 30)
 
         # batten
-        # self.assertEquals(len(self.house.groups['batten0'].types['batten'].connections), 12)
-        # self.assertEqual(self.house.groups['batten0'].types['batten'].no_connections, 12)
-        #
-        # self.assertEquals(len(self.house.groups['batten0'].types['battenend'].connections), 8)
-        # self.assertEqual(self.house.groups['batten0'].types['battenend'].no_connections, 8)
-        #
-        # self.assertEquals(len(self.house.groups['batten0'].types['batteneave'].connections), 6)
-        # self.assertEqual(self.house.groups['batten0'].types['batteneave'].no_connections, 6)
-        #
-        # self.assertEquals(len(self.house.groups['batten0'].types['battencorner'].connections), 4)
-        # self.assertEqual(self.house.groups['batten0'].types['battencorner'].no_connections, 4)
-
         self.assertEqual(self.house.groups['batten0'].no_connections, 30)
 
         # costing area by group
@@ -210,13 +186,156 @@ class MyTestCase(unittest.TestCase):
         _conns = {x.name for x in self.house.connections.itervalues()}
 
         self.assertEqual({'sheeting', 'batten'}, _groups)
-        #self.assertEqual({'sheetinggable', 'sheetingeave', 'sheetingcorner',
-        #                  'sheeting', 'batten', 'battenend', 'batteneave',
-        #                  'battencorner'}, _types)
         self.assertEqual(set(range(1, 61)), _conns)
+
+
+class TestHouseCoverage(unittest.TestCase):
+
+    @classmethod
+    def setUpClass(cls):
+        path = '/'.join(__file__.split('/')[:-1])
+        cls.cfg_file = os.path.join(
+            path, '../../scenarios/test_scenario19/test_scenario19.cfg')
+        cls.cfg = Config(cfg_file=cls.cfg_file)
+        cls.rnd_state = np.random.RandomState(1)
+        cls.house = House(cls.cfg, cls.rnd_state)
+
+    def test_assign_windward(self):
+
+        # wind direction: NW
+        assert self.house.wind_orientation == 0
+
+        self.house.cfg.front_facing_walls = {'E': [7],
+                                             'NE': [5, 7],
+                                             'N': [5],
+                                             'NW': [3, 5],
+                                             'W': [3],
+                                             'SW': [1, 3],
+                                             'S': [1],
+                                             'SE': [1, 7]}
+
+        # wind direction: S
+        self.house.wind_orientation = 0
+
+        ref = {1: 'windward',
+               3: 'side1',
+               5: 'leeward',
+               7: 'side2'}
+
+        for wall_name in range(1, 8, 2):
+            self.assertEqual(ref[wall_name],
+                             self.house.assign_windward(wall_name))
+
+        # wind direction: E
+        self.house.wind_orientation = 2
+
+        ref = {3: 'windward',
+               1: 'side2',
+               7: 'leeward',
+               5: 'side1'}
+
+        for wall_name in range(1, 8, 2):
+            self.assertEqual(ref[wall_name],
+                             self.house.assign_windward(wall_name))
+
+        self.house.wind_orientation = 3
+
+        ref = {3: 'windward',
+               5: 'windward',
+               7: 'leeward',
+               1: 'leeward'}
+
+        for wall_name in range(1, 8, 2):
+            self.assertEqual(ref[wall_name],
+                             self.house.assign_windward(wall_name))
+
+    def test_assign_cpi_dominant(self):
+        # windward: 1, 2, 5
+        # leeward: 4, 7
+        # side1: 3, 6
+        # side2: 8
+
+        test_data = {
+            1: {1: 1.0, 2: 0.0, 3: 0.9, 4: 0.8, 5: 0.0, 6: 0.0, 7: 0.0, 8: 0.5},
+            2: {1: 1.0, 2: 0.0, 3: 0.5, 4: 0.5, 5: 0.0, 6: 0.0, 7: 0.0, 8: 0.0},
+            3: {1: 1.0, 2: 0.0, 3: 0.0, 4: 0.5, 5: 0.0, 6: 0.0, 7: 0.0, 8: 0.0},
+            4: {1: 1.0, 2: 0.0, 3: 0.3, 4: 0.0, 5: 0.0, 6: 0.0, 7: 0.0, 8: 0.0},
+            5: {1: 1.0, 2: 0.0, 3: 0.0, 4: 0.0, 5: 0.0, 6: 0.0, 7: 0.0, 8: 0.0}
+        }
+
+        expected_cpi = {1: -0.3,
+                        2: 0.2,
+                        3: 0.7*2.4,
+                        4: 0.85*2.4,
+                        5: 2.4}
+
+        cfg = Config(self.cfg_file)
+        cfg.coverages.area = np.array(8 * [10.0])
+
+        for key, data in test_data.iteritems():
+
+            house = House(cfg, self.rnd_state)
+
+            for k, v in data.iteritems():
+                house.coverages.loc[k, 'coverage'].breached_area = v
+
+            _cpi = house.assign_cpi()
+
+            try:
+                self.assertEqual(_cpi, expected_cpi[key])
+            except AssertionError:
+                print([house.coverages.loc[k, 'coverage'].breached_area
+                       for k in range(1, 9)])
+                print('cpi should be {}, but {}'.format(expected_cpi[key], _cpi))
+
+    def test_assign_cpi(self):
+
+        test_data = [
+            [0.4, 0, 0.3, 0.3, 0, 0, 0, 0.3, -0.3],
+            [0.4, 0, 0.2, 0.2, 0, 0, 0, 0, 0.2],
+            [0.8, 0, 0.2, 0.2, 0, 0, 0, 0, 1.68],
+            [1, 0, 0.1, 0.1, 0, 0, 0, 0, 2.04],
+            [2, 0, 0.1, 0.1, 0, 0, 0, 0, 2.4],
+            [0, 0.3, 0.3, 0.4, 0, 0, 0, 0.3, -0.3],
+            [0.2, 0, 0.2, 0.4, 0, 0, 0, 0, -0.3],
+            [0, 0.2, 0.2, 0.8, 0, 0, 0, 0, -1.45],
+            [0, 0.1, 0.1, 1, 0, 0, 0, 0, -1.45],
+            [0.1, 0, 0.1, 2, 0, 0, 0, 0, -1.45],
+            [0.3, 0, 0.4, 0.3, 0, 0, 0, 0.3, -0.3],
+            [0, 0.2, 0.4, 0.2, 0, 0, 0, 0, -0.3],
+            [0.2, 0, 0.8, 0.2, 0, 0, 0, 0, -1.14],
+            [0.1, 0, 1, 0.1, 0, 0, 0, 0, -1.14],
+            [0, 0.1, 2, 0.1, 0, 0, 0, 0, -1.14],
+            [0.1, 0, 0, 0, 0, 0, 0, 0, 2.4],
+            [0, 0, 0.1, 0, 0, 0, 0, 0, -1.14],
+            [0, 0.1, 0, 0.1, 0, 0, 0, 0, 0.2],
+            [0, 0, 0.1, 0.1, 0, 0, 0, 0, -0.3],
+            [0.1, 0, 0.1, 0.1, 0, 0, 0, 0.1, -0.3],
+            [0, 0, 0, 0, 0, 0, 0, 0, 0],
+        ]
+
+        cfg = Config(self.cfg_file)
+        cfg.coverages.area = np.array(8 * [10.0])
+
+        for item in test_data:
+
+            house = House(cfg, self.rnd_state)
+
+            data = {i: x for (i, x) in enumerate(item[:-1], 1)}
+
+            for k, v in data.iteritems():
+                house.coverages.loc[k, 'coverage'].breached_area = v
+
+            _cpi = house.assign_cpi()
+
+            try:
+                self.assertEqual(_cpi, item[-1])
+            except AssertionError:
+                print([house.coverages.loc[k, 'coverage'].breached_area
+                       for k in range(1, 9)])
+                print('cpi should be {}, but {}'.format(item[-1], _cpi))
 
 if __name__ == '__main__':
     unittest.main()
-
-# suite = unittest.TestLoader().loadTestsFromTestCase(MyTestCase)
-# unittest.TextTestRunner(verbosity=2).run(suite)
+    # suite = unittest.TestLoader().loadTestsFromTestCase(TestHouseCoverage)
+    # unittest.TextTestRunner(verbosity=2).run(suite)

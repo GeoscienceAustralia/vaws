@@ -35,6 +35,13 @@ class Config(object):
     terrain_categories = ['2', '2.5', '3', 'non_cyclonic']
     profile_heights = [3.0, 5.0, 7.0, 10.0, 12.0, 15.0, 17.0, 20.0, 25.0, 30.0]
     region_names = ['Capital_city', 'Tropical_town']
+    dominant_opening_ratio_thresholds = [0.5, 1.5, 2.5, 6.0]
+    cpi_table_for_dominant_opening = \
+        {0: {'windward': -0.3, 'leeward': -0.3, 'side1': -0.3, 'side2': -0.3},
+         1: {'windward': 0.2, 'leeward': -0.3, 'side1': -0.3, 'side2': -0.3},
+         2: {'windward': 0.7, 'leeward': 1.0, 'side1': 1.0, 'side2': 1.0},
+         3: {'windward': 0.85, 'leeward': 1.0, 'side1': 1.0, 'side2': 1.0},
+         4: {'windward': 1.0, 'leeward': 1.0, 'side1': 1.0, 'side2': 1.0}}
 
     # model dependent attributes
     house_bucket = ['profile', 'wind_orientation', 'construction_level',
@@ -130,7 +137,8 @@ class Config(object):
         # debris related
         self.front_facing_walls = None
         self.coverages = None
-        self.walls = None
+        self.coverages_cpe_mean = None
+        self.area_by_wall = None
 
         self.file_house = None
         self.file_group = None
@@ -234,12 +242,52 @@ class Config(object):
     def read_debris(self, conf, key):
 
         # global data
-        self.debris_regions = pd.read_csv(
-            os.path.join(self.path_debris, 'debris_regions.csv'),
-            index_col=0).to_dict('index')
-        self.debris_types = pd.read_csv(
-            os.path.join(self.path_debris, 'debris_types.csv'),
-            index_col=0).to_dict('index')
+        try:
+            _file = os.path.join(self.path_debris, 'debris_regions.csv')
+            self.debris_regions = pd.read_csv(_file, index_col=0).to_dict('index')
+        except IOError as msg:
+            logging.warning('{}'.format(msg))
+
+        try:
+            _file = os.path.join(self.path_debris, 'debris_types.csv')
+            self.debris_types = pd.read_csv(_file, index_col=0).to_dict('index')
+        except IOError as msg:
+            logging.warning('{}'.format(msg))
+
+        # coverages
+        try:
+            _file = os.path.join(self.path_house_data, 'coverage_types.csv')
+            coverage_types = pd.read_csv(_file, index_col=0).to_dict('index')
+        except IOError as msg:
+            logging.warning('{}'.format(msg))
+
+        try:
+            _file = os.path.join(self.path_house_data, 'coverages.csv')
+            self.coverages = pd.read_csv(_file, index_col=0)
+        except IOError as msg:
+            logging.warning('{}'.format(msg))
+        else:
+            if not self.coverages.empty:
+                for _key in ['failure_momentum', 'failure_strength']:
+                    self.coverages['log_{}'.format(_key)] = \
+                        self.coverages.apply(self.get_lognormal_tuple,
+                                             args=(coverage_types, _key,), axis=1)
+            else:
+                self.coverages = None
+
+        names_ = ['name'] + range(8)
+        try:
+            _file = os.path.join(self.path_house_data, 'coverages_cpe.csv')
+            self.coverages_cpe_mean = pd.read_csv(
+                _file, names=names_, index_col=0, skiprows=1).to_dict('index')
+        except (IOError, TypeError) as msg:
+            logging.warning('{}'.format(msg))
+
+        # self.area_by_wall = self.coverages.groupby('wall_name')[
+        #     'area'].sum().to_dict()
+
+        self.front_facing_walls = self.read_front_facing_walls(
+            os.path.join(self.path_house_data, 'front_facing_walls.csv'))
 
         self.set_region_name(conf.get(key, 'region_name'))
 
@@ -268,28 +316,6 @@ class Config(object):
                 self.staggered_sources)
 
             self.set_debris_types()
-
-            self.coverages = pd.read_csv(
-                os.path.join(self.path_house_data, 'coverages.csv'))
-
-            coverage_types = pd.read_csv(
-                os.path.join(self.path_house_data, 'coverage_types.csv'),
-                index_col='Name').to_dict('index')
-
-            if coverage_types:
-                self.coverages['log_failure_momentum'] = \
-                    self.coverages.apply(self.get_lognormal_tuple,
-                                         args=(coverage_types,), axis=1)
-
-            try:
-                self.walls = pd.read_csv(
-                    os.path.join(self.path_house_data, 'walls.csv'),
-                    index_col='wall_name', skipinitialspace=True).to_dict()['wall_area']
-            except TypeError:
-                self.walls = {}
-
-            self.front_facing_walls = self.read_front_facing_walls(
-                os.path.join(self.path_house_data, 'front_facing_walls.csv'))
 
     def read_fragility_thresholds(self, conf, key):
         if conf.has_section(key):
@@ -374,26 +400,26 @@ class Config(object):
         # zone data
         self.zones = pd.read_csv(
             os.path.join(self.path_house_data, 'zones.csv'),
-            index_col='name', dtype={'cpi_alpha': float,
-                                     'area': float,
-                                     'wall_dir': int}).to_dict('index')
+            index_col=0, dtype={'cpi_alpha': float,
+                                'area': float,
+                                'wall_dir': int}).to_dict('index')
         self.list_zones = self.zones.keys()
 
         names_ = ['name'] + range(8)
         for item in ['cpe_mean', 'cpe_str_mean', 'cpe_eave_mean', 'edge']:
             _value = pd.read_csv(
                 os.path.join(self.path_house_data, 'zones_{}.csv'.format(item)),
-                names=names_, index_col='name', skiprows=1).to_dict('index')
+                names=names_, index_col=0, skiprows=1).to_dict('index')
             setattr(self, 'zones_{}'.format(item), _value)
 
         groups = pd.read_csv(os.path.join(
-            self.path_house_data, 'conn_groups.csv'), index_col='group_name')
+            self.path_house_data, 'conn_groups.csv'), index_col=0)
         self.groups = groups.to_dict('index')
         _list_groups = groups.index.tolist()
 
         types = pd.read_csv(
             os.path.join(self.path_house_data, 'conn_types.csv'),
-            index_col='type_name')
+            index_col=0)
 
         # change arithmetic mean, std to logarithmic mean, std
         types['lognormal_strength'] = types.apply(
@@ -498,7 +524,7 @@ class Config(object):
     @staticmethod
     def read_damage_costing_data(file_damage_costing, groups):
         costing = {}
-        damage_costing = pd.read_csv(file_damage_costing, index_col='name')
+        damage_costing = pd.read_csv(file_damage_costing, index_col=0)
         for key, item in damage_costing.iterrows():
             if groups['damage_scenario'].isin([key]).any():
                 costing[key] = Costing(costing_name=key, **item)
@@ -518,7 +544,10 @@ class Config(object):
     @staticmethod
     def read_water_ingress_costing_data(file_water_ingress_costing, groups):
         dic_ = {}
-        tmp = pd.read_csv(file_water_ingress_costing)
+        names = ['name', 'water_ingress', 'base_cost', 'formula_type', 'coeff1',
+                 'coeff2', 'coeff3']
+
+        tmp = pd.read_csv(file_water_ingress_costing, names=names, header=0)
         for key, grouped in tmp.groupby('name'):
             if groups['damage_scenario'].isin([key]).any() or (key == 'WI only'):
                 grouped = grouped.set_index('water_ingress')
@@ -539,10 +568,10 @@ class Config(object):
         return _dic
 
     @staticmethod
-    def get_lognormal_tuple(row, dic_):
+    def get_lognormal_tuple(row, dic_, key):
         _type = row['coverage_type']
-        _mean = dic_[_type]['failure_momentum_mean']
-        _sd = dic_[_type]['failure_momentum_std']
+        _mean = dic_[_type]['{}_mean'.format(key)]
+        _sd = dic_[_type]['{}_std'.format(key)]
         return compute_logarithmic_mean_stddev(_mean, _sd)
 
     @staticmethod

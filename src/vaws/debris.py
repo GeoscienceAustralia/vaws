@@ -11,11 +11,15 @@ Debris Module - adapted from JDH Consulting and Martin's work
 """
 
 import logging
+import pandas as pd
 
-from numpy import rint, random, array
+from numpy import rint, random, array, abs, sum
 from math import pow, radians, tan, sqrt, exp
 from shapely.geometry import Point, Polygon, LineString
 from shapely.affinity import rotate
+from vaws.stats import sample_lognormal
+
+from vaws.zone import Zone
 
 
 class Debris(object):
@@ -33,6 +37,11 @@ class Debris(object):
     flight_distance_power = {2: [1, 2],
                              5: [2, 3, 4, 5]}
 
+    angle_by_idx = {0: 90.0, 4: 90.0,  # S, N
+                    1: 45.0, 5: 45.0,  # SW, NE
+                    2: 0.0, 6: 0.0,  # E, W
+                    3: -45.0, 7: -45.0}  # SE, NW
+
     def __init__(self, cfg):
 
         self.cfg = cfg
@@ -40,8 +49,12 @@ class Debris(object):
         # assigned by footprint.setter
         self._footprint = None
         self.front_facing_walls = None
-        self.area_walls = None
-        self.coverages = None
+
+        # assigned by coverages.setter
+        self._coverages = None
+        self.area = None
+        self.coverage_idx = None
+        self.coverage_prob = None
 
         # assigned by rnd_state.setter
         self._rnd_state = None
@@ -49,7 +62,7 @@ class Debris(object):
         # assigned by no_items_mean.setter
         self._no_items_mean = None  # mean value for poisson dist
 
-        self.debris_items = list()  # container of items over wind steps
+        self.debris_items = []  # container of items over wind steps
 
         # vary over wind speeds
         self.no_items = 0  # total number of debris items generated
@@ -100,38 +113,39 @@ class Debris(object):
 
             self.footprint
             self.front_facing_walls
-            self.area_walls
-            self.coverages
 
         """
-        polygon_inst, wind_dir_index = _tuple
+        polygon_inst, wind_dir_idx = _tuple
         assert isinstance(polygon_inst, Polygon)
-        assert isinstance(wind_dir_index, int)
+        assert isinstance(wind_dir_idx, int)
 
-        angle = {0: 90.0, 4: 90.0,  # S, N
-                 1: 45.0, 5: 45.0,  # SW, NE
-                 2: 0.0, 6: 0.0,  # E, W
-                 3: -45.0, 7: -45.0}  # SE, NW
+        self._footprint = rotate(polygon_inst, self.__class__.angle_by_idx[
+            wind_dir_idx])
 
-        self._footprint = rotate(polygon_inst, angle[wind_dir_index])
+        self.front_facing_walls = self.cfg.front_facing_walls[
+            self.cfg.wind_dir[wind_dir_idx]]
 
-        try:
-            self.front_facing_walls = self.cfg.front_facing_walls[
-                self.cfg.wind_dir[wind_dir_index]]
-        except KeyError:
-            self.front_facing_walls = []
-        else:
-            self.area_walls = 0.0
-            for wall_name in self.front_facing_walls:
-                self.area_walls += self.cfg.walls[wall_name]
+    @property
+    def coverages(self):
+        return self._coverages
 
-            id_ = self.cfg.coverages.apply(
-                lambda row: row['wall_name'] in self.front_facing_walls, axis=1)
+    @coverages.setter
+    def coverages(self, _df):
 
-            self.coverages = self.cfg.coverages.loc[id_].copy()
+        assert isinstance(_df, pd.DataFrame)
 
-            self.coverages['cum_prop_area'] = \
-                self.coverages['area'].cumsum() / self.area_walls
+        _tf = _df['wall_name'].isin(self.front_facing_walls)
+        self._coverages = _df.loc[_tf, 'coverage'].to_dict()
+
+        self.area = 0.0
+        self.coverage_idx = []
+        self.coverage_prob = []
+        for key, value in self._coverages.iteritems():
+            self.area += value.area
+            self.coverage_idx.append(key)
+            self.coverage_prob.append(self.area)
+
+        self.coverage_prob = array(self.coverage_prob)/self.area
 
     @property
     def rnd_state(self):
@@ -161,7 +175,6 @@ class Debris(object):
 
         """
 
-        self.damaged_area = 0.0
         self.no_touched = 0
 
         # sample a poisson for each source
@@ -239,7 +252,7 @@ class Debris(object):
 
                 self.no_touched += 1
 
-                item_momentum = self.compute_debris_mementum(debris['cdav'],
+                item_momentum = self.compute_debris_momentum(debris['cdav'],
                                                              frontal_area,
                                                              flight_distance,
                                                              mass,
@@ -260,29 +273,34 @@ class Debris(object):
 
         Returns:
             self.breached
-            self.damaged_area
 
         """
 
         # determine coverage type
         _rv = self.rnd_state.uniform()
-        _id = self.coverages[self.coverages['cum_prop_area'] > _rv].index[0]
-        _coverage = self.coverages.loc[_id]
+        _id = self.coverage_idx[sum(self.coverage_prob < _rv)]
+        _coverage = self.coverages[_id]
+
+        logging.debug('coverage id: {} due to rv: {} vs prob: {}'.format(
+            _id, _rv, self.coverage_prob))
 
         # check impact using failure momentum
-        _capacity = self.rnd_state.lognormal(*_coverage['log_failure_momentum'])
+        try:
+            _capacity = self.rnd_state.lognormal(*_coverage.log_failure_momentum)
+        except ValueError:
+            _capacity = exp(_coverage.log_failure_momentum[0])
 
         if _capacity < item_momentum:
-
-            if _coverage['description'] == 'window':
-                self.breached = True
-                self.damaged_area += _coverage['area']
+            # history of coverage is ignored
+            if _coverage.description == 'window':
+                _coverage.breached_area = _coverage.area
+                _coverage.breached = 1
             else:
-                self.damaged_area += min(frontal_area, _coverage['area'])
+                _coverage.breached_area = min(frontal_area, _coverage.area)
 
             logging.debug(
-                'breached at {} b/c {} < {}'.format(
-                    _coverage['description'], _capacity, item_momentum))
+                'coverage {} breached by debris b/c {:.3f} < {:.3f} -> area: {:.3f}'.format(
+                    _coverage.name, _capacity, item_momentum, _coverage.breached_area))
 
     def compute_flight_distance(self, debris_type_str, flight_time,
                                 frontal_area, mass, wind_speed, flag_poly=2):
@@ -337,7 +355,7 @@ class Debris(object):
 
             return convert_to_dim * less_dis
 
-    def compute_debris_mementum(self, cdav, frontal_area, flight_distance, mass,
+    def compute_debris_momentum(self, cdav, frontal_area, flight_distance, mass,
                                 wind_speed, rnd_state):
         """
         calculate momentum of debris object
@@ -413,7 +431,7 @@ class Debris(object):
         y_cord = 0.0
         y_cord_lim = radius / 6.0
 
-        sources = list()
+        sources = []
         if flag_staggered:
             while x_cord <= radius:
                 y_cord_max = x_cord * tan(radians(angle) / 2.0)
@@ -455,3 +473,92 @@ class Debris(object):
 
         return sources
 
+
+class Coverage(Zone):
+
+    def __init__(self, coverage_name=None, **kwargs):
+
+        try:
+            assert isinstance(coverage_name, str)
+        except AssertionError:
+            coverage_name = str(coverage_name)
+
+        self.area = None
+        self.cpe_mean = {}
+        self.coverage_type = None
+        self.log_failure_strength = None
+        self.log_failure_momentum = None
+        self.wall_name = None
+
+        # default value for coverage
+        self.cpi_alpha = 1.0
+        self.cpe_str_mean = {i: 0 for i in range(8)}
+        self.cpe_eave_mean = {i: 0 for i in range(8)}
+        self.is_roof_edge = {i: 0 for i in range(8)}
+
+        default_attr = dict(area=self.area,
+                            cpe_mean=self.cpe_mean,
+                            coverage_type=self.coverage_type,
+                            log_failure_strength=self.log_failure_strength,
+                            log_failure_momentum=self.log_failure_momentum,
+                            wall_name=self.wall_name,
+                            cpi_alpha=self.cpi_alpha,
+                            cpe_str_mean=self.cpe_str_mean,
+                            cpe_eave_mean=self.cpe_eave_mean,
+                            is_roof_edge=self.is_roof_edge)
+
+        default_attr.update(kwargs)
+
+        super(Coverage, self).__init__(zone_name=coverage_name, **default_attr)
+
+        self.strength = None
+        self.load = None
+        self.capacity = -1
+        self.breached = 0
+        self._breached_area = 0
+
+    @property
+    def breached_area(self):
+        return self._breached_area
+
+    @breached_area.setter
+    def breached_area(self, value):
+        """
+
+        Args:
+            value:
+
+        Returns:
+
+        """
+
+        assert isinstance(value, float) or isinstance(value, int)
+
+        # breached area can be accumulated but not exceeding area
+        self._breached_area += value
+        self._breached_area = min(self._breached_area, self.area)
+
+    def sample_strength(self, rnd_state):
+
+        self.strength = sample_lognormal(*(self.log_failure_strength +
+                                           (rnd_state,)))
+
+    def check_damage(self, qz, cpi, wind_speed):
+
+        self.load = 0.0
+
+        if not self.breached:
+
+            self.load = 0.9 * qz * (self.cpe - cpi) * self.area
+
+            if abs(self.load) > self.strength:
+
+                self.breached = 1
+
+                self._breached_area = self.area
+
+                self.capacity = wind_speed
+
+                logging.info(
+                    'coverage {} failed at {:.3f} b/c {:.3f} < {:.3f} -> area {:.3f}'.format(
+                        self.name, wind_speed, self.strength, self.load, self.breached_area))

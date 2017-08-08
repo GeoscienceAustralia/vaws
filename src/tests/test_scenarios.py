@@ -37,11 +37,11 @@ def simulation(house_damage, conn_capacity, wind_speeds, list_connections):
             _zone.cpe_str = _zone.cpe_str_mean[wind_dir_index]
             _zone.cpe_eave = _zone.cpe_eave_mean[wind_dir_index]
 
-            _zone.calc_zone_pressures(wind_dir_index,
-                                      cpi,
-                                      house_damage.qz,
-                                      ms,
-                                      building_spacing)
+            _zone.calc_zone_pressure(wind_dir_index,
+                                     cpi,
+                                     house_damage.qz,
+                                     ms,
+                                     building_spacing)
 
         for _connection in house_damage.house.connections.itervalues():
             _connection.compute_load()
@@ -115,11 +115,11 @@ class TestScenario1(unittest.TestCase):
             _zone.cpe = _zone.cpe_mean[0]
             _zone.cpe_str = _zone.cpe_str_mean[0]
             _zone.cpe_eave = _zone.cpe_eave_mean[0]
-            _zone.calc_zone_pressures(wind_dir_index,
-                                      cpi,
-                                      qz,
-                                      Ms,
-                                      building_spacing)
+            _zone.calc_zone_pressure(wind_dir_index,
+                                     cpi,
+                                     qz,
+                                     Ms,
+                                     building_spacing)
 
         ref_load = {1: -0.0049, 11: -0.1944, 15: -0.0194, 21: -0.0194,
                     25: -0.0097, 31: -0.0049, 35: -0.0972, 39: -0.1507,
@@ -822,7 +822,79 @@ class TestScenario18(unittest.TestCase):
                    wind_speeds=np.arange(55.0, 101.0, 1.0),
                    list_connections=range(1, 137))
 
+
+class TestScenario19(unittest.TestCase):
+    """
+     Coverage 2 should fail at about 35 m/s followed by
+     4, 1, and 3 at 40, 45, and 50 m/s respectively.
+
+    """
+    @classmethod
+    def setUpClass(cls):
+
+        path = '/'.join(__file__.split('/')[:-1])
+
+        cfg = Config(
+            cfg_file=os.path.join(path, '../../scenarios/test_scenario19/test_scenario19.cfg'))
+        cls.house_damage = HouseDamage(cfg, seed=0)
+
+        # set up logging
+        file_logger = os.path.join(cfg.path_output, 'log_test19.txt')
+        logging.basicConfig(filename=file_logger,
+                            filemode='w',
+                            level=logging.DEBUG,
+                            format='%(levelname)s %(message)s')
+
+    def test_damage_coverage(self):
+
+        list_connections = range(1, 9)
+        conn_capacity = {35.0: [2],
+                         40.0: [4],
+                         45.0: [1],
+                         50.0: [3],
+                         }
+
+        wind_speeds = np.arange(20.0, 60.0, 1)
+
+    # change it to conn to speed
+        conn_capacity2 = {x: -1.0 for x in list_connections}
+        for speed, conn_list in conn_capacity.iteritems():
+            for _id in conn_list:
+                conn_capacity2.update({_id: speed})
+
+        # compute zone pressures
+        self.house_damage.house.mzcat = 1.0  # profile: 6, height: 4.5
+
+        for wind_speed in wind_speeds:
+
+            logging.info('wind speed {:.3f}'.format(wind_speed))
+
+            self.house_damage.compute_qz_ms(wind_speed)
+
+            for _, _ps in self.house_damage.house.coverages.iterrows():
+                _ps['coverage'].check_damage(self.house_damage.qz,
+                                             self.house_damage.cpi,
+                                             wind_speed)
+
+                # ignore cpi refinement
+                if _ps['coverage'].breached:
+                    self.house_damage.cpi = 0.7
+
+        # compare with reference capacity
+        for _id, _coverage in self.house_damage.house.coverages['coverage'].iteritems():
+
+            try:
+                np.testing.assert_almost_equal(_coverage.capacity,
+                                               conn_capacity2[_id],
+                                               decimal=2)
+            except KeyError:
+                print('coverage #{} is not found'.format(_id))
+            except AssertionError:
+                print('coverage #{} fails at {} not {}'.format(
+                    _id, _coverage.capacity, conn_capacity2[_id]))
+
+
 if __name__ == '__main__':
-    suite = unittest.TestLoader().loadTestsFromTestCase(TestScenario14)
+    suite = unittest.TestLoader().loadTestsFromTestCase(TestScenario19)
     unittest.TextTestRunner(verbosity=2).run(suite)
-    # unittest.main(verbosity=2)
+    #unittest.main(verbosity=2)
