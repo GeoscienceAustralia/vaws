@@ -65,8 +65,8 @@ def plot_heatmap(grouped, values, vmin, vmax, vstep, xlim_max, ylim_max,
                                ticks=bounds,
                                boundaries=bounds,
                                format='%.1f',
-                               orientation='horizontal',
-                               )
+                               orientation='horizontal')
+
     cb.set_label('Wind speed (m/s)', size=10)
     cb.ax.tick_params(labelsize=8)
 

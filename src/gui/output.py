@@ -1,8 +1,13 @@
 '''
     output.py - output module, postprocess and plot display engine
 '''
-from matplotlib import cm
 import matplotlib as mpl
+from matplotlib import cm, colors
+from matplotlib.collections import PatchCollection
+import matplotlib.pyplot as plt
+
+import numpy as np
+
 from vaws import house
 from vaws.zone import Zone
 
@@ -196,26 +201,32 @@ def plot_wall_damage_show(fig,
     fig.canvas.draw()
 
 
-def plot_damage_show(fig, v_damaged_at, numCols, numRows, v_min, v_max):
-    xticks = range(0, numCols-1)
-    xticklabels = []
-    for tick in xticks:
-        xticklabels.append(chr(ord('A') + tick))
-    yticks = range(0, numRows)
-    yticklabels = range(1, numRows+1)
+def plot_damage_show(fig, grouped, values_grid, xlim_max, ylim_max,
+                     v_min, v_max, v_step, file_name=None):
 
-    # add the legend colorbar axes
     fig.axes.figure.clf()
     fig.canvas.draw()
+
+    # add the legend colorbar axes
     left = 0.1
-    bottom = left
+    bottom = 0.1
     width = (1.0 - left * 2.0)
     height = 0.05
     axLegend = fig.figure.add_axes([left, bottom, width, height])
-    cmap = mpl.cm.jet_r
-    norm = mpl.colors.Normalize(vmin=v_min, vmax=v_max)
-    cb1 = mpl.colorbar.ColorbarBase(axLegend.axes, cmap=cmap, norm=norm, orientation='horizontal')
-    cb1.set_label('Wind Speed')
+
+    cmap = cm.jet_r
+    bounds = np.linspace(v_min, v_max, v_step)
+    norm = colors.BoundaryNorm(bounds, cmap.N)
+    cmap.set_under('gray')
+    cb1 = mpl.colorbar.ColorbarBase(axLegend.axes,
+                                    cmap=cmap,
+                                    norm=norm,
+                                    spacing='proportional',
+                                    ticks=bounds,
+                                    format='%.1f',
+                                    orientation='horizontal')
+    cb1.set_label('Wind speed (m/s)', size=10)
+    cb1.ax.tick_params(labelsize=8)
 
     # add the heatmap
     left = 0.1
@@ -223,12 +234,25 @@ def plot_damage_show(fig, v_damaged_at, numCols, numRows, v_min, v_max):
     width = (1.0 - left * 2.0)
     height = 0.75
     axPlot = fig.figure.add_axes([left, bottom, width, height])
-    axPlot.imshow(v_damaged_at, cmap=cm.jet_r, interpolation='nearest', origin='lower', vmin=v_min, vmax=v_max)
-    axPlot.set_yticks(yticks)
-    axPlot.set_yticklabels(yticklabels)
-    axPlot.set_xticks(xticks)
-    axPlot.set_xticklabels(xticklabels)
-    axPlot.set_title('Wind Speed Damaged At Heatmap')
+
+    for irow, row in grouped.iterrows():
+        axPlot.annotate(irow, row['centroid'], color='w', weight='bold',
+                        fontsize=8, ha='center', va='center')
+
+    p = PatchCollection(grouped['coords'].tolist(), cmap=cmap, norm=norm)
+    p.set_array(values_grid)
+    axPlot.add_collection(p)
+
+    axPlot.set_xlim([0, xlim_max])
+    axPlot.set_ylim([0, ylim_max])
+    axPlot.set_xbound(lower=0.0, upper=xlim_max)
+    axPlot.set_ybound(lower=0.0, upper=ylim_max)
+    axPlot.xaxis.set_major_formatter(mpl.ticker.NullFormatter())
+    axPlot.yaxis.set_major_formatter(mpl.ticker.NullFormatter())
+    axPlot.tick_params(axis=u'both', which=u'both', length=0)
+
+    group_key = grouped['group_name'].unique()[0]
+    axPlot.set_title('Heatmap of damage capacity for {}'.format(group_key))
     axPlot.format_coord = format_coord
 
     # fig.canvas.mpl_connect('motion_notify_event',
@@ -236,6 +260,10 @@ def plot_damage_show(fig, v_damaged_at, numCols, numRows, v_min, v_max):
     # fig.canvas.mpl_connect('button_press_event',
     #                        PlotClickCallback(fig, axPlot, plotKey, mplDict['owner'], mplDict['house']))
     fig.canvas.draw()
+
+    if file_name:
+        fig.savefig('{}.png'.format(file_name), dpi=150)
+        plt.close(fig)
 
 
 def plot_wind_event_damage(mp_widget, v, di):

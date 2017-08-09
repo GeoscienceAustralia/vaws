@@ -507,23 +507,13 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
             if group_name not in group_widget:
                 continue
 
-            vgrid = numpy.ones((self.cfg.house['roof_rows'], self.cfg.house['roof_cols']),
-                               dtype=numpy.float32) * blue_v + 10.0
-
             connection_capacities = numpy.array([bucket['connection']['capacity'][i] for i in grouped.index])
             for conn_index, (conn_id, connection) in enumerate(grouped.iterrows()):
-                gridCol, gridRow = Zone.get_grid_from_zone_location(connection['zone_loc'])
-                real_values = connection_capacities[conn_index, -1, connection_capacities[conn_index, -1] > 0]
-                if len(real_values) < 1:
-                    continue
+                mean_connection_capacity = numpy.mean(connection_capacities[:,-1], axis=1)
 
-                mean_connection_capacity = numpy.mean(real_values)
-                if mean_connection_capacity > 0:
-                    vgrid[gridRow][gridCol] = mean_connection_capacity
-
-            plot_damage_show(group_widget[group_name], vgrid,
-                             self.cfg.house['roof_rows'], self.cfg.house['roof_cols'],
-                             red_v, blue_v)
+            plot_damage_show(group_widget[group_name], grouped, mean_connection_capacity,
+                             self.cfg.house['length'], self.cfg.house['width'],
+                             red_v, blue_v, self.cfg.heatmap_vstep)
 
         wall_major_rows = 2
         wall_major_cols = self.cfg.house['roof_cols']
