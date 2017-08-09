@@ -142,7 +142,6 @@ class Config(object):
 
         self.file_house = None
         self.file_group = None
-        self.file_type = None
         self.file_connection = None
         self.file_zone = None
         self.file_curve = None
@@ -170,9 +169,10 @@ class Config(object):
     def set_output_files(self):
         if not os.path.exists(self.path_output):
             os.makedirs(self.path_output)
-        for item in ['house', 'group', 'type', 'connection', 'zone', 'curve']:
+        for item in ['house', 'group', 'type', 'connection', 'zone']:
             setattr(self, 'file_{}'.format(item),
                     os.path.join(self.path_output, 'results_{}.h5'.format(item)))
+        self.file_curve = os.path.join(self.path_output, 'results_curve.csv')
 
     def read_config(self):
 
