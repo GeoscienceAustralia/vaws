@@ -71,7 +71,7 @@ def simulate_wind_damage_to_houses(cfg, call_back=None):
 
 def init_bucket(cfg):
 
-    bucket = dict()
+    bucket = {}
 
     for att in cfg.house_bucket:
         bucket['house'] = {}

@@ -457,9 +457,9 @@ class MyTestCase(unittest.TestCase):
     '''
     def test_number_of_touched_org(self):
 
-        no_items = list()
-        no_items_mean = list()
-        no_touched = list()
+        no_items = []
+        no_items_mean = []
+        no_touched = []
 
         _debris = Debris(cfg=self.cfg)
         _stretched_poly = Polygon([(-24.0, 6.5), (4.0, 6.5), (4.0, -6.5),
@@ -515,9 +515,9 @@ class MyTestCase(unittest.TestCase):
 
     def test_number_of_touched_revised(self):
 
-        no_items = list()
-        no_items_mean = list()
-        no_touched = list()
+        no_items = []
+        no_items_mean = []
+        no_touched = []
 
         self.cfg.source_items = 100
 

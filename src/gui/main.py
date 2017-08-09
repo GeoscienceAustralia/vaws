@@ -760,16 +760,16 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
         house_damage_data = bucket['house_damage']
 
         for house_num in range(self.cfg.no_sims):
-            mean_wind_dir = int(numpy.mean(house_data['wind_orientation'][:, house_num]))
+            wind_dir = house_data['wind_orientation'][house_num]
             mean_wind_speed = numpy.mean(house_damage_data['cpi_wind_speed'][:, house_num])
-            construction_level = numpy.unique(house_data['construction_level'][:, house_num])[0]
+            construction_level = house_data['construction_level'][house_num]
             parent = QTreeWidgetItem(self.ui.zoneResults, ['H{} ({}/{:.3}/{})'.format(house_num+1,
-                                                                                      self.cfg.wind_dir[mean_wind_dir],
+                                                                                      self.cfg.wind_dir[wind_dir],
                                                                                       mean_wind_speed,
                                                                                       construction_level),
                                                            '', '', '', ''])
             zone_results_dict = bucket['zone']
-            for zr_key in sorted(self.cfg.zones):
+            for zr_key in self.cfg.zones:
                 zone_cpe = numpy.mean(zone_results_dict['cpe'][zr_key][:, 1])
                 zone_cpe_str = numpy.mean(zone_results_dict['cpe_str'][zr_key][:, 1])
                 zone_cpe_eave = numpy.mean(zone_results_dict['cpe_eave'][zr_key][:, 1])
@@ -790,12 +790,12 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
 
         self.ui.connectionResults.clear()
         for house_num in range(self.cfg.no_sims):
-            mean_wind_dir = int(numpy.mean(house_data['wind_orientation'][:, house_num]))
+            wind_dir = house_data['wind_orientation'][house_num]
             mean_wind_speed = numpy.mean(house_damage_data['cpi_wind_speed'][:, house_num])
-            construction_level = numpy.unique(house_data['construction_level'][:, house_num])[0]
+            construction_level = house_data['construction_level'][house_num]
             parent = QTreeWidgetItem(self.ui.connectionResults,
                                      ['H{} ({}/{:.3}/{})'.format(house_num+1,
-                                                                 self.cfg.wind_dir[mean_wind_dir],
+                                                                 self.cfg.wind_dir[wind_dir],
                                                                  mean_wind_speed,
                                                                  construction_level),
                                       '', '', '', ''])

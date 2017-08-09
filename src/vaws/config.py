@@ -398,12 +398,14 @@ class Config(object):
             calc_big_a_b_values(shape_k=self.house['cpe_k'])
 
         # zone data
-        self.zones = pd.read_csv(
-            os.path.join(self.path_house_data, 'zones.csv'),
-            index_col=0, dtype={'cpi_alpha': float,
-                                'area': float,
-                                'wall_dir': int}).to_dict('index')
-        self.list_zones = self.zones.keys()
+        _df = pd.read_csv(os.path.join(self.path_house_data, 'zones.csv'),
+                          index_col=0, dtype={'cpi_alpha': float,
+                                              'area': float,
+                                              'wall_dir': int})
+        _dict = _df.to_dict('index')
+
+        self.list_zones = _df.index.tolist()
+        self.zones = OrderedDict((k, _dict.get(k)) for k in self.list_zones)
 
         names_ = ['name'] + range(8)
         for item in ['cpe_mean', 'cpe_str_mean', 'cpe_eave_mean', 'edge']:
