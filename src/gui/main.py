@@ -1017,7 +1017,7 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
         new_cfg.staggered_sources = self.ui.staggeredDebrisSources.isChecked()
 
         new_cfg.flags['plot_fragility'] = True
-        new_cfg.flags['plot_vul'] = True
+        new_cfg.flags['plot_vulnerability'] = True
         # new_cfg.flags['random_seed'] = self.ui.seedRandom.isChecked()
         new_cfg.flags['vul_fit_log'] = self.ui.fitLognormalCurve.isChecked()
         new_cfg.flags['water_ingress'] = self.ui.waterIngress.isChecked()

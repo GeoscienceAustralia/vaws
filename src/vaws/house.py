@@ -53,8 +53,8 @@ class House(object):
         self.mzcat = None
 
         self.groups = OrderedDict()  # list of conn type groups
-        self.connections = {}  # dict of connections with name
-        self.zones = {}  # dict of zones with id
+        self.connections = OrderedDict()  # dict of connections with name
+        self.zones = OrderedDict()  # dict of zones with id
         self.coverages = None  # pd.dataframe of coverages
         # self.zone_by_grid = {}  # dict of zones with zone loc grid in tuple
 
@@ -311,7 +311,6 @@ class House(object):
         """
         will be constant through wind steps
         Returns:
-            big_a, big_b,
             wind_orientation,
             construction_level, str_mean_factor, str_cov_factor,
             profile, mzcat
@@ -354,7 +353,3 @@ class House(object):
         self.construction_level = key
         self.str_mean_factor = value['mean_factor']
         self.str_cov_factor = value['cov_factor']
-
-
-
-

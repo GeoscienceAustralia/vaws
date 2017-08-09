@@ -73,15 +73,18 @@ def init_bucket(cfg):
 
     bucket = dict()
 
-    # house
-    for item in ['house', 'house_damage', 'debris']:
+    for att in cfg.house_bucket:
+        bucket['house'] = {}
+        if att in cfg.att_non_float:
+            bucket['house'][att] = np.empty(shape=(1, cfg.no_sims), dtype=str)
+        else:
+            bucket['house'][att] = np.empty(shape=(1, cfg.no_sims), dtype=float)
+
+    for item in ['house_damage', 'debris']:
+        bucket[item] = {}
         for att in getattr(cfg, '{}_bucket'.format(item)):
-            if att in cfg.att_non_float:
-                bucket.setdefault(item, {})[att] = np.empty(
-                    shape=(cfg.wind_speed_steps, cfg.no_sims), dtype=str)
-            else:
-                bucket.setdefault(item, {})[att] = np.empty(
-                    shape=(cfg.wind_speed_steps, cfg.no_sims), dtype=float)
+            bucket[item][att] = np.empty(
+                shape=(cfg.wind_speed_steps, cfg.no_sims), dtype=float)
 
     # components: group, connection, zone
     for item in cfg.list_components:
@@ -97,12 +100,10 @@ def init_bucket(cfg):
 
 def update_bucket(cfg, dic_, results_by_speed, ispeed):
 
-    # house
-    for item in ['house', 'house_damage', 'debris']:
+    for item in ['house_damage', 'debris']:
         for att in getattr(cfg, '{}_bucket'.format(item)):
             dic_[item][att][ispeed] = [x[item][att] for x in results_by_speed]
 
-    # components
     for item in cfg.list_components:
         for att, chunk in dic_[item].iteritems():
             for _conn, value in chunk.iteritems():
@@ -118,6 +119,10 @@ def update_bucket(cfg, dic_, results_by_speed, ispeed):
         if damage_incr < 0:
             logging.warning('damage increment is less than zero')
             damage_incr = 0.0
+    else:
+        # doing nothing but save house attributes
+        for att in cfg.house_bucket:
+            dic_['house'][att] = [x['house'][att] for x in results_by_speed]
 
     return damage_incr
 
@@ -159,7 +164,7 @@ def save_results_to_files(cfg, bucket):
             with open(cfg.file_curve, 'w') as fid:
                 fid.write(', error, param1, param2\n')
 
-    if cfg.flags['plot_vul']:
+    if cfg.flags['plot_vulnerability']:
         fitted_curve = fit_vulnerability_curve(cfg, bucket['house_damage']['di'])
         if not os.path.isfile(cfg.file_curve):
             with open(cfg.file_curve, 'w') as fid:
