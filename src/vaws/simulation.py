@@ -192,24 +192,6 @@ def save_results_to_files(cfg, bucket):
                              ylim_max=cfg.house['width'],
                              file_name=file_name)
 
-
-def show_results(output_folder=None, vRed=40, vBlue=80):
-    if self.mplDict:
-        self.mplDict['fragility'].axes.cla()
-        self.mplDict['fragility'].axes.figure.canvas.draw()
-        self.mplDict['vulnerability'].axes.cla()
-        self.mplDict['vulnerability'].axes.figure.canvas.draw()
-    if self.cfg.flags['dmg_plot_fragility']:
-        self.plot_fragility(output_folder)
-    if self.cfg.flags['plot_vulnerability']:
-        self.plot_vulnerability(output_folder)
-        output.plot_wind_event_show(self.cfg.no_sims,
-                                    self.cfg.wind_speed_min,
-                                    self.cfg.wind_speed_max,
-                                    output_folder)
-    self.plot_connection_damage(vRed, vBlue)
-
-
 def set_logger(path_cfg, logging_level=None):
     """
         

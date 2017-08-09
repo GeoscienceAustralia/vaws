@@ -3,17 +3,8 @@
 '''
 from matplotlib import cm
 import matplotlib as mpl
-from vaws import zone, house
-
-mplDict = None
-
-
-def hookupWidget(mpldict):
-    global mplDict
-    mplDict = mpldict
-    mplDict['vulnerability'].axes.hold(True)
-    mplDict['fragility'].axes.hold(True)
-
+from vaws import house
+from vaws.zone import Zone
 
 class PlotFlyoverCallback(object):
     def __init__(self, axes, data, statusbar, num_cols, num_rows):
@@ -91,7 +82,7 @@ class PlotClickCallback(object):
                     break
 
 
-def plot_wall_damage_show(plotKey,
+def plot_wall_damage_show(fig,
                           wall_south_V,
                           wall_north_V,
                           wall_west_V,
@@ -100,7 +91,6 @@ def plot_wall_damage_show(plotKey,
                           num_minor_cols, num_minor_rows,
                           v_min, v_max):
     # add the legend colorbar axes to base of plot
-    fig = mplDict[plotKey].figure
     fig.clf()
     fig.canvas.draw()
     left = 0.1
@@ -207,24 +197,24 @@ def plot_wall_damage_show(plotKey,
 
 
 def plot_damage_show(fig, v_damaged_at, numCols, numRows, v_min, v_max):
-    xticks = range(0, numCols)
+    xticks = range(0, numCols-1)
     xticklabels = []
     for tick in xticks:
         xticklabels.append(chr(ord('A') + tick))
     yticks = range(0, numRows)
-    yticklabels = range(1, numRows + 1)
+    yticklabels = range(1, numRows+1)
 
     # add the legend colorbar axes
-    fig.clf()
+    fig.axes.figure.clf()
     fig.canvas.draw()
     left = 0.1
     bottom = left
     width = (1.0 - left * 2.0)
     height = 0.05
-    axLegend = fig.add_axes([left, bottom, width, height])
+    axLegend = fig.figure.add_axes([left, bottom, width, height])
     cmap = mpl.cm.jet_r
     norm = mpl.colors.Normalize(vmin=v_min, vmax=v_max)
-    cb1 = mpl.colorbar.ColorbarBase(axLegend, cmap=cmap, norm=norm, orientation='horizontal')
+    cb1 = mpl.colorbar.ColorbarBase(axLegend.axes, cmap=cmap, norm=norm, orientation='horizontal')
     cb1.set_label('Wind Speed')
 
     # add the heatmap
@@ -232,7 +222,7 @@ def plot_damage_show(fig, v_damaged_at, numCols, numRows, v_min, v_max):
     bottom = 0.2
     width = (1.0 - left * 2.0)
     height = 0.75
-    axPlot = fig.add_axes([left, bottom, width, height])
+    axPlot = fig.figure.add_axes([left, bottom, width, height])
     axPlot.imshow(v_damaged_at, cmap=cm.jet_r, interpolation='nearest', origin='lower', vmin=v_min, vmax=v_max)
     axPlot.set_yticks(yticks)
     axPlot.set_yticklabels(yticklabels)
@@ -241,10 +231,10 @@ def plot_damage_show(fig, v_damaged_at, numCols, numRows, v_min, v_max):
     axPlot.set_title('Wind Speed Damaged At Heatmap')
     axPlot.format_coord = format_coord
 
-    fig.canvas.mpl_connect('motion_notify_event',
-                           PlotFlyoverCallback(axPlot, v_damaged_at, mplDict['statusbar'], numCols, numRows))
-    fig.canvas.mpl_connect('button_press_event',
-                           PlotClickCallback(fig, axPlot, plotKey, mplDict['owner'], mplDict['house']))
+    # fig.canvas.mpl_connect('motion_notify_event',
+    #                        PlotFlyoverCallback(axPlot, v_damaged_at, mplDict['statusbar'], numCols, numRows))
+    # fig.canvas.mpl_connect('button_press_event',
+    #                        PlotClickCallback(fig, axPlot, plotKey, mplDict['owner'], mplDict['house']))
     fig.canvas.draw()
 
 
@@ -294,4 +284,4 @@ def plot_fragility_show(mp_widget, num_iters, Vmin, Vmax):
 def format_coord(x, y):
     col = int(x + 0.5)
     row = int(y + 0.5)
-    return zone.getZoneLocFromGrid(col, row)
+    return Zone.get_zone_location_from_grid((col, row,))
