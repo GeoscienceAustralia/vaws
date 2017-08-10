@@ -53,8 +53,8 @@ class House(object):
         self.mzcat = None
 
         self.groups = OrderedDict()  # list of conn type groups
-        self.connections = OrderedDict()  # dict of connections with name
-        self.zones = OrderedDict()  # dict of zones with id
+        self.connections = {}  # dict of connections with name
+        self.zones = {}  # dict of zones with id
         self.coverages = None  # pd.dataframe of coverages
         # self.zone_by_grid = {}  # dict of zones with zone loc grid in tuple
 

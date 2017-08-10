@@ -7,7 +7,7 @@ import numpy as np
 # import filecmp
 import pandas as pd
 
-from vaws.simulation import HouseDamage, simulate_wind_damage_to_houses
+# from vaws.main import simulate_wind_damage_to_houses
 # import vaws.database as database
 from vaws.config import Config
 # from vaws import zone

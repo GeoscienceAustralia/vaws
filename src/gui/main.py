@@ -16,7 +16,7 @@ import pandas as pd
 from vaws.curve import vulnerability_lognorm, vulnerability_weibull
 
 from main_ui import Ui_main
-from vaws.simulation import process_commandline, set_logger, \
+from vaws.main import process_commandline, set_logger, \
     simulate_wind_damage_to_houses
 from vaws.config import Config, INPUT_DIR, OUTPUT_DIR
 from vaws.version import VERSION_DESC
@@ -773,7 +773,7 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
                                                                                       construction_level),
                                                            '', '', '', ''])
             zone_results_dict = bucket['zone']
-            for zr_key in sorted(self.cfg.zones):
+            for zr_key in self.cfg.zones:
                 zone_cpe = numpy.mean(zone_results_dict['cpe'][zr_key][:, 1])
                 zone_cpe_str = numpy.mean(zone_results_dict['cpe_str'][zr_key][:, 1])
                 zone_cpe_eave = numpy.mean(zone_results_dict['cpe_eave'][zr_key][:, 1])
@@ -798,11 +798,10 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
             mean_wind_speed = capacities[house_num].round(2)
             construction_level = house_data['construction_level'][house_num]
             parent = QTreeWidgetItem(self.ui.connectionResults,
-                                     ['H{} ({}/{:.3}/{})'.format(house_num+1,
-                                                                 self.cfg.wind_dir[mean_wind_dir],
-                                                                 mean_wind_speed,
+                                     ['H{} ({}/{})'.format(house_num+1,
+                                                                 self.cfg.wind_dir[wind_dir],
                                                                  construction_level),
-                                      '', '', '', ''])
+                                      '', '', ''])
 
             connection_results = bucket['connection']
 

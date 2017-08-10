@@ -47,8 +47,8 @@ class Config(object):
     house_bucket = ['profile', 'wind_orientation', 'construction_level',
                     'mzcat', 'str_mean_factor', 'str_cov_factor']
 
-    house_damage_bucket = ['qz', 'ms', 'cpi', 'cpi_wind_speed', 'collapse',
-                           'di', 'di_except_water', 'repair_cost',
+    house_damage_bucket = ['qz', 'ms', 'cpi', 'collapse', 'di',
+                           'di_except_water', 'repair_cost',
                            'water_ingress_cost']
 
     debris_bucket = ['no_items', 'no_touched', 'breached', 'damaged_area']
@@ -56,13 +56,16 @@ class Config(object):
     att_non_float = ['construction_level']
 
     # model and wind dependent attributes
-    list_components = ['group', 'connection', 'zone']
+    list_components = ['group', 'connection', 'zone', 'coverage']
 
     group_bucket = ['damaged_area']
 
     connection_bucket = ['damaged', 'capacity', 'load', 'strength', 'dead_load']
 
     zone_bucket = ['pressure', 'cpe', 'cpe_str', 'cpe_eave']
+
+    coverage_bucket = ['strength', 'load', 'breached', 'breached_area',
+                       'capacity']
 
     dic_obj_for_fitting = {'weibull': 'vulnerability_weibull',
                            'lognorm': 'vulnerability_lognorm'}
@@ -109,6 +112,7 @@ class Config(object):
         self.zones_cpe_eave_mean = None
         self.zones_cpe_str_mean = None
         self.zones_edge = None
+        self.coverages = None
 
         self.groups = None
         self.types = None
@@ -122,9 +126,9 @@ class Config(object):
         self.debris_types = None
 
         self.list_groups = None
-        self.list_types = None
         self.list_connections = None
         self.list_zones = None
+        self.list_coverages = None
 
         # damage costing
         self.costings = None
@@ -136,14 +140,10 @@ class Config(object):
 
         # debris related
         self.front_facing_walls = None
-        self.coverages = None
         self.coverages_cpe_mean = None
         self.area_by_wall = None
 
-        self.file_house = None
-        self.file_group = None
-        self.file_connection = None
-        self.file_zone = None
+        self.file_results = None
         self.file_curve = None
 
         self.heatmap_vmin = 54.0
@@ -169,9 +169,7 @@ class Config(object):
     def set_output_files(self):
         if not os.path.exists(self.path_output):
             os.makedirs(self.path_output)
-        for item in ['house', 'group', 'type', 'connection', 'zone']:
-            setattr(self, 'file_{}'.format(item),
-                    os.path.join(self.path_output, 'results_{}.h5'.format(item)))
+        self.file_results = os.path.join(self.path_output, 'results.h5')
         self.file_curve = os.path.join(self.path_output, 'results_curve.csv')
 
     def read_config(self):
@@ -272,6 +270,7 @@ class Config(object):
                     self.coverages['log_{}'.format(_key)] = \
                         self.coverages.apply(self.get_lognormal_tuple,
                                              args=(coverage_types, _key,), axis=1)
+                self.list_coverages = self.coverages.index.tolist()
             else:
                 self.coverages = None
 
@@ -398,12 +397,14 @@ class Config(object):
             calc_big_a_b_values(shape_k=self.house['cpe_k'])
 
         # zone data
-        self.zones = pd.read_csv(
-            os.path.join(self.path_house_data, 'zones.csv'),
-            index_col=0, dtype={'cpi_alpha': float,
-                                'area': float,
-                                'wall_dir': int}).to_dict('index')
-        self.list_zones = self.zones.keys()
+        _df = pd.read_csv(os.path.join(self.path_house_data, 'zones.csv'),
+                          index_col=0, dtype={'cpi_alpha': float,
+                                              'area': float,
+                                              'wall_dir': int})
+        _dict = _df.to_dict('index')
+
+        self.list_zones = _df.index.tolist()
+        self.zones = OrderedDict((k, _dict.get(k)) for k in self.list_zones)
 
         names_ = ['name'] + range(8)
         for item in ['cpe_mean', 'cpe_str_mean', 'cpe_eave_mean', 'edge']:
@@ -433,7 +434,6 @@ class Config(object):
             axis=1)
 
         self.types = types.to_dict('index')
-        self.list_types = types.index.tolist()
 
         # connections
         self.connections = self.read_connection_data(

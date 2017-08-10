@@ -71,10 +71,9 @@ def simulate_wind_damage_to_houses(cfg, call_back=None):
 
 def init_bucket(cfg):
 
-    bucket = dict()
+    bucket = {item: {} for item in ['house', 'house_damage', 'debris']}
 
     for att in cfg.house_bucket:
-        bucket['house'] = {}
         if att in cfg.att_non_float:
             bucket['house'][att] = np.empty(shape=(1, cfg.no_sims), dtype=str)
         else:
@@ -87,34 +86,36 @@ def init_bucket(cfg):
                 shape=(cfg.wind_speed_steps, cfg.no_sims), dtype=float)
 
     # components: group, connection, zone
-    for item in cfg.list_components:
-        bucket[item] = {}
-        for att in getattr(cfg, '{}_bucket'.format(item)):
-            bucket[item][att] = {}
-            for _conn in getattr(cfg, 'list_{}s'.format(item)):
-                bucket[item][att][_conn] = np.empty(
-                    shape=(cfg.wind_speed_steps, cfg.no_sims), dtype=float)
-
+    for comp in cfg.list_components:
+        bucket[comp] = {}
+        for att in getattr(cfg, '{}_bucket'.format(comp)):
+            bucket[comp][att] = {}
+            try:
+                for item in getattr(cfg, 'list_{}s'.format(comp)):
+                    bucket[comp][att][item] = np.empty(
+                        shape=(cfg.wind_speed_steps, cfg.no_sims), dtype=float)
+            except TypeError:
+                pass
     return bucket
 
 
-def update_bucket(cfg, dic_, results_by_speed, ispeed):
+def update_bucket(cfg, bucket, results_by_speed, ispeed):
 
     for item in ['house_damage', 'debris']:
         for att in getattr(cfg, '{}_bucket'.format(item)):
-            dic_[item][att][ispeed] = [x[item][att] for x in results_by_speed]
+            bucket[item][att][ispeed] = [x[item][att] for x in results_by_speed]
 
-    for item in cfg.list_components:
-        for att, chunk in dic_[item].iteritems():
-            for _conn, value in chunk.iteritems():
-                value[ispeed] = [x[item][_conn][att] for x in results_by_speed]
+    for comp in cfg.list_components:
+        for att, chunk in bucket[comp].iteritems():
+            for item, value in chunk.iteritems():
+                value[ispeed] = [x[comp][att][item] for x in results_by_speed]
 
     # compute damage index increment
     damage_incr = 0.0  # default value
 
     if ispeed:
-        damage_incr = (dic_['house_damage']['di'][ispeed].mean(axis=0) -
-                       dic_['house_damage']['di'][ispeed - 1].mean(axis=0))
+        damage_incr = (bucket['house_damage']['di'][ispeed].mean(axis=0) -
+                       bucket['house_damage']['di'][ispeed - 1].mean(axis=0))
 
         if damage_incr < 0:
             logging.warning('damage increment is less than zero')
@@ -122,7 +123,7 @@ def update_bucket(cfg, dic_, results_by_speed, ispeed):
     else:
         # doing nothing but save house attributes
         for att in cfg.house_bucket:
-            dic_['house'][att] = [x['house'][att] for x in results_by_speed]
+            bucket['house'][att] = [x['house'][att] for x in results_by_speed]
 
     return damage_incr
 
@@ -139,19 +140,19 @@ def save_results_to_files(cfg, bucket):
     """
 
     # file_house
-    with h5py.File(cfg.file_house, 'w') as hf:
+    with h5py.File(cfg.file_results, 'w') as hf:
         for item in ['house', 'house_damage', 'debris']:
             _group = hf.create_group(item)
             for att, value in bucket[item].iteritems():
                 _group.create_dataset(att, data=value)
 
-    # file_group, file_connection, file_zone
-    for item in cfg.list_components:
-        with h5py.File(getattr(cfg, 'file_{}'.format(item)), 'w') as hf:
-            for att, chunk in bucket[item].iteritems():
-                _group = hf.create_group(att)
-                for _conn, value in chunk.iteritems():
-                    _group.create_dataset(str(_conn), data=value)
+        # file_group, file_connection, file_zone
+        for comp in cfg.list_components:
+            _group = hf.create_group(comp)
+            for att, chunk in bucket[comp].iteritems():
+                _subgroup = _group.create_group(att)
+                for item, value in chunk.iteritems():
+                    _subgroup.create_dataset(str(item), data=value)
 
     # plot fragility and vulnerability curves
 
@@ -191,6 +192,7 @@ def save_results_to_files(cfg, bucket):
                              xlim_max=cfg.house['length'],
                              ylim_max=cfg.house['width'],
                              file_name=file_name)
+
 
 def set_logger(path_cfg, logging_level=None):
     """
