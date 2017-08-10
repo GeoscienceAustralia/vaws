@@ -1,6 +1,0 @@
-WARNING - Optimal parameters not found: Number of calls to function has reached maxfev = 600. at slight damage state fragility fitting
-WARNING - Optimal parameters not found: Number of calls to function has reached maxfev = 600. at medium damage state fragility fitting
-WARNING - Optimal parameters not found: Number of calls to function has reached maxfev = 600. at complete damage state fragility fitting
-WARNING - 'slight'
-WARNING - 'medium'
-WARNING - 'complete'

@@ -742,19 +742,33 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
             self.ui.connections.setItem(irow, 4, QTableWidgetItem('{:.3}'.format(failure_mean)))
             self.ui.connections.setItem(irow, 5, QTableWidgetItem('{}'.format(failure_count)))
 
+    def determine_capacities(self, bucket):
+        house_means = [[] for i in range(self.cfg.no_sims)]
+
+        for conn_index, (conn_id, connection) in enumerate(self.cfg.connections.iterrows()):
+            for house_index in range(self.cfg.no_sims):
+                connection_capacities = bucket['connection']['capacity'][conn_index+1][:, house_index]
+                if connection_capacities[-1] > 0:
+                    first_break = numpy.where(connection_capacities == connection_capacities[-1])[0][0]
+                    if first_break > 0:
+                        house_means[house_index].append(connection_capacities[first_break])
+        return map(numpy.mean, house_means)
+
     def updateHouseResultsTable(self, bucket):
         self.statusBar().showMessage('Updating Zone Results')
         self.ui.zoneResults.clear()
+
+        capacities = self.determine_capacities(bucket)
 
         house_data = bucket['house']
         house_damage_data = bucket['house_damage']
 
         for house_num in range(self.cfg.no_sims):
-            mean_wind_dir = int(numpy.mean(house_data['wind_orientation'][:, house_num]))
-            mean_wind_speed = numpy.mean(house_damage_data['cpi_wind_speed'][:, house_num])
-            construction_level = numpy.unique(house_data['construction_level'][:, house_num])[0]
+            wind_dir = house_data['wind_orientation'][house_num]
+            mean_wind_speed = capacities[house_num].round(2)
+            construction_level = house_data['construction_level'][house_num]
             parent = QTreeWidgetItem(self.ui.zoneResults, ['H{} ({}/{:.3}/{})'.format(house_num+1,
-                                                                                      self.cfg.wind_dir[mean_wind_dir],
+                                                                                      self.cfg.wind_dir[wind_dir],
                                                                                       mean_wind_speed,
                                                                                       construction_level),
                                                            '', '', '', ''])
@@ -780,9 +794,9 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
 
         self.ui.connectionResults.clear()
         for house_num in range(self.cfg.no_sims):
-            mean_wind_dir = int(numpy.mean(house_data['wind_orientation'][:, house_num]))
-            mean_wind_speed = numpy.mean(house_damage_data['cpi_wind_speed'][:, house_num])
-            construction_level = numpy.unique(house_data['construction_level'][:, house_num])[0]
+            mean_wind_dir = house_data['wind_orientation'][house_num]
+            mean_wind_speed = capacities[house_num].round(2)
+            construction_level = house_data['construction_level'][house_num]
             parent = QTreeWidgetItem(self.ui.connectionResults,
                                      ['H{} ({}/{:.3}/{})'.format(house_num+1,
                                                                  self.cfg.wind_dir[mean_wind_dir],
