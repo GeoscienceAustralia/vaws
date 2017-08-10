@@ -340,7 +340,5 @@ class TestHouseDamage(unittest.TestCase):
         pass
     # check cal_damage_index esp. factors_costing
 
-
-
 if __name__ == '__main__':
     unittest.main()
