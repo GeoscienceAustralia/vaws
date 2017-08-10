@@ -67,7 +67,7 @@ class Debris(object):
         # vary over wind speeds
         self.no_items = 0  # total number of debris items generated
         self.no_touched = 0
-        self.breached = False  # only due to window breakage
+        self.breached = 0  # only due to window breakage
         self.damaged_area = 0.0  # total damaged area by debris items
 
     @property

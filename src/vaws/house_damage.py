@@ -25,7 +25,6 @@ class HouseDamage(object):
         self.qz = None
         self.ms = None
         self.cpi = 0.0
-        self.cpi_wind_speed = 0.0
         self.collapse = False
         self.repair_cost = 0.0
         self.water_ingress_cost = 0.0
@@ -85,36 +84,48 @@ class HouseDamage(object):
 
         # house
         for item in ['house', 'house_damage', 'debris']:
+            self.bucket[item] = {}
             for att in getattr(self.cfg, '{}_bucket'.format(item)):
-                self.bucket.setdefault(item, {})[att] = None
+                self.bucket[item][att] = None
 
         # components
-        for item in self.cfg.list_components:
-            self.bucket[item] = {}
-            for _conn in getattr(self.cfg, 'list_{}s'.format(item)):
-                self.bucket[item][_conn] = {}
-                for att in getattr(self.cfg, '{}_bucket'.format(item)):
-                    self.bucket[item][_conn][att] = None
+        for comp in self.cfg.list_components:
+            self.bucket[comp] = {}
+            for att in getattr(self.cfg, '{}_bucket'.format(comp)):
+                self.bucket[comp][att] = {}
+                try:
+                    for item in getattr(self.cfg, 'list_{}s'.format(comp)):
+                        self.bucket[comp][att][item] = None
+                except TypeError:
+                    pass
 
     def fill_bucket(self):
 
         # house
-        for item in self.cfg.house_bucket:
-            self.bucket['house'][item] = getattr(self.house, item)
+        for att in self.cfg.house_bucket:
+            self.bucket['house'][att] = getattr(self.house, att)
 
-        for item in self.cfg.house_damage_bucket:
-            self.bucket['house_damage'][item] = getattr(self, item)
+        for att in self.cfg.house_damage_bucket:
+            self.bucket['house_damage'][att] = getattr(self, att)
 
         if self.cfg.flags['debris']:
-            for item in self.cfg.debris_bucket:
-                self.bucket['debris'][item] = getattr(self.house.debris, item)
+            for att in self.cfg.debris_bucket:
+                self.bucket['debris'][att] = getattr(self.house.debris, att)
 
         # components
-        for item in self.cfg.list_components:
-            for att in getattr(self.cfg, '{}_bucket'.format(item)):
-                _dic = getattr(self.house, '{}s'.format(item))
-                for _conn, value in _dic.iteritems():
-                    self.bucket[item][_conn][att] = getattr(value, att)
+        for comp in self.cfg.list_components:
+            if comp == 'coverage':
+                try:
+                    for item, value in self.house.coverages['coverage'].iteritems():
+                        for att in self.cfg.coverage_bucket:
+                            self.bucket[comp][att][item] = getattr(value, att)
+                except TypeError:
+                    pass
+            else:
+                _dic = getattr(self.house, '{}s'.format(comp))
+                for att in getattr(self.cfg, '{}_bucket'.format(comp)):
+                    for item, value in _dic.iteritems():
+                        self.bucket[comp][att][item] = getattr(value, att)
 
     def compute_qz_ms(self, wind_speed):
         """
