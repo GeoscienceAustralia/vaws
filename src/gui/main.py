@@ -16,7 +16,7 @@ import pandas as pd
 from vaws.curve import vulnerability_lognorm, vulnerability_weibull
 
 from main_ui import Ui_main
-from vaws.simulation import process_commandline, set_logger, \
+from vaws.main import process_commandline, set_logger, \
     simulate_wind_damage_to_houses
 from vaws.config import Config, INPUT_DIR, OUTPUT_DIR
 from vaws.version import VERSION_DESC

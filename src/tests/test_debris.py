@@ -10,7 +10,7 @@ import logging
 from vaws.config import Config
 from vaws.debris import Debris, Coverage
 from vaws.curve import vulnerability_weibull, vulnerability_weibull_pdf
-from vaws.simulation import set_logger
+from vaws.main import set_logger
 
 '''
     def run_alt(self, wind_speed):

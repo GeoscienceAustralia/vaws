@@ -5,7 +5,7 @@ import unittest
 import os
 import numpy as np
 
-from vaws.simulation import HouseDamage
+from vaws.house_damage import HouseDamage
 from vaws.config import Config
 import logging
 

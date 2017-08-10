@@ -6,7 +6,7 @@ import os
 import numpy as np
 import pandas as pd
 
-from vaws.simulation import HouseDamage
+from vaws.house_damage import HouseDamage
 from vaws.config import Config
 
 
