@@ -894,7 +894,58 @@ class TestScenario19(unittest.TestCase):
                     _id, _coverage.capacity, conn_capacity2[_id]))
 
 
+class TestScenario20(unittest.TestCase):
+    """
+    to test the effect of dead load on a roof sheeting connection
+
+    """
+    @classmethod
+    def setUpClass(cls):
+
+        path = '/'.join(__file__.split('/')[:-1])
+
+        cfg = Config(
+            cfg_file=os.path.join(path, '../../scenarios/test_scenario20/test_scenario20.cfg'))
+        cls.house_damage = HouseDamage(cfg, seed=0)
+
+        # set up logging
+        file_logger = os.path.join(cfg.path_output, 'log_test20.txt')
+        logging.basicConfig(filename=file_logger,
+                            filemode='w',
+                            level=logging.DEBUG,
+                            format='%(levelname)s %(message)s')
+
+    def test_dead_load(self):
+
+        conn_capacity = {48.0: [4],
+                         51.0: [3, 5],
+                         52.0: [2, 6],
+                         53.0: [1],
+                         }
+
+        dead_load = {1: 1.5,
+                     2: 1.5,
+                     3: 1.5,
+                     4: 0.1,
+                     5: 1.5,
+                     6: 1.5}
+
+        simulation(self.house_damage, conn_capacity,
+                   wind_speeds=np.arange(20.0, 60.0, 1.0),
+                   list_connections=range(1, 6))
+
+        for _id, _conn in self.house_damage.house.connections.iteritems():
+
+            try:
+                np.testing.assert_almost_equal(_conn.dead_load,
+                                               dead_load[_id],
+                                               decimal=2)
+            except AssertionError:
+                print('conn #{} dead load should be {} not {}'.format(
+                    _id, dead_load[_id], _conn.dead_load))
+
+
 if __name__ == '__main__':
-    suite = unittest.TestLoader().loadTestsFromTestCase(TestScenario19)
+    suite = unittest.TestLoader().loadTestsFromTestCase(TestScenario20)
     unittest.TextTestRunner(verbosity=2).run(suite)
     #unittest.main(verbosity=2)
