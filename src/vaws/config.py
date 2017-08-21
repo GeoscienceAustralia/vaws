@@ -11,9 +11,10 @@ import os
 import sys
 import logging
 import ConfigParser
-import numpy as np
 import pandas as pd
+
 from collections import OrderedDict, defaultdict
+from numpy import array, linspace, reshape
 from scipy.stats import norm
 from matplotlib.patches import Polygon
 
@@ -47,13 +48,13 @@ class Config(object):
     house_bucket = ['profile', 'wind_orientation', 'construction_level',
                     'mzcat', 'str_mean_factor', 'str_cov_factor']
 
+    att_non_float = ['construction_level']
+
     house_damage_bucket = ['qz', 'ms', 'cpi', 'collapse', 'di',
                            'di_except_water', 'repair_cost',
-                           'water_ingress_cost']
+                           'water_ingress_cost', 'breached']
 
     debris_bucket = ['no_items', 'no_touched', 'breached', 'damaged_area']
-
-    att_non_float = ['construction_level']
 
     # model and wind dependent attributes
     list_components = ['group', 'connection', 'zone', 'coverage']
@@ -69,6 +70,9 @@ class Config(object):
 
     dic_obj_for_fitting = {'weibull': 'vulnerability_weibull',
                            'lognorm': 'vulnerability_lognorm'}
+
+    att_time_invariant = ['strength', 'dead_load', 'cpe', 'cpe_str', 'cpe_eave',
+                          'capacity', 'collapse']
 
     def __init__(self, cfg_file=None):
 
@@ -212,7 +216,7 @@ class Config(object):
         self.wind_speed_min = conf.getfloat(key, 'wind_speed_min')
         self.wind_speed_max = conf.getfloat(key, 'wind_speed_max')
         self.wind_speed_steps = conf.getint(key, 'wind_speed_steps')
-        self.speeds = np.linspace(start=self.wind_speed_min,
+        self.speeds = linspace(start=self.wind_speed_min,
                                   stop=self.wind_speed_max,
                                   num=self.wind_speed_steps)
         self.set_wind_dir_index(conf.get(key, 'wind_fixed_dir'))
@@ -231,7 +235,7 @@ class Config(object):
             lower = [40.0, 35.0, 0.0, -20.0]
             upper = [60.0, 55.0, 40.0, 20.0]
             logging.info('default water ingress thresholds is used')
-        self.water_ingress_given_di = pd.DataFrame(np.array([lower, upper]).T,
+        self.water_ingress_given_di = pd.DataFrame(array([lower, upper]).T,
                                                    index=thresholds,
                                                    columns=['lower', 'upper'])
         self.water_ingress_given_di['wi'] = self.water_ingress_given_di.apply(
@@ -474,10 +478,10 @@ class Config(object):
             for line in f:
                 fields = line.strip().rstrip(',').split(',')
                 tmp = [x.strip() for x in fields[:4]]
-                _array = np.array([float(x) for x in fields[4:]])
+                _array = array([float(x) for x in fields[4:]])
                 if _array.size:
                     try:
-                        _array = np.reshape(_array, (-1, 2))
+                        _array = reshape(_array, (-1, 2))
                     except ValueError:
                         logging.warning(
                             'Coordinates are incomplete: {}'.format(_array))

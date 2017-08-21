@@ -1,6 +1,7 @@
 import copy
 import logging
-import numpy as np
+from numpy import array, abs, argsort
+from numpy.random import RandomState
 from collections import defaultdict
 
 from vaws.house import House
@@ -17,7 +18,7 @@ class HouseDamage(object):
 
         self.cfg = cfg
         self.seed = seed
-        self.rnd_state = np.random.RandomState(self.seed)
+        self.rnd_state = RandomState(self.seed)
 
         self.house = House(cfg, self.rnd_state)
 
@@ -26,6 +27,7 @@ class HouseDamage(object):
         self.ms = None
         self.cpi = 0.0
         self.collapse = False
+        self.breached = False
         self.repair_cost = 0.0
         self.water_ingress_cost = 0.0
         self.di = None
@@ -39,9 +41,6 @@ class HouseDamage(object):
         if not self.collapse:
 
             logging.info('wind speed {:.3f}'.format(wind_speed))
-
-            # cpi is computed here
-            self.check_internal_pressurisation(wind_speed)
 
             # compute load by zone
             self.compute_qz_ms(wind_speed)
@@ -75,6 +74,9 @@ class HouseDamage(object):
 
             self.check_house_collapse(wind_speed)
             self.compute_damage_index(wind_speed)
+
+            # cpi is computed here for the next step
+            self.check_internal_pressurisation(wind_speed)
 
             self.fill_bucket()
 
@@ -140,7 +142,7 @@ class HouseDamage(object):
 
         """
         if self.cfg.regional_shielding_factor <= 0.85:
-            thresholds = np.array([63, 63 + 15])
+            thresholds = array([63, 63 + 15])
             ms_dic = {0: 1.0, 1: 0.85, 2: 0.95}
             idx = sum(thresholds <= self.rnd_state.random_integers(0, 100))
             self.ms = ms_dic[idx]
@@ -172,6 +174,9 @@ class HouseDamage(object):
         # area of breached coverages
         if self.house.coverages is not None:
             self.house.assign_cpi()
+
+            if self.house.coverages['breached_area'].sum():
+                self.breached = True
 
     def check_house_collapse(self, wind_speed):
         """
@@ -254,7 +259,7 @@ class HouseDamage(object):
 
         _list = [self.cfg.costings[key].compute_cost(value)
                  for key, value in prop_area_by_scenario.iteritems()]
-        self.repair_cost = np.array(_list).sum()
+        self.repair_cost = array(_list).sum()
 
         # calculate initial envelope repair cost before water ingress is added
         self.di_except_water = min(self.repair_cost / self.house.replace_cost,
@@ -276,7 +281,7 @@ class HouseDamage(object):
 
             # finding index close to water ingress threshold
             _df = self.cfg.water_ingress_costings[damage_name]
-            idx = np.argsort(np.abs(_df.index - water_ingress_perc))[0]
+            idx = argsort(abs(_df.index - water_ingress_perc))[0]
 
             self.water_ingress_cost = \
                 _df['costing'].values[idx].compute_cost(self.di_except_water)

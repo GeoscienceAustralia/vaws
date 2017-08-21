@@ -182,8 +182,8 @@ class Debris(object):
             self.no_items_mean, size=len(self.cfg.debris_sources))
 
         self.no_items = sum(no_items_by_source)
-        logging.debug('no_item_by_source at speed {:.3f}: {}'.format(
-            wind_speed, self.no_items))
+        logging.debug('no_item_by_source at speed {:.3f}: {}, {}'.format(
+            wind_speed, self.no_items, self.no_items_mean))
 
         # loop through sources
         for no_item, source in zip(no_items_by_source, self.cfg.debris_sources):

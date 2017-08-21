@@ -296,7 +296,7 @@ def plot_fragility_curve(v, fl, label, alpha=1.0, col='b'):
 
 
 def plot_fragility_show(mp_widget, num_iters, Vmin, Vmax):
-    mp_widget.axes.set_title('Fragility Curve (n = %d)' % num_iters)
+    mp_widget.axes.set_title('Fragility Curve (n = {})'.format(num_iters))
     mp_widget.axes.set_xlabel('Impact Wind speed (m/s)')
     mp_widget.axes.set_ylabel('Probability of Damage State')
     mp_widget.axes.set_xlim((Vmin, Vmax))

@@ -19,7 +19,6 @@ def fit_vulnerability_curve(cfg, df_dmg_idx):
     """
     # array changed to vector
     xdata = (cfg.speeds[:, newaxis] * ones((1, cfg.no_sims))).flatten()
-    # ydata = df_dmg_idx.values.flatten()
     ydata = df_dmg_idx.flatten()
 
     fitted_curve = {}
@@ -36,9 +35,11 @@ def fit_vulnerability_curve(cfg, df_dmg_idx):
             except OptimizeWarning as e:
                 logging.warning(e.message + ' at {} curve fitting'.format(key))
             else:
+                _sigma = sqrt(diag(pcov))
                 fitted_curve[key] = dict(param1=popt[0],
                                          param2=popt[1],
-                                         error=sqrt(diag(pcov)))
+                                         sigma1=_sigma[0],
+                                         sigma2=_sigma[1])
 
     return fitted_curve
 
@@ -66,9 +67,11 @@ def fit_fragility_curves(cfg, df_dmg_idx):
             logging.warning(e.message + ' at {} damage state fragility fitting'.
                             format(state))
         else:
+            _sigma = sqrt(diag(pcov))
             frag_counted[state] = dict(param1=popt[0],
                                        param2=popt[1],
-                                       error=sqrt(diag(pcov)))
+                                       sigma1=_sigma[0],
+                                       sigma2=_sigma[1])
 
     return frag_counted
 

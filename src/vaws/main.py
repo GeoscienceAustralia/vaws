@@ -5,7 +5,7 @@ import logging
 
 import pandas as pd
 import h5py
-import numpy as np
+from numpy import zeros, array
 from optparse import OptionParser
 
 from vaws.house_damage import HouseDamage
@@ -41,7 +41,9 @@ def simulate_wind_damage_to_houses(cfg, call_back=None):
 
         results_by_speed = []
 
-        for house_damage in list_house_damage:
+        for ihouse, house_damage in enumerate(list_house_damage):
+
+            logging.info('model {}'.format(ihouse))
 
             if cfg.flags['debris']:
                 house_damage.house.debris.no_items_mean = damage_incr
@@ -51,6 +53,8 @@ def simulate_wind_damage_to_houses(cfg, call_back=None):
             results_by_speed.append(result)
 
         damage_incr = update_bucket(cfg, bucket, results_by_speed, ispeed)
+
+        logging.debug('damage index increment {}'.format(damage_incr))
 
         if not call_back:
             sys.stdout.write('{} out of {} completed \n'.format(
@@ -75,15 +79,19 @@ def init_bucket(cfg):
 
     for att in cfg.house_bucket:
         if att in cfg.att_non_float:
-            bucket['house'][att] = np.empty(shape=(1, cfg.no_sims), dtype=str)
+            bucket['house'][att] = zeros(shape=(1, cfg.no_sims), dtype=str)
         else:
-            bucket['house'][att] = np.empty(shape=(1, cfg.no_sims), dtype=float)
+            bucket['house'][att] = zeros(shape=(1, cfg.no_sims), dtype=float)
 
     for item in ['house_damage', 'debris']:
         bucket[item] = {}
         for att in getattr(cfg, '{}_bucket'.format(item)):
-            bucket[item][att] = np.empty(
-                shape=(cfg.wind_speed_steps, cfg.no_sims), dtype=float)
+            if att in cfg.att_time_invariant:
+                bucket[item][att] = zeros(
+                    shape=(1, cfg.no_sims), dtype=float)
+            else:
+                bucket[item][att] = zeros(
+                    shape=(cfg.wind_speed_steps, cfg.no_sims), dtype=float)
 
     # components: group, connection, zone
     for comp in cfg.list_components:
@@ -92,8 +100,12 @@ def init_bucket(cfg):
             bucket[comp][att] = {}
             try:
                 for item in getattr(cfg, 'list_{}s'.format(comp)):
-                    bucket[comp][att][item] = np.empty(
-                        shape=(cfg.wind_speed_steps, cfg.no_sims), dtype=float)
+                    if att in cfg.att_time_invariant:
+                        bucket[comp][att][item] = zeros(
+                            shape=(1, cfg.no_sims), dtype=float)
+                    else:
+                        bucket[comp][att][item] = zeros(
+                            shape=(cfg.wind_speed_steps, cfg.no_sims), dtype=float)
             except TypeError:
                 pass
     return bucket
@@ -103,12 +115,15 @@ def update_bucket(cfg, bucket, results_by_speed, ispeed):
 
     for item in ['house_damage', 'debris']:
         for att in getattr(cfg, '{}_bucket'.format(item)):
-            bucket[item][att][ispeed] = [x[item][att] for x in results_by_speed]
+            if att not in cfg.att_time_invariant:
+                bucket[item][att][ispeed] = [x[item][att] for x in results_by_speed]
 
     for comp in cfg.list_components:
         for att, chunk in bucket[comp].iteritems():
-            for item, value in chunk.iteritems():
-                value[ispeed] = [x[comp][att][item] for x in results_by_speed]
+            if att not in cfg.att_time_invariant:
+                for item in chunk.iterkeys():
+                    bucket[comp][att][item][ispeed] = \
+                        [x[comp][att][item] for x in results_by_speed]
 
     # compute damage index increment
     damage_incr = 0.0  # default value
@@ -120,10 +135,24 @@ def update_bucket(cfg, bucket, results_by_speed, ispeed):
         if damage_incr < 0:
             logging.warning('damage increment is less than zero')
             damage_incr = 0.0
-    else:
-        # doing nothing but save house attributes
-        for att in cfg.house_bucket:
-            bucket['house'][att] = [x['house'][att] for x in results_by_speed]
+
+        if ispeed == cfg.wind_speed_steps - 1:
+
+            # doing nothing but save house attributes
+            for att in cfg.house_bucket:
+                bucket['house'][att] = [x['house'][att] for x in results_by_speed]
+
+            for item in ['house_damage', 'debris']:
+                for att in getattr(cfg, '{}_bucket'.format(item)):
+                    if att in cfg.att_time_invariant:
+                        bucket[item][att] = [x[item][att] for x in results_by_speed]
+
+            for comp in cfg.list_components:
+                for att, chunk in bucket[comp].iteritems():
+                    if att in cfg.att_time_invariant:
+                        for item in chunk.iterkeys():
+                            bucket[comp][att][item] = \
+                                [x[comp][att][item] for x in results_by_speed]
 
     return damage_incr
 
@@ -179,7 +208,8 @@ def save_results_to_files(cfg, bucket):
 
             for id_sim in range(cfg.no_sims):
 
-                value = np.array([bucket['connection']['capacity'][i][-1, id_sim] for i in grouped.index])
+                value = array([bucket['connection']['capacity'][i][id_sim]
+                               for i in grouped.index])
 
                 file_name = os.path.join(cfg.path_output,
                                          '{}_id{}'.format(group_name,

@@ -3,7 +3,7 @@
 
 """
 
-import numpy as np
+from numpy import where, ones
 import logging
 
 from vaws.zone import Zone
@@ -274,7 +274,7 @@ class ConnectionTypeGroup(object):
         max_row_idx, max_col_idx = _tuple
 
         if self.dist_dir:
-            self._damage_grid = -1 * np.ones(dtype=int,
+            self._damage_grid = -1 * ones(dtype=int,
                                              shape=(max_row_idx + 1,
                                                     max_col_idx + 1))
         else:
@@ -360,7 +360,7 @@ class ConnectionTypeGroup(object):
         if self.patch_dist == 1 and self.dist_dir == 'col':
 
             for row0, col in zip(
-                    *np.where(self.damage_grid[self.damaged, :] > 0)):
+                    *where(self.damage_grid[self.damaged, :] > 0)):
 
                 row = self.damaged[row0]
                 source_connection = self.connection_by_grid[row, col]
@@ -369,7 +369,7 @@ class ConnectionTypeGroup(object):
         elif self.patch_dist == 1 and self.dist_dir == 'row':
 
             for row, col0 in zip(
-                    *np.where(self.damage_grid[:, self.damaged] > 0)):
+                    *where(self.damage_grid[:, self.damaged] > 0)):
 
                 col = self.damaged[col0]
                 source_connection = self.connection_by_grid[row, col]
@@ -378,14 +378,14 @@ class ConnectionTypeGroup(object):
         elif self.patch_dist == 0 and self.dist_dir == 'col':
 
             for row0, col in zip(
-                    *np.where(self.damage_grid[self.damaged, :] > 0)):
+                    *where(self.damage_grid[self.damaged, :] > 0)):
 
                 row = self.damaged[row0]
                 source_connection = self.connection_by_grid[row, col]
 
-                intact = np.where(-self.damage_grid[row, :] == 0)[0]
-                intact_left = intact[np.where(col > intact)[0]]
-                intact_right = intact[np.where(col < intact)[0]]
+                intact = where(-self.damage_grid[row, :] == 0)[0]
+                intact_left = intact[where(col > intact)[0]]
+                intact_right = intact[where(col < intact)[0]]
 
                 logging.debug('rows of intact zones: {}'.format(intact))
 
@@ -427,14 +427,14 @@ class ConnectionTypeGroup(object):
         elif self.patch_dist == 0 and self.dist_dir == 'row':
 
             for row, col0 in zip(
-                    *np.where(self.damage_grid[:, self.damaged] > 0)):
+                    *where(self.damage_grid[:, self.damaged] > 0)):
 
                 col = self.damaged[col0]
                 source_connection = self.connection_by_grid[row, col]
 
-                intact = np.where(-self.damage_grid[:, col] == 0)[0]
-                intact_left = intact[np.where(row > intact)[0]]
-                intact_right = intact[np.where(row < intact)[0]]
+                intact = where(-self.damage_grid[:, col] == 0)[0]
+                intact_left = intact[where(row > intact)[0]]
+                intact_right = intact[where(row < intact)[0]]
 
                 logging.debug('cols of intact connections: {}'.format(intact))
 

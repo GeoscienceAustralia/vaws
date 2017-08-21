@@ -5,7 +5,8 @@
 """
 
 import copy
-import numpy as np
+from numpy import array, interp
+from numpy.random import RandomState
 import logging
 from shapely.geometry import Polygon
 from collections import OrderedDict
@@ -21,7 +22,7 @@ class House(object):
     def __init__(self, cfg, rnd_state):
 
         assert isinstance(cfg, Config)
-        assert isinstance(rnd_state, np.random.RandomState)
+        assert isinstance(rnd_state, RandomState)
 
         self.cfg = cfg
         self.rnd_state = rnd_state
@@ -282,7 +283,7 @@ class House(object):
                 breached_area = self.coverages.loc[
                     self.coverages['direction'] == direction, 'breached_area']
                 max_area = breached_area[breached_area == breached_area.max()]
-                cpe_array = np.array([self.coverages.loc[i, 'coverage'].cpe
+                cpe_array = array([self.coverages.loc[i, 'coverage'].cpe
                                       for i in max_area.keys()])
                 max_cpe = max(cpe_array.min(), cpe_array.max(), key=abs)
                 cpi *= max_cpe
@@ -335,7 +336,7 @@ class House(object):
 
         self.profile = self.rnd_state.random_integers(1, 10)
 
-        self.mzcat = np.interp(self.height, self.cfg.profile_heights,
+        self.mzcat = interp(self.height, self.cfg.profile_heights,
                                self.cfg.wind_profile[self.profile])
 
     def set_construction_level(self):

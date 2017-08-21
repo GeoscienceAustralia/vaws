@@ -11,7 +11,8 @@ from PyQt4.QtCore import SIGNAL, QTimer, Qt, QSettings, QVariant, QString, QFile
 from PyQt4.QtGui import QProgressBar, QLabel, QMainWindow, QApplication, QTableWidget, QPixmap,\
                         QTableWidgetItem, QDialog, QCheckBox, QFileDialog, QIntValidator,\
                         QDoubleValidator, QMessageBox, QTreeWidgetItem, QInputDialog, QSplashScreen
-import numpy
+from numpy import ones, where, float32, mean, nanmean, empty, array, \
+    count_nonzero, nan, append, ones_like, nan_to_num, newaxis
 import pandas as pd
 from vaws.curve import vulnerability_lognorm, vulnerability_weibull
 
@@ -23,7 +24,7 @@ from vaws.version import VERSION_DESC
 from vaws.stats import compute_logarithmic_mean_stddev
 from gui.output import plot_wind_event_damage, plot_wind_event_mean, \
                         plot_wind_event_show, plot_fitted_curve, \
-                        plot_fragility_show, plot_damage_show, plot_wall_damage_show 
+                        plot_fragility_show, plot_damage_show, plot_wall_damage_show
 
 import vaws.debris as debris
 from vaws.zone import Zone
@@ -180,8 +181,8 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
                 plot_fitted_curve(self.ui.mplvuln, self.cfg.speeds, y)
                 self.ui.mplvuln.axes.figure.canvas.draw()
 
-            self.ui.coeff_1.setText('%f' % param_1)
-            self.ui.coeff_2.setText('%f' % param_2)
+            self.ui.coeff_1.setText('{:.3f}'.format(param_1))
+            self.ui.coeff_2.setText('{:.3f}'.format(param_2))
             self.statusBar().showMessage(unicode('Curve Fit Updated'))
             
     def updateVulnCurve(self, _array):
@@ -189,46 +190,42 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
 
         plot_wind_event_show(self.ui.mplvuln, self.cfg.no_sims, self.cfg.speeds[0], self.cfg.speeds[-1])
 
-        mean_cols = numpy.mean(_array.T, axis=0)
+        mean_cols = mean(_array.T, axis=0)
         plot_wind_event_mean(self.ui.mplvuln, self.cfg.speeds, mean_cols)
 
         # plot the individuals
         for col in _array.T:
             plot_wind_event_damage(self.ui.mplvuln, self.cfg.speeds, col)
 
-        df_fitted_curves = pd.read_csv(self.cfg.file_curve,
-                                       names=['key', 'error', 'param1',
-                                              'param2'], skiprows=1,
-                                       index_col='key')
-
-        param_1 = df_fitted_curves.at['weibull', 'param1']
-        param_2 = df_fitted_curves.at['weibull', 'param2']
-
+        df_fitted_curves = pd.read_csv(self.cfg.file_curve, index_col=0)
         try:
-            y = vulnerability_weibull(self.cfg.speeds,param_1,param_2)
-        except KeyError as msg:
-            logging.warning(msg)
+            param_1 = df_fitted_curves.at['weibull', 'param1']
+            param_2 = df_fitted_curves.at['weibull', 'param2']
+        except KeyError:
+            pass
         else:
-            plot_fitted_curve(self.ui.mplvuln,
-                              self.cfg.speeds,
-                              y,
-                              col='r')
+            try:
+                y = vulnerability_weibull(self.cfg.speeds, param_1, param_2)
+            except KeyError as msg:
+                logging.warning(msg)
+            else:
+                plot_fitted_curve(self.ui.mplvuln,
+                                  self.cfg.speeds,
+                                  y,
+                                  col='r')
 
-        self.ui.coeff_1.setText('%f' % param_1)
-        self.ui.coeff_2.setText('%f' % param_2)
-        self.ui.sumOfSquares.setText('{:.3f}'.format(0.11))
+            self.ui.coeff_1.setText('{:.3f}'.format(param_1))
+            self.ui.coeff_2.setText('{:.3f}'.format(param_2))
+            self.ui.sumOfSquares.setText('{:.3f}'.format(0.01))
 
     def updateFragCurve(self, _array):
-        plot_fragility_show(self.ui.mplfrag, self.cfg.no_sims, self.cfg.speeds[0], self.cfg.speeds[-1])
+        plot_fragility_show(self.ui.mplfrag, self.cfg.no_sims,
+                            self.cfg.speeds[0], self.cfg.speeds[-1])
 
-        df_fitted_curves = pd.read_csv(self.cfg.file_curve,
-                                       names=['key', 'error', 'param1',
-                                              'param2'], skiprows=1,
-                                       index_col='key')
+        df_fitted_curves = pd.read_csv(self.cfg.file_curve, index_col=0)
 
         self.ui.mplfrag.axes.hold(True)
-        for col in _array.T:
-            self.ui.mplfrag.axes.plot(self.cfg.speeds, col, 'o', 0.3)
+        self.ui.mplfrag.axes.plot(self.cfg.speeds, _array, 'k+', 0.3)
 
         for ds, value in self.cfg.fragility_thresholds.iterrows():
             try:
@@ -247,8 +244,6 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
                                     fancybox=True,
                                     shadow=True,
                                     fontsize='small')
-
-
 
     def updateDisplaySettings(self):
         if self.has_run:
@@ -470,9 +465,8 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
                 self.updateConnectionTable(bucket)
                 self.updateConnectionTypePlots(bucket)
                 self.updateHeatmap(bucket)
-                # self.updateWaterIngressPlot()
-                # TODO Complete when model finished
-                # self.updateBreachPlot(bucket)
+                self.updateWaterIngressPlot(bucket)
+                self.updateBreachPlot(bucket)
                 self.has_run = True
 
         except IOError:
@@ -496,23 +490,27 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
     def updateHeatmap(self, bucket):
         red_v = self.ui.redV.value()
         blue_v = self.ui.blueV.value()
-        connByZoneTypeMap = {}
+
         group_widget = {'sheeting': self.ui.mplsheeting,
-                       'batten': self.ui.mplbatten,
-                       'rafter': self.ui.mplrafter,
-                       'piersgroup': self.ui.mplpiers,
-                       'wallracking': self.ui.mplwallracking}
+                        'batten': self.ui.mplbatten,
+                        'rafter': self.ui.mplrafter,
+                        'piersgroup': self.ui.mplpiers,
+                        'wallracking': self.ui.mplwallracking}
 
         for group_name, grouped in self.cfg.connections.groupby('group_name'):
             if group_name not in group_widget:
                 continue
 
-            connection_capacities = numpy.array([bucket['connection']['capacity'][i] for i in grouped.index])
-            for conn_index, (conn_id, connection) in enumerate(grouped.iterrows()):
-                mean_connection_capacity = numpy.mean(connection_capacities[:,-1], axis=1)
+            _array = array([bucket['connection']['capacity'][i]
+                            for i in grouped.index])
+            _array[_array == -1] = nan
+            mean_connection_capacity = nanmean(_array, axis=1)
+            mean_connection_capacity = nan_to_num(mean_connection_capacity)
 
-            plot_damage_show(group_widget[group_name], grouped, mean_connection_capacity,
-                             self.cfg.house['length'], self.cfg.house['width'],
+            plot_damage_show(group_widget[group_name], grouped,
+                             mean_connection_capacity,
+                             self.cfg.house['length'],
+                             self.cfg.house['width'],
                              red_v, blue_v, self.cfg.heatmap_vstep)
 
         wall_major_rows = 2
@@ -524,10 +522,10 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
             if group_name not in ('wallcladding', 'wallcollapse'):
                 continue
 
-            v_south_grid = numpy.ones((wall_major_rows, wall_major_cols), dtype=numpy.float32) * blue_v + 10.0
-            v_north_grid = numpy.ones((wall_major_rows, wall_major_cols), dtype=numpy.float32) * blue_v + 10.0
-            v_west_grid = numpy.ones((wall_minor_rows, wall_minor_cols), dtype=numpy.float32) * blue_v + 10.0
-            v_east_grid = numpy.ones((wall_minor_rows, wall_minor_cols), dtype=numpy.float32) * blue_v + 10.0
+            v_south_grid = ones((wall_major_rows, wall_major_cols), dtype=float32) * blue_v + 10.0
+            v_north_grid = ones((wall_major_rows, wall_major_cols), dtype=float32) * blue_v + 10.0
+            v_west_grid = ones((wall_minor_rows, wall_minor_cols), dtype=float32) * blue_v + 10.0
+            v_east_grid = ones((wall_minor_rows, wall_minor_cols), dtype=float32) * blue_v + 10.0
     
             # construct south grid
             for gridCol in range(0, wall_major_cols):
@@ -571,45 +569,35 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
                                   v_east_grid, wall_major_cols, wall_major_rows,
                                   wall_minor_cols, wall_minor_rows,red_v, blue_v)
 
-    def updateWaterIngressPlot(self):
+    def updateWaterIngressPlot(self, bucket):
         self.statusBar().showMessage('Plotting Water Ingress')
-        speeds, samples = self.simulator.get_windresults_samples_perc_water_ingress()
-        wi_means = []
-        xarr = []
-        obsarr = []
-        for v in speeds:
-            wi_means.append( numpy.mean( numpy.array( samples[v] ) ) )
-            for obs in samples[v]:
-                obsarr.append(obs)
-                xarr.append(v)
+
+        _array = bucket['house_damage']['water_ingress_cost']
+        wi_means = _array.mean(axis=1)
+
         self.ui.wateringress_plot.axes.hold(True)
-        self.ui.wateringress_plot.axes.scatter(xarr, obsarr, s=8, marker='+', label='_nolegend_')
-        self.ui.wateringress_plot.axes.plot(speeds, wi_means, c='b', marker='o')
+        self.ui.wateringress_plot.axes.scatter(
+            self.cfg.speeds[:, newaxis] * ones(shape=(1, self.cfg.no_sims)),
+            _array, c='k', s=8, marker='+', label='_nolegend_')
+        self.ui.wateringress_plot.axes.plot(self.cfg.speeds, wi_means, c='b', marker='o')
         self.ui.wateringress_plot.axes.set_title('Water Ingress By Wind Speed')
         self.ui.wateringress_plot.axes.set_xlabel('Impact Wind speed (m/s)')
         self.ui.wateringress_plot.axes.set_ylabel('Water Ingress Cost')
         self.ui.wateringress_plot.axes.figure.canvas.draw()
-        self.ui.wateringress_plot.axes.set_xlim((speeds[0], speeds[len(speeds)-1]))
-        self.ui.wateringress_plot.axes.set_ylim((0))
+        self.ui.wateringress_plot.axes.set_xlim(self.cfg.speeds[0],
+                                                self.cfg.speeds[-1])
+        #self.ui.wateringress_plot.axes.set_ylim(0)
         
     def updateBreachPlot(self, bucket):
         self.statusBar().showMessage('Plotting Debris Results')
         self.ui.breaches_plot.axes.figure.clf()
         # we'll have three seperate y axis running at different scales
-        cumimpact_arr = []
-        cumsupply_arr = []
-        speeds, breaches = self.simulator.get_windresults_perc_houses_breached()
-        speeds, nv_samples = self.simulator.get_windresults_samples_nv()
-        speeds, num_samples = self.simulator.get_windresults_samples_num_items()
-        nv_means = []
-        num_means = []
-        for i, v in enumerate(speeds):
-            nv_means.append(numpy.mean(numpy.array(nv_samples[v])))
-            cumimpact_arr.append(sum(nv_means[:i+1]))            
-            num_means.append(numpy.mean(numpy.array(num_samples[v])))
-            cumsupply_arr.append(sum(num_means[:i+1]))
-        
-        host = SubplotHost(self.ui.breaches_plot.axes.figure, 111)        
+
+        breaches = bucket['house_damage']['breached'].sum(axis=1) / self.cfg.no_sims
+        nv_means = bucket['debris']['no_touched'].mean(axis=1)
+        num_means = bucket['debris']['no_items'].mean(axis=1)
+
+        host = SubplotHost(self.ui.breaches_plot.axes.figure, 111)
         par1 = host.twinx()
         par2 = host.twinx()
         par2.axis['right'].set_visible(False)
@@ -625,13 +613,13 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
         host.set_ylabel('Perc Breached')
         host.set_xlabel('Wind Speed (m/s)')
         par1.set_ylabel('Impacts')
-        host.set_xlim(speeds[0], speeds[len(speeds)-1])
+        host.set_xlim(self.cfg.speeds[0], self.cfg.speeds[-1])
                 
-        p1, = host.plot(speeds, breaches, label='Breached', c='b')
-        p2, = par1.plot(speeds, nv_means, label='Impacts', c='g')
-        p2b = par1.plot(speeds, cumimpact_arr, label='_nolegend_', c='g')
-        p3, = par2.plot(speeds, num_means, label='Supply', c='r')
-        p3b = par2.plot(speeds, cumsupply_arr, label='_nolegend_', c='r')
+        p1, = host.plot(self.cfg.speeds, breaches, label='Breached', c='b')
+        p2, = par1.plot(self.cfg.speeds, nv_means, label='Impacts', c='g')
+        p2b = par1.plot(self.cfg.speeds, nv_means.cumsum(), label='_nolegend_', c='g')
+        p3, = par2.plot(self.cfg.speeds, num_means, label='Supply', c='r')
+        p3b = par2.plot(self.cfg.speeds, num_means.cumsum(), label='_nolegend_', c='r')
         
         host.axis['left'].label.set_color(p1.get_color())
         par1.axis['right'].label.set_color(p2.get_color())
@@ -643,40 +631,18 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
     def updateStrengthPlot(self, bucket):
         self.ui.connection_type_plot.axes.hold(False)
         
-        conn_results_dict = {}
-        connection_type_ref = []
-        CONNECTION_TYPE = 1
-        for connection in self.cfg.connections.itertuples():
-            connection_type_ref.append(connection[CONNECTION_TYPE])
-            if connection[CONNECTION_TYPE] not in conn_results_dict:
-                conn_results_dict[connection[CONNECTION_TYPE]] = {}
-                conn_results_dict[connection[CONNECTION_TYPE]]['ct_num'] = 1
-                conn_results_dict[connection[CONNECTION_TYPE]]['sampled_strength'] = numpy.empty(0)
-            else:
-                conn_results_dict[connection[CONNECTION_TYPE]]['ct_num'] += 1
-
-        conn_sampled_strength = bucket['connection']['strength']
-
-        for connection_strength in conn_sampled_strength.iterkeys():
-            connection_type_name = connection_type_ref[connection_strength-1]
-            strength_array = conn_sampled_strength[connection_strength]
-            conn_results_dict[connection_type_name]['sampled_strength'] = numpy.append(conn_results_dict[connection_type_name]['sampled_strength'],
-                                                                                       strength_array)
-        
-        for ct_num, connection_type in enumerate(conn_results_dict.iterkeys()):
-            obs_arr = conn_results_dict[connection_type]['sampled_strength']
-            if len(obs_arr) > 0:                
-                self.ui.connection_type_plot.axes.scatter([ct_num]*len(obs_arr), obs_arr, s=8, marker='+')
-                self.ui.connection_type_plot.axes.hold(True)
-                self.ui.connection_type_plot.axes.scatter([ct_num], numpy.mean(obs_arr), s=20, c='r', marker='o')
-        
         xlabels = []
-        xticks = []
-        for ct_num, connection_type in enumerate(conn_results_dict.iterkeys()):
-            xlabels.append(connection_type)
-            xticks.append(ct_num)
-        
-        self.ui.connection_type_plot.axes.set_xticks(xticks)
+        for _id, (type_name, grouped) in enumerate(self.cfg.connections.groupby('type_name')):
+            _array = array([bucket['connection']['strength'][i] for i in grouped.index]).flatten()
+
+            self.ui.connection_type_plot.axes.scatter(
+                _id * ones_like(_array), _array, s=8, marker='+')
+            self.ui.connection_type_plot.axes.hold(True)
+            self.ui.connection_type_plot.axes.scatter(_id, _array.mean(), s=20,
+                                                      c='r', marker='o')
+            xlabels.append(type_name)
+
+        self.ui.connection_type_plot.axes.set_xticks(range(_id + 1))
         self.ui.connection_type_plot.axes.set_xticklabels(xlabels, rotation='vertical')
         self.ui.connection_type_plot.axes.set_title('Connection Type Strengths')
         self.ui.connection_type_plot.axes.set_position([0.05, 0.20, 0.9, 0.75])
@@ -687,40 +653,22 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
 
         self.ui.connection_type_damages_plot.axes.hold(False)
 
-        conn_results_dict = {}
-        connection_type_ref = []
-        CONNECTION_TYPE = 1
-        for connection in self.cfg.connections.itertuples():
-            connection_type_ref.append(connection[CONNECTION_TYPE])
-            if connection[CONNECTION_TYPE] not in conn_results_dict:
-                conn_results_dict[connection[CONNECTION_TYPE]] = list()
-
-        connection_damage = bucket['connection']['capacity']
-
-        for con_idx, connection_type in enumerate(connection_type_ref):
-            for house_number in range(self.cfg.no_sims):
-                comp_type_capacity = connection_damage[con_idx+1][:, house_number]
-                if comp_type_capacity[-1] != -1:
-                    # we need to find the wind step where the connection failed
-                    break_step = numpy.where(comp_type_capacity == comp_type_capacity[-1])[0][0]
-                    break_speed = self.cfg.speeds[break_step]
-                else:
-                    break_speed = 0
-                conn_results_dict[connection_type].append(break_speed)
-        
-        for ct_num, obs_arr in enumerate(conn_results_dict.itervalues()):
-            if len(obs_arr) > 0:
-                self.ui.connection_type_damages_plot.axes.scatter([ct_num]*len(obs_arr), obs_arr, s=8, marker='+')
-                self.ui.connection_type_damages_plot.axes.hold(True)
-                self.ui.connection_type_damages_plot.axes.scatter([ct_num], numpy.mean(obs_arr), s=20, c='r', marker='o')
-        
         xlabels = []
-        xticks = []
-        for (ct_num, con_key) in enumerate(conn_results_dict.iterkeys()):
-            xlabels.append(con_key)
-            xticks.append(ct_num)
-        
-        self.ui.connection_type_damages_plot.axes.set_xticks(xticks)
+        for _id, (type_name, grouped) in enumerate(self.cfg.connections.groupby('type_name')):
+            _array = array([bucket['connection']['capacity'][i] for i in grouped.index]).flatten()
+            _array[_array == -1] = nan
+
+            self.ui.connection_type_damages_plot.axes.scatter(
+                _id * ones_like(_array), _array, s=8, marker='+')
+            self.ui.connection_type_damages_plot.axes.hold(True)
+            self.ui.connection_type_damages_plot.axes.scatter(_id,
+                                                              nanmean(_array),
+                                                              s=20,
+                                                              c='r',
+                                                              marker='o')
+            xlabels.append(type_name)
+
+        self.ui.connection_type_damages_plot.axes.set_xticks(range(_id + 1))
         self.ui.connection_type_damages_plot.axes.set_xticklabels(xlabels, rotation='vertical')
         self.ui.connection_type_damages_plot.axes.set_title('Connection Type Damage Speeds')
         self.ui.connection_type_damages_plot.axes.set_position([0.05, 0.20, 0.9, 0.75])
@@ -737,51 +685,41 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
 
         connections_damaged = bucket['connection']['damaged']
         for irow, connection in enumerate(self.cfg.connections.itertuples()):
-            failure_count = numpy.count_nonzero(connections_damaged[irow+1])
-            failure_mean = numpy.mean(connections_damaged[irow+1])
+            failure_count = count_nonzero(connections_damaged[irow+1])
+            failure_mean = mean(connections_damaged[irow+1])
             self.ui.connections.setItem(irow, 4, QTableWidgetItem('{:.3}'.format(failure_mean)))
             self.ui.connections.setItem(irow, 5, QTableWidgetItem('{}'.format(failure_count)))
 
     def determine_capacities(self, bucket):
-        house_means = [[] for i in range(self.cfg.no_sims)]
 
-        for conn_index, (conn_id, connection) in enumerate(self.cfg.connections.iterrows()):
-            for house_index in range(self.cfg.no_sims):
-                connection_capacities = bucket['connection']['capacity'][conn_index+1][:, house_index]
-                if connection_capacities[-1] > 0:
-                    first_break = numpy.where(connection_capacities == connection_capacities[-1])[0][0]
-                    if first_break > 0:
-                        house_means[house_index].append(connection_capacities[first_break])
-        return map(numpy.mean, house_means)
+        _array = array([bucket['connection']['capacity'][i]
+                        for i in self.cfg.list_connections])
+
+        _array[_array == -1] = nan
+
+        return nanmean(_array, axis=1)
 
     def updateHouseResultsTable(self, bucket):
+
         self.statusBar().showMessage('Updating Zone Results')
         self.ui.zoneResults.clear()
 
-        capacities = self.determine_capacities(bucket)
+        wind_dir = [bucket['house']['wind_orientation'][i]
+                    for i in range(self.cfg.no_sims)]
+        construction_level = [bucket['house']['construction_level'][i]
+                              for i in range(self.cfg.no_sims)]
 
-        house_data = bucket['house']
-        house_damage_data = bucket['house_damage']
-
-        for house_num in range(self.cfg.no_sims):
-            wind_dir = house_data['wind_orientation'][house_num]
-            mean_wind_speed = capacities[house_num].round(2)
-            construction_level = house_data['construction_level'][house_num]
-            parent = QTreeWidgetItem(self.ui.zoneResults, ['H{} ({}/{:.3}/{})'.format(house_num+1,
-                                                                                      self.cfg.wind_dir[wind_dir],
-                                                                                      mean_wind_speed,
-                                                                                      construction_level),
-                                                           '', '', '', ''])
-            zone_results_dict = bucket['zone']
+        for i in range(self.cfg.no_sims):
+            parent = QTreeWidgetItem(self.ui.zoneResults,
+                                     ['H{} ({}/{})'.format(i + 1,
+                                                           self.cfg.wind_dir[wind_dir[i]],
+                                                           construction_level[i]), '', '', ''])
             for zr_key in self.cfg.zones:
-                zone_cpe = numpy.mean(zone_results_dict['cpe'][zr_key][:, 1])
-                zone_cpe_str = numpy.mean(zone_results_dict['cpe_str'][zr_key][:, 1])
-                zone_cpe_eave = numpy.mean(zone_results_dict['cpe_eave'][zr_key][:, 1])
                 QTreeWidgetItem(parent, ['',
                                          zr_key,
-                                         '{:.3}'.format(zone_cpe),
-                                         '{:.3}'.format(zone_cpe_str),
-                                         '{:.3}'.format(zone_cpe_eave)])
+                                         '{:.3}'.format(bucket['zone']['cpe'][zr_key][i]),
+                                         '{:.3}'.format(bucket['zone']['cpe_str'][zr_key][i]),
+                                         '{:.3}'.format(bucket['zone']['cpe_eave'][zr_key][i])])
                 
         self.ui.zoneResults.resizeColumnToContents(0)
         self.ui.zoneResults.resizeColumnToContents(1)
@@ -793,41 +731,30 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
         self.statusBar().showMessage('Updating Connection Results')
 
         self.ui.connectionResults.clear()
-        for house_num in range(self.cfg.no_sims):
-            mean_wind_dir = house_data['wind_orientation'][house_num]
-            mean_wind_speed = capacities[house_num].round(2)
-            construction_level = house_data['construction_level'][house_num]
+        for i in range(self.cfg.no_sims):
             parent = QTreeWidgetItem(self.ui.connectionResults,
-                                     ['H{} ({}/{})'.format(house_num+1,
-                                                                 self.cfg.wind_dir[wind_dir],
-                                                                 construction_level),
-                                      '', '', ''])
+                                     ['H{} ({}/{})'.format(i + 1,
+                                                           self.cfg.wind_dir[wind_dir[i]],
+                                                           construction_level[i]), '', '', ''])
 
-            connection_results = bucket['connection']
+            for _id, value in self.cfg.connections.iterrows():
 
-            for connection in self.cfg.connections.itertuples():
-                house_conn_capacity = connection_results['capacity'][connection[0]][:, house_num]
-                first_break = -1 # -1 means it didn't break
-                if house_conn_capacity[-1] != -1:
-                    # we need to find the wind step where the connection failed
-                    first_break = numpy.where(house_conn_capacity == house_conn_capacity[-1])[0][0]
+                capacity = bucket['connection']['capacity'][_id][i]
+                # load = bucket['connection']['load'][_id][house_num]
+                dead_load = bucket['connection']['dead_load'][_id][i]
+                strength = bucket['connection']['strength'][_id][i]
 
-                house_conn_capacity = connection_results['capacity'][connection[0]][first_break, house_num]
-                house_conn_load = connection_results['load'][connection[0]][first_break, house_num]
-                house_conn_dead_load = connection_results['dead_load'][connection[0]][first_break, house_num]
-                house_conn_strength = connection_results['strength'][connection[0]][first_break, house_num]
-
-                load_desc = ''
-                if house_conn_load == 99.9:
+                load_last = bucket['connection']['load'][_id][-1, i]
+                if load_last:
+                    load_desc = '{:.3}'.format(load_last)
+                else:
                     load_desc = 'collapse'
-                elif house_conn_load != 0:
-                    load_desc = '%.3f' % house_conn_load
 
-                conn_parent = QTreeWidgetItem(parent, ['{}_{}'.format(connection[1], connection[2]),
-                                                       '%.3f'%house_conn_capacity if house_conn_capacity != 0 else '',
-                                                       '%.3f'%house_conn_strength,
-                                                       '%.3f'%house_conn_dead_load,
-                                                       load_desc])
+                conn_parent = QTreeWidgetItem(parent, ['{}_{}'.format(value['type_name'], _id),
+                                                       '{:.3}'.format(capacity if capacity > 0 else 'NA'),
+                                                       '{:.3}'.format(strength),
+                                                       '{:.3}'.format(dead_load),
+                                                       '{}'.format(load_desc)])
 
                 # TODO for infl_dict in damage_report.get('infls', {}):
                 #     QTreeWidgetItem(conn_parent, ['%.3f(%s) = %.3f(i) * %.3f(area) * %.3f(pz)' % (infl_dict['load'],

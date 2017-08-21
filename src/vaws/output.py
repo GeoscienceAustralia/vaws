@@ -1,9 +1,8 @@
 """
     output.py - output module, postprocess and plot display engine
 """
+from numpy import linspace
 import matplotlib.pyplot as plt
-import numpy as np
-
 from matplotlib import cm, colorbar, colors, ticker
 from matplotlib.collections import PatchCollection
 
@@ -54,7 +53,7 @@ def plot_heatmap(grouped, values, vmin, vmax, vstep, xlim_max, ylim_max,
 
     cmap = cm.jet_r
     # cmap = cm.YlOrRd_r
-    bounds = np.linspace(vmin, vmax, vstep)
+    bounds = linspace(vmin, vmax, vstep)
     norm = colors.BoundaryNorm(bounds, cmap.N)
     cmap.set_under('gray')
 
