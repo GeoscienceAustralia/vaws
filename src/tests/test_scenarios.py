@@ -945,7 +945,63 @@ class TestScenario20(unittest.TestCase):
                     _id, dead_load[_id], _conn.dead_load))
 
 
+class TestScenario21(unittest.TestCase):
+    """
+    to test the effect of dead load on a roof sheeting connection
+
+    """
+    @classmethod
+    def setUpClass(cls):
+
+        path = '/'.join(__file__.split('/')[:-1])
+
+        cfg = Config(
+            cfg_file=os.path.join(path, '../../scenarios/test_scenario21/test_scenario21.cfg'))
+        cls.house_damage = HouseDamage(cfg, seed=0)
+
+        # set up logging
+        file_logger = os.path.join(cfg.path_output, 'log_test21.txt')
+        logging.basicConfig(filename=file_logger,
+                            filemode='w',
+                            level=logging.DEBUG,
+                            format='%(levelname)s %(message)s')
+
+    def test_dead_load(self):
+
+        conn_capacity = {49.0: [10],
+                         52.0: [9, 11],
+                         53.0: [8, 12],
+                         54.0: [7],
+                         57.0: range(1, 7)}
+
+        dead_load = {1: 0.1,
+                     2: 0.1,
+                     3: 0.1,
+                     4: 0.1,
+                     5: 0.1,
+                     6: 0.1,
+                     7: 1.5,
+                     8: 1.5,
+                     9: 1.5,
+                     10: 0.1,
+                     11: 1.5,
+                     12: 1.5}
+
+        simulation(self.house_damage, conn_capacity,
+                   wind_speeds=np.arange(20.0, 60.0, 1.0),
+                   list_connections=range(1, 12))
+
+        for _id, _conn in self.house_damage.house.connections.iteritems():
+
+            try:
+                np.testing.assert_almost_equal(_conn.dead_load,
+                                               dead_load[_id],
+                                               decimal=2)
+            except AssertionError:
+                print('conn #{} dead load should be {} not {}'.format(
+                    _id, dead_load[_id], _conn.dead_load))
+
 if __name__ == '__main__':
-    suite = unittest.TestLoader().loadTestsFromTestCase(TestScenario20)
+    suite = unittest.TestLoader().loadTestsFromTestCase(TestScenario21)
     unittest.TextTestRunner(verbosity=2).run(suite)
     #unittest.main(verbosity=2)
