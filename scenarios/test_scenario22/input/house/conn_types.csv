@@ -1,0 +1,5 @@
+type_name,strength_mean,strength_std,dead_load_mean,dead_load_std,group_name,costing_area
+sheeting,2.695,0.21608,0,0,sheeting,0.6
+batten,3.6,1.26,0,0,batten,0.6
+plainraftertopplate,19.5,5.85,0,0,rafter,0.6
+plainrafterridge,16.5,4.95,0,0,rafter,1.2
