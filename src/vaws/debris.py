@@ -486,7 +486,10 @@ class Coverage(Zone):
         self.area = None
         self.cpe_mean = {}
         self.coverage_type = None
-        self.log_failure_strength = None
+        self.log_failure_strength_in = None
+        self.log_failure_strength_out = None
+        self.sign_failure_strength_in = None
+        self.sign_failure_strength_out = None
         self.log_failure_momentum = None
         self.wall_name = None
 
@@ -499,7 +502,10 @@ class Coverage(Zone):
         default_attr = dict(area=self.area,
                             cpe_mean=self.cpe_mean,
                             coverage_type=self.coverage_type,
-                            log_failure_strength=self.log_failure_strength,
+                            log_failure_strength_in=self.log_failure_strength_in,
+                            log_failure_strength_out=self.log_failure_strength_out,
+                            sign_failure_strength_in=self.sign_failure_strength_in,
+                            sign_failure_strength_out=self.sign_failure_strength_out,
                             log_failure_momentum=self.log_failure_momentum,
                             wall_name=self.wall_name,
                             cpi_alpha=self.cpi_alpha,
@@ -511,7 +517,8 @@ class Coverage(Zone):
 
         super(Coverage, self).__init__(zone_name=coverage_name, **default_attr)
 
-        self.strength = None
+        self.strength_negative = None
+        self.strength_positive = None
         self.load = None
         self.capacity = -1
         self.breached = 0
@@ -540,8 +547,15 @@ class Coverage(Zone):
 
     def sample_strength(self, rnd_state):
 
-        self.strength = sample_lognormal(*(self.log_failure_strength +
-                                           (rnd_state,)))
+        for _type in ['in', 'out']:
+            _strength = getattr(self, 'log_failure_strength_{}'.format(_type))
+            _sign = getattr(self, 'sign_failure_strength_{}'.format(_type))
+            _value = sample_lognormal(*(_strength + (rnd_state,)))
+
+            if _sign > 0:
+                self.strength_positive = _value
+            else:
+                self.strength_negative = -1.0 * _value
 
     def check_damage(self, qz, cpi, wind_speed):
 
@@ -551,7 +565,8 @@ class Coverage(Zone):
 
             self.load = 0.9 * qz * (self.cpe - cpi) * self.area
 
-            if abs(self.load) > self.strength:
+            if (self.load > self.strength_positive) or (
+                        self.load < self.strength_negative):
 
                 self.breached = 1
 
@@ -560,5 +575,5 @@ class Coverage(Zone):
                 self.capacity = wind_speed
 
                 logging.info(
-                    'coverage {} failed at {:.3f} b/c {:.3f} < {:.3f} -> area {:.3f}'.format(
-                        self.name, wind_speed, self.strength, self.load, self.breached_area))
+                    'coverage {} failed at {:.3f} b/c {:.3f} or {:.3f} < {:.3f} -> area {:.3f}'.format(
+                        self.name, wind_speed, self.strength_positive, self.strength_negative, self.load, self.breached_area))

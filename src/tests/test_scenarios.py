@@ -71,6 +71,49 @@ def simulation(house_damage, conn_capacity, wind_speeds, list_connections):
                 _id, _conn.capacity, conn_capacity2[_id]))
 
 
+def simulation_incl_coverages(house_damage, wind_speeds):
+
+    wind_dir_index = house_damage.house.wind_orientation
+    ms = 1.0
+    building_spacing = 0
+
+    for wind_speed in wind_speeds:
+
+        logging.info('wind speed {:.3f}'.format(wind_speed))
+
+        house_damage.compute_qz_ms(wind_speed)
+
+        for _zone in house_damage.house.zones.itervalues():
+
+            _zone.cpe = _zone.cpe_mean[wind_dir_index]
+            _zone.cpe_str = _zone.cpe_str_mean[wind_dir_index]
+            _zone.cpe_eave = _zone.cpe_eave_mean[wind_dir_index]
+
+            _zone.calc_zone_pressure(wind_dir_index,
+                                     house_damage.cpi,
+                                     house_damage.qz,
+                                     ms,
+                                     building_spacing)
+        for _, _ps in house_damage.house.coverages.iterrows():
+            _ps['coverage'].check_damage(house_damage.qz, house_damage.cpi, wind_speed)
+
+        for _connection in house_damage.house.connections.itervalues():
+            _connection.compute_load()
+
+        # check damage by connection type group
+        for _group in house_damage.house.groups.itervalues():
+
+            _group.check_damage(wind_speed)
+
+            _group.compute_damaged_area()
+
+            _group.update_influence(house_damage.house)
+
+        house_damage.compute_damage_index(wind_speed)
+
+        house_damage.check_internal_pressurisation(wind_speed)
+
+
 class TestScenario1(unittest.TestCase):
     """
     validate computed loads at selected connections
@@ -1001,7 +1044,294 @@ class TestScenario21(unittest.TestCase):
                 print('conn #{} dead load should be {} not {}'.format(
                     _id, dead_load[_id], _conn.dead_load))
 
+
+class TestScenario22a(unittest.TestCase):
+    """
+    to test different strength for inward and outward direction
+
+    """
+    @classmethod
+    def setUpClass(cls):
+
+        path = '/'.join(__file__.split('/')[:-1])
+
+        cfg = Config(
+            cfg_file=os.path.join(path, '../../scenarios/test_scenario22/test_scenario22.cfg'))
+        cfg.wind_dir_index = 0
+
+        cls.house_damage = HouseDamage(cfg, seed=0)
+
+        # set up logging
+        file_logger = os.path.join(cfg.path_output, 'log_test22a.txt')
+        logging.basicConfig(filename=file_logger,
+                            filemode='w',
+                            level=logging.DEBUG,
+                            format='%(levelname)s %(message)s')
+
+    def test_directional_strength_wind_direction_S(self):
+
+        assert self.house_damage.house.wind_orientation == 0
+        self.house_damage.house.mzcat = 1.0  # profile: 6, height: 4.5
+
+        simulation_incl_coverages(self.house_damage,
+                                  wind_speeds=np.arange(20.0, 60.0, 1.0))
+
+        # change it to conn to speed
+        coverage_capacity = {35.0: [2],
+                             38.0: [1],
+                             49.0: [4],
+                             }
+        list_coverages = range(1, 9)
+
+        coverage_capacity2 = {x: -1.0 for x in list_coverages}
+        for speed, coverage_list in coverage_capacity.iteritems():
+            for _id in coverage_list:
+                coverage_capacity2.update({_id: speed})
+
+        # compare with reference capacity
+        for _id, _coverage in self.house_damage.house.coverages['coverage'].iteritems():
+
+            try:
+                np.testing.assert_almost_equal(_coverage.capacity,
+                                               coverage_capacity2[_id],
+                                               decimal=2)
+            except KeyError:
+                print('coverage #{} is not found'.format(_id))
+            except AssertionError:
+                print('coverage #{} fails at {} not {}'.format(
+                    _id, _coverage.capacity, coverage_capacity2[_id]))
+
+
+class TestScenario22b(unittest.TestCase):
+    """
+    to test different strength for inward and outward direction
+
+    """
+    @classmethod
+    def setUpClass(cls):
+
+        path = '/'.join(__file__.split('/')[:-1])
+
+        cfg = Config(
+            cfg_file=os.path.join(path, '../../scenarios/test_scenario22/test_scenario22.cfg'))
+
+        cfg.wind_dir_index = 4
+        cls.house_damage = HouseDamage(cfg, seed=0)
+
+        # set up logging
+        file_logger = os.path.join(cfg.path_output, 'log_test22b.txt')
+        logging.basicConfig(filename=file_logger,
+                            filemode='w',
+                            level=logging.DEBUG,
+                            format='%(levelname)s %(message)s')
+
+    def test_directional_strength_wind_direction_N(self):
+
+        assert self.house_damage.house.wind_orientation == 4
+        self.house_damage.house.mzcat = 1.0  # profile: 6, height: 4.5
+
+        simulation_incl_coverages(self.house_damage,
+                                  wind_speeds=np.arange(20.0, 60.0, 1.0))
+
+        # change it to conn to speed
+        coverage_capacity = {35.0: [4],
+                             48.0: [3],
+                             49.0: [1],
+                             55.0: [2],
+                             }
+        list_coverages = range(1, 9)
+
+        coverage_capacity2 = {x: -1.0 for x in list_coverages}
+        for speed, coverage_list in coverage_capacity.iteritems():
+            for _id in coverage_list:
+                coverage_capacity2.update({_id: speed})
+
+        # compare with reference capacity
+        for _id, _coverage in self.house_damage.house.coverages['coverage'].iteritems():
+
+            try:
+                np.testing.assert_almost_equal(_coverage.capacity,
+                                               coverage_capacity2[_id],
+                                               decimal=2)
+            except KeyError:
+                print('coverage #{} is not found'.format(_id))
+            except AssertionError:
+                print('coverage #{} fails at {} not {}'.format(
+                    _id, _coverage.capacity, coverage_capacity2[_id]))
+
+
+class TestScenario23a(unittest.TestCase):
+    """
+    to test different strength for inward and outward direction
+
+    """
+    @classmethod
+    def setUpClass(cls):
+
+        path = '/'.join(__file__.split('/')[:-1])
+
+        cfg = Config(
+            cfg_file=os.path.join(path, '../../scenarios/test_scenario23/test_scenario23.cfg'))
+
+        cfg.wind_dir_index = 0
+        cls.house_damage = HouseDamage(cfg, seed=0)
+
+        # set up logging
+        file_logger = os.path.join(cfg.path_output, 'log_test23a.txt')
+        logging.basicConfig(filename=file_logger,
+                            filemode='w',
+                            level=logging.DEBUG,
+                            format='%(levelname)s %(message)s')
+
+    def test_directional_strength_wind_direction_S(self):
+
+        assert self.house_damage.house.wind_orientation == 0
+        self.house_damage.house.mzcat = 1.0  # profile: 6, height: 4.5
+
+        simulation_incl_coverages(self.house_damage,
+                                  wind_speeds=np.arange(20.0, 60.0, 1.0))
+
+        # change it to conn to speed
+        coverage_capacity = {35.0: [2],
+                             37.0: [4],
+                             38.0: [1],
+                             }
+        list_coverages = range(1, 9)
+
+        coverage_capacity2 = {x: -1.0 for x in list_coverages}
+        for speed, coverage_list in coverage_capacity.iteritems():
+            for _id in coverage_list:
+                coverage_capacity2.update({_id: speed})
+
+        # compare with reference capacity
+        for _id, _coverage in self.house_damage.house.coverages['coverage'].iteritems():
+
+            try:
+                np.testing.assert_almost_equal(_coverage.capacity,
+                                               coverage_capacity2[_id],
+                                               decimal=2)
+            except KeyError:
+                print('coverage #{} is not found'.format(_id))
+            except AssertionError:
+                print('coverage #{} fails at {} not {}'.format(
+                    _id, _coverage.capacity, coverage_capacity2[_id]))
+
+
+class TestScenario23b(unittest.TestCase):
+    """
+    to test different strength for inward and outward direction
+
+    """
+    @classmethod
+    def setUpClass(cls):
+
+        path = '/'.join(__file__.split('/')[:-1])
+
+        cfg = Config(
+            cfg_file=os.path.join(path, '../../scenarios/test_scenario23/test_scenario23.cfg'))
+
+        cfg.wind_dir_index = 1
+        cls.house_damage = HouseDamage(cfg, seed=0)
+
+        # set up logging
+        file_logger = os.path.join(cfg.path_output, 'log_test23b.txt')
+        logging.basicConfig(filename=file_logger,
+                            filemode='w',
+                            level=logging.DEBUG,
+                            format='%(levelname)s %(message)s')
+
+    def test_directional_strength_wind_direction_SE(self):
+
+        assert self.house_damage.house.wind_orientation == 1
+        self.house_damage.house.mzcat = 1.0  # profile: 6, height: 4.5
+
+        simulation_incl_coverages(self.house_damage,
+                                  wind_speeds=np.arange(20.0, 60.0, 1.0))
+
+        # change it to conn to speed
+        coverage_capacity = {29.0: [2],
+                             35.0: [4],
+                             44.0: [3],
+                             }
+        list_coverages = range(1, 9)
+
+        coverage_capacity2 = {x: -1.0 for x in list_coverages}
+        for speed, coverage_list in coverage_capacity.iteritems():
+            for _id in coverage_list:
+                coverage_capacity2.update({_id: speed})
+
+        # compare with reference capacity
+        for _id, _coverage in self.house_damage.house.coverages['coverage'].iteritems():
+
+            try:
+                np.testing.assert_almost_equal(_coverage.capacity,
+                                               coverage_capacity2[_id],
+                                               decimal=2)
+            except KeyError:
+                print('coverage #{} is not found'.format(_id))
+            except AssertionError:
+                print('coverage #{} fails at {} not {}'.format(
+                    _id, _coverage.capacity, coverage_capacity2[_id]))
+
+
+class TestScenario23c(unittest.TestCase):
+    """
+    to test different strength for inward and outward direction
+
+    """
+    @classmethod
+    def setUpClass(cls):
+
+        path = '/'.join(__file__.split('/')[:-1])
+
+        cfg = Config(
+            cfg_file=os.path.join(path, '../../scenarios/test_scenario23/test_scenario23.cfg'))
+
+        cfg.wind_dir_index = 2
+        cls.house_damage = HouseDamage(cfg, seed=0)
+
+        # set up logging
+        file_logger = os.path.join(cfg.path_output, 'log_test23c.txt')
+        logging.basicConfig(filename=file_logger,
+                            filemode='w',
+                            level=logging.DEBUG,
+                            format='%(levelname)s %(message)s')
+
+    def test_directional_strength_wind_direction_E(self):
+
+        assert self.house_damage.house.wind_orientation == 2
+        self.house_damage.house.mzcat = 1.0  # profile: 6, height: 4.5
+
+        simulation_incl_coverages(self.house_damage,
+                                  wind_speeds=np.arange(20.0, 60.0, 1.0))
+
+        # change it to conn to speed
+        coverage_capacity = {35.0: [4],
+                             42.0: [1],
+                             43.0: [2],
+                             56.0: [3],
+                             }
+        list_coverages = range(1, 9)
+
+        coverage_capacity2 = {x: -1.0 for x in list_coverages}
+        for speed, coverage_list in coverage_capacity.iteritems():
+            for _id in coverage_list:
+                coverage_capacity2.update({_id: speed})
+
+        # compare with reference capacity
+        for _id, _coverage in self.house_damage.house.coverages['coverage'].iteritems():
+
+            try:
+                np.testing.assert_almost_equal(_coverage.capacity,
+                                               coverage_capacity2[_id],
+                                               decimal=2)
+            except KeyError:
+                print('coverage #{} is not found'.format(_id))
+            except AssertionError:
+                print('coverage #{} fails at {} not {}'.format(
+                    _id, _coverage.capacity, coverage_capacity2[_id]))
+
 if __name__ == '__main__':
-    suite = unittest.TestLoader().loadTestsFromTestCase(TestScenario21)
+    suite = unittest.TestLoader().loadTestsFromTestCase(TestScenario22b)
     unittest.TextTestRunner(verbosity=2).run(suite)
     #unittest.main(verbosity=2)

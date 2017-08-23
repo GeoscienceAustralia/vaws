@@ -14,7 +14,7 @@ import ConfigParser
 import pandas as pd
 
 from collections import OrderedDict, defaultdict
-from numpy import array, linspace, reshape
+from numpy import array, linspace, reshape, sign
 from scipy.stats import norm
 from matplotlib.patches import Polygon
 
@@ -65,14 +65,15 @@ class Config(object):
 
     zone_bucket = ['pressure', 'cpe', 'cpe_str', 'cpe_eave']
 
-    coverage_bucket = ['strength', 'load', 'breached', 'breached_area',
-                       'capacity']
+    coverage_bucket = ['strength_negative', 'strength_positive', 'load',
+                       'breached', 'breached_area', 'capacity']
 
     dic_obj_for_fitting = {'weibull': 'vulnerability_weibull',
                            'lognorm': 'vulnerability_lognorm'}
 
-    att_time_invariant = ['strength', 'dead_load', 'cpe', 'cpe_str', 'cpe_eave',
-                          'capacity', 'collapse']
+    att_time_invariant = ['strength', 'strength_negative', 'strength_positive',
+                          'dead_load', 'cpe', 'cpe_str', 'cpe_eave', 'capacity',
+                          'collapse']
 
     def __init__(self, cfg_file=None):
 
@@ -270,10 +271,15 @@ class Config(object):
             logging.warning('{}'.format(msg))
         else:
             if not self.coverages.empty:
-                for _key in ['failure_momentum', 'failure_strength']:
-                    self.coverages['log_{}'.format(_key)] = \
-                        self.coverages.apply(self.get_lognormal_tuple,
-                                             args=(coverage_types, _key,), axis=1)
+
+                _list = coverage_types[coverage_types.keys()[0]].keys()
+                failure_keys = [s.replace('_mean', '')
+                                for s in _list if '_mean' in s]
+
+                for _key in failure_keys:
+                    self.coverages = self.coverages.merge(self.coverages.apply(
+                        self.get_lognormal_tuple, args=(coverage_types, _key,), axis=1),
+                        left_index=True, right_index=True)
                 self.list_coverages = self.coverages.index.tolist()
             else:
                 self.coverages = None
@@ -575,8 +581,11 @@ class Config(object):
     def get_lognormal_tuple(row, dic_, key):
         _type = row['coverage_type']
         _mean = dic_[_type]['{}_mean'.format(key)]
+        _sign = sign(_mean)
+        _mean = abs(_mean)
         _sd = dic_[_type]['{}_std'.format(key)]
-        return compute_logarithmic_mean_stddev(_mean, _sd)
+        return pd.Series({'log_{}'.format(key): compute_logarithmic_mean_stddev(_mean, _sd),
+                          'sign_{}'.format(key): _sign})
 
     @staticmethod
     def read_damage_factorings(filename):
