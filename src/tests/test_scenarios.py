@@ -1332,6 +1332,6 @@ class TestScenario23c(unittest.TestCase):
                     _id, _coverage.capacity, coverage_capacity2[_id]))
 
 if __name__ == '__main__':
-    suite = unittest.TestLoader().loadTestsFromTestCase(TestScenario22b)
+    suite = unittest.TestLoader().loadTestsFromTestCase(TestScenario17)
     unittest.TextTestRunner(verbosity=2).run(suite)
     #unittest.main(verbosity=2)

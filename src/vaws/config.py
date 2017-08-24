@@ -81,7 +81,7 @@ class Config(object):
 
         self.house_name = None  # only used for gui display may be deleted later
         # self.parallel = None  # not used at the moment
-        self.no_sims = None
+        self.no_models = None
         self.wind_speed_min = 0.0
         self.wind_speed_max = 0.0
         self.wind_speed_increment = 0.0
@@ -158,7 +158,7 @@ class Config(object):
         self.flags = {}
 
         if not os.path.isfile(cfg_file):
-            msg = 'Error: file {} not found'.format(cfg_file)
+            msg = 'Error: {} not found'.format(cfg_file)
             sys.exit(msg)
         else:
             self.path_cfg = os.path.dirname(os.path.realpath(cfg_file))
@@ -213,17 +213,17 @@ class Config(object):
         """
         self.house_name = conf.get(key, 'house_name')
         # self.parallel = conf.getboolean(key, 'parallel')
-        self.no_sims = conf.getint(key, 'no_simulations')
+        self.no_models = conf.getint(key, 'no_models')
         self.wind_speed_min = conf.getfloat(key, 'wind_speed_min')
         self.wind_speed_max = conf.getfloat(key, 'wind_speed_max')
         self.wind_speed_steps = conf.getint(key, 'wind_speed_steps')
         self.speeds = linspace(start=self.wind_speed_min,
-                                  stop=self.wind_speed_max,
-                                  num=self.wind_speed_steps)
-        self.set_wind_dir_index(conf.get(key, 'wind_fixed_dir'))
+                               stop=self.wind_speed_max,
+                               num=self.wind_speed_steps)
+        self.set_wind_dir_index(conf.get(key, 'wind_direction'))
         self.regional_shielding_factor = conf.getfloat(
             key, 'regional_shielding_factor')
-        self.set_wind_profile(conf.get(key, 'terrain_cat'))
+        self.set_wind_profile(conf.get(key, 'terrain_category'))
 
     def read_water_ingress(self, conf, key):
         if conf.has_section(key):
@@ -739,14 +739,14 @@ class Config(object):
         config.add_section(key)
         # config.set(key, 'path_datafile', self.path_house_data)
         # config.set(key, 'parallel', self.parallel)
-        config.set(key, 'no_simulations', self.no_sims)
+        config.set(key, 'no_models', self.no_models)
         config.set(key, 'house_name', self.house_name)
 
-        config.set(key, 'wind_fixed_dir', self.__class__.wind_dir[self.wind_dir_index])
+        config.set(key, 'wind_direction', self.__class__.wind_dir[self.wind_dir_index])
         config.set(key, 'wind_speed_min', self.wind_speed_min)
         config.set(key, 'wind_speed_max', self.wind_speed_max)
         config.set(key, 'wind_speed_steps', self.wind_speed_steps)
-        config.set(key, 'terrain_cat', self.terrain_category)
+        config.set(key, 'terrain_category', self.terrain_category)
         config.set(key, 'regional_shielding_factor', self.regional_shielding_factor)
 
         key = 'options'

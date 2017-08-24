@@ -18,7 +18,7 @@ def fit_vulnerability_curve(cfg, df_dmg_idx):
 
     """
     # array changed to vector
-    xdata = (cfg.speeds[:, newaxis] * ones((1, cfg.no_sims))).flatten()
+    xdata = (cfg.speeds[:, newaxis] * ones((1, cfg.no_models))).flatten()
     ydata = df_dmg_idx.flatten()
 
     fitted_curve = {}
@@ -59,7 +59,7 @@ def fit_fragility_curves(cfg, df_dmg_idx):
     frag_counted = OrderedDict()
     for state, value in cfg.fragility_thresholds.iterrows():
         counted = (df_dmg_idx > value['threshold']).sum(axis=1) / \
-            float(cfg.no_sims)
+            float(cfg.no_models)
 
         try:
             popt, pcov = curve_fit(vulnerability_lognorm, cfg.speeds, counted)

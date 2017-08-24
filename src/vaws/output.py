@@ -107,7 +107,7 @@ def plot_heatmap(grouped, values, vmin, vmax, vstep, xlim_max, ylim_max,
         fig.savefig('{}.png'.format(file_name), dpi=150)
     plt.close(fig)
 
-
+'''
 def plot_curve(x_value, y_value, **kwargs):
     plt.plot(x_value, y_value, **kwargs)
 
@@ -117,7 +117,7 @@ def plot_show(axis_range, *args, **kwargs):
     
     Args:
         axis_range: [xmin, xmax, ymin, ymax] 
-        *args: no_sims
+        *args: no_models
         **kwargs: title, xlabel, ylabel, filename, loc
 
     Returns:
@@ -136,4 +136,4 @@ def plot_show(axis_range, *args, **kwargs):
     if 'filename' in kwargs:
         plt.savefig(kwargs['filename'])
     plt.close('all')
-
+'''

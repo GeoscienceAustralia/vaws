@@ -165,10 +165,7 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
 
         if self.ui.fitLognormalCurve.isChecked():
             self.update_config_from_ui()
-            df_fitted_curves = pd.read_csv(self.cfg.file_curve,
-                                           names=['key', 'error', 'param1',
-                                                  'param2'], skiprows=1,
-                                           index_col='key')
+            df_fitted_curves = pd.read_csv(self.cfg.file_curve, index_col=0)
 
             param_1 = df_fitted_curves.at['lognorm', 'param1']
             param_2 = df_fitted_curves.at['lognorm', 'param2']
@@ -188,7 +185,7 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
     def updateVulnCurve(self, _array):
         self.ui.mplvuln.axes.hold(True)
 
-        plot_wind_event_show(self.ui.mplvuln, self.cfg.no_sims, self.cfg.speeds[0], self.cfg.speeds[-1])
+        plot_wind_event_show(self.ui.mplvuln, self.cfg.no_models, self.cfg.speeds[0], self.cfg.speeds[-1])
 
         mean_cols = mean(_array.T, axis=0)
         plot_wind_event_mean(self.ui.mplvuln, self.cfg.speeds, mean_cols)
@@ -219,7 +216,7 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
             self.ui.sumOfSquares.setText('{:.3f}'.format(0.01))
 
     def updateFragCurve(self, _array):
-        plot_fragility_show(self.ui.mplfrag, self.cfg.no_sims,
+        plot_fragility_show(self.ui.mplfrag, self.cfg.no_models,
                             self.cfg.speeds[0], self.cfg.speeds[-1])
 
         df_fitted_curves = pd.read_csv(self.cfg.file_curve, index_col=0)
@@ -577,7 +574,7 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
 
         self.ui.wateringress_plot.axes.hold(True)
         self.ui.wateringress_plot.axes.scatter(
-            self.cfg.speeds[:, newaxis] * ones(shape=(1, self.cfg.no_sims)),
+            self.cfg.speeds[:, newaxis] * ones(shape=(1, self.cfg.no_models)),
             _array, c='k', s=8, marker='+', label='_nolegend_')
         self.ui.wateringress_plot.axes.plot(self.cfg.speeds, wi_means, c='b', marker='o')
         self.ui.wateringress_plot.axes.set_title('Water Ingress By Wind Speed')
@@ -593,7 +590,7 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
         self.ui.breaches_plot.axes.figure.clf()
         # we'll have three seperate y axis running at different scales
 
-        breaches = bucket['house_damage']['breached'].sum(axis=1) / self.cfg.no_sims
+        breaches = bucket['house_damage']['breached'].sum(axis=1) / self.cfg.no_models
         nv_means = bucket['debris']['no_touched'].mean(axis=1)
         num_means = bucket['debris']['no_items'].mean(axis=1)
 
@@ -705,11 +702,11 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
         self.ui.zoneResults.clear()
 
         wind_dir = [bucket['house']['wind_orientation'][i]
-                    for i in range(self.cfg.no_sims)]
+                    for i in range(self.cfg.no_models)]
         construction_level = [bucket['house']['construction_level'][i]
-                              for i in range(self.cfg.no_sims)]
+                              for i in range(self.cfg.no_models)]
 
-        for i in range(self.cfg.no_sims):
+        for i in range(self.cfg.no_models):
             parent = QTreeWidgetItem(self.ui.zoneResults,
                                      ['H{} ({}/{})'.format(i + 1,
                                                            self.cfg.wind_dir[wind_dir[i]],
@@ -731,7 +728,7 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
         self.statusBar().showMessage('Updating Connection Results')
 
         self.ui.connectionResults.clear()
-        for i in range(self.cfg.no_sims):
+        for i in range(self.cfg.no_models):
             parent = QTreeWidgetItem(self.ui.connectionResults,
                                      ['H{} ({}/{})'.format(i + 1,
                                                            self.cfg.wind_dir[wind_dir[i]],
@@ -858,7 +855,7 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
             self.statusBar().showMessage('Updating', 1000)
 
             # Scenario
-            self.ui.numHouses.setText('{:d}'.format(self.cfg.no_sims))
+            self.ui.numHouses.setText('{:d}'.format(self.cfg.no_models))
             self.ui.houseName.setText(self.cfg.house_name)
             self.ui.terrainCategory.setCurrentIndex(
                     self.ui.terrainCategory.findText(self.cfg.terrain_category))
@@ -934,7 +931,7 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
         new_cfg = self.cfg
 
         # Scenario section
-        new_cfg.no_sims = int(self.ui.numHouses.text())
+        new_cfg.no_models = int(self.ui.numHouses.text())
         new_cfg.house_name = (unicode(self.ui.houseName.text()))
         new_cfg.terrain_category = unicode(self.ui.terrainCategory.currentText())
         new_cfg.regional_shielding_factor = float(unicode(self.ui.regionalShielding.text()))

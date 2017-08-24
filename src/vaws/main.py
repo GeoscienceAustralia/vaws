@@ -35,7 +35,7 @@ def simulate_wind_damage_to_houses(cfg, call_back=None):
     logging.info('Starting simulation in serial')
 
     # generate instances of house_damage
-    list_house_damage = [HouseDamage(cfg, i) for i in range(cfg.no_sims)]
+    list_house_damage = [HouseDamage(cfg, i) for i in range(cfg.no_models)]
 
     for ispeed, wind_speed in enumerate(cfg.speeds):
 
@@ -79,19 +79,19 @@ def init_bucket(cfg):
 
     for att in cfg.house_bucket:
         if att in cfg.att_non_float:
-            bucket['house'][att] = zeros(shape=(1, cfg.no_sims), dtype=str)
+            bucket['house'][att] = zeros(shape=(1, cfg.no_models), dtype=str)
         else:
-            bucket['house'][att] = zeros(shape=(1, cfg.no_sims), dtype=float)
+            bucket['house'][att] = zeros(shape=(1, cfg.no_models), dtype=float)
 
     for item in ['house_damage', 'debris']:
         bucket[item] = {}
         for att in getattr(cfg, '{}_bucket'.format(item)):
             if att in cfg.att_time_invariant:
                 bucket[item][att] = zeros(
-                    shape=(1, cfg.no_sims), dtype=float)
+                    shape=(1, cfg.no_models), dtype=float)
             else:
                 bucket[item][att] = zeros(
-                    shape=(cfg.wind_speed_steps, cfg.no_sims), dtype=float)
+                    shape=(cfg.wind_speed_steps, cfg.no_models), dtype=float)
 
     # components: group, connection, zone
     for comp in cfg.list_components:
@@ -102,10 +102,10 @@ def init_bucket(cfg):
                 for item in getattr(cfg, 'list_{}s'.format(comp)):
                     if att in cfg.att_time_invariant:
                         bucket[comp][att][item] = zeros(
-                            shape=(1, cfg.no_sims), dtype=float)
+                            shape=(1, cfg.no_models), dtype=float)
                     else:
                         bucket[comp][att][item] = zeros(
-                            shape=(cfg.wind_speed_steps, cfg.no_sims), dtype=float)
+                            shape=(cfg.wind_speed_steps, cfg.no_models), dtype=float)
             except TypeError:
                 pass
     return bucket
@@ -206,7 +206,7 @@ def save_results_to_files(cfg, bucket):
 
         for group_name, grouped in cfg.connections.groupby('group_name'):
 
-            for id_sim in range(cfg.no_sims):
+            for id_sim in range(cfg.no_models):
 
                 value = array([bucket['connection']['capacity'][i][id_sim]
                                for i in grouped.index])

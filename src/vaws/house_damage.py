@@ -68,7 +68,7 @@ class HouseDamage(object):
                 _group.compute_damaged_area()
 
                 # change influence / influence patch
-                if _group.damaged and self.cfg.flags.get('dmg_distribute_{}'.format(
+                if _group.damaged and self.cfg.flags.get('damage_distribute_{}'.format(
                         _group.name)):
                     _group.update_influence(self.house)
 
