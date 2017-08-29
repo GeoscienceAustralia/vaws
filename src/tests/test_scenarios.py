@@ -1078,8 +1078,9 @@ class TestScenario22a(unittest.TestCase):
 
         # change it to conn to speed
         coverage_capacity = {35.0: [2],
-                             38.0: [1],
-                             49.0: [4],
+                             36.0: [4],
+                             45.0: [3],
+                             46.0: [1],
                              }
         list_coverages = range(1, 9)
 
@@ -1135,9 +1136,7 @@ class TestScenario22b(unittest.TestCase):
 
         # change it to conn to speed
         coverage_capacity = {35.0: [4],
-                             48.0: [3],
-                             49.0: [1],
-                             55.0: [2],
+                             36.0: [3, 2, 1],
                              }
         list_coverages = range(1, 9)
 
@@ -1193,8 +1192,9 @@ class TestScenario23a(unittest.TestCase):
 
         # change it to conn to speed
         coverage_capacity = {35.0: [2],
-                             37.0: [4],
-                             38.0: [1],
+                             36.0: [4],
+                             45.0: [3],
+                             46.0: [1],
                              }
         list_coverages = range(1, 9)
 
@@ -1250,8 +1250,8 @@ class TestScenario23b(unittest.TestCase):
 
         # change it to conn to speed
         coverage_capacity = {29.0: [2],
-                             35.0: [4],
-                             44.0: [3],
+                             30.0: [4],
+                             58.0: [1],
                              }
         list_coverages = range(1, 9)
 
@@ -1307,9 +1307,9 @@ class TestScenario23c(unittest.TestCase):
 
         # change it to conn to speed
         coverage_capacity = {35.0: [4],
-                             42.0: [1],
-                             43.0: [2],
-                             56.0: [3],
+                             40.0: [3],
+                             45.0: [1],
+                             46.0: [2],
                              }
         list_coverages = range(1, 9)
 
@@ -1332,6 +1332,6 @@ class TestScenario23c(unittest.TestCase):
                     _id, _coverage.capacity, coverage_capacity2[_id]))
 
 if __name__ == '__main__':
-    suite = unittest.TestLoader().loadTestsFromTestCase(TestScenario17)
+    suite = unittest.TestLoader().loadTestsFromTestCase(TestScenario23b)
     unittest.TextTestRunner(verbosity=2).run(suite)
     #unittest.main(verbosity=2)

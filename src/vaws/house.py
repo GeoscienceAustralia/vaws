@@ -290,7 +290,7 @@ class House(object):
 
             logging.debug('cpi for bldg with dominant opening: {}'.format(cpi))
 
-        elif len(max_breached) == 4:  # all equal openings
+        elif len(max_breached) == len(breached_area_by_wall):  # all equal openings
             if max_breached.iloc[0]:
                 cpi = -0.3
             else:

@@ -173,7 +173,7 @@ class HouseDamage(object):
 
         # area of breached coverages
         if self.house.coverages is not None:
-            self.house.assign_cpi()
+            self.cpi = self.house.assign_cpi()
 
             if self.house.coverages['breached_area'].sum():
                 self.breached = True
