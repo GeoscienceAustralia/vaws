@@ -565,6 +565,10 @@ class Coverage(Zone):
 
             self.load = 0.9 * qz * (self.cpe - cpi) * self.area
 
+            logging.debug(
+                'load at coverage {}: {:.3f} * ({:.3f} - {:.3f}) * {:.3f}'.format(
+                    self.name, qz, self.cpe, cpi, self.area))
+
             if (self.load > self.strength_positive) or (
                         self.load < self.strength_negative):
 
@@ -575,5 +579,5 @@ class Coverage(Zone):
                 self.capacity = wind_speed
 
                 logging.info(
-                    'coverage {} failed at {:.3f} b/c {:.3f} or {:.3f} < {:.3f} -> area {:.3f}'.format(
+                    'coverage {} failed at {:.3f} b/c {:.3f} or {:.3f} < {:.3f} -> breached area {:.3f}'.format(
                         self.name, wind_speed, self.strength_positive, self.strength_negative, self.load, self.breached_area))
