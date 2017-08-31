@@ -184,7 +184,8 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
                 plot_fitted_curve(self.ui.mplvuln,
                                   self.cfg.speeds,
                                   y,
-                                  col='r')
+                                  col='r',
+                                  label="Weibull")
 
             self.ui.wb_coeff_1.setText('{:.3f}'.format(param_1))
             self.ui.wb_coeff_2.setText('{:.3f}'.format(param_2))
@@ -205,12 +206,13 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
                 plot_fitted_curve(self.ui.mplvuln,
                                   self.cfg.speeds,
                                   y,
-                                  col='b')
+                                  col='b',
+                                  label="Lognormal")
 
-            red_patch = mpatches.Patch(color='red', label='Weibull')
-            blue_patch = mpatches.Patch(color='blue', label='Lognormal')
-            self.ui.mplvuln.axes.legend(handles=[red_patch, blue_patch],
-                                        loc='lower right')
+            self.ui.mplvuln.axes.legend(loc=2,
+                                        fancybox=True,
+                                        shadow=True,
+                                        fontsize='small')
 
             self.ui.mplvuln.axes.figure.canvas.draw()
 
@@ -489,16 +491,30 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
     def updateHeatmap(self, bucket):
         red_v = self.ui.redV.value()
         blue_v = self.ui.blueV.value()
+        self.ui.damages_tab.setUpdatesEnabled(False)
 
-        group_widget = {'sheeting': self.ui.mplsheeting,
-                        'batten': self.ui.mplbatten,
-                        'rafter': self.ui.mplrafter,
-                        'piersgroup': self.ui.mplpiers,
-                        'wallracking': self.ui.mplwallracking}
+        group_widget = {'sheeting': [self.ui.mplsheeting, self.ui.tab_19, 0],
+                        'batten': [self.ui.mplbatten, self.ui.tab_20, 1],
+                        'rafter': [self.ui.mplrafter, self.ui.tab_21, 2],
+                        'piersgroup': [self.ui.mplpiers, self.ui.tab_27, 3],
+                        'wallracking': [self.ui.mplwallracking, self.ui.tab_25, 4],
+                        'wallCladding': [self.ui.mplwallcladding, self.ui.tab_26, 5],
+                        'wallCollapse': [self.ui.mplwallcollapse, self.ui.tab_29, 6]}
+
+        for group_name, widget in group_widget.iteritems():
+            tab_index = self.ui.damages_tab.indexOf(widget[1])
+            if group_name not in self.cfg.connections['group_name'].values and tab_index >= 0:
+                self.ui.damages_tab.removeTab(tab_index)
 
         for group_name, grouped in self.cfg.connections.groupby('group_name'):
             if group_name not in group_widget:
                 continue
+
+            base_tab = group_widget[group_name][1]
+
+            if self.ui.damages_tab.indexOf(base_tab) == -1:
+                self.ui.damages_tab.insertTab(group_widget[group_name][2],
+                                              group_widget[group_name][1])
 
             _array = array([bucket['connection']['capacity'][i]
                             for i in grouped.index])
@@ -506,7 +522,7 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
             mean_connection_capacity = nanmean(_array, axis=1)
             mean_connection_capacity = nan_to_num(mean_connection_capacity)
 
-            plot_damage_show(group_widget[group_name], grouped,
+            plot_damage_show(group_widget[group_name][0], grouped,
                              mean_connection_capacity,
                              self.cfg.house['length'],
                              self.cfg.house['width'],
@@ -567,6 +583,8 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
             plot_wall_damage_show(group_name,v_south_grid, v_north_grid, v_west_grid,
                                   v_east_grid, wall_major_cols, wall_major_rows,
                                   wall_minor_cols, wall_minor_rows,red_v, blue_v)
+
+        self.ui.damages_tab.setUpdatesEnabled(True)
 
     def updateWaterIngressPlot(self, bucket):
         self.statusBar().showMessage('Plotting Water Ingress')
