@@ -28,6 +28,32 @@ DEBRIS_DATA = os.path.join(INPUT_DIR, "debris")
 GUST_PROFILES_DATA = os.path.join(INPUT_DIR, "gust_envelope_profiles")
 HOUSE_DATA = os.path.join(INPUT_DIR, "house")
 
+# house data files
+FILE_HOUSE_DATA = 'house_data.csv'
+FILE_CONN_GROUPS = 'conn_groups.csv'
+FILE_CONN_TYPES = 'conn_types.csv'
+FILE_CONNECTIONS = 'connections.csv'
+
+FILE_ZONES = 'zones.csv'
+
+FILE_COVERAGE_TYPES = 'coverage_types.csv'
+FILE_COVERAGES = 'coverages.csv'
+FILE_COVERAGES_CPE = 'coverages_cpe.csv'
+
+FILE_INFLUENCES = 'influences.csv'
+FILE_INFLUENCE_PATCHES = 'influence_patches.csv'
+
+FILE_DAMAGE_COSTING_DATA = 'damage_costing_data.csv'
+FILE_DAMAGE_FACTORINGS = 'damage_factorings.csv'
+FILE_WATER_INGRESS_COSTING_DATA = 'water_ingress_costing_data.csv'
+
+FILE_FOOTPRINT = 'footprint.csv'
+FILE_FRONT_FACING_WALLS = 'front_facing_walls.csv'
+
+# debris data
+FILE_DEBRIS_TYPES = 'debris_types.csv'
+FILE_DEBRIS_REGIONS = 'debris_regions.csv'
+
 
 class Config(object):
 
@@ -80,11 +106,10 @@ class Config(object):
         self.cfg_file = cfg_file
 
         self.house_name = None  # only used for gui display may be deleted later
-        # self.parallel = None  # not used at the moment
         self.no_models = None
         self.wind_speed_min = 0.0
         self.wind_speed_max = 0.0
-        self.wind_speed_increment = 0.0
+        # self.wind_speed_increment = 0.0
         self.wind_speed_steps = None
         self.speeds = None
         self.terrain_category = None
@@ -146,7 +171,6 @@ class Config(object):
         # debris related
         self.front_facing_walls = None
         self.coverages_cpe_mean = None
-        self.area_by_wall = None
 
         self.file_results = None
         self.file_curve = None
@@ -184,22 +208,26 @@ class Config(object):
         conf.read(self.cfg_file)
 
         self.read_main(conf, key='main')
+        self.read_options(conf, key='options')
+        self.read_heatmap(conf, key='heatmap')
+        self.read_construction_levels(conf, key='construction_levels')
+        self.read_fragility_thresholds(conf, key='fragility_thresholds')
+        self.read_debris(conf, key='debris')
+        self.read_water_ingress(conf, key='water_ingress')
 
-        key = 'options'
+        self.set_house()
+        df_groups, list_groups = self.set_groups()
+        df_types = self.set_types()
+        self.set_connections(df_types, list_groups)
+        self.set_zones()
+        self.set_coverages()
+
+        self.set_influences_and_influence_pathces()
+        self.set_costings(df_groups)
+
+    def read_options(self, conf, key):
         for sub_key, value in conf.items(key):
             self.flags[sub_key] = conf.getboolean(key, sub_key)
-
-        self.read_house_data()
-
-        self.read_heatmap(conf, key='heatmap')
-
-        self.read_construction_levels(conf, key='construction_levels')
-
-        self.read_fragility_thresholds(conf, key='fragility_thresholds')
-
-        self.read_debris(conf, key='debris')
-
-        self.read_water_ingress(conf, key='water_ingress')
 
     def read_main(self, conf, key):
         """
@@ -212,7 +240,6 @@ class Config(object):
 
         """
         self.house_name = conf.get(key, 'house_name')
-        # self.parallel = conf.getboolean(key, 'parallel')
         self.no_models = conf.getint(key, 'no_models')
         self.wind_speed_min = conf.getfloat(key, 'wind_speed_min')
         self.wind_speed_max = conf.getfloat(key, 'wind_speed_max')
@@ -242,34 +269,21 @@ class Config(object):
         self.water_ingress_given_di['wi'] = self.water_ingress_given_di.apply(
             self.return_norm_cdf, axis=1)
 
-    def read_debris(self, conf, key):
-
-        # global data
-        try:
-            _file = os.path.join(self.path_debris, 'debris_regions.csv')
-            self.debris_regions = pd.read_csv(_file, index_col=0).to_dict('index')
-        except IOError as msg:
-            logging.warning('{}'.format(msg))
-
-        try:
-            _file = os.path.join(self.path_debris, 'debris_types.csv')
-            self.debris_types = pd.read_csv(_file, index_col=0).to_dict('index')
-        except IOError as msg:
-            logging.warning('{}'.format(msg))
-
+    def set_coverages(self):
         # coverages
+        _file = os.path.join(self.path_house_data, FILE_COVERAGE_TYPES)
         try:
-            _file = os.path.join(self.path_house_data, 'coverage_types.csv')
             coverage_types = pd.read_csv(_file, index_col=0).to_dict('index')
         except IOError as msg:
             logging.warning('{}'.format(msg))
 
+        _file = os.path.join(self.path_house_data, FILE_COVERAGES)
         try:
-            _file = os.path.join(self.path_house_data, 'coverages.csv')
             self.coverages = pd.read_csv(_file, index_col=0)
         except IOError as msg:
             logging.warning('{}'.format(msg))
         else:
+
             if not self.coverages.empty:
 
                 _list = coverage_types[coverage_types.keys()[0]].keys()
@@ -277,36 +291,56 @@ class Config(object):
                                 for s in _list if '_mean' in s]
 
                 for _key in failure_keys:
-                    self.coverages = self.coverages.merge(self.coverages.apply(
-                        self.get_lognormal_tuple, args=(coverage_types, _key,), axis=1),
-                        left_index=True, right_index=True)
+                    _df = self.coverages.apply(self.get_lognormal_tuple,
+                                               args=(coverage_types, _key,),
+                                               axis=1)
+                    self.coverages = self.coverages.merge(_df,
+                                                          left_index=True,
+                                                          right_index=True)
                 self.list_coverages = self.coverages.index.tolist()
             else:
                 self.coverages = None
 
         names_ = ['name'] + range(8)
+        _file = os.path.join(self.path_house_data, FILE_COVERAGES_CPE)
         try:
-            _file = os.path.join(self.path_house_data, 'coverages_cpe.csv')
             self.coverages_cpe_mean = pd.read_csv(
                 _file, names=names_, index_col=0, skiprows=1).to_dict('index')
         except (IOError, TypeError) as msg:
             logging.warning('{}'.format(msg))
 
-        # self.area_by_wall = self.coverages.groupby('wall_name')[
-        #     'area'].sum().to_dict()
+        _file = os.path.join(self.path_house_data, FILE_FRONT_FACING_WALLS)
+        try:
+            self.front_facing_walls = self.read_front_facing_walls(_file)
+        except IOError as msg:
+            logging.warning('{}'.format(msg))
 
-        self.front_facing_walls = self.read_front_facing_walls(
-            os.path.join(self.path_house_data, 'front_facing_walls.csv'))
+    def read_debris(self, conf, key):
 
-        self.set_region_name(conf.get(key, 'region_name'))
+        # global data
+        _file = os.path.join(self.path_debris, FILE_DEBRIS_REGIONS)
+        try:
+            self.debris_regions = pd.read_csv(_file, index_col=0).to_dict('index')
+        except IOError as msg:
+            logging.warning('{}'.format(msg))
+
+        _file = os.path.join(self.path_debris, FILE_DEBRIS_TYPES)
+        try:
+            self.debris_types = pd.read_csv(_file, index_col=0).to_dict('index')
+        except IOError as msg:
+            logging.warning('{}'.format(msg))
 
         if self.flags[key]:
 
             from vaws.debris import Debris
 
-            self.footprint = pd.read_csv(
-                os.path.join(self.path_house_data, 'footprint.csv'),
-                skiprows=1, header=None).values
+            self.set_region_name(conf.get(key, 'region_name'))
+
+            _file = os.path.join(self.path_house_data, FILE_FOOTPRINT)
+            try:
+                self.footprint = pd.read_csv(_file, skiprows=1, header=None).values
+            except IOError as msg:
+                logging.warning('{}'.format(msg))
 
             self.staggered_sources = conf.getboolean(key, 'staggered_sources')
             self.source_items = conf.getint(key, 'source_items')
@@ -398,85 +432,132 @@ class Config(object):
 
         return norm(loc=_mean, scale=_sd).cdf
 
-    def read_house_data(self):
+    def set_house(self):
 
         # house data
-        self.house = pd.read_csv(
-            os.path.join(self.path_house_data, 'house_data.csv')).to_dict('records')[0]
-        self.house['big_a'], self.house['big_b'] = \
-            calc_big_a_b_values(shape_k=self.house['cpe_k'])
+        _file = os.path.join(self.path_house_data, FILE_HOUSE_DATA)
+        try:
+            self.house = pd.read_csv(_file).to_dict('records')[0]
+        except IOError as msg:
+            logging.error('{}'.format(msg))
+        else:
+            self.house['big_a'], self.house['big_b'] = \
+                calc_big_a_b_values(shape_k=self.house['cpe_k'])
 
-        # zone data
-        _df = pd.read_csv(os.path.join(self.path_house_data, 'zones.csv'),
-                          index_col=0, dtype={'cpi_alpha': float,
-                                              'area': float,
-                                              'wall_dir': int})
-        _dict = _df.to_dict('index')
+    def set_groups(self):
+        _file = os.path.join(self.path_house_data, FILE_CONN_GROUPS)
+        try:
+            df_groups = pd.read_csv(_file, index_col=0)
+        except IOError as msg:
+            logging.error('{}'.format(msg))
+        else:
+            self.groups = df_groups.to_dict('index')
+            list_groups = df_groups.index.tolist()
+        return df_groups, list_groups
 
-        self.list_zones = _df.index.tolist()
-        self.zones = OrderedDict((k, _dict.get(k)) for k in self.list_zones)
+    def set_types(self):
+
+        _file = os.path.join(self.path_house_data, FILE_CONN_TYPES)
+        try:
+            df_types = pd.read_csv(_file, index_col=0)
+        except IOError as msg:
+            logging.error('{}'.format(msg))
+        else:
+            # change arithmetic mean, std to logarithmic mean, std
+            df_types['lognormal_strength'] = df_types.apply(
+                lambda row: compute_logarithmic_mean_stddev(row['strength_mean'],
+                                                            row['strength_std']),
+                axis=1)
+
+            df_types['lognormal_dead_load'] = df_types.apply(
+                lambda row: compute_logarithmic_mean_stddev(row['dead_load_mean'],
+                                                            row['dead_load_std']),
+                axis=1)
+            self.types = df_types.to_dict('index')
+        return df_types
+
+    def set_connections(self, types, list_groups):
+        # connections
+        _file = os.path.join(self.path_house_data, FILE_CONNECTIONS)
+        try:
+            _connections = self.read_file_connections(_file, types)
+        except IOError as msg:
+            logging.error('{}'.format(msg))
+        else:
+            self.connections = _connections
+            self.list_connections = self.connections.index.tolist()
+
+            self.damage_grid_by_sub_group = self.connections.groupby('sub_group')['grid_max'].apply(
+                lambda x: x.unique()[0]).to_dict()
+            self.connections['group_idx'] = self.connections['group_name'].apply(
+                lambda x: list_groups.index(x))
+            self.list_groups = self.connections['sub_group'].unique().tolist()
+
+    def set_influences_and_influence_pathces(self):
+
+        # influences
+        try:
+            self.influences = self.read_influences(
+                os.path.join(self.path_house_data, FILE_INFLUENCES))
+        except IOError as msg:
+            logging.error('{}'.format(msg))
+
+        try:
+            self.influence_patches = self.read_influence_patches(
+                os.path.join(self.path_house_data, FILE_INFLUENCE_PATCHES))
+        except IOError as msg:
+            logging.error('{}'.format(msg))
+
+    def set_costings(self, groups):
+
+        # costing
+        _file = os.path.join(self.path_house_data, FILE_DAMAGE_COSTING_DATA)
+        self.costings, self.damage_order_by_water_ingress = \
+            self.read_damage_costing_data(_file, groups)
+
+        self.costing_to_group = defaultdict(list)
+        for key, value in groups['damage_scenario'].to_dict().iteritems():
+            if len(value.split()) > 1:
+                self.costing_to_group[value].append(key)
+
+        _file = os.path.join(self.path_house_data, FILE_DAMAGE_FACTORINGS)
+        try:
+            self.damage_factorings = self.read_damage_factorings(_file)
+        except IOError as msg:
+            logging.error('{}'.format(msg))
+
+        _file = os.path.join(self.path_house_data, FILE_WATER_INGRESS_COSTING_DATA)
+        self.water_ingress_costings = self.read_water_ingress_costing_data(
+            _file, groups)
+
+    def set_zones(self):
+
+        _file = os.path.join(self.path_house_data, FILE_ZONES)
+        try:
+            _df = pd.read_csv(_file, index_col=0, dtype={'cpi_alpha': float,
+                                                         'area': float,
+                                                         'wall_dir': int})
+        except IOError as msg:
+            logging.error('{}'.format(msg))
+        else:
+            _dict = _df.to_dict('index')
+            self.list_zones = _df.index.tolist()
+            self.zones = OrderedDict((k, _dict.get(k)) for k in self.list_zones)
 
         names_ = ['name'] + range(8)
         for item in ['cpe_mean', 'cpe_str_mean', 'cpe_eave_mean', 'edge']:
-            _value = pd.read_csv(
-                os.path.join(self.path_house_data, 'zones_{}.csv'.format(item)),
-                names=names_, index_col=0, skiprows=1).to_dict('index')
-            setattr(self, 'zones_{}'.format(item), _value)
-
-        groups = pd.read_csv(os.path.join(
-            self.path_house_data, 'conn_groups.csv'), index_col=0)
-        self.groups = groups.to_dict('index')
-        _list_groups = groups.index.tolist()
-
-        types = pd.read_csv(
-            os.path.join(self.path_house_data, 'conn_types.csv'),
-            index_col=0)
-
-        # change arithmetic mean, std to logarithmic mean, std
-        types['lognormal_strength'] = types.apply(
-            lambda row: compute_logarithmic_mean_stddev(row['strength_mean'],
-                                                        row['strength_std']),
-            axis=1)
-
-        types['lognormal_dead_load'] = types.apply(
-            lambda row: compute_logarithmic_mean_stddev(row['dead_load_mean'],
-                                                        row['dead_load_std']),
-            axis=1)
-
-        self.types = types.to_dict('index')
-
-        # connections
-        self.connections = self.read_connection_data(
-            os.path.join(self.path_house_data, 'connections.csv'), types)
-        self.list_connections = self.connections.index.tolist()
-        self.damage_grid_by_sub_group = self.connections.groupby('sub_group')['grid_max'].apply(
-            lambda x: x.unique()[0]).to_dict()
-        self.connections['group_idx'] = self.connections['group_name'].apply(
-            lambda x: _list_groups.index(x))
-        self.list_groups = self.connections['sub_group'].unique().tolist()
-
-        # influences
-        self.influences = self.read_influences(
-            os.path.join(self.path_house_data, 'influences.csv'))
-
-        self.influence_patches = self.read_influence_patches(
-            os.path.join(self.path_house_data, 'influence_patches.csv'))
-
-        # costing
-        self.costings, self.costing_to_group, self.damage_order_by_water_ingress = \
-            self.read_damage_costing_data(
-                os.path.join(self.path_house_data, 'damage_costing_data.csv'),
-                groups)
-
-        self.damage_factorings = self.read_damage_factorings(
-            os.path.join(self.path_house_data, 'damage_factorings.csv'))
-
-        self.water_ingress_costings = self.read_water_ingress_costing_data(
-            os.path.join(self.path_house_data, 'water_ingress_costing_data.csv'),
-            groups)
+            _file = os.path.join(self.path_house_data,
+                                 'zones_{}.csv'.format(item))
+            try:
+                _value = pd.read_csv(_file, names=names_, index_col=0,
+                                     skiprows=1).to_dict('index')
+            except IOError as msg:
+                logging.error('{}'.format(msg))
+            else:
+                setattr(self, 'zones_{}'.format(item), _value)
 
     @classmethod
-    def read_connection_data(cls, file_connections, types):
+    def read_file_connections(cls, file_connections, types):
 
         dump = []
         with open(file_connections, 'r') as f:
@@ -532,39 +613,42 @@ class Config(object):
         return tuple([row[key1][i] - row[key2][i] for i in range(2)])
 
     @staticmethod
-    def read_damage_costing_data(file_damage_costing, groups):
+    def read_damage_costing_data(filename, groups):
         costing = {}
-        damage_costing = pd.read_csv(file_damage_costing, index_col=0)
-        for key, item in damage_costing.iterrows():
-            if groups['damage_scenario'].isin([key]).any():
-                costing[key] = Costing(costing_name=key, **item)
-
-        costing_to_group = defaultdict(list)
-        for key, value in groups['damage_scenario'].to_dict().iteritems():
-            if len(value.split()) > 1:
-                costing_to_group[value].append(key)
-
         damage_order_by_water_ingress = []
-        for item in damage_costing['water_ingress_order'].sort_values().index:
-            if groups['damage_scenario'].isin([item]).any():
-                damage_order_by_water_ingress.append(item)
 
-        return costing, costing_to_group, damage_order_by_water_ingress
+        try:
+            damage_costing = pd.read_csv(filename, index_col=0)
+        except IOError as msg:
+            logging.error('{}'.format(msg))
+        else:
+            for key, item in damage_costing.iterrows():
+                if groups['damage_scenario'].isin([key]).any():
+                    costing[key] = Costing(costing_name=key, **item)
+
+            for item in damage_costing['water_ingress_order'].sort_values().index:
+                if groups['damage_scenario'].isin([item]).any():
+                    damage_order_by_water_ingress.append(item)
+
+        return costing, damage_order_by_water_ingress
 
     @staticmethod
-    def read_water_ingress_costing_data(file_water_ingress_costing, groups):
+    def read_water_ingress_costing_data(filename, groups):
         dic_ = {}
         names = ['name', 'water_ingress', 'base_cost', 'formula_type', 'coeff1',
                  'coeff2', 'coeff3']
-
-        tmp = pd.read_csv(file_water_ingress_costing, names=names, header=0)
-        for key, grouped in tmp.groupby('name'):
-            if groups['damage_scenario'].isin([key]).any() or (key == 'WI only'):
-                grouped = grouped.set_index('water_ingress')
-                grouped['costing'] = grouped.apply(
-                    lambda row: WaterIngressCosting(costing_name=key, **row),
-                    axis=1)
-                dic_[key] = grouped
+        try:
+            tmp = pd.read_csv(filename, names=names, header=0)
+        except IOError as msg:
+            logging.error('{}'.format(msg))
+        else:
+            for key, grouped in tmp.groupby('name'):
+                if groups['damage_scenario'].isin([key]).any() or (key == 'WI only'):
+                    grouped = grouped.set_index('water_ingress')
+                    grouped['costing'] = grouped.apply(
+                        lambda row: WaterIngressCosting(costing_name=key, **row),
+                        axis=1)
+                    dic_[key] = grouped
         return dic_
 
     @staticmethod

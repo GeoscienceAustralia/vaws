@@ -52,10 +52,19 @@ class MyTestCase(unittest.TestCase):
 
     def test_read_main(self):
 
-        assert_array_equal(self.cfg.speeds,
-                           linspace(self.cfg.wind_speed_min, self.cfg.wind_speed_max,
-                           self.cfg.wind_speed_steps))
+        self.assertEqual(self.cfg.house_name, 'Group 4 House')
+
+        self.assertEqual(self.cfg.no_models, 10)
+
+        _speeds = linspace(self.cfg.wind_speed_min,
+                           self.cfg.wind_speed_max,
+                           self.cfg.wind_speed_steps)
+        assert_array_equal(self.cfg.speeds, _speeds)
+
         self.assertEquals(self.cfg.wind_dir_index, 0)
+
+        self.assertEquals(self.cfg.regional_shielding_factor, 1.0)
+
         self.assertEquals(self.cfg.terrain_category, '2')
 
     def test_set_wind_profile(self):
@@ -112,14 +121,15 @@ Loss of roof sheeting & purlins,116,184.23,1,0.3105,-0.8943,1.6015,0,1,0,0,0,7
 Loss of roof structure,116,317,1,0.3105,-0.8943,1.6015,8320.97,1,-0.4902,1.4896,0.0036,3
 Wall debris damage,106.4,375.37,1,0.8862,-1.6957,1.8535,0,1,0,0,0,4
         """)
-        dic_costing, dic_costing_to_group, damage_order_by_water_ingress = \
+        dic_costing, damage_order_by_water_ingress = \
             self.cfg.read_damage_costing_data(file_damage_costing, df_groups)
 
-        for key, value in zip(['Loss of roof sheeting',
-                               'Loss of roof sheeting & purlins',
-                              'Loss of roof structure'],
-                              [['sheeting'], ['batten'], ['rafter']]):
-            self.assertEqual(dic_costing_to_group[key], value)
+        # TODO
+        # for key, value in zip(['Loss of roof sheeting',
+        #                        'Loss of roof sheeting & purlins',
+        #                       'Loss of roof structure'],
+        #                       [['sheeting'], ['batten'], ['rafter']]):
+        #     self.assertEqual(dic_costing_to_group[key], value)
 
         self.assertEqual(damage_order_by_water_ingress,
                          ['Loss of roof structure',
@@ -228,7 +238,12 @@ Wall debris damage,106.4,375.37,1,0.8862,-1.6957,1.8535,0,1,0,0,0,4
 
     def test_read_water_ingress(self):
 
-        pass
+        self.water_ingress_given_di = pd.DataFrame(array([lower, upper]).T,
+                                                   index=thresholds,
+                                                   columns=['lower', 'upper'])
+        self.water_ingress_given_di['wi'] = self.water_ingress_given_di.apply(
+            self.return_norm_cdf, axis=1)
+
 
     def test_set_debris_types(self):
 
