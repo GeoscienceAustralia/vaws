@@ -7,6 +7,8 @@ import os.path
 import logging
 
 from mpl_toolkits.axes_grid.parasite_axes import SubplotHost
+import matplotlib.patches as mpatches
+
 from PyQt4.QtCore import SIGNAL, QTimer, Qt, QSettings, QVariant, QString, QFile
 from PyQt4.QtGui import QProgressBar, QLabel, QMainWindow, QApplication, QTableWidget, QPixmap,\
                         QTableWidgetItem, QDialog, QCheckBox, QFileDialog, QIntValidator,\
@@ -27,7 +29,6 @@ from gui.output import plot_wind_event_damage, plot_wind_event_mean, \
                         plot_fragility_show, plot_damage_show, plot_wall_damage_show
 
 import vaws.debris as debris
-from vaws.zone import Zone
 
 from mixins import PersistSizePosMixin, setupTable, finiTable
 
@@ -124,9 +125,6 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
         self.connect(self.ui.blueV, SIGNAL("valueChanged(int)"), lambda x: self.onSliderChanged(self.ui.blueVLabel, x))
         self.connect(self.ui.applyDisplayChangesButton, SIGNAL("clicked()"), self.updateDisplaySettings)
 
-        # plot panel
-        self.connect(self.ui.fitLognormalCurve, SIGNAL("clicked()"), self.updateVulnCurveSettings)
-
         self.statusBar().showMessage('Loading')
         self.house_results = []
         self.stopTriggered = False
@@ -159,29 +157,6 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
     def onSliderChanged(self, label, x):
         label.setText('{:d}'.format(x))
 
-    def updateVulnCurveSettings(self):
-        if not self.has_run:
-            return
-
-        if self.ui.fitLognormalCurve.isChecked():
-            self.update_config_from_ui()
-            df_fitted_curves = pd.read_csv(self.cfg.file_curve, index_col=0)
-
-            param_1 = df_fitted_curves.at['lognorm', 'param1']
-            param_2 = df_fitted_curves.at['lognorm', 'param2']
-
-            try:
-                y = vulnerability_lognorm(self.cfg.speeds, param_1, param_2)
-            except KeyError as msg:
-                logging.warning(msg)
-            else:
-                plot_fitted_curve(self.ui.mplvuln, self.cfg.speeds, y)
-                self.ui.mplvuln.axes.figure.canvas.draw()
-
-            self.ui.coeff_1.setText('{:.3f}'.format(param_1))
-            self.ui.coeff_2.setText('{:.3f}'.format(param_2))
-            self.statusBar().showMessage(unicode('Curve Fit Updated'))
-            
     def updateVulnCurve(self, _array):
         self.ui.mplvuln.axes.hold(True)
 
@@ -209,11 +184,40 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
                 plot_fitted_curve(self.ui.mplvuln,
                                   self.cfg.speeds,
                                   y,
-                                  col='r')
+                                  col='r',
+                                  label="Weibull")
 
-            self.ui.coeff_1.setText('{:.3f}'.format(param_1))
-            self.ui.coeff_2.setText('{:.3f}'.format(param_2))
-            self.ui.sumOfSquares.setText('{:.3f}'.format(0.01))
+            self.ui.wb_coeff_1.setText('{:.3f}'.format(param_1))
+            self.ui.wb_coeff_2.setText('{:.3f}'.format(param_2))
+
+        df_fitted_curves = pd.read_csv(self.cfg.file_curve, index_col=0)
+
+        try:
+            ln_param_1 = df_fitted_curves.at['lognorm', 'param1']
+            ln_param_2 = df_fitted_curves.at['lognorm', 'param2']
+        except KeyError:
+            pass
+        else:
+            try:
+                y = vulnerability_lognorm(self.cfg.speeds, ln_param_1, ln_param_2)
+            except KeyError as msg:
+                logging.warning(msg)
+            else:
+                plot_fitted_curve(self.ui.mplvuln,
+                                  self.cfg.speeds,
+                                  y,
+                                  col='b',
+                                  label="Lognormal")
+
+            self.ui.mplvuln.axes.legend(loc=2,
+                                        fancybox=True,
+                                        shadow=True,
+                                        fontsize='small')
+
+            self.ui.mplvuln.axes.figure.canvas.draw()
+
+            self.ui.ln_coeff_1.setText('{:.3f}'.format(ln_param_1))
+            self.ui.ln_coeff_2.setText('{:.3f}'.format(ln_param_2))
 
     def updateFragCurve(self, _array):
         plot_fragility_show(self.ui.mplfrag, self.cfg.no_models,
@@ -487,16 +491,30 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
     def updateHeatmap(self, bucket):
         red_v = self.ui.redV.value()
         blue_v = self.ui.blueV.value()
+        self.ui.damages_tab.setUpdatesEnabled(False)
 
-        group_widget = {'sheeting': self.ui.mplsheeting,
-                        'batten': self.ui.mplbatten,
-                        'rafter': self.ui.mplrafter,
-                        'piersgroup': self.ui.mplpiers,
-                        'wallracking': self.ui.mplwallracking}
+        group_widget = {'sheeting': [self.ui.mplsheeting, self.ui.tab_19, 0],
+                        'batten': [self.ui.mplbatten, self.ui.tab_20, 1],
+                        'rafter': [self.ui.mplrafter, self.ui.tab_21, 2],
+                        'piersgroup': [self.ui.mplpiers, self.ui.tab_27, 3],
+                        'wallracking': [self.ui.mplwallracking, self.ui.tab_25, 4],
+                        'wallCladding': [self.ui.mplwallcladding, self.ui.tab_26, 5],
+                        'wallCollapse': [self.ui.mplwallcollapse, self.ui.tab_29, 6]}
+
+        for group_name, widget in group_widget.iteritems():
+            tab_index = self.ui.damages_tab.indexOf(widget[1])
+            if group_name not in self.cfg.connections['group_name'].values and tab_index >= 0:
+                self.ui.damages_tab.removeTab(tab_index)
 
         for group_name, grouped in self.cfg.connections.groupby('group_name'):
             if group_name not in group_widget:
                 continue
+
+            base_tab = group_widget[group_name][1]
+
+            if self.ui.damages_tab.indexOf(base_tab) == -1:
+                self.ui.damages_tab.insertTab(group_widget[group_name][2],
+                                              group_widget[group_name][1])
 
             _array = array([bucket['connection']['capacity'][i]
                             for i in grouped.index])
@@ -504,7 +522,7 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
             mean_connection_capacity = nanmean(_array, axis=1)
             mean_connection_capacity = nan_to_num(mean_connection_capacity)
 
-            plot_damage_show(group_widget[group_name], grouped,
+            plot_damage_show(group_widget[group_name][0], grouped,
                              mean_connection_capacity,
                              self.cfg.house['length'],
                              self.cfg.house['width'],
@@ -566,6 +584,8 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
                                   v_east_grid, wall_major_cols, wall_major_rows,
                                   wall_minor_cols, wall_minor_rows,red_v, blue_v)
 
+        self.ui.damages_tab.setUpdatesEnabled(True)
+
     def updateWaterIngressPlot(self, bucket):
         self.statusBar().showMessage('Plotting Water Ingress')
 
@@ -583,7 +603,7 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
         self.ui.wateringress_plot.axes.figure.canvas.draw()
         self.ui.wateringress_plot.axes.set_xlim(self.cfg.speeds[0],
                                                 self.cfg.speeds[-1])
-        #self.ui.wateringress_plot.axes.set_ylim(0)
+        # self.ui.wateringress_plot.axes.set_ylim(0)
         
     def updateBreachPlot(self, bucket):
         self.statusBar().showMessage('Plotting Debris Results')
@@ -893,7 +913,6 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
             self.ui.diffShielding.setChecked(self.cfg.flags.get('diff_shielding'))
             self.ui.waterIngress.setChecked(self.cfg.flags.get('water_ingress'))
 
-            self.ui.fitLognormalCurve.setChecked(self.cfg.flags.get('vul_fit_log', False))
             # self.ui.distribution.setChecked(self.cfg.flags.get('dmg_distribute'))
             self.ui.actionRun.setEnabled(True)
             # self.ui.debrisExtension.setText('%f' % self.cfg.debris_extension)
@@ -956,7 +975,6 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
         new_cfg.flags['plot_fragility'] = True
         new_cfg.flags['plot_vulnerability'] = True
         # new_cfg.flags['random_seed'] = self.ui.seedRandom.isChecked()
-        new_cfg.flags['vul_fit_log'] = self.ui.fitLognormalCurve.isChecked()
         new_cfg.flags['water_ingress'] = self.ui.waterIngress.isChecked()
         # new_cfg.flags['dmg_distribute', self.ui.distribution.isChecked())
         new_cfg.flags['diff_shielding'] = self.ui.diffShielding.isChecked()

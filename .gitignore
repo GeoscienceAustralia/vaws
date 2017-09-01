@@ -16,3 +16,4 @@ outputs/
 
 # output directories
 output*/
+src/gui/*_ui.py

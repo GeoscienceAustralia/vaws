@@ -1525,7 +1525,7 @@
        </sizepolicy>
       </property>
       <property name="currentIndex">
-       <number>0</number>
+       <number>2</number>
       </property>
       <widget class="QWidget" name="tab_13">
        <attribute name="title">
@@ -1655,7 +1655,11 @@
            </attribute>
            <layout class="QHBoxLayout" name="horizontalLayout_14">
             <item>
-             <widget class="MatplotlibWidget" name="mplsheeting" native="true"/>
+             <widget class="MatplotlibWidget" name="mplsheeting" native="true">
+              <property name="enabled">
+               <bool>true</bool>
+              </property>
+             </widget>
             </item>
            </layout>
           </widget>
@@ -1746,54 +1750,30 @@
               <item>
                <layout class="QHBoxLayout" name="horizontalLayout_8">
                 <item>
-                 <widget class="QCheckBox" name="fitLognormalCurve">
-                  <property name="text">
-                   <string>Fit Lognormal Curve</string>
-                  </property>
-                 </widget>
-                </item>
-                <item>
-                 <spacer name="horizontalSpacer">
-                  <property name="orientation">
-                   <enum>Qt::Horizontal</enum>
-                  </property>
-                  <property name="sizeHint" stdset="0">
-                   <size>
-                    <width>40</width>
-                    <height>20</height>
-                   </size>
-                  </property>
-                 </spacer>
-                </item>
-                <item>
                  <widget class="QLabel" name="label_29">
                   <property name="text">
-                   <string>Sum of Squares :</string>
+                   <string>Lognormal Coeffs</string>
                   </property>
                  </widget>
                 </item>
                 <item>
-                 <widget class="QLineEdit" name="sumOfSquares">
-                  <property name="enabled">
-                   <bool>true</bool>
-                  </property>
-                  <property name="readOnly">
-                   <bool>true</bool>
-                  </property>
-                 </widget>
+                 <widget class="QLineEdit" name="ln_coeff_1"/>
+                </item>
+                <item>
+                 <widget class="QLineEdit" name="ln_coeff_2"/>
                 </item>
                 <item>
                  <widget class="QLabel" name="label_30">
                   <property name="text">
-                   <string>Coeffs:</string>
+                   <string>Weibull Coeffs</string>
                   </property>
                  </widget>
                 </item>
                 <item>
-                 <widget class="QLineEdit" name="coeff_1"/>
+                 <widget class="QLineEdit" name="wb_coeff_1"/>
                 </item>
                 <item>
-                 <widget class="QLineEdit" name="coeff_2"/>
+                 <widget class="QLineEdit" name="wb_coeff_2"/>
                 </item>
                </layout>
               </item>

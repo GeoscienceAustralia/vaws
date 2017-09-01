@@ -291,10 +291,6 @@ def plot_wind_event_show(mp_widget, num_iters, Vmin, Vmax):
     mp_widget.axes.figure.canvas.draw()
 
 
-def plot_fragility_curve(v, fl, label, alpha=1.0, col='b'):
-    mplDict['fragility'].axes.plot(v, fl, label=label, c=col, alpha=alpha)
-
-
 def plot_fragility_show(mp_widget, num_iters, Vmin, Vmax):
     mp_widget.axes.set_title('Fragility Curve (n = {})'.format(num_iters))
     mp_widget.axes.set_xlabel('Impact Wind speed (m/s)')
