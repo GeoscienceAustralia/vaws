@@ -257,8 +257,6 @@ class House(object):
         self.coverages['breached_area'] = \
             self.coverages['coverage'].apply(lambda x: x.breached_area)
 
-        # need to confirm whether max by coverage or wall
-
         breached_area_by_wall = \
             self.coverages.groupby('direction')['breached_area'].sum()
 
@@ -270,9 +268,12 @@ class House(object):
         if len(max_breached) == 1:  # dominant opening
 
             area_else = breached_area_by_wall.sum() - max_breached.iloc[0]
-            ratio = max_breached.iloc[0] / area_else
+            if area_else:
+                ratio = max_breached.iloc[0] / area_else
+                row = (self.cfg.dominant_opening_ratio_thresholds < ratio).sum()
+            else:
+                row = 4
 
-            row = (self.cfg.dominant_opening_ratio_thresholds < ratio).sum()
             direction = max_breached.index[0]
 
             cpi = self.cfg.cpi_table_for_dominant_opening[row][direction]
@@ -284,7 +285,7 @@ class House(object):
                     self.coverages['direction'] == direction, 'breached_area']
                 max_area = breached_area[breached_area == breached_area.max()]
                 cpe_array = array([self.coverages.loc[i, 'coverage'].cpe
-                                      for i in max_area.keys()])
+                                   for i in max_area.keys()])
                 max_cpe = max(cpe_array.min(), cpe_array.max(), key=abs)
                 cpi *= max_cpe
 

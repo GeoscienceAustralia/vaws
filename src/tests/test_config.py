@@ -237,12 +237,12 @@ Wall debris damage,106.4,375.37,1,0.8862,-1.6957,1.8535,0,1,0,0,0,4
             _file.close()
 
     def test_read_water_ingress(self):
-
-        self.water_ingress_given_di = pd.DataFrame(array([lower, upper]).T,
-                                                   index=thresholds,
-                                                   columns=['lower', 'upper'])
-        self.water_ingress_given_di['wi'] = self.water_ingress_given_di.apply(
-            self.return_norm_cdf, axis=1)
+        pass
+        # self.water_ingress_given_di = pd.DataFrame(array([lower, upper]).T,
+        #                                            index=thresholds,
+        #                                            columns=['lower', 'upper'])
+        # self.water_ingress_given_di['wi'] = self.water_ingress_given_di.apply(
+        #     self.return_norm_cdf, axis=1)
 
 
     def test_set_debris_types(self):
