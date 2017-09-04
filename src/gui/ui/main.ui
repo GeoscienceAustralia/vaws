@@ -1525,7 +1525,7 @@
        </sizepolicy>
       </property>
       <property name="currentIndex">
-       <number>2</number>
+       <number>1</number>
       </property>
       <widget class="QWidget" name="tab_13">
        <attribute name="title">
@@ -1642,88 +1642,112 @@
        </attribute>
        <layout class="QHBoxLayout" name="horizontalLayout_6">
         <item>
-         <widget class="QTabWidget" name="damages_tab">
-          <property name="tabPosition">
-           <enum>QTabWidget::East</enum>
-          </property>
-          <property name="currentIndex">
-           <number>0</number>
-          </property>
-          <widget class="QWidget" name="tab_19">
-           <attribute name="title">
-            <string>Sheeting</string>
-           </attribute>
-           <layout class="QHBoxLayout" name="horizontalLayout_14">
+         <layout class="QVBoxLayout" name="verticalLayout_3">
+          <item>
+           <layout class="QHBoxLayout" name="horizontalLayout_39">
+            <property name="topMargin">
+             <number>5</number>
+            </property>
+            <property name="rightMargin">
+             <number>1</number>
+            </property>
             <item>
-             <widget class="MatplotlibWidget" name="mplsheeting" native="true">
-              <property name="enabled">
-               <bool>true</bool>
+             <widget class="QLabel" name="label_36">
+              <property name="text">
+               <string>View an individual house (0 for mean)</string>
               </property>
              </widget>
             </item>
-           </layout>
-          </widget>
-          <widget class="QWidget" name="tab_20">
-           <attribute name="title">
-            <string>Batten</string>
-           </attribute>
-           <layout class="QHBoxLayout" name="horizontalLayout_7">
             <item>
-             <widget class="MatplotlibWidget" name="mplbatten" native="true"/>
+             <widget class="QSpinBox" name="heatmap_house"/>
             </item>
            </layout>
-          </widget>
-          <widget class="QWidget" name="tab_21">
-           <attribute name="title">
-            <string>Rafter</string>
-           </attribute>
-           <layout class="QHBoxLayout" name="horizontalLayout_12">
-            <item>
-             <widget class="MatplotlibWidget" name="mplrafter" native="true"/>
-            </item>
-           </layout>
-          </widget>
-          <widget class="QWidget" name="tab_25">
-           <attribute name="title">
-            <string>WallRacking</string>
-           </attribute>
-           <layout class="QHBoxLayout" name="horizontalLayout_33">
-            <item>
-             <widget class="MatplotlibWidget" name="mplwallracking" native="true"/>
-            </item>
-           </layout>
-          </widget>
-          <widget class="QWidget" name="tab_26">
-           <attribute name="title">
-            <string>WallCladding</string>
-           </attribute>
-           <layout class="QHBoxLayout" name="horizontalLayout_34">
-            <item>
-             <widget class="MatplotlibWidget" name="mplwallcladding" native="true"/>
-            </item>
-           </layout>
-          </widget>
-          <widget class="QWidget" name="tab_29">
-           <attribute name="title">
-            <string>WallCollapse</string>
-           </attribute>
-           <layout class="QHBoxLayout" name="horizontalLayout_38">
-            <item>
-             <widget class="MatplotlibWidget" name="mplwallcollapse" native="true"/>
-            </item>
-           </layout>
-          </widget>
-          <widget class="QWidget" name="tab_27">
-           <attribute name="title">
-            <string>PiersGroup</string>
-           </attribute>
-           <layout class="QHBoxLayout" name="horizontalLayout_35">
-            <item>
-             <widget class="MatplotlibWidget" name="mplpiers" native="true"/>
-            </item>
-           </layout>
-          </widget>
-         </widget>
+          </item>
+          <item>
+           <widget class="QTabWidget" name="damages_tab">
+            <property name="tabPosition">
+             <enum>QTabWidget::East</enum>
+            </property>
+            <property name="currentIndex">
+             <number>0</number>
+            </property>
+            <widget class="QWidget" name="tab_19">
+             <attribute name="title">
+              <string>Sheeting</string>
+             </attribute>
+             <layout class="QHBoxLayout" name="horizontalLayout_14">
+             <item>
+              <widget class="MatplotlibWidget" name="mplsheeting" native="true">
+                <property name="enabled">
+                  <bool>true</bool>
+                 </property>
+              </widget>
+             </item>
+             </layout>
+            </widget>
+            <widget class="QWidget" name="tab_20">
+             <attribute name="title">
+              <string>Batten</string>
+             </attribute>
+             <layout class="QHBoxLayout" name="horizontalLayout_7">
+              <item>
+               <widget class="MatplotlibWidget" name="mplbatten" native="true"/>
+              </item>
+             </layout>
+            </widget>
+            <widget class="QWidget" name="tab_21">
+             <attribute name="title">
+              <string>Rafter</string>
+             </attribute>
+             <layout class="QHBoxLayout" name="horizontalLayout_12">
+              <item>
+               <widget class="MatplotlibWidget" name="mplrafter" native="true"/>
+              </item>
+             </layout>
+            </widget>
+            <widget class="QWidget" name="tab_25">
+             <attribute name="title">
+              <string>WallRacking</string>
+             </attribute>
+             <layout class="QHBoxLayout" name="horizontalLayout_33">
+              <item>
+               <widget class="MatplotlibWidget" name="mplwallracking" native="true"/>
+              </item>
+             </layout>
+            </widget>
+            <widget class="QWidget" name="tab_26">
+             <attribute name="title">
+              <string>WallCladding</string>
+             </attribute>
+             <layout class="QHBoxLayout" name="horizontalLayout_34">
+              <item>
+               <widget class="MatplotlibWidget" name="mplwallcladding" native="true"/>
+              </item>
+             </layout>
+            </widget>
+            <widget class="QWidget" name="tab_29">
+             <attribute name="title">
+              <string>WallCollapse</string>
+             </attribute>
+             <layout class="QHBoxLayout" name="horizontalLayout_38">
+              <item>
+               <widget class="MatplotlibWidget" name="mplwallcollapse" native="true"/>
+              </item>
+             </layout>
+            </widget>
+            <widget class="QWidget" name="tab_27">
+             <attribute name="title">
+              <string>PiersGroup</string>
+             </attribute>
+             <layout class="QHBoxLayout" name="horizontalLayout_35">
+              <item>
+               <widget class="MatplotlibWidget" name="mplpiers" native="true"/>
+              </item>
+             </layout>
+            </widget>
+           </widget>
+          </item>
+         </layout>
         </item>
        </layout>
       </widget>

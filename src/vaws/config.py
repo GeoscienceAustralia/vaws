@@ -330,27 +330,26 @@ class Config(object):
         except IOError as msg:
             logging.warning('{}'.format(msg))
 
+        self.staggered_sources = conf.getboolean(key, 'staggered_sources')
+        self.source_items = conf.getint(key, 'source_items')
+        for item in ['building_spacing', 'debris_radius', 'debris_angle',
+                     'flight_time_mean', 'flight_time_stddev']:
+            setattr(self, item, conf.getfloat(key, item))
+
+        self.flight_time_log_mu, self.flight_time_log_std = \
+            compute_logarithmic_mean_stddev(self.flight_time_mean,
+                                            self.flight_time_stddev)
+        self.set_region_name(conf.get(key, 'region_name'))
+
+        _file = os.path.join(self.path_house_data, FILE_FOOTPRINT)
+        try:
+            self.footprint = pd.read_csv(_file, skiprows=1, header=None).values
+        except IOError as msg:
+            logging.warning('{}'.format(msg))
+
         if self.flags[key]:
 
             from vaws.debris import Debris
-
-            self.set_region_name(conf.get(key, 'region_name'))
-
-            _file = os.path.join(self.path_house_data, FILE_FOOTPRINT)
-            try:
-                self.footprint = pd.read_csv(_file, skiprows=1, header=None).values
-            except IOError as msg:
-                logging.warning('{}'.format(msg))
-
-            self.staggered_sources = conf.getboolean(key, 'staggered_sources')
-            self.source_items = conf.getint(key, 'source_items')
-            for item in ['building_spacing', 'debris_radius', 'debris_angle',
-                         'flight_time_mean', 'flight_time_stddev']:
-                setattr(self, item, conf.getfloat(key, item))
-
-            self.flight_time_log_mu, self.flight_time_log_std = \
-                compute_logarithmic_mean_stddev(self.flight_time_mean,
-                                                self.flight_time_stddev)
 
             self.debris_sources = Debris.create_sources(
                 self.debris_radius,

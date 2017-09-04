@@ -202,7 +202,7 @@ def plot_wall_damage_show(fig,
 
 
 def plot_damage_show(fig, grouped, values_grid, xlim_max, ylim_max,
-                     v_min, v_max, v_step, file_name=None):
+                     v_min, v_max, v_step, house_number=0):
 
     fig.axes.figure.clf()
     fig.canvas.draw()
@@ -252,7 +252,11 @@ def plot_damage_show(fig, grouped, values_grid, xlim_max, ylim_max,
     axPlot.tick_params(axis=u'both', which=u'both', length=0)
 
     group_key = grouped['group_name'].unique()[0]
-    axPlot.set_title('Heatmap of damage capacity for {}'.format(group_key))
+    if house_number == 0:
+        axPlot.set_title('Heatmap of damage capacity for {}'.format(group_key))
+    else:
+        axPlot.set_title('Heatmap of damage capacity of '
+                         'house {} for {}'.format(house_number,group_key))
     axPlot.format_coord = format_coord
 
     # fig.canvas.mpl_connect('motion_notify_event',
@@ -260,11 +264,6 @@ def plot_damage_show(fig, grouped, values_grid, xlim_max, ylim_max,
     # fig.canvas.mpl_connect('button_press_event',
     #                        PlotClickCallback(fig, axPlot, plotKey, mplDict['owner'], mplDict['house']))
     fig.canvas.draw()
-
-    if file_name:
-        fig.savefig('{}.png'.format(file_name), dpi=150)
-        plt.close(fig)
-
 
 def plot_wind_event_damage(mp_widget, v, di):
     mp_widget.axes.scatter(v, di, s=8, marker='+', label='_nolegend_')

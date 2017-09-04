@@ -7,7 +7,6 @@ import os.path
 import logging
 
 from mpl_toolkits.axes_grid.parasite_axes import SubplotHost
-import matplotlib.patches as mpatches
 
 from PyQt4.QtCore import SIGNAL, QTimer, Qt, QSettings, QVariant, QString, QFile
 from PyQt4.QtGui import QProgressBar, QLabel, QMainWindow, QApplication, QTableWidget, QPixmap,\
@@ -16,6 +15,8 @@ from PyQt4.QtGui import QProgressBar, QLabel, QMainWindow, QApplication, QTableW
 from numpy import ones, where, float32, mean, nanmean, empty, array, \
     count_nonzero, nan, append, ones_like, nan_to_num, newaxis
 import pandas as pd
+import h5py
+
 from vaws.curve import vulnerability_lognorm, vulnerability_weibull
 
 from main_ui import Ui_main
@@ -124,6 +125,8 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
         self.connect(self.ui.redV, SIGNAL("valueChanged(int)"), lambda x: self.onSliderChanged(self.ui.redVLabel, x))
         self.connect(self.ui.blueV, SIGNAL("valueChanged(int)"), lambda x: self.onSliderChanged(self.ui.blueVLabel, x))
         self.connect(self.ui.applyDisplayChangesButton, SIGNAL("clicked()"), self.updateDisplaySettings)
+
+        self.ui.heatmap_house.valueChanged.connect(self.heatmap_house_change)
 
         self.statusBar().showMessage('Loading')
         self.house_results = []
@@ -420,6 +423,9 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
         self.statusProgressBar.show()
         self.update_config_from_ui()
 
+        self.ui.heatmap_house.setMaximum(self.cfg.no_models)
+        self.ui.heatmap_house.setValue(0)
+
         self.ui.mplsheeting.axes.cla()
         self.ui.mplsheeting.axes.figure.canvas.draw()
 
@@ -488,7 +494,13 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
             self.ui.actionSave_Scenario_As.setEnabled(True)
             self.statusBar().showMessage('Ready')
 
-    def updateHeatmap(self, bucket):
+    def heatmap_house_change(self):
+        if self.has_run:
+            house_number = self.ui.heatmap_house.value()
+            bucket = self.load_results_file()
+            self.updateHeatmap(bucket, house_number)
+
+    def updateHeatmap(self, bucket, house_number=0):
         red_v = self.ui.redV.value()
         blue_v = self.ui.blueV.value()
         self.ui.damages_tab.setUpdatesEnabled(False)
@@ -519,14 +531,20 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
             _array = array([bucket['connection']['capacity'][i]
                             for i in grouped.index])
             _array[_array == -1] = nan
-            mean_connection_capacity = nanmean(_array, axis=1)
+            if house_number == 0:
+                mean_connection_capacity = nanmean(_array, axis=1)
+            else:
+                mean_connection_capacity = _array[:, house_number-1]
+
             mean_connection_capacity = nan_to_num(mean_connection_capacity)
 
             plot_damage_show(group_widget[group_name][0], grouped,
                              mean_connection_capacity,
                              self.cfg.house['length'],
                              self.cfg.house['width'],
-                             red_v, blue_v, self.cfg.heatmap_vstep)
+                             red_v, blue_v,
+                             self.cfg.heatmap_vstep,
+                             house_number)
 
         wall_major_rows = 2
         wall_major_cols = self.cfg.house['roof_cols']
@@ -1089,6 +1107,20 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
                     fig.canvas.draw()
                     plt.show()    
 
+    def load_results_file(self):
+        bucket = dict()
+        bucket['connection'] = {}
+        connection_data = bucket['connection']
+
+        with h5py.File(self.cfg.file_results, 'r') as hf:
+            for measure in hf['connection']:
+                connection_data[measure] = {}
+                for house_values in hf['connection'][measure]:
+                    connection_data[measure][int(house_values)] = list(hf['connection'][measure][house_values].value)
+
+        return bucket
+
+
 
 def run_gui():
     parser = process_commandline()
@@ -1115,7 +1147,7 @@ def run_gui():
     app = QApplication(sys.argv)
     app.setOrganizationName("Geoscience Australia")
     app.setOrganizationDomain("ga.gov.au")
-    app.setApplicationName("WindSim")
+    app.setApplicationName("VAWS")
     splash_image = QPixmap()
 
     splash_file = os.path.join(SOURCE_DIR, 'images/splash/splash.png')
