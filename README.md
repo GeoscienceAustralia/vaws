@@ -20,13 +20,13 @@ Conda and the requirements can be installed using the following steps.
 Then use the build script for your environment 
 * Linux/Mac
 
-    cd gui  
+    cd src/gui  
     ./build.sh
      
 * Windows
 
-    cd gui  
-    ./build.cmd
+    cd src\gui  
+    build.cmd
 
 #### Inputs required to run the vaws:
 These files are not in repo and you will need access to these files to be able to run the code.
