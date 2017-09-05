@@ -53,7 +53,7 @@ def progress_callback(percent_done):
 
 
 class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
-    def __init__(self, parent=None, init_scenario=None):
+    def __init__(self, parent=None, init_scenario=None, file_prompt=False):
         super(MyForm, self).__init__(parent)
         PersistSizePosMixin.__init__(self, "MainWindow")
         
@@ -804,15 +804,20 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
         header_view = self.ui.connectionResults.header()
         header_view.resizeSection(0, 350)
 
-    def open_scenario(self):
+    def open_scenario(self, config_file):
         settings = QSettings()
         # Set the path to the default
         scenario_path = SCENARIOS_DIR
-        if settings.contains("ScenarioFolder"):
+        if config_file:
+            scenario_path = config_file
+        elif settings.contains("ScenarioFolder"):
             # we have a saved scenario path so use that
             scenario_path = unicode(settings.value("ScenarioFolder").toString())
 
-        filename = QFileDialog.getOpenFileName(self, "Scenarios", scenario_path, "Scenarios (*.cfg)")
+        filename = QFileDialog.getOpenFileName(self,
+                                               "Scenarios",
+                                               scenario_path,
+                                               "Scenarios (*.cfg)")
         if not filename:
             return
 
@@ -1127,12 +1132,16 @@ def run_gui():
 
     (options, args) = parser.parse_args()
 
+    file_prompt=False
+
     if not options.config_file:
         settings = QSettings()
         if settings.contains("LastFile"):
             initial_scenario = unicode(settings.value("LastFile").toString())
         else:
             initial_scenario = DEFAULT_SCENARIO
+
+        file_prompt = True
     else:
         initial_scenario = options.config_file
 
@@ -1166,6 +1175,10 @@ def run_gui():
 
     time.sleep(5)
     splash.finish(my_app)
+
+    if file_prompt:
+        my_app.open_scenario(initial_scenario)
+
     sys.exit(app.exec_())
 
 if __name__ == '__main__':
