@@ -4,6 +4,7 @@
 """
 
 from numpy import where, ones
+import numpy as np
 import logging
 
 from vaws.zone import Zone
@@ -20,7 +21,7 @@ class Connection(object):
             connection_name:
         """
 
-        assert isinstance(connection_name, int)
+        assert isinstance(connection_name, np.integer)
         self.name = connection_name
 
         self.type_name = None

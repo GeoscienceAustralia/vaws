@@ -14,6 +14,9 @@ from PyQt4.QtGui import QProgressBar, QLabel, QMainWindow, QApplication, QTableW
                         QDoubleValidator, QMessageBox, QTreeWidgetItem, QInputDialog, QSplashScreen
 from numpy import ones, where, float32, mean, nanmean, empty, array, \
     count_nonzero, nan, append, ones_like, nan_to_num, newaxis
+
+import numpy as np
+
 import pandas as pd
 import h5py
 
@@ -255,7 +258,6 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
             self.heatmap_house_change()
             
     def updateGlobalData(self):
-
         # load up debris types
         setupTable(self.ui.debrisTypes, self.cfg.debris_types)
         for i, (key, value) in enumerate(self.cfg.debris_types.iteritems()):
@@ -534,7 +536,10 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
                             for i in grouped.index])
             _array[_array == -1] = nan
             if house_number == 0:
-                mean_connection_capacity = nanmean(_array, axis=1)
+                if len(_array) > 0:
+                    mean_connection_capacity = nanmean(_array, axis=1)
+                else:
+                    mean_connection_capacity = np.zeros(1)
             else:
                 mean_connection_capacity = _array[:, house_number-1]
 
@@ -806,7 +811,7 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
         header_view = self.ui.connectionResults.header()
         header_view.resizeSection(0, 350)
 
-    def open_scenario(self, config_file):
+    def open_scenario(self, config_file=None):
         settings = QSettings()
         # Set the path to the default
         scenario_path = SCENARIOS_DIR
@@ -1113,20 +1118,6 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
                     ax.hist(x, 50, normed=1, facecolor='green', alpha=0.75)
                     fig.canvas.draw()
                     plt.show()    
-
-    def load_results_file(self):
-        bucket = dict()
-        bucket['connection'] = {}
-        connection_data = bucket['connection']
-
-        with h5py.File(self.cfg.file_results, 'r') as hf:
-            for measure in hf['connection']:
-                connection_data[measure] = {}
-                for house_values in hf['connection'][measure]:
-                    connection_data[measure][int(house_values)] = list(hf['connection'][measure][house_values].value)
-
-        return bucket
-
 
 
 def run_gui():
