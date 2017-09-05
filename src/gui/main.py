@@ -64,6 +64,7 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
         self.setWindowTitle(unicode(windowTitle))
 
         self.cfg = init_scenario
+        self.results_dict = None
 
         # scenario section
         self.ui.numHouses.setValidator(QIntValidator(1, 10000, self.ui.numHouses))
@@ -251,7 +252,7 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
 
     def updateDisplaySettings(self):
         if self.has_run:
-            self.plot_connection_damage(self.ui.redV.value(), self.ui.blueV.value())
+            self.heatmap_house_change()
             
     def updateGlobalData(self):
 
@@ -466,6 +467,7 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
                 self.statusBar().showMessage(
                     unicode('Simulation complete in {:0.3f}'.format(run_time)))
 
+                self.results_dict = bucket
                 self.updateVulnCurve(bucket['house_damage']['di'])
                 self.updateFragCurve(bucket['house_damage']['di'])
                 self.updateHouseResultsTable(bucket)
@@ -497,7 +499,7 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
     def heatmap_house_change(self):
         if self.has_run:
             house_number = self.ui.heatmap_house.value()
-            bucket = self.load_results_file()
+            bucket = self.results_dict
             self.updateHeatmap(bucket, house_number)
 
     def updateHeatmap(self, bucket, house_number=0):
