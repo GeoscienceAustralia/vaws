@@ -7,7 +7,7 @@ Conda and the requirements can be installed using the following steps.
 >```git clone git@github.com:GeoscienceAustralia/vaws.git```
 2. Download and install [Miniconda](https://conda.io/miniconda.html)
 3. Create a virtual environment called vaws_env with  
->``` conda create --name vaws_env --file vaws.yml```
+>``` conda env create --name vaws_env --file vaws.yml```
 
 > *Note: for windows use conda create --name vaws_env --file vaws_win.yml*
 
@@ -20,13 +20,13 @@ Conda and the requirements can be installed using the following steps.
 Then use the build script for your environment 
 * Linux/Mac
 
-    cd gui  
+    cd src/gui  
     ./build.sh
      
 * Windows
 
-    cd gui  
-    ./build.cmd
+    cd src\gui  
+    build.cmd
 
 #### Inputs required to run the vaws:
 These files are not in repo and you will need access to these files to be able to run the code.
