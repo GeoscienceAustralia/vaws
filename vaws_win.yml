@@ -18,6 +18,8 @@ dependencies:
 - !!python/unicode
   'functools32=3.2.3.2=py27_1'
 - !!python/unicode
+  'h5py=2.7.1=np112py27_0'
+- !!python/unicode
   'geos=3.5.1=vc9_1'
 - !!python/unicode
   'icu=58.1=vc9_1'
