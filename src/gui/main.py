@@ -509,13 +509,13 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
         blue_v = self.ui.blueV.value()
         self.ui.damages_tab.setUpdatesEnabled(False)
 
-        group_widget = {'sheeting': [self.ui.mplsheeting, self.ui.tab_19, 0],
-                        'batten': [self.ui.mplbatten, self.ui.tab_20, 1],
-                        'rafter': [self.ui.mplrafter, self.ui.tab_21, 2],
-                        'piersgroup': [self.ui.mplpiers, self.ui.tab_27, 3],
-                        'wallracking': [self.ui.mplwallracking, self.ui.tab_25, 4],
-                        'wallCladding': [self.ui.mplwallcladding, self.ui.tab_26, 5],
-                        'wallCollapse': [self.ui.mplwallcollapse, self.ui.tab_29, 6]}
+        group_widget = {'sheeting': [self.ui.mplsheeting, self.ui.tab_19, 0, "Batten"],
+                        'batten': [self.ui.mplbatten, self.ui.tab_20, 1, "Sheeting"],
+                        'rafter': [self.ui.mplrafter, self.ui.tab_21, 2, "Rafter"],
+                        'piersgroup': [self.ui.mplpiers, self.ui.tab_27, 3, "PiersGroup"],
+                        'wallracking': [self.ui.mplwallracking, self.ui.tab_25, 4, "WallRacking"],
+                        'wallCladding': [self.ui.mplwallcladding, self.ui.tab_26, 5, "WallCladding"],
+                        'wallCollapse': [self.ui.mplwallcollapse, self.ui.tab_29, 6, "WallCollapse"]}
 
         for group_name, widget in group_widget.iteritems():
             tab_index = self.ui.damages_tab.indexOf(widget[1])
@@ -530,7 +530,8 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
 
             if self.ui.damages_tab.indexOf(base_tab) == -1:
                 self.ui.damages_tab.insertTab(group_widget[group_name][2],
-                                              group_widget[group_name][1])
+                                              group_widget[group_name][1],
+                                              group_widget[group_name][3])
 
             _array = array([bucket['connection']['capacity'][i]
                             for i in grouped.index])
