@@ -540,6 +540,6 @@ dmg_ratio_debris,dmg_ratio_wallcladding,dmg_ratio_wallcollapse,loss_ratio
 
 
 if __name__ == '__main__':
-    # unittest.main()
-    suite = unittest.TestLoader().loadTestsFromTestCase(TestHouseDamage2)
-    unittest.TextTestRunner(verbosity=2).run(suite)
+    unittest.main()
+    # suite = unittest.TestLoader().loadTestsFromTestCase(TestHouseDamage2)
+    # unittest.TextTestRunner(verbosity=2).run(suite)

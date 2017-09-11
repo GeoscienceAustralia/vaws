@@ -21,7 +21,6 @@ class Connection(object):
             connection_name:
         """
 
-        assert isinstance(connection_name, np.integer)
         self.name = connection_name
 
         self.type_name = None
