@@ -247,7 +247,10 @@ class Config(object):
         """
         self.house_name = conf.get(key, 'house_name')
         self.no_models = conf.getint(key, 'no_models')
-        self.random_seed = conf.getint(key, 'random_seed')
+        if conf.has_option(key, 'random_seed'):
+            self.random_seed = conf.getint(key, 'random_seed')
+        else:
+            self.random_seed = 0
         self.wind_speed_min = conf.getfloat(key, 'wind_speed_min')
         self.wind_speed_max = conf.getfloat(key, 'wind_speed_max')
         self.wind_speed_steps = conf.getint(key, 'wind_speed_steps')
@@ -836,6 +839,7 @@ class Config(object):
         # config.set(key, 'parallel', self.parallel)
         config.set(key, 'no_models', self.no_models)
         config.set(key, 'house_name', self.house_name)
+        config.set(key, 'random_seed', self.random_seed)
 
         config.set(key, 'wind_direction', self.__class__.wind_dir[self.wind_dir_index])
         config.set(key, 'wind_speed_min', self.wind_speed_min)

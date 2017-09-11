@@ -940,7 +940,8 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
             # options
             self.ui.redV.setValue(self.cfg.heatmap_vmin)
             self.ui.blueV.setValue(self.cfg.heatmap_vmax)
-            # self.ui.seedRandom.setChecked(self.cfg.flags.get('random_seed'))
+            self.ui.seedRandom.setText(str(self.cfg.random_seed))
+
             self.ui.diffShielding.setChecked(self.cfg.flags.get('diff_shielding'))
             self.ui.waterIngress.setChecked(self.cfg.flags.get('water_ingress'))
 
@@ -1005,7 +1006,6 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
 
         new_cfg.flags['plot_fragility'] = True
         new_cfg.flags['plot_vulnerability'] = True
-        # new_cfg.flags['random_seed'] = self.ui.seedRandom.isChecked()
         new_cfg.flags['water_ingress'] = self.ui.waterIngress.isChecked()
         # new_cfg.flags['dmg_distribute', self.ui.distribution.isChecked())
         new_cfg.flags['diff_shielding'] = self.ui.diffShielding.isChecked()
@@ -1016,6 +1016,7 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
                                             new_cfg.flight_time_stddev)
 
         # option section
+        new_cfg.random_seed = int(unicode(self.ui.seedRandom.text()))
         new_cfg.heatmap_vmin = float(unicode(self.ui.redV.value()))
         new_cfg.heatmap_vmax = float(unicode(self.ui.blueV.value()))
 

@@ -48,7 +48,7 @@
          </size>
         </property>
         <property name="currentIndex">
-         <number>0</number>
+         <number>3</number>
         </property>
         <widget class="QWidget" name="scenario_tab">
          <attribute name="title">
@@ -797,11 +797,7 @@
            </widget>
           </item>
           <item row="4" column="1">
-           <widget class="QCheckBox" name="seedRandom">
-            <property name="text">
-             <string/>
-            </property>
-           </widget>
+           <widget class="QLineEdit" name="seedRandom"/>
           </item>
           <item row="5" column="0">
            <widget class="QLabel" name="label_4">
@@ -1676,13 +1672,13 @@
               <string>Sheeting</string>
              </attribute>
              <layout class="QHBoxLayout" name="horizontalLayout_14">
-             <item>
-              <widget class="MatplotlibWidget" name="mplsheeting" native="true">
+              <item>
+               <widget class="MatplotlibWidget" name="mplsheeting" native="true">
                 <property name="enabled">
-                  <bool>true</bool>
-                 </property>
-              </widget>
-             </item>
+                 <bool>true</bool>
+                </property>
+               </widget>
+              </item>
              </layout>
             </widget>
             <widget class="QWidget" name="tab_20">
