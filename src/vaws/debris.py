@@ -14,6 +14,7 @@ import logging
 import pandas as pd
 
 from numpy import rint, random, array, abs, sum
+import numpy as np
 from math import pow, radians, tan, sqrt, exp
 from shapely.geometry import Point, Polygon, LineString
 from shapely.affinity import rotate
@@ -92,7 +93,7 @@ class Debris(object):
         Returns:
 
         """
-        assert isinstance(value, float)
+        assert isinstance(value, np.float)
 
         self._no_items_mean = rint(self.cfg.source_items * value)
 
@@ -539,7 +540,7 @@ class Coverage(Zone):
 
         """
 
-        assert isinstance(value, float) or isinstance(value, int)
+        assert isinstance(value, np.float) or isinstance(value, np.integer)
 
         # breached area can be accumulated but not exceeding area
         self._breached_area += value
