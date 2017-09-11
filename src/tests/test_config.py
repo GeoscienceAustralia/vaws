@@ -99,6 +99,7 @@ class MyTestCase(unittest.TestCase):
         # mean = 62.5, std = 4.166
         a = self.cfg.return_norm_cdf(row)
         self.assertAlmostEqual(a(55.0), 0.03593, places=4)
+        self.assertAlmostEqual(a(62.5), 0.5, places=4)
 
     def test_get_diff_tuples(self):
         row = {'key1': {0: 3, 1: 4}, 'key2': {0: 2, 1: 5}}
@@ -112,7 +113,7 @@ sheeting,1,col,Loss of roof sheeting
 batten,2,row,Loss of roof sheeting & purlins
 rafter,3,col,Loss of roof structure
         """)
-        df_groups = pd.read_csv(data, index_col='group_name')
+        # df_groups = pd.read_csv(data, index_col='group_name')
 
         file_damage_costing = StringIO.StringIO("""
 name,surface_area,envelope_repair_rate,envelope_factor_formula_type,envelope_coeff1,envelope_coeff2,envelope_coeff3,internal_repair_rate,internal_factor_formula_type,internal_coeff1,internal_coeff2,internal_coeff3,water_ingress_order
@@ -122,7 +123,7 @@ Loss of roof structure,116,317,1,0.3105,-0.8943,1.6015,8320.97,1,-0.4902,1.4896,
 Wall debris damage,106.4,375.37,1,0.8862,-1.6957,1.8535,0,1,0,0,0,4
         """)
         dic_costing, damage_order_by_water_ingress = \
-            self.cfg.read_damage_costing_data(file_damage_costing, df_groups)
+            self.cfg.read_damage_costing_data(file_damage_costing)
 
         # TODO
         # for key, value in zip(['Loss of roof sheeting',
@@ -133,11 +134,57 @@ Wall debris damage,106.4,375.37,1,0.8862,-1.6957,1.8535,0,1,0,0,0,4
 
         self.assertEqual(damage_order_by_water_ingress,
                          ['Loss of roof structure',
+                          'Wall debris damage',
                           'Loss of roof sheeting',
                           'Loss of roof sheeting & purlins'])
 
     def test_read_water_ingress_costing_data(self):
-        pass
+        file_water_ingress_costing_data = StringIO.StringIO("""
+name,water_ingress,base_cost,formula_type,coeff1,coeff2,coeff3
+Loss of roof sheeting,0,0,1,0,0,1
+Loss of roof sheeting,5,2989.97,1,0,0,1
+Loss of roof sheeting,18,10763.89,1,0,0,1
+Loss of roof sheeting,37,22125.78,1,0,0,1
+Loss of roof sheeting,67,40065.59,1,0,0,1
+Loss of roof sheeting,100,59799.39,1,0,0,1
+Loss of roof sheeting & purlins,0,0,1,0,0,1
+Loss of roof sheeting & purlins,5,2989.97,1,0,0,1
+Loss of roof sheeting & purlins,18,10763.89,1,0,0,1
+Loss of roof sheeting & purlins,37,22125.78,1,0,0,1
+Loss of roof sheeting & purlins,67,40065.59,1,0,0,1
+Loss of roof sheeting & purlins,100,59799.39,1,0,0,1
+Loss of roof structure,0,0,1,0,0,1
+Loss of roof structure,5,2335.65,2,0.9894,-0.0177,0
+Loss of roof structure,18,8408.35,2,0.9832,-0.0561,0
+Loss of roof structure,37,17867.86,2,0.9817,-0.0632,0
+Loss of roof structure,67,33140.18,1,0.2974,-0.5077,1.212
+Loss of roof structure,100,49939.74,1,0.0968,-0.2941,1.1967
+WI only,0,0,1,0,0,1
+WI only,5,2989.97,1,0,0,1
+WI only,18,10763.89,1,0,0,1
+WI only,37,22125.78,1,0,0,1
+WI only,67,40065.59,1,0,0,1
+WI only,100,59799.39,1,0,0,1
+        """)
+
+        file_conn_groups = StringIO.StringIO("""
+group_name,dist_order,dist_dir,damage_scenario,trigger_collapse_at,patch_dist,set_zone_to_zero,water_ingress_order
+sheeting,1,col,Loss of roof sheeting,0,0,1,6
+batten,2,row,Loss of roof sheeting & purlins,0,0,1,7
+rafter,3,col,Loss of roof structure,0,1,0,3        
+        """)
+        groups = pd.read_csv(file_conn_groups, index_col=0)
+
+        _dic = self.cfg.read_water_ingress_costing_data(
+            file_water_ingress_costing_data)
+
+        self.assertEqual(sorted(_dic.keys()),
+                         ['Loss of roof sheeting',
+                          'Loss of roof sheeting & purlins',
+                          'Loss of roof structure',
+                          'WI only'])
+
+        #self.assertAlmostEqual()
 
     def test_read_front_facing_walls(self):
 
@@ -237,12 +284,18 @@ Wall debris damage,106.4,375.37,1,0.8862,-1.6957,1.8535,0,1,0,0,0,4
             _file.close()
 
     def test_read_water_ingress(self):
-        pass
-        # self.water_ingress_given_di = pd.DataFrame(array([lower, upper]).T,
-        #                                            index=thresholds,
-        #                                            columns=['lower', 'upper'])
-        # self.water_ingress_given_di['wi'] = self.water_ingress_given_di.apply(
-        #     self.return_norm_cdf, axis=1)
+        index = [0.1, 0.2, 0.5, 2.0]
+        lower = [50.0, 35.0, 0.0, -20.0]
+        upper = [75.0, 55.0, 40.0, 20.0]
+
+        assert_array_equal(self.cfg.water_ingress_given_di.index, index)
+        assert_array_equal(self.cfg.water_ingress_given_di['lower'].values, lower)
+        assert_array_equal(self.cfg.water_ingress_given_di['upper'].values, upper)
+
+        for ind, low, up in zip(index, lower, upper):
+            _mean = 0.5 * (low + up)
+            est = self.cfg.water_ingress_given_di.loc[ind, 'wi'](_mean)
+            self.assertAlmostEqual(est, 0.5)
 
 
     def test_set_debris_types(self):
@@ -285,6 +338,3 @@ Wall debris damage,106.4,375.37,1,0.8862,-1.6957,1.8535,0,1,0,0,0,4
 
 if __name__ == '__main__':
     unittest.main()
-
-# suite = unittest.TestLoader().loadTestsFromTestCase(MyTestCase)
-# unittest.TextTestRunner(verbosity=2).run(suite)

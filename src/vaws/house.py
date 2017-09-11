@@ -67,9 +67,7 @@ class House(object):
         self.set_coverages()
         self.set_zones()
         self.set_connections()
-
-        if self.cfg.flags['debris']:
-            self.set_debris()
+        self.set_debris()
 
     def read_house_data(self):
 
@@ -130,6 +128,9 @@ class House(object):
                     logging.warning(
                         'conn grid {} does not exist within group grid {}'.format(
                             _connection.grid, _group.damage_grid))
+                except TypeError:
+                    logging.warning(
+                        'conn grid does not exist for group {}'.format(_group.name))
 
                 _group.connection_by_grid = _connection.grid, _connection
 
@@ -183,22 +184,24 @@ class House(object):
         if key in self.cfg.costings:
             return self.cfg.costings[key]
         else:
-            logging.warning('{} not in cfg.costings'.format(key))
+            logging.warning('group {} undefined in cfg.costings'.format(key))
 
     def set_debris(self):
 
         self.debris = Debris(self.cfg)
 
-        points = []
-        for item in self.cfg.footprint:
-            points.append((item[0], item[1]))
-        self.footprint = Polygon(points)
+        if self.cfg.flags['debris']:
 
-        self.debris.footprint = self.footprint, self.wind_orientation
+            points = []
+            for item in self.cfg.footprint:
+                points.append((item[0], item[1]))
+            self.footprint = Polygon(points)
 
-        self.debris.rnd_state = self.rnd_state
+            self.debris.footprint = self.footprint, self.wind_orientation
 
-        self.debris.coverages = self.coverages
+            self.debris.rnd_state = self.rnd_state
+
+            self.debris.coverages = self.coverages
 
     def set_coverages(self):
 
@@ -256,6 +259,8 @@ class House(object):
 
         self.coverages['breached_area'] = \
             self.coverages['coverage'].apply(lambda x: x.breached_area)
+
+        self.debris.damaged_area = self.coverages['breached_area'].sum()
 
         breached_area_by_wall = \
             self.coverages.groupby('direction')['breached_area'].sum()

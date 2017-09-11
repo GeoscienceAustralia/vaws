@@ -220,16 +220,12 @@ class ConnectionTypeGroup(object):
         self.damage_scenario = None
         self.trigger_collapse_at = None
         self.patch_dist = None
-        self.set_zone_to_zero = None
-        self.water_ingress_order = None
 
         default_attr = {'dist_order': self.dist_order,
                         'dist_dir': self.dist_dir,
                         'damage_scenario': self.damage_scenario,
                         'trigger_collapse_at': self.trigger_collapse_at,
-                        'patch_dist': self.patch_dist,
-                        'set_zone_to_zero': self.set_zone_to_zero,
-                        'water_ingress_order': self.water_ingress_order}
+                        'patch_dist': self.patch_dist}
 
         default_attr.update(kwargs)
         for key, value in default_attr.iteritems():
@@ -275,8 +271,8 @@ class ConnectionTypeGroup(object):
 
         if self.dist_dir:
             self._damage_grid = -1 * ones(dtype=int,
-                                             shape=(max_row_idx + 1,
-                                                    max_col_idx + 1))
+                                          shape=(max_row_idx + 1,
+                                                 max_col_idx + 1))
         else:
             self._damage_grid = None
 

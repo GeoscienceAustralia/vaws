@@ -1,9 +1,9 @@
-group_name,dist_order,dist_dir,damage_scenario,trigger_collapse_at,patch_dist,set_zone_to_zero,water_ingress_order
-sheeting,0,col,Loss of roof sheeting,0,0,0,0
-batten,0,row,Loss of roof sheeting & purlins,0,0,0,0
-rafter,0,col,Loss of roof structure,0,1,0,0
-wallcladding,0,col,Loss of wall cladding,0,0,0,0
-wallracking_cladding,0,col,None,0,1,0,0
-wallracking_bracing,0,col,Wall racking,0,1,0,0
-wallcollapse,0,col,Wall collapse,0,0,0,0
-piersgroup,0,none,Wall racking,0.5,0,0,0
+group_name,dist_dir,damage_scenario,trigger_collapse_at,patch_dist
+sheeting,col,Loss of roof sheeting,0,0
+batten,row,Loss of roof sheeting & purlins,0,0
+rafter,col,Loss of roof structure,0,1
+wallcladding,col,Loss of wall cladding,0,0
+wallracking_cladding,col,,0,1
+wallracking_bracing,col,Wall racking,0,1
+wallcollapse,col,Wall collapse,0,0
+piersgroup,,Wall racking,0.5,0

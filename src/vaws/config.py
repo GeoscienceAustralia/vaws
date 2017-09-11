@@ -54,6 +54,10 @@ FILE_FRONT_FACING_WALLS = 'front_facing_walls.csv'
 FILE_DEBRIS_TYPES = 'debris_types.csv'
 FILE_DEBRIS_REGIONS = 'debris_regions.csv'
 
+# results
+FILE_RESULTS = 'results.h5'
+FILE_CURVE = 'results_curve.csv'
+
 
 class Config(object):
 
@@ -171,6 +175,7 @@ class Config(object):
         # debris related
         self.front_facing_walls = None
         self.coverages_cpe_mean = None
+        self.coverages_area = 0.0
 
         self.file_results = None
         self.file_curve = None
@@ -198,8 +203,8 @@ class Config(object):
     def set_output_files(self):
         if not os.path.exists(self.path_output):
             os.makedirs(self.path_output)
-        self.file_results = os.path.join(self.path_output, 'results.h5')
-        self.file_curve = os.path.join(self.path_output, 'results_curve.csv')
+        self.file_results = os.path.join(self.path_output, FILE_RESULTS)
+        self.file_curve = os.path.join(self.path_output, FILE_CURVE)
 
     def read_config(self):
 
@@ -222,7 +227,7 @@ class Config(object):
         self.set_zones()
         self.set_coverages()
 
-        self.set_influences_and_influence_pathces()
+        self.set_influences_and_influence_patches()
         self.set_costings(df_groups)
 
     def read_options(self, conf, key):
@@ -298,6 +303,8 @@ class Config(object):
                                                           left_index=True,
                                                           right_index=True)
                 self.list_coverages = self.coverages.index.tolist()
+
+                self.coverages_area = self.coverages['area'].sum()
             else:
                 self.coverages = None
 
@@ -446,7 +453,7 @@ class Config(object):
     def set_groups(self):
         _file = os.path.join(self.path_house_data, FILE_CONN_GROUPS)
         try:
-            df_groups = pd.read_csv(_file, index_col=0)
+            df_groups = pd.read_csv(_file, index_col=0).fillna('')
         except IOError as msg:
             logging.error('{}'.format(msg))
         else:
@@ -492,7 +499,7 @@ class Config(object):
                 lambda x: list_groups.index(x))
             self.list_groups = self.connections['sub_group'].unique().tolist()
 
-    def set_influences_and_influence_pathces(self):
+    def set_influences_and_influence_patches(self):
 
         # influences
         try:
@@ -512,12 +519,15 @@ class Config(object):
         # costing
         _file = os.path.join(self.path_house_data, FILE_DAMAGE_COSTING_DATA)
         self.costings, self.damage_order_by_water_ingress = \
-            self.read_damage_costing_data(_file, groups)
+            self.read_damage_costing_data(_file)
 
         self.costing_to_group = defaultdict(list)
         for key, value in groups['damage_scenario'].to_dict().iteritems():
-            if len(value.split()) > 1:
+            if value:
                 self.costing_to_group[value].append(key)
+
+        if self.coverages is not None:
+            self.costing_to_group['Wall debris damage'] = ['debris']
 
         _file = os.path.join(self.path_house_data, FILE_DAMAGE_FACTORINGS)
         try:
@@ -525,9 +535,9 @@ class Config(object):
         except IOError as msg:
             logging.error('{}'.format(msg))
 
-        _file = os.path.join(self.path_house_data, FILE_WATER_INGRESS_COSTING_DATA)
-        self.water_ingress_costings = self.read_water_ingress_costing_data(
-            _file, groups)
+        _file = os.path.join(self.path_house_data,
+                             FILE_WATER_INGRESS_COSTING_DATA)
+        self.water_ingress_costings = self.read_water_ingress_costing_data(_file)
 
     def set_zones(self):
 
@@ -612,7 +622,7 @@ class Config(object):
         return tuple([row[key1][i] - row[key2][i] for i in range(2)])
 
     @staticmethod
-    def read_damage_costing_data(filename, groups):
+    def read_damage_costing_data(filename):
         costing = {}
         damage_order_by_water_ingress = []
 
@@ -622,17 +632,17 @@ class Config(object):
             logging.error('{}'.format(msg))
         else:
             for key, item in damage_costing.iterrows():
-                if groups['damage_scenario'].isin([key]).any():
-                    costing[key] = Costing(costing_name=key, **item)
+                # if groups['damage_scenario'].isin([key]).any():
+                costing[key] = Costing(costing_name=key, **item)
 
             for item in damage_costing['water_ingress_order'].sort_values().index:
-                if groups['damage_scenario'].isin([item]).any():
-                    damage_order_by_water_ingress.append(item)
+                # if groups['damage_scenario'].isin([item]).any():
+                damage_order_by_water_ingress.append(item)
 
         return costing, damage_order_by_water_ingress
 
     @staticmethod
-    def read_water_ingress_costing_data(filename, groups):
+    def read_water_ingress_costing_data(filename):
         dic_ = {}
         names = ['name', 'water_ingress', 'base_cost', 'formula_type', 'coeff1',
                  'coeff2', 'coeff3']
@@ -642,12 +652,12 @@ class Config(object):
             logging.error('{}'.format(msg))
         else:
             for key, grouped in tmp.groupby('name'):
-                if groups['damage_scenario'].isin([key]).any() or (key == 'WI only'):
-                    grouped = grouped.set_index('water_ingress')
-                    grouped['costing'] = grouped.apply(
-                        lambda row: WaterIngressCosting(costing_name=key, **row),
-                        axis=1)
-                    dic_[key] = grouped
+                # if groups['damage_scenario'].isin([key]).any() or (key == 'WI only'):
+                grouped = grouped.set_index('water_ingress')
+                grouped['costing'] = grouped.apply(
+                    lambda row: WaterIngressCosting(costing_name=key, **row),
+                    axis=1)
+                dic_[key] = grouped
         return dic_
 
     @staticmethod

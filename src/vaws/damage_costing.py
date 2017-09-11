@@ -11,7 +11,7 @@ from math import pow
 
 class Costing(object):
 
-    dic_costing = {1: 'func_type1', 2: 'func_type2'}
+    dic_costing = {1: 'type1', 2: 'type2'}
 
     def __init__(self, costing_name=None, **kwargs):
         """
@@ -91,7 +91,7 @@ class Costing(object):
                     internal_costing * self.internal_repair_rate)
 
     @staticmethod
-    def func_type1(x, c1, c2, c3):
+    def type1(x, c1, c2, c3):
         """
 
         Args:
@@ -106,7 +106,7 @@ class Costing(object):
         return c1 * x ** 2 + c2 * x + c3
 
     @staticmethod
-    def func_type2(x, c1, c2, c3):
+    def type2(x, c1, c2, c3):
         """
 
         Args:
@@ -126,7 +126,7 @@ class Costing(object):
 
 class WaterIngressCosting(object):
 
-    dic_costing = {1: 'func_type1', 2: 'func_type2'}
+    dic_costing = {1: 'type1', 2: 'type2'}
 
     def __init__(self, costing_name=None, **kwargs):
         """
@@ -175,22 +175,26 @@ class WaterIngressCosting(object):
                 self.cost = getattr(
                     Costing, self.__class__.dic_costing[self.formula_type])
 
-    def compute_cost(self, x):
-        assert 0.0 <= x <= 1.0
-        return self.base_cost * self.cost(x,
-                                          self.coeff1, self.coeff2, self.coeff3)
+    def compute_cost(self, damage_index):
+        assert 0.0 <= damage_index <= 1.0
+        return (self.cost(damage_index, self.coeff1, self.coeff2, self.coeff3) *
+                self.base_cost)
 
 
-def compute_water_ingress_given_damage(damage_index, wind_speed, df_water_ingress):
+def compute_water_ingress_given_damage(damage_index, wind_speed,
+                                       water_ingress_given_di):
     """
 
     Args:
         damage_index:
         wind_speed:
-        df_water_ingress: pd.DataFrame
+        water_ingress_given_di: pd.DataFrame
     Returns:
 
     """
+    assert 0.0 <= damage_index <= 1.0
+
     # Note that thresholds are upper values
-    idx = df_water_ingress.index[(df_water_ingress.index < damage_index).sum()]
-    return df_water_ingress.at[idx, 'wi'](wind_speed)
+    idx = water_ingress_given_di.index[(water_ingress_given_di.index <
+                                        damage_index).sum()]
+    return water_ingress_given_di.at[idx, 'wi'](wind_speed)

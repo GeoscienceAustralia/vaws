@@ -45,8 +45,7 @@ def simulate_wind_damage_to_houses(cfg, call_back=None):
 
             logging.info('model {}'.format(ihouse))
 
-            if cfg.flags['debris']:
-                house_damage.house.debris.no_items_mean = damage_incr
+            house_damage.house.debris.no_items_mean = damage_incr
 
             result = house_damage.run_simulation(wind_speed)
 

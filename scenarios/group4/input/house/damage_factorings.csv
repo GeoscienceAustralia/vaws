@@ -5,3 +5,6 @@ wallcladding,wallcollapse
 batten,rafter
 sheeting,rafter
 sheeting,batten
+debris,wallracking_bracing
+debris,wallcollapse
+wallcladding,debris

@@ -429,7 +429,7 @@ class MyTestCase(unittest.TestCase):
         wind_speeds = np.arange(0.0, 120.0, 5.0)
         incr_speed = wind_speeds[1] - wind_speeds[0]
 
-        print('{}'.format(_debris.area))
+        # print('{}'.format(_debris.area))
 
         damaged_area = []
         for wind_speed in wind_speeds:

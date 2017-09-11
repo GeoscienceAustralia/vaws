@@ -175,7 +175,7 @@ class HouseDamage(object):
         if self.house.coverages is not None:
             self.cpi = self.house.assign_cpi()
 
-            if self.house.coverages['breached_area'].sum():
+            if self.house.debris.damaged_area:
                 self.breached = True
 
     def check_house_collapse(self, wind_speed):
@@ -220,45 +220,26 @@ class HouseDamage(object):
         """
 
         # sum of damaged area by group
-        area_by_group = defaultdict(int)
-        total_area_by_group = defaultdict(int)
-        for _group in self.house.groups.itervalues():
-            area_by_group[_group.name] += _group.damaged_area
-            total_area_by_group[_group.name] += _group.costing_area
-
-        # remove group with zero costing area
-        for key, value in total_area_by_group.items():
-            if value == 0:
-                total_area_by_group.pop(key, None)
-                area_by_group.pop(key, None)
-
-        prop_area_by_group = {key: value / total_area_by_group[key]
-                              for key, value in area_by_group.iteritems()}
-
-        # TODO
-        # include DEBRIS when debris is ON
+        area_by_group, total_area_by_group = self.compute_area_by_group()
 
         # apply damage factoring
-        revised_prop = copy.deepcopy(prop_area_by_group)
-        for _source, target_list in self.cfg.damage_factorings.iteritems():
-            for _target in target_list:
-                revised_prop[_source] -= prop_area_by_group[_target]
+        revised_area_by_group = self.apply_damage_factoring(area_by_group)
 
         # sum of area by scenario
-        area_by_scenario = defaultdict(int)
-        total_area_by_scenario = defaultdict(int)
-        for scenario, _list in self.cfg.costing_to_group.iteritems():
-            for _group in _list:
-                area_by_scenario[scenario] += \
-                    max(revised_prop[_group], 0.0) * total_area_by_group[_group]
-                total_area_by_scenario[scenario] += total_area_by_group[_group]
+        prop_area_by_scenario = self.compute_area_by_scenario(
+            revised_area_by_group, total_area_by_group)
 
-        # prop_area_by_scenario
-        prop_area_by_scenario = {key: value / total_area_by_scenario[key]
-                                 for key, value in area_by_scenario.iteritems()}
+        # print('{}'.format(area_by_scenario))
+        # print('{}'.format(total_area_by_scenario))
 
-        _list = [self.cfg.costings[key].compute_cost(value)
-                 for key, value in prop_area_by_scenario.iteritems()]
+        _list = []
+        for key, value in prop_area_by_scenario.iteritems():
+            try:
+                tmp = self.cfg.costings[key].compute_cost(value)
+            except AssertionError:
+                logging.error('{} of {} is invalid'.format(value, key))
+            else:
+                _list.append(tmp)
         self.repair_cost = array(_list).sum()
 
         # calculate initial envelope repair cost before water ingress is added
@@ -267,26 +248,8 @@ class HouseDamage(object):
 
         if self.di_except_water < 1.0 and self.cfg.flags['water_ingress']:
 
-            # compute water ingress
-            water_ingress_perc = 100.0 * compute_water_ingress_given_damage(
-                self.di_except_water, wind_speed,
-                self.cfg.water_ingress_given_di)
-
-            # determine damage scenario
-            damage_name = 'WI only'  # default
-            for _name in self.cfg.damage_order_by_water_ingress:
-                if prop_area_by_scenario[_name]:
-                    damage_name = _name
-                    break
-
-            # finding index close to water ingress threshold
-            _df = self.cfg.water_ingress_costings[damage_name]
-            idx = argsort(abs(_df.index - water_ingress_perc))[0]
-
-            self.water_ingress_cost = \
-                _df['costing'].values[idx].compute_cost(self.di_except_water)
-            _di = (self.repair_cost +
-                   self.water_ingress_cost) / self.house.replace_cost
+            self.compute_water_ingress_cost(prop_area_by_scenario, wind_speed)
+            _di = (self.repair_cost + self.water_ingress_cost) / self.house.replace_cost
             self.di = min(_di, 1.0)
 
         else:
@@ -297,5 +260,75 @@ class HouseDamage(object):
             wind_speed, self.repair_cost, self.water_ingress_cost,
             self.di_except_water, self.di))
 
+    def compute_water_ingress_cost(self, prop_area_by_scenario, wind_speed):
+        # compute water ingress
+        water_ingress_perc = 100.0 * compute_water_ingress_given_damage(
+            self.di_except_water, wind_speed,
+            self.cfg.water_ingress_given_di)
+
+        # determine damage scenario
+        damage_name = 'WI only'  # default
+        for _name in self.cfg.damage_order_by_water_ingress:
+            if prop_area_by_scenario[_name]:
+                damage_name = _name
+                break
+
+        # finding index close to water ingress threshold
+        _df = self.cfg.water_ingress_costings[damage_name]
+        idx = argsort(abs(_df.index - water_ingress_perc))[0]
+        self.water_ingress_cost = \
+            _df['costing'].values[idx].compute_cost(self.di_except_water)
+
+    def apply_damage_factoring(self, area_by_group):
+        revised = copy.deepcopy(area_by_group)
+        for _source, target_list in self.cfg.damage_factorings.iteritems():
+            for _target in target_list:
+                try:
+                    revised[_source] -= area_by_group[_target]
+                except KeyError:
+                    msg = 'either {} or {} is not found in damage factorings'.format(
+                        _source, _target)
+                    logging.error(msg)
+
+        return revised
+
+    def compute_area_by_scenario(self, revised_area, total_area_by_group):
+        area_by_scenario = defaultdict(int)
+        total_area_by_scenario = defaultdict(int)
+        for scenario, _list in self.cfg.costing_to_group.iteritems():
+            for _group in _list:
+                if _group in revised_area:
+                    area_by_scenario[scenario] += \
+                        max(revised_area[_group], 0.0)
+                    total_area_by_scenario[scenario] += total_area_by_group[
+                        _group]
+
+        # prop_area_by_scenario
+        prop_area_by_scenario = {key: value / total_area_by_scenario[key]
+                                 for key, value in area_by_scenario.iteritems()}
+        return prop_area_by_scenario
+
     # @staticmethod
     # def get_cpi_for_dominant_opening(ratio, ):
+
+    def compute_area_by_group(self):
+
+        area_by_group = defaultdict(int)
+        total_area_by_group = defaultdict(int)
+
+        for _group in self.house.groups.itervalues():
+            area_by_group[_group.name] += _group.damaged_area
+            total_area_by_group[_group.name] += _group.costing_area
+
+        # remove group with zero costing area
+        for key, value in total_area_by_group.items():
+            if value == 0:
+                total_area_by_group.pop(key, None)
+                area_by_group.pop(key, None)
+
+        # include DEBRIS when debris is ON
+        if self.cfg.coverages_area:
+            area_by_group['debris'] = self.house.debris.damaged_area
+            total_area_by_group['debris'] = self.cfg.coverages_area
+
+        return area_by_group, total_area_by_group
