@@ -84,7 +84,7 @@ class Config(object):
                            'di_except_water', 'repair_cost',
                            'water_ingress_cost', 'breached']
 
-    debris_bucket = ['no_items', 'no_touched', 'breached', 'damaged_area']
+    debris_bucket = ['no_items', 'no_touched', 'damaged_area']
 
     # model and wind dependent attributes
     list_components = ['group', 'connection', 'zone', 'coverage']
@@ -111,6 +111,7 @@ class Config(object):
 
         self.house_name = None  # only used for gui display may be deleted later
         self.no_models = None
+        self.random_seed = 0
         self.wind_speed_min = 0.0
         self.wind_speed_max = 0.0
         # self.wind_speed_increment = 0.0
@@ -246,6 +247,7 @@ class Config(object):
         """
         self.house_name = conf.get(key, 'house_name')
         self.no_models = conf.getint(key, 'no_models')
+        self.random_seed = conf.getint(key, 'random_seed')
         self.wind_speed_min = conf.getfloat(key, 'wind_speed_min')
         self.wind_speed_max = conf.getfloat(key, 'wind_speed_max')
         self.wind_speed_steps = conf.getint(key, 'wind_speed_steps')

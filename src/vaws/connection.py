@@ -4,7 +4,6 @@
 """
 
 from numpy import where, ones
-import numpy as np
 import logging
 
 from vaws.zone import Zone

@@ -35,7 +35,8 @@ def simulate_wind_damage_to_houses(cfg, call_back=None):
     logging.info('Starting simulation in serial')
 
     # generate instances of house_damage
-    list_house_damage = [HouseDamage(cfg, i) for i in range(cfg.no_models)]
+    list_house_damage = [HouseDamage(cfg, i + cfg.random_seed)
+                         for i in range(cfg.no_models)]
 
     for ispeed, wind_speed in enumerate(cfg.speeds):
 
