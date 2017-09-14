@@ -138,6 +138,7 @@ class Config(object):
         self.flight_time_log_std = None
         self.debris_sources = None
         self.debris_types = None
+        self.debris_types_keys = None
         self.footprint = None
 
         # house data
@@ -247,9 +248,9 @@ class Config(object):
         """
         self.house_name = conf.get(key, 'house_name')
         self.no_models = conf.getint(key, 'no_models')
-        if conf.has_option(key, 'random_seed'):
+        try:
             self.random_seed = conf.getint(key, 'random_seed')
-        else:
+        except ConfigParser.NoOptionError:
             self.random_seed = 0
         self.wind_speed_min = conf.getfloat(key, 'wind_speed_min')
         self.wind_speed_max = conf.getfloat(key, 'wind_speed_max')
@@ -821,6 +822,8 @@ class Config(object):
                 mu_lnx, std_lnx = compute_logarithmic_mean_stddev(_mean, _std)
                 self.debris_types.setdefault(key, {})['{}_mu'.format(item)] = mu_lnx
                 self.debris_types.setdefault(key, {})['{}_std'.format(item)] = std_lnx
+
+        self.debris_types_keys = self.debris_types.keys()
 
     def set_wind_dir_index(self, wind_dir_str):
         try:

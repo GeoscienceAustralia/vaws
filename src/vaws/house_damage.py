@@ -144,7 +144,7 @@ class HouseDamage(object):
         if self.cfg.regional_shielding_factor <= 0.85:
             thresholds = array([63, 63 + 15])
             ms_dic = {0: 1.0, 1: 0.85, 2: 0.95}
-            idx = sum(thresholds <= self.rnd_state.random_integers(0, 100))
+            idx = (thresholds <= self.rnd_state.random_integers(0, 100)).sum()
             self.ms = ms_dic[idx]
             wind_speed *= self.ms / self.cfg.regional_shielding_factor
         else:
@@ -307,9 +307,6 @@ class HouseDamage(object):
         prop_area_by_scenario = {key: value / total_area_by_scenario[key]
                                  for key, value in area_by_scenario.iteritems()}
         return prop_area_by_scenario
-
-    # @staticmethod
-    # def get_cpi_for_dominant_opening(ratio, ):
 
     def compute_area_by_group(self):
 

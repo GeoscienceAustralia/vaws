@@ -235,7 +235,7 @@ def set_logger(path_cfg, logging_level=None):
 
     # create logger
     logger = logging.getLogger()
-    logger.setLevel(logging.DEBUG)
+    logger.setLevel(logging.NOTSET)
     formatter = logging.Formatter('%(levelname)s - %(message)s')
 
     # create console handler and set level to WARNING
