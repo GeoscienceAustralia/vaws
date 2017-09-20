@@ -124,8 +124,6 @@ class Connection(object):
 
         if not self.damaged:
 
-            logging.debug('computing load at connection {}'.format(self.name))
-
             for _inf in self.influences.itervalues():
 
                 try:
@@ -133,17 +131,17 @@ class Connection(object):
                     temp = _inf.coeff * _inf.source.area * _inf.source.pressure
 
                     logging.debug(
-                        'load by {}: {:.2f} x {:.3f} x {:.3f}'.format(
-                            _inf.source.name, _inf.coeff, _inf.source.area,
-                            _inf.source.pressure))
+                        'load at conn {} by {}: {:.2f} * {:.3f} * {:.3f}'.format(
+                            self.name, _inf.source.name, _inf.coeff,
+                            _inf.source.area, _inf.source.pressure))
 
                 except AttributeError:
                     # by connections
                     temp = _inf.coeff * _inf.source.load
 
                     logging.debug(
-                        'load by {}: {:.2f} times {:.3f}'.format(
-                            _inf.source.name, _inf.coeff, _inf.source.load))
+                        'load at conn {} by {}: {:.2f} * {:.3f}'.format(
+                            self.name, _inf.source.name, _inf.coeff, _inf.source.load))
 
                 self.load += temp
 

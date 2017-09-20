@@ -13,7 +13,7 @@ Debris Module - adapted from JDH Consulting and Martin's work
 import logging
 import pandas as pd
 
-from numpy import rint, random, array, sum
+from numpy import rint, random, array
 from numbers import Number
 from math import pow, radians, tan, sqrt, exp
 from shapely.geometry import Point, Polygon, LineString
@@ -182,14 +182,14 @@ class Debris(object):
         no_items_by_source = self.rnd_state.poisson(
             self.no_items_mean, size=len(self.cfg.debris_sources))
 
-        self.no_items = sum(no_items_by_source)
+        self.no_items = no_items_by_source.sum()
         logging.debug('no_item_by_source at speed {:.3f}: {}, {}'.format(
             wind_speed, self.no_items, self.no_items_mean))
 
         # loop through sources
         for no_item, source in zip(no_items_by_source, self.cfg.debris_sources):
 
-            list_debris = self.rnd_state.choice(self.cfg.debris_types.keys(),
+            list_debris = self.rnd_state.choice(self.cfg.debris_types_keys,
                                                 size=no_item, replace=True)
 
             # logging.debug('source: {}, list_debris: {}'.format(source, list_debris))
@@ -209,61 +209,61 @@ class Debris(object):
 
         """
 
-        try:
-            debris = self.cfg.debris_types[debris_type_str]
+        # try:
+        debris = self.cfg.debris_types[debris_type_str]
 
-        except KeyError:
-            logging.warning('invalid debris type: {}'.format(debris_type_str))
+        # except KeyError:
+        #     logging.warning('invalid debris type: {}'.format(debris_type_str))
+        #
+        # else:
 
-        else:
+        mass = self.rnd_state.lognormal(debris['mass_mu'],
+                                        debris['mass_std'])
 
-            mass = self.rnd_state.lognormal(debris['mass_mu'],
-                                            debris['mass_std'])
+        frontal_area = self.rnd_state.lognormal(debris['frontalarea_mu'],
+                                                debris['frontalarea_std'])
 
-            frontal_area = self.rnd_state.lognormal(debris['frontalarea_mu'],
-                                                    debris['frontalarea_std'])
+        flight_time = self.rnd_state.lognormal(self.cfg.flight_time_log_mu,
+                                               self.cfg.flight_time_log_std)
 
-            flight_time = self.rnd_state.lognormal(self.cfg.flight_time_log_mu,
-                                                   self.cfg.flight_time_log_std)
+        flight_distance = self.compute_flight_distance(debris_type_str,
+                                                       flight_time,
+                                                       frontal_area,
+                                                       mass,
+                                                       wind_speed)
 
-            flight_distance = self.compute_flight_distance(debris_type_str,
-                                                           flight_time,
-                                                           frontal_area,
-                                                           mass,
-                                                           wind_speed)
+        # logging.debug('debris type:{}, area:{}, time:{}, distance:{}'.format(
+        #    debris_type_str, frontal_area, flight_time, flight_distance))
 
-            # logging.debug('debris type:{}, area:{}, time:{}, distance:{}'.format(
-            #    debris_type_str, frontal_area, flight_time, flight_distance))
+        # determine landing location for a debris item
+        # sigma_x, y are taken from Wehner et al. (2010)
+        sigma_x = flight_distance / 3.0
+        sigma_y = flight_distance / 12.0
+        cov_matrix = [[pow(sigma_x, 2.0), 0.0], [0.0, pow(sigma_y, 2.0)]]
 
-            # determine landing location for a debris item
-            # sigma_x, y are taken from Wehner et al. (2010)
-            sigma_x = flight_distance / 3.0
-            sigma_y = flight_distance / 12.0
-            cov_matrix = [[pow(sigma_x, 2.0), 0.0], [0.0, pow(sigma_y, 2.0)]]
+        x, y = self.rnd_state.multivariate_normal(mean=[0.0, 0.0],
+                                                  cov=cov_matrix)
+        # reference point: target house
+        pt_debris = Point(x + source.x - flight_distance, y + source.y)
+        line_debris = LineString([source, pt_debris])
 
-            x, y = self.rnd_state.multivariate_normal(mean=[0.0, 0.0],
-                                                      cov=cov_matrix)
-            # reference point: target house
-            pt_debris = Point(x + source.x - flight_distance, y + source.y)
-            line_debris = LineString([source, pt_debris])
+        self.debris_items.append(line_debris)
 
-            self.debris_items.append(line_debris)
+        if line_debris.intersects(self.footprint):
 
-            if line_debris.intersects(self.footprint):
+            self.no_touched += 1
 
-                self.no_touched += 1
+            item_momentum = self.compute_debris_momentum(debris['cdav'],
+                                                         frontal_area,
+                                                         flight_distance,
+                                                         mass,
+                                                         wind_speed,
+                                                         self.rnd_state)
 
-                item_momentum = self.compute_debris_momentum(debris['cdav'],
-                                                             frontal_area,
-                                                             flight_distance,
-                                                             mass,
-                                                             wind_speed,
-                                                             self.rnd_state)
+            self.check_debris_impact(frontal_area, item_momentum)
 
-                self.check_debris_impact(frontal_area, item_momentum)
-
-                logging.debug('debris impact from {}, {}'.format(
-                    pt_debris.x, pt_debris.y))
+            logging.debug('debris impact from {}, {}'.format(
+                pt_debris.x, pt_debris.y))
 
     def check_debris_impact(self, frontal_area, item_momentum):
         """
@@ -279,11 +279,11 @@ class Debris(object):
 
         # determine coverage type
         _rv = self.rnd_state.uniform()
-        _id = self.coverage_idx[sum(self.coverage_prob < _rv)]
+        _id = self.coverage_idx[(self.coverage_prob < _rv).sum()]
         _coverage = self.coverages[_id]
 
-        logging.debug('coverage id: {} due to rv: {} vs prob: {}'.format(
-            _id, _rv, self.coverage_prob))
+        #logging.debug('coverage id: {} due to rv: {} vs prob: {}'.format(
+        #    _id, _rv, self.coverage_prob))
 
         # check impact using failure momentum
         try:
@@ -299,9 +299,8 @@ class Debris(object):
             else:
                 _coverage.breached_area = min(frontal_area, _coverage.area)
 
-            logging.debug(
-                'coverage {} breached by debris b/c {:.3f} < {:.3f} -> area: {:.3f}'.format(
-                    _coverage.name, _capacity, item_momentum, _coverage.breached_area))
+            logging.debug('coverage {} breached by debris b/c {:.3f} < {:.3f} -> area: {:.3f}'.format(
+                _coverage.name, _capacity, item_momentum, _coverage.breached_area))
 
     def compute_flight_distance(self, debris_type_str, flight_time,
                                 frontal_area, mass, wind_speed, flag_poly=2):
