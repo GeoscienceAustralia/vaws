@@ -18,11 +18,10 @@ from numpy import ones, where, float32, mean, nanmean, empty, array, \
 import numpy as np
 
 import pandas as pd
-import h5py
 
 from vaws.curve import vulnerability_lognorm, vulnerability_weibull
 
-from main_ui import Ui_main
+from gui.main_ui import Ui_main
 from vaws.main import process_commandline, set_logger, \
     simulate_wind_damage_to_houses
 from vaws.config import Config, INPUT_DIR, OUTPUT_DIR
@@ -40,7 +39,8 @@ my_app = None
 
 SOURCE_DIR = os.path.dirname(__file__)
 VAWS_DIR = os.sep.join(SOURCE_DIR.split(os.sep)[:-2])
-SCENARIOS_DIR = os.path.join(VAWS_DIR, 'scenarios')
+SCENARIOS_DIR = os.sep.join(SOURCE_DIR.split(os.sep)[:-1])
+SCENARIOS_DIR = os.path.join(SCENARIOS_DIR, 'scenarios')
 CONFIG_TEMPL = "Scenarios (*.cfg)"
 DEFAULT_SCENARIO = os.path.join(SCENARIOS_DIR, 'default/default.cfg')
 
@@ -1127,7 +1127,7 @@ def run_gui():
 
     (options, args) = parser.parse_args()
 
-    file_prompt=False
+    file_prompt = False
 
     if not options.config_file:
         settings = QSettings()
