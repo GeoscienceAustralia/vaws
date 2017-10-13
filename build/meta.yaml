@@ -28,7 +28,7 @@ requirements:
     - fontconfig >=2.11.* [unix]
     - freetype >=2.5.*
     - functools32 >=3.2.* [unix]
-    - h5py >=2.7.* [win]
+    - h5py >=2.7.*
     - hdf5 >=1.8.* [unix]
     - libgcc >=5.2.*
     - libgfortran >=3.0.*
@@ -46,7 +46,7 @@ requirements:
     - pixman >=0.32.*
     - pycairo >=1.10.*
     - pyparsing >=2.0.*
-    - pyqt >=4.11.*
+    - pyqt ==4.11.4
     - pytables >=3.3.*
     - python >=2.7.*
     - python-dateutil >=2.4.*
@@ -55,6 +55,7 @@ requirements:
     - readline >=6.*
     - scipy >=0.17.*
     - setuptools >=20.2.*
+    - shapely
     - sip >=4.16.*
     - six >=1.10.*
     - sqlite >=3.9.*

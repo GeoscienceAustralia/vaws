@@ -31,6 +31,32 @@ Then use the build script for your environment
     cd src\gui  
     build.cmd
 
+
+#### Building the VAWS conda package
+
+Prerequisites:
+    
+    conda
+    conda-build
+    anaconda-client
+   
+Build the package
+
+    cd <vaws dir>/build
+    ~/miniconda2/bin/conda-build .
+    
+Upload to conda-forge
+
+    anaconda login
+    anaconda upload /home/ubuntu/miniconda2/conda-bld/linux-64/vaws-2.0-py27<package details>
+
+#### Install from conda channel
+
+~/miniconda2/bin/conda create -n vaws_env python=2.7
+source ~/miniconda2/bin/activate vaws_env
+conda config --add channels crankymax
+conda install vaws
+
 #### Inputs required to run the vaws:
 These files are not in repo and you will need access to these files to be able to run the code.
 
