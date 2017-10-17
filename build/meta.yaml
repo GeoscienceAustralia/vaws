@@ -20,17 +20,17 @@ requirements:
   run:
     - python
     - cairo >=1.12.*
-    - backports_abc >=0.5.*  [win]
-    - ca-certificates >=2017.1.* [win]
-    - certifi >=2017.1.* [win]
+    - backports_abc >=0.5.*  # [win]
+    - ca-certificates >=2017.1.* # [win]
+    - certifi >=2017.1.* # [win]
     - cycler >=0.9.*
-    - dateutil >2.4.* [unix]
-    - fontconfig >=2.11.* [unix]
+    - dateutil >2.4.* # [unix]
+    - fontconfig >=2.11.* # [unix]
     - freetype >=2.5.*
-    - functools32 >=3.2.* [unix]
+    - functools32 >=3.2.* # [unix]
     - h5py >=2.7.*
-    - hdf5 >=1.8.* [unix]
-    - libgcc >=5.2.*
+    - hdf5 >=1.8.* # [unix]
+    - libgcc >=5.2.* # [win]
     - libgfortran >=3.0.*
     - libiconv >=1.1
     - libpng >=1.6.*
@@ -44,7 +44,7 @@ requirements:
     - pandas >=0.19.*
     - pip >=8.1.*
     - pixman >=0.32.*
-    - pycairo >=1.10.*
+    - pycairo >=1.10.* # [unix, win]
     - pyparsing >=2.0.*
     - pyqt ==4.11.4
     - pytables >=3.3.*
