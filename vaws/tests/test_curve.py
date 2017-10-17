@@ -2,7 +2,7 @@ import unittest
 import matplotlib.pyplot as plt
 import numpy as np
 
-from model.curve import vulnerability_weibull, vulnerability_weibull_pdf
+from vaws.model.curve import vulnerability_weibull, vulnerability_weibull_pdf
 
 
 def single_exponential_given_V(beta_, alpha_, x_arr):

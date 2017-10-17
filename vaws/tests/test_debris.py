@@ -7,10 +7,10 @@ from descartes import PolygonPatch
 from shapely.geometry import Point, Polygon, LineString
 import logging
 
-from model.config import Config
-from model.debris import Debris, Coverage
-from model.curve import vulnerability_weibull, vulnerability_weibull_pdf
-from model.main import set_logger
+from vaws.model.config import Config
+from vaws.model.debris import Debris, Coverage
+from vaws.model.curve import vulnerability_weibull, vulnerability_weibull_pdf
+from vaws.model.main import set_logger
 
 '''
     def run_alt(self, wind_speed):

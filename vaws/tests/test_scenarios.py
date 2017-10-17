@@ -5,8 +5,8 @@ import unittest
 import os
 import numpy as np
 
-from model.house_damage import HouseDamage
-from model.config import Config
+from vaws.model.house_damage import HouseDamage
+from vaws.model.config import Config
 import logging
 
 

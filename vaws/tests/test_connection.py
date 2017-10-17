@@ -2,8 +2,8 @@ import unittest
 import os
 import numpy as np
 
-from model.config import Config
-from model.house import House
+from vaws.model.config import Config
+from vaws.model.house import House
 
 
 class MyTestCase(unittest.TestCase):

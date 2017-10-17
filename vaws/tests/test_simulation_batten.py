@@ -7,9 +7,9 @@ import numpy as np
 # import filecmp
 import pandas as pd
 
-from model.house_damage import HouseDamage
+from vaws.model.house_damage import HouseDamage
 # import model.database as database
-from model.config import Config
+from vaws.model.config import Config
 # from model import zone
 # from model import engine
 

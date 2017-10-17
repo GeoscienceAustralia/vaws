@@ -5,9 +5,9 @@ import os
 import numpy as np
 import matplotlib.pyplot as plt
 
-from model.damage_costing import Costing, WaterIngressCosting, \
+from vaws.model.damage_costing import Costing, WaterIngressCosting, \
     compute_water_ingress_given_damage
-from model.config import Config
+from vaws.model.config import Config
 
 
 class MyTestCase(unittest.TestCase):

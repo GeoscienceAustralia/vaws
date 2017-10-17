@@ -9,7 +9,7 @@ import pandas as pd
 
 # from model.main import simulate_wind_damage_to_houses
 # import model.database as database
-from model.config import Config
+from vaws.model.config import Config
 # from model import zone
 # from model import engine
 
