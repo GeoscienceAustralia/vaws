@@ -1,15 +1,15 @@
 
 package:
-  name: "vaws"
+  name: "model"
   version: "2.0"
 
 source:
-  path: ../../vaws
+  path: ../../model
 
 build:
   number: 0
   entry_points:
-    - vaws = gui.main:run_gui
+    - model = gui.main:run_gui
 
 requirements:
   build:
@@ -64,6 +64,6 @@ requirements:
     - zlib >=1.2.*
 
 about:
-  home: https://github.com/GeoscienceAustralia/vaws
+  home: https://github.com/GeoscienceAustralia/model
   license: 'Copyright (c) 2015, Geoscience Australia'
   license_file: LICENSE

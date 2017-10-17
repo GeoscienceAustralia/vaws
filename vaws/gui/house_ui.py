@@ -1,0 +1,153 @@
+# -*- coding: utf-8 -*-
+
+# Form implementation generated from reading ui file 'ui/house.ui'
+#
+# Created by: PyQt4 UI code generator 4.11.4
+#
+# WARNING! All changes made in this file will be lost!
+
+from PyQt4 import QtCore, QtGui
+
+try:
+    _fromUtf8 = QtCore.QString.fromUtf8
+except AttributeError:
+    def _fromUtf8(s):
+        return s
+
+try:
+    _encoding = QtGui.QApplication.UnicodeUTF8
+    def _translate(context, text, disambig):
+        return QtGui.QApplication.translate(context, text, disambig, _encoding)
+except AttributeError:
+    def _translate(context, text, disambig):
+        return QtGui.QApplication.translate(context, text, disambig)
+
+class Ui_Dialog(object):
+    def setupUi(self, Dialog):
+        Dialog.setObjectName(_fromUtf8("Dialog"))
+        Dialog.resize(578, 388)
+        icon = QtGui.QIcon()
+        icon.addPixmap(QtGui.QPixmap(_fromUtf8(":/icons/images/editresize.png")), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        Dialog.setWindowIcon(icon)
+        Dialog.setSizeGripEnabled(True)
+        Dialog.setModal(True)
+        self.verticalLayout = QtGui.QVBoxLayout(Dialog)
+        self.verticalLayout.setObjectName(_fromUtf8("verticalLayout"))
+        self.horizontalLayout = QtGui.QHBoxLayout()
+        self.horizontalLayout.setObjectName(_fromUtf8("horizontalLayout"))
+        self.formLayout = QtGui.QFormLayout()
+        self.formLayout.setLabelAlignment(QtCore.Qt.AlignRight|QtCore.Qt.AlignTrailing|QtCore.Qt.AlignVCenter)
+        self.formLayout.setObjectName(_fromUtf8("formLayout"))
+        self.label_7 = QtGui.QLabel(Dialog)
+        font = QtGui.QFont()
+        font.setItalic(True)
+        self.label_7.setFont(font)
+        self.label_7.setObjectName(_fromUtf8("label_7"))
+        self.formLayout.setWidget(0, QtGui.QFormLayout.LabelRole, self.label_7)
+        self.replacementCost = QtGui.QLineEdit(Dialog)
+        self.replacementCost.setEnabled(False)
+        self.replacementCost.setReadOnly(True)
+        self.replacementCost.setObjectName(_fromUtf8("replacementCost"))
+        self.formLayout.setWidget(0, QtGui.QFormLayout.FieldRole, self.replacementCost)
+        self.label_9 = QtGui.QLabel(Dialog)
+        font = QtGui.QFont()
+        font.setItalic(True)
+        self.label_9.setFont(font)
+        self.label_9.setObjectName(_fromUtf8("label_9"))
+        self.formLayout.setWidget(1, QtGui.QFormLayout.LabelRole, self.label_9)
+        self.height = QtGui.QLineEdit(Dialog)
+        self.height.setEnabled(False)
+        self.height.setReadOnly(True)
+        self.height.setObjectName(_fromUtf8("height"))
+        self.formLayout.setWidget(1, QtGui.QFormLayout.FieldRole, self.height)
+        self.label_10 = QtGui.QLabel(Dialog)
+        font = QtGui.QFont()
+        font.setItalic(True)
+        self.label_10.setFont(font)
+        self.label_10.setObjectName(_fromUtf8("label_10"))
+        self.formLayout.setWidget(2, QtGui.QFormLayout.LabelRole, self.label_10)
+        self.cpeV = QtGui.QLineEdit(Dialog)
+        self.cpeV.setEnabled(False)
+        self.cpeV.setReadOnly(True)
+        self.cpeV.setObjectName(_fromUtf8("cpeV"))
+        self.formLayout.setWidget(2, QtGui.QFormLayout.FieldRole, self.cpeV)
+        self.label_11 = QtGui.QLabel(Dialog)
+        font = QtGui.QFont()
+        font.setItalic(True)
+        self.label_11.setFont(font)
+        self.label_11.setObjectName(_fromUtf8("label_11"))
+        self.formLayout.setWidget(3, QtGui.QFormLayout.LabelRole, self.label_11)
+        self.cpeK = QtGui.QLineEdit(Dialog)
+        self.cpeK.setEnabled(False)
+        self.cpeK.setReadOnly(True)
+        self.cpeK.setObjectName(_fromUtf8("cpeK"))
+        self.formLayout.setWidget(3, QtGui.QFormLayout.FieldRole, self.cpeK)
+        self.label_12 = QtGui.QLabel(Dialog)
+        font = QtGui.QFont()
+        font.setItalic(True)
+        self.label_12.setFont(font)
+        self.label_12.setObjectName(_fromUtf8("label_12"))
+        self.formLayout.setWidget(4, QtGui.QFormLayout.LabelRole, self.label_12)
+        self.cpeStructV = QtGui.QLineEdit(Dialog)
+        self.cpeStructV.setEnabled(False)
+        self.cpeStructV.setReadOnly(True)
+        self.cpeStructV.setObjectName(_fromUtf8("cpeStructV"))
+        self.formLayout.setWidget(4, QtGui.QFormLayout.FieldRole, self.cpeStructV)
+        self.label = QtGui.QLabel(Dialog)
+        font = QtGui.QFont()
+        font.setItalic(True)
+        self.label.setFont(font)
+        self.label.setObjectName(_fromUtf8("label"))
+        self.formLayout.setWidget(5, QtGui.QFormLayout.LabelRole, self.label)
+        self.width = QtGui.QLineEdit(Dialog)
+        self.width.setEnabled(False)
+        self.width.setReadOnly(True)
+        self.width.setObjectName(_fromUtf8("width"))
+        self.formLayout.setWidget(5, QtGui.QFormLayout.FieldRole, self.width)
+        self.label_2 = QtGui.QLabel(Dialog)
+        font = QtGui.QFont()
+        font.setItalic(True)
+        self.label_2.setFont(font)
+        self.label_2.setObjectName(_fromUtf8("label_2"))
+        self.formLayout.setWidget(6, QtGui.QFormLayout.LabelRole, self.label_2)
+        self.length = QtGui.QLineEdit(Dialog)
+        self.length.setEnabled(False)
+        self.length.setReadOnly(True)
+        self.length.setObjectName(_fromUtf8("length"))
+        self.formLayout.setWidget(6, QtGui.QFormLayout.FieldRole, self.length)
+        self.horizontalLayout.addLayout(self.formLayout)
+        self.tree = QtGui.QTreeWidget(Dialog)
+        sizePolicy = QtGui.QSizePolicy(QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Expanding)
+        sizePolicy.setHorizontalStretch(9)
+        sizePolicy.setVerticalStretch(0)
+        sizePolicy.setHeightForWidth(self.tree.sizePolicy().hasHeightForWidth())
+        self.tree.setSizePolicy(sizePolicy)
+        self.tree.setObjectName(_fromUtf8("tree"))
+        self.horizontalLayout.addWidget(self.tree)
+        self.verticalLayout.addLayout(self.horizontalLayout)
+        self.buttonBox = QtGui.QDialogButtonBox(Dialog)
+        self.buttonBox.setOrientation(QtCore.Qt.Horizontal)
+        self.buttonBox.setStandardButtons(QtGui.QDialogButtonBox.NoButton)
+        self.buttonBox.setObjectName(_fromUtf8("buttonBox"))
+        self.verticalLayout.addWidget(self.buttonBox)
+
+        self.retranslateUi(Dialog)
+        QtCore.QObject.connect(self.buttonBox, QtCore.SIGNAL(_fromUtf8("accepted()")), Dialog.accept)
+        QtCore.QObject.connect(self.buttonBox, QtCore.SIGNAL(_fromUtf8("rejected()")), Dialog.reject)
+        QtCore.QMetaObject.connectSlotsByName(Dialog)
+
+    def retranslateUi(self, Dialog):
+        Dialog.setWindowTitle(_translate("Dialog", "House Viewer", None))
+        self.label_7.setText(_translate("Dialog", "Replacement Cost:", None))
+        self.label_9.setText(_translate("Dialog", "Height:", None))
+        self.label_10.setText(_translate("Dialog", "CPe_V:", None))
+        self.label_11.setText(_translate("Dialog", "CPe_k:", None))
+        self.label_12.setText(_translate("Dialog", "CPe_structure_V:", None))
+        self.label.setText(_translate("Dialog", "Width:", None))
+        self.label_2.setText(_translate("Dialog", "Length:", None))
+        self.tree.headerItem().setText(0, _translate("Dialog", "Wall", None))
+        self.tree.headerItem().setText(1, _translate("Dialog", "Description", None))
+        self.tree.headerItem().setText(2, _translate("Dialog", "Area", None))
+        self.tree.headerItem().setText(3, _translate("Dialog", "Type", None))
+
+import windsim_rc

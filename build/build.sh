@@ -1,5 +1,6 @@
-cp -r src/gui $SP_DIR/
-cp -r src/vaws $SP_DIR/
+mkdir $SP_DIR/vaws
+cp -r vaws/gui $SP_DIR/vaws
+cp -r vaws/model $SP_DIR/vaws
 
-cp -r scenarios $SP_DIR/
+cp -r scenarios $SP_DIR/vaws
 
