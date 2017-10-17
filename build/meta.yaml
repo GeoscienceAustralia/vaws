@@ -1,15 +1,15 @@
 
 package:
-  name: "model"
+  name: "vaws"
   version: "2.0"
 
 source:
-  path: ../../model
+  path: ../
 
 build:
   number: 0
   entry_points:
-    - model = gui.main:run_gui
+    - vaws = vaws.gui.main:run_gui
 
 requirements:
   build:
