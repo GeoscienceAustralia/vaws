@@ -52,12 +52,13 @@ requirements:
     - pixman >=0.32.*
     - pycairo >=1.10.* # [unix, win]
     - pyparsing >=2.0.*
-    - pyqt ==4.11.4
+    - pyqt ==4.11.4 # [not win]
+    - pyqt <5.0 # [win]
     - pytables >=3.3.*
     - python >=2.7.*
     - python-dateutil >=2.4.*
     - pytz >=2015.*
-    - qt >=4.8.*
+    - qt <5.0
     - readline >=6.* # [not win]
     - scipy >=0.17.*
     - setuptools >=20.2.*
