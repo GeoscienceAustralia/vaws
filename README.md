@@ -49,12 +49,16 @@ Upload to conda-forge
     anaconda login
     anaconda upload /home/ubuntu/miniconda2/conda-bld/linux-64/vaws-2.0-py27<package details>
 
+Windows upload to conda
+
+    \dev\Miniconda2\Scripts\anaconda -s anaconda.org login
+    \dev\Miniconda2\Scripts\anaconda upload --force c:\dev\Miniconda2\conda-bld\win-64\vaws-2.0-py27<package details>
+
 #### Install from conda channel
 
-~/miniconda2/bin/conda create -n vaws_env python=2.7
+~/miniconda2/bin/conda create -n vaws_env python=2.7 
 source ~/miniconda2/bin/activate vaws_env
-conda config --add channels crankymax
-conda install vaws
+conda install -c crankymax vaws
 
 #### Inputs required to run the vaws:
 These files are not in repo and you will need access to these files to be able to run the code.
@@ -68,10 +72,8 @@ These files are not in repo and you will need access to these files to be able t
 
 Running the vaws code is simple.
     
-    cd vaws
-    ./vaws.sh
-    or for windows
-    ./vaws.cmd
+    source ~/miniconda2/bin/activate vaws_env
+    vaws
 
 #### Run tests
 To run tests use either `nose` or `unittest`:
