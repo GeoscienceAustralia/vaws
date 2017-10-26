@@ -33,7 +33,7 @@ requirements:
     - geos >=3.5.1 # [win]
     - icu >=58.1 # [win]
     - jpeg >=9b # [win]
-    - libgcc >=5.2.* # [not win]
+    - libgcc >=5.2.* # [linux]
     - libgfortran >=3.0.* # [not win]
     - libiconv >=1.1
     - libpng >=1.6.*

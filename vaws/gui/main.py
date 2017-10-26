@@ -13,9 +13,7 @@ from PyQt4.QtGui import QProgressBar, QLabel, QMainWindow, QApplication, QTableW
                         QTableWidgetItem, QDialog, QCheckBox, QFileDialog, QIntValidator,\
                         QDoubleValidator, QMessageBox, QTreeWidgetItem, QInputDialog, QSplashScreen
 from numpy import ones, where, float32, mean, nanmean, empty, array, \
-    count_nonzero, nan, append, ones_like, nan_to_num, newaxis
-
-import numpy as np
+    count_nonzero, nan, append, ones_like, nan_to_num, newaxis, zeros
 
 import pandas as pd
 
@@ -300,7 +298,7 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
         finiTable(self.ui.debrisRegions)
 
     def showHouseInfoDlg(self):
-        from gui import house as gui_house
+        from vaws.gui import house as gui_house
         dlg = gui_house.HouseViewer(self.cfg)
         dlg.exec_()
 
@@ -540,7 +538,7 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
                 if len(_array) > 0:
                     mean_connection_capacity = nanmean(_array, axis=1)
                 else:
-                    mean_connection_capacity = np.zeros(1)
+                    mean_connection_capacity = zeros(1)
             else:
                 mean_connection_capacity = _array[:, house_number-1]
 
