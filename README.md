@@ -1,69 +1,46 @@
 #### Conda setup
 
-It is recommended that you create a virtual conda environment to run the `vaws` code.
-These instructions have been tested on `Redhat EL 6.7` and is expected to work for most newer versions of `Linux`. 
-Conda and the requirements can be installed using the following steps.
+It is recommended that you create a `conda` environment to run the `vaws` code.
+These instructions have been tested on `Windows 7`, `Linux`, and `OS 10.11.x` and
+is expected to work on most of modern operating systems.
 
 1. Download and install [Miniconda](https://conda.io/miniconda.html) with Python 2.7.
 
-* Windows
-- Double-click the downloaded .exe file.
-- Follow the instructions on the screen.
-- If you are unsure about any setting, accept the defaults. You can change them later.
-- When installation is finished, from the Start menu, open the Anaconda Prompt.
+ * Windows
+    - Double-click the downloaded .exe file.
+	- When installation is finished, from the Start menu, open the Anaconda Prompt.
 
-* Linux/Mac
-- In your Terminal window, run:
->```bash Miniconda3-latest-MacOSX-x86_64.sh```
->```bash Miniconda3-latest-Linux-x86_64.sh```
+ * Linux/Mac
+    - In your Terminal window, run:
+	```bash Miniconda3-latest-MacOSX-x86_64.sh``` or 
+	```bash Miniconda3-latest-Linux-x86_64.sh```
 
-2. Once Miniconda is installed, you can use the conda command to create an environment called vaws_env.
+2. Create a conda environment. 
 
-* Windows
-Click 'Anaconda Prompt' in the Windows Start
+In the terminal client, enter the following to create the environement called 'vaws_env'.
 
->``` ~/miniconda2/bin/conda create -n vaws_env python=2.7
->``` conda env create --name vaws_env --file vaws.yml```
+```conda create -n vaws_env python=2.7```
 
-> *Note: for windows use conda env create --name vaws_env --file vaws_win.yml*
+3. Activate the environment.
+In the terminal client, enter the following to activate the environement.
 
-4. Activate the environment with
+ * Windows
+    ``` activate vaws_env```
 
->``` source activate vaws env```
+ * Linux/Mac
+    ``` source activate vaws_env```
 
-> *Note: for windows use activate vaws_env*
+4. Install the vaws code from conda channel
+In the terminal client, enter the following to install the vaws.
 
-Then use the build script for your environment 
-* Linux/Mac
+```conda install -c crankymax vaws```
 
-    cd src/gui  
-    ./build.sh
-     
-* Windows
+In case you see `PackageNotFoundError: Packages missing in current channels:` then enter the following and try again.
+```conda config --add channels conda-forge```
 
-    cd src\gui  
-    build.cmd
-
-#### Install from conda channel
-
-~/miniconda2/bin/conda create -n vaws_env python=2.7 
-source ~/miniconda2/bin/activate vaws_env
-conda install -c crankymax vaws
-
-#### Inputs required to run the vaws:
-These files are not in repo and you will need access to these files to be able to run the code.
-
-* Shapefiles: Hyeuk to describe.
-* glenda_reduced: Hyeuk to describe.
-* input: Hyeuk to describe.
-
-
-#### How to run the vaws code
-
-Running the vaws code is simple.
-    
-    source ~/miniconda2/bin/activate vaws_env
-    vaws
+5. Run the vaws code
+In the terminal client, enter the following to rund the code.
+```vaws```
 
 #### Run tests
 To run tests use either `nose` or `unittest`:
@@ -72,9 +49,6 @@ To run tests use either `nose` or `unittest`:
     python -m unittest discover transmission/tests/
     or
     nosetests
-
-#### Parallel vs Serial run
-A dedicated config file has not been implemented yet and the configuration is managed by the `TransmissionConfig` class inside the `config_class.py`. The value `self.parallel = 1` indicates that Monte Carlo simulations will be performed in parallel using all the (hyperthreaded) cores available on the computer. To change to serial computation, simply change to `self.parallel = 0` instead.
 
 #### Building the VAWS conda package
 
