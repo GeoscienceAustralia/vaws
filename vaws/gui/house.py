@@ -1,31 +1,30 @@
 from house_ui import Ui_Dialog
 import mixins 
-from model import scenario
 
 from PyQt4.QtCore import *
 from PyQt4.QtGui import *
 
 
 class HouseViewer(QDialog, Ui_Dialog, mixins.PersistSizePosMixin):
-    def __init__(self, house, parent=None):
+    def __init__(self, cfg, parent=None):
         super(HouseViewer, self).__init__(parent)
         mixins.PersistSizePosMixin.__init__(self, "HouseViewer")
         self.setAttribute(Qt.WA_DeleteOnClose)
         self.ui = Ui_Dialog()
         self.ui.setupUi(self)
-        self.setWindowTitle('House Viewer: ' + house.house_name)
+        self.setWindowTitle('House Viewer: {}'.format(cfg.house_name))
         self.ui.buttonBox.addButton(QDialogButtonBox.Ok)        
-        self.ui.replacementCost.setText('$ %.2f' % house.dic_house['replace_cost'])
-        self.ui.height.setText('%.3f' % house.dic_house['height'])
-        self.ui.cpeV.setText('%.3f' % house.dic_house['cpe_cov'])
-        self.ui.cpeK.setText('%.3f' % house.dic_house['cpe_k'])
-        self.ui.cpeStructV.setText('%.3f' % house.dic_house['cpe_str_cov'])
-        self.ui.width.setText('%.3f' % house.dic_house['width'])
-        self.ui.length.setText('%.3f' % house.dic_house['length'])
+        self.ui.replacementCost.setText('$ {:.3f}'.format(cfg.house['replace_cost']))
+        self.ui.height.setText('{:.3f}'.format(cfg.house['height']))
+        self.ui.cpeV.setText('{:.3f}'.format(cfg.house['cpe_cov']))
+        self.ui.cpeK.setText('{:.3f}'.format(cfg.house['cpe_k']))
+        self.ui.cpeStructV.setText('{:.3f}'.format(cfg.house['cpe_str_cov']))
+        self.ui.width.setText('{:.3f}'.format(cfg.house['width']))
+        self.ui.length.setText('{:.3f}'.format(cfg.house['length']))
 
         # fill in walls table
-        self.ui.tree.clear()
-        parentFromWalls = {}
+        # self.ui.tree.clear()
+        # parentFromWalls = {}
         # TODO when DEBRIS completed
         # for w in house.walls:
         #     # add wall if it's not already there
@@ -36,8 +35,8 @@ class HouseViewer(QDialog, Ui_Dialog, mixins.PersistSizePosMixin):
         #     # add children of wall
         #     for cov in w.coverages:
         #         item = QTreeWidgetItem(ancestor, ['', cov.description, '%.3f'%cov.area, cov.type.name])
-        self.ui.tree.resizeColumnToContents(0)
-        self.ui.tree.resizeColumnToContents(1)  
+        # self.ui.tree.resizeColumnToContents(0)
+        # self.ui.tree.resizeColumnToContents(1)
         
     def accept(self):
         QDialog.accept(self)
@@ -45,7 +44,8 @@ class HouseViewer(QDialog, Ui_Dialog, mixins.PersistSizePosMixin):
     def reject(self):
         QDialog.reject(self)
         
-        
+
+"""        
 if __name__ == '__main__':
     import sys
     from model import database
@@ -56,3 +56,4 @@ if __name__ == '__main__':
     my_app = HouseViewer(s.house)
     my_app.show()
     app.exec_()
+"""

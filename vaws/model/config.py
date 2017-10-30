@@ -908,4 +908,5 @@ class Config(object):
 
         with open(self.cfg_file, 'wb') as configfile:
             config.write(configfile)
+            print('{} is created'.format(self.cfg_file))
 

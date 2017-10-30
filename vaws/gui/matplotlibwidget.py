@@ -18,8 +18,8 @@ Copyright © 2005 Florent Rougon, 2006 Darren Dale
 
 __version__ = "1.0.0"
 
-from PyQt4.QtGui import QSizePolicy, QLabel, QLineEdit, QVBoxLayout, QWidget
-from PyQt4.QtCore import QSize, QString
+from PyQt4.QtGui import QSizePolicy, QVBoxLayout, QWidget
+from PyQt4.QtCore import QSize
 
 from matplotlib.backends.backend_qt4agg import FigureCanvasQTAgg as Canvas
 from matplotlib.backends.backend_qt4agg import NavigationToolbar2QT as NavigationToolbar
@@ -27,6 +27,7 @@ from matplotlib.figure import Figure
 
 from matplotlib import rcParams
 rcParams['font.size'] = 9
+
 
 class MatplotlibWidget2(Canvas):
     """

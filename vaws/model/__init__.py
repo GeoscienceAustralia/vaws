@@ -1,3 +1,3 @@
 #!/usr/bin/env python
-__author__ = 'Carl Sanderson, Hyeuk Ryu'
+__author__ = 'Carl Sanderson, Hyeuk Ryu, and Brett Walker'
 
