@@ -1,15 +1,13 @@
 import unittest
 import os
-import copy
 import numpy as np
 import matplotlib.pyplot as plt
-from descartes import PolygonPatch
-from shapely.geometry import Point, Polygon, LineString
-import logging
+from matplotlib.patches import Polygon as patches_Polygon
+from shapely.geometry import Point, Polygon
 
 from vaws.model.config import Config
 from vaws.model.debris import Debris, Coverage
-from vaws.model.curve import vulnerability_weibull, vulnerability_weibull_pdf
+from vaws.model.curve import vulnerability_weibull_pdf
 from vaws.model.main import set_logger
 
 '''
@@ -221,9 +219,12 @@ class MyTestCase(unittest.TestCase):
 
         fig = plt.figure(1)
         ax = fig.add_subplot(111)
-        p = PolygonPatch(_debris.footprint, fc='red', alpha=0.5)
-        ax.add_patch(p)
+
+        _array = np.array(_debris.footprint.exterior.xy).T
+
+        ax.add_patch(patches_Polygon(_array, alpha=0.3))
         x, y = self.ref_footprint[0].exterior.xy
+
         ax.plot(x, y, 'b-')
         ax.set_xlim([-40, 20])
         ax.set_ylim([-20, 20])
@@ -239,8 +240,11 @@ class MyTestCase(unittest.TestCase):
 
         fig = plt.figure(1)
         ax = fig.add_subplot(111)
-        p = PolygonPatch(_debris.footprint, fc='red', alpha=0.5)
-        ax.add_patch(p)
+
+        _array = np.array(_debris.footprint.exterior.xy).T
+
+        ax.add_patch(patches_Polygon(_array, alpha=0.3))
+
         x, y = self.ref_footprint[1].exterior.xy
         ax.plot(x, y, 'b-')
         ax.set_xlim([-40, 20])
@@ -257,8 +261,11 @@ class MyTestCase(unittest.TestCase):
 
         fig = plt.figure(1)
         ax = fig.add_subplot(111)
-        p = PolygonPatch(_debris.footprint, fc='red', alpha=0.5)
-        ax.add_patch(p)
+
+        _array = np.array(_debris.footprint.exterior.xy).T
+
+        ax.add_patch(patches_Polygon(_array, alpha=0.3))
+
         x, y = self.ref_footprint[2].exterior.xy
         ax.plot(x, y, 'b-')
         ax.set_xlim([-40, 20])
@@ -275,8 +282,11 @@ class MyTestCase(unittest.TestCase):
 
         fig = plt.figure(1)
         ax = fig.add_subplot(111)
-        p = PolygonPatch(_debris.footprint, fc='red', alpha=0.5)
-        ax.add_patch(p)
+
+        _array = np.array(_debris.footprint.exterior.xy).T
+
+        ax.add_patch(patches_Polygon(_array, alpha=0.3))
+
         x, y = self.ref_footprint[3].exterior.xy
         ax.plot(x, y, 'b-')
         ax.set_xlim([-40, 20])
@@ -298,8 +308,11 @@ class MyTestCase(unittest.TestCase):
 
         fig = plt.figure(1)
         ax = fig.add_subplot(111)
-        p = PolygonPatch(_debris.footprint, fc='red', alpha=0.5)
-        ax.add_patch(p)
+
+        _array = np.array(_debris.footprint.exterior.xy).T
+
+        ax.add_patch(patches_Polygon(_array, alpha=0.3))
+
         x, y = footprint_inst.exterior.xy
         ax.plot(x, y, 'b-')
         ax.set_xlim([-40, 20])
@@ -446,7 +459,7 @@ class MyTestCase(unittest.TestCase):
 
             damaged_area.append(breached_area)
 
-        print('{}'.format(damaged_area))
+        # print('{}'.format(damaged_area))
 
         plt.figure()
         plt.plot(wind_speeds, np.array(damaged_area) / _debris.area * 100.0, '-')
@@ -541,8 +554,8 @@ class MyTestCase(unittest.TestCase):
         for speed in self.cfg.speeds:
 
             incr_damage = vulnerability_weibull_pdf(x=speed,
-                                                alpha_=0.10304,
-                                                beta_=4.18252) * incr_speed
+                                                    alpha_=0.10304,
+                                                    beta_=4.18252) * incr_speed
 
             _debris.no_items_mean = incr_damage
 
@@ -562,8 +575,10 @@ class MyTestCase(unittest.TestCase):
             x, y = _target.xy
             ax.plot(x, y, linestyle='-', color='c', alpha=0.1)
 
-        p = PolygonPatch(_debris.footprint, fc='red')
-        ax.add_patch(p)
+        _array = np.array(_debris.footprint.exterior.xy).T
+
+        ax.add_patch(patches_Polygon(_array, alpha=0.3))
+
         x, y = _debris.footprint.exterior.xy
         ax.plot(x, y, 'k-')
 
@@ -581,5 +596,3 @@ class MyTestCase(unittest.TestCase):
 if __name__ == '__main__':
     unittest.main()
 
-# suite = unittest.TestLoader().loadTestsFromTestCase(MyTestCase)
-# unittest.TextTestRunner(verbosity=2).run(suite)
