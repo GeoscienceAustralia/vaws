@@ -4,11 +4,12 @@ import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib.patches import Polygon as patches_Polygon
 from shapely.geometry import Point, Polygon
+import logging
 
 from vaws.model.config import Config
 from vaws.model.debris import Debris, Coverage
 from vaws.model.curve import vulnerability_weibull_pdf
-from vaws.model.main import set_logger
+
 
 '''
     def run_alt(self, wind_speed):
@@ -114,6 +115,7 @@ def generate_debris_item_alt(debris, wind_speed, source, rnd_state):
                                              _coverage['area'])
 '''
 
+
 class MyTestCase(unittest.TestCase):
 
     @classmethod
@@ -122,7 +124,12 @@ class MyTestCase(unittest.TestCase):
 
         cls.path_scenario = os.path.join(path,
                                          './test_scenarios/test_roof_sheeting')
-        set_logger(cls.path_scenario, 'debug')
+        # set up logging
+        file_logger = os.path.join(cls.path_scenario, 'output', 'log.txt')
+        logging.basicConfig(filename=file_logger,
+                            filemode='w',
+                            level=logging.DEBUG,
+                            format='%(levelname)s %(message)s')
 
         cfg_file = os.path.join(cls.path_scenario, 'test_roof_sheeting.cfg')
         cls.cfg = Config(cfg_file=cfg_file)
