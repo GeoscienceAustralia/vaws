@@ -6,6 +6,7 @@ from matplotlib import cm, colors
 from matplotlib.collections import PatchCollection
 import matplotlib.pyplot as plt
 
+import logging
 import numpy as np
 
 from vaws.model import house
@@ -235,13 +236,17 @@ def plot_damage_show(fig, grouped, values_grid, xlim_max, ylim_max,
     height = 0.75
     axPlot = fig.figure.add_axes([left, bottom, width, height])
 
-    for irow, row in grouped.iterrows():
-        axPlot.annotate(irow, row['centroid'], color='w', weight='bold',
-                        fontsize=8, ha='center', va='center')
+    try:
+        p = PatchCollection(grouped['coords'].tolist(), cmap=cmap, norm=norm)
+    except AttributeError:
+        logging.warning('Heatmap can not be drawn due to missing coordinates')
+    else:
+        p.set_array(values_grid)
+        axPlot.add_collection(p)
 
-    p = PatchCollection(grouped['coords'].tolist(), cmap=cmap, norm=norm)
-    p.set_array(values_grid)
-    axPlot.add_collection(p)
+        for irow, row in grouped.iterrows():
+            axPlot.annotate(irow, row['centroid'], color='w', weight='bold',
+                            fontsize=8, ha='center', va='center')
 
     axPlot.set_xlim([0, xlim_max])
     axPlot.set_ylim([0, ylim_max])

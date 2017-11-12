@@ -48,7 +48,7 @@
          </size>
         </property>
         <property name="currentIndex">
-         <number>3</number>
+         <number>0</number>
         </property>
         <widget class="QWidget" name="scenario_tab">
          <attribute name="title">
@@ -87,15 +87,12 @@
           <item row="2" column="0">
            <widget class="QLabel" name="label_16">
             <property name="text">
-             <string>Terrain Category:</string>
+             <string>Wind Profiles</string>
             </property>
             <property name="alignment">
              <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
             </property>
            </widget>
-          </item>
-          <item row="2" column="1">
-           <widget class="QComboBox" name="terrainCategory"/>
           </item>
           <item row="3" column="0">
            <widget class="QLabel" name="label_17">
@@ -247,6 +244,16 @@
           <item row="1" column="1">
            <widget class="QLineEdit" name="houseName"/>
           </item>
+          <item row="2" column="1">
+           <widget class="QLineEdit" name="terrainCategory">
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
+            </property>
+           </widget>
+          </item>
          </layout>
         </widget>
         <widget class="QWidget" name="debris_tab">
@@ -269,9 +276,6 @@
              <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
             </property>
            </widget>
-          </item>
-          <item row="0" column="1">
-           <widget class="QComboBox" name="debrisRegion"/>
           </item>
           <item row="1" column="0">
            <widget class="QLabel" name="label_19">
@@ -491,6 +495,9 @@
           </item>
           <item row="8" column="1">
            <widget class="QLineEdit" name="debrisExtension"/>
+          </item>
+          <item row="0" column="1">
+           <widget class="QLineEdit" name="debrisRegion"/>
           </item>
          </layout>
         </widget>
@@ -918,7 +925,7 @@
          <enum>QTabWidget::North</enum>
         </property>
         <property name="currentIndex">
-         <number>0</number>
+         <number>1</number>
         </property>
         <widget class="QWidget" name="tab_15">
          <attribute name="title">
@@ -1314,7 +1321,7 @@
              <enum>QTabWidget::South</enum>
             </property>
             <property name="currentIndex">
-             <number>0</number>
+             <number>1</number>
             </property>
             <widget class="QWidget" name="tab_14">
              <attribute name="title">
@@ -1384,7 +1391,7 @@
             </widget>
             <widget class="QWidget" name="tab_17">
              <attribute name="title">
-              <string>Debris Regions</string>
+              <string>Debris</string>
              </attribute>
              <layout class="QHBoxLayout" name="horizontalLayout_17">
               <item>
@@ -1396,108 +1403,7 @@
                 </column>
                 <column>
                  <property name="text">
-                  <string>vuln_alpha</string>
-                 </property>
-                </column>
-                <column>
-                 <property name="text">
-                  <string>vuln_beta</string>
-                 </property>
-                </column>
-                <column>
-                 <property name="text">
-                  <string>cr</string>
-                 </property>
-                </column>
-                <column>
-                 <property name="text">
-                  <string>cmm</string>
-                 </property>
-                </column>
-                <column>
-                 <property name="text">
-                  <string>cmc</string>
-                 </property>
-                </column>
-                <column>
-                 <property name="text">
-                  <string>cfm</string>
-                 </property>
-                </column>
-                <column>
-                 <property name="text">
-                  <string>cfc</string>
-                 </property>
-                </column>
-                <column>
-                 <property name="text">
-                  <string>rr</string>
-                 </property>
-                </column>
-                <column>
-                 <property name="text">
-                  <string>rmm</string>
-                 </property>
-                </column>
-                <column>
-                 <property name="text">
-                  <string>rmc</string>
-                 </property>
-                </column>
-                <column>
-                 <property name="text">
-                  <string>rfm</string>
-                 </property>
-                </column>
-                <column>
-                 <property name="text">
-                  <string>rfc</string>
-                 </property>
-                </column>
-                <column>
-                 <property name="text">
-                  <string>pr</string>
-                 </property>
-                </column>
-                <column>
-                 <property name="text">
-                  <string>pmm</string>
-                 </property>
-                </column>
-                <column>
-                 <property name="text">
-                  <string>pmc</string>
-                 </property>
-                </column>
-                <column>
-                 <property name="text">
-                  <string>pfm</string>
-                 </property>
-                </column>
-                <column>
-                 <property name="text">
-                  <string>pfc</string>
-                 </property>
-                </column>
-               </widget>
-              </item>
-             </layout>
-            </widget>
-            <widget class="QWidget" name="tab_18">
-             <attribute name="title">
-              <string>Debris Types</string>
-             </attribute>
-             <layout class="QHBoxLayout" name="horizontalLayout_20">
-              <item>
-               <widget class="QTableWidget" name="debrisTypes">
-                <column>
-                 <property name="text">
-                  <string>New Column</string>
-                 </property>
-                </column>
-                <column>
-                 <property name="text">
-                  <string>CDAv</string>
+                  <string>Value</string>
                  </property>
                 </column>
                </widget>
@@ -1842,13 +1748,35 @@
     </item>
    </layout>
   </widget>
+  <widget class="QStatusBar" name="statusbar"/>
+  <widget class="QToolBar" name="toolBar">
+   <property name="windowTitle">
+    <string>toolBar</string>
+   </property>
+   <attribute name="toolBarArea">
+    <enum>TopToolBarArea</enum>
+   </attribute>
+   <attribute name="toolBarBreak">
+    <bool>false</bool>
+   </attribute>
+   <addaction name="actionNew_Scenario"/>
+   <addaction name="actionOpen_Scenario"/>
+   <addaction name="actionSave_Scenario"/>
+   <addaction name="actionSave_Scenario_As"/>
+   <addaction name="separator"/>
+   <addaction name="actionRun"/>
+   <addaction name="actionStop"/>
+   <addaction name="separator"/>
+   <addaction name="actionHouse_Info"/>
+   <addaction name="actionInfo"/>
+  </widget>
   <widget class="QMenuBar" name="menubar">
    <property name="geometry">
     <rect>
      <x>0</x>
      <y>0</y>
      <width>1005</width>
-     <height>15</height>
+     <height>22</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFile">
@@ -1876,28 +1804,6 @@
    <addaction name="menuFile"/>
    <addaction name="menuSimulator"/>
    <addaction name="menuModel"/>
-  </widget>
-  <widget class="QStatusBar" name="statusbar"/>
-  <widget class="QToolBar" name="toolBar">
-   <property name="windowTitle">
-    <string>toolBar</string>
-   </property>
-   <attribute name="toolBarArea">
-    <enum>TopToolBarArea</enum>
-   </attribute>
-   <attribute name="toolBarBreak">
-    <bool>false</bool>
-   </attribute>
-   <addaction name="actionOpen_Scenario"/>
-   <addaction name="actionNew_Scenario"/>
-   <addaction name="actionSave_Scenario"/>
-   <addaction name="actionSave_Scenario_As"/>
-   <addaction name="separator"/>
-   <addaction name="actionRun"/>
-   <addaction name="actionStop"/>
-   <addaction name="separator"/>
-   <addaction name="actionHouse_Info"/>
-   <addaction name="actionInfo"/>
   </widget>
   <action name="actionOpen_Scenario">
    <property name="icon">

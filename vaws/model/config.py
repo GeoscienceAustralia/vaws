@@ -51,8 +51,7 @@ FILE_FOOTPRINT = 'footprint.csv'
 FILE_FRONT_FACING_WALLS = 'front_facing_walls.csv'
 
 # debris data
-FILE_DEBRIS_TYPES = 'debris_types.csv'
-FILE_DEBRIS_REGIONS = 'debris_regions.csv'
+FILE_DEBRIS = 'debris.csv'
 
 # results
 FILE_RESULTS = 'results.h5'
@@ -63,9 +62,8 @@ class Config(object):
 
     # lookup table mapping (0-7) to wind direction (8: random)
     wind_dir = ['S', 'SW', 'W', 'NW', 'N', 'NE', 'E', 'SE', 'RANDOM']
-    terrain_categories = ['2', '2.5', '3', 'non_cyclonic']
-    profile_heights = [3.0, 5.0, 7.0, 10.0, 12.0, 15.0, 17.0, 20.0, 25.0, 30.0]
-    region_names = ['Capital_city', 'Tropical_town']
+    debris_types_keys = ['Rod', 'Compact', 'Sheet']
+    debris_types_atts = ['mass', 'frontal_area', 'cdav', 'ratio']
     dominant_opening_ratio_thresholds = [0.5, 1.5, 2.5, 6.0]
     cpi_table_for_dominant_opening = \
         {0: {'windward': -0.3, 'leeward': -0.3, 'side1': -0.3, 'side2': -0.3},
@@ -119,7 +117,9 @@ class Config(object):
         self.speeds = None
         self.terrain_category = None
         self.regional_shielding_factor = 1.0
-        self.wind_profile = None
+        self.file_wind_profiles = None
+        self.wind_profiles = None
+        self.profile_heights = None
         self.wind_dir_index = None
 
         self.construction_levels = OrderedDict()
@@ -137,8 +137,8 @@ class Config(object):
         self.flight_time_log_mu = None
         self.flight_time_log_std = None
         self.debris_sources = None
-        self.debris_types = None
-        self.debris_types_keys = None
+        self.debris_regions = None
+        self.debris_types = {}
         self.footprint = None
 
         # house data
@@ -156,10 +156,6 @@ class Config(object):
         self.damage_grid_by_sub_group = None
         self.influences = None
         self.influence_patches = None
-
-        # debris related
-        self.debris_regions = None
-        self.debris_types = None
 
         self.list_groups = None
         self.list_connections = None
@@ -261,7 +257,7 @@ class Config(object):
         self.set_wind_dir_index(conf.get(key, 'wind_direction'))
         self.regional_shielding_factor = conf.getfloat(
             key, 'regional_shielding_factor')
-        self.set_wind_profile(conf.get(key, 'terrain_category'))
+        self.set_wind_profiles(conf.get(key, 'wind_profiles'))
 
     def read_water_ingress(self, conf, key):
         if conf.has_section(key):
@@ -331,15 +327,9 @@ class Config(object):
     def read_debris(self, conf, key):
 
         # global data
-        _file = os.path.join(self.path_debris, FILE_DEBRIS_REGIONS)
+        _file = os.path.join(self.path_debris, FILE_DEBRIS)
         try:
-            self.debris_regions = pd.read_csv(_file, index_col=0).to_dict('index')
-        except IOError as msg:
-            logging.warning('{}'.format(msg))
-
-        _file = os.path.join(self.path_debris, FILE_DEBRIS_TYPES)
-        try:
-            self.debris_types = pd.read_csv(_file, index_col=0).to_dict('index')
+            self.debris_regions = pd.read_csv(_file, index_col=0).to_dict()
         except IOError as msg:
             logging.warning('{}'.format(msg))
 
@@ -781,49 +771,40 @@ class Config(object):
 
     def set_region_name(self, value):
         try:
-            assert value in self.__class__.region_names
+            assert value in self.debris_regions
         except AssertionError:
-            self.region_name = 'Capital_city'
-            logging.info('Capital_city is set for region_name')
+            logging.error('region_name {} is not defined'.format(value))
         else:
             self.region_name = value
 
-    def set_wind_profile(self, value):
+    def set_wind_profiles(self, value):
+        _file = os.path.join(self.path_wind_profiles, value)
         try:
-            assert value in self.__class__.terrain_categories
-        except AssertionError:
-            logging.warning('Invalid terrain category: {}'.format(value))
+            _df = pd.read_csv(_file, skiprows=1, header=None, index_col=0)
+        except IOError:
+            logging.error('invalid wind_profiles file: {}'.format(_file))
         else:
-            try:
-                float(value)
-            except ValueError:
-                _file = 'non_cyclonic.csv'
-            else:
-                _file = 'cyclonic_terrain_cat{}.csv'.format(value)
-
-            self.terrain_category = value
-            self.wind_profile = pd.read_csv(os.path.join(
-                self.path_wind_profiles, _file), skiprows=1, header=None,
-                index_col=0).to_dict('list')
+            self.file_wind_profiles = value
+            self.profile_heights = _df.index.tolist()
+            self.wind_profiles = _df.to_dict('list')
 
     def set_debris_types(self):
 
-        self.debris_types = copy.deepcopy(self.debris_types)
         _debris_region = self.debris_regions[self.region_name]
 
-        for key in self.debris_types:
+        for key in self.__class__.debris_types_keys:
 
-            self.debris_types.setdefault(key, {})['ratio'] = \
-                _debris_region['{}_ratio'.format(key)]
+            self.debris_types[key] = {}
+            for item in self.__class__.debris_types_atts:
 
-            for item in ['frontalarea', 'mass']:
-                _mean = _debris_region['{0}_{1}_mean'.format(key, item)]
-                _std = _debris_region['{0}_{1}_stddev'.format(key, item)]
-                mu_lnx, std_lnx = compute_logarithmic_mean_stddev(_mean, _std)
-                self.debris_types.setdefault(key, {})['{}_mu'.format(item)] = mu_lnx
-                self.debris_types.setdefault(key, {})['{}_std'.format(item)] = std_lnx
-
-        self.debris_types_keys = self.debris_types.keys()
+                if item in ['frontal_area', 'mass']:
+                    _mean = _debris_region['{0}_{1}_mean'.format(key, item)]
+                    _std = _debris_region['{0}_{1}_stddev'.format(key, item)]
+                    mu_lnx, std_lnx = compute_logarithmic_mean_stddev(_mean, _std)
+                    self.debris_types[key]['{}_mu'.format(item)] = mu_lnx
+                    self.debris_types[key]['{}_std'.format(item)] = std_lnx
+                else:
+                    self.debris_types[key][item] = _debris_region['{}_{}'.format(key, item)]
 
     def set_wind_dir_index(self, wind_dir_str):
         try:

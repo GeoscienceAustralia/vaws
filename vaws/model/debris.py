@@ -220,8 +220,8 @@ class Debris(object):
         mass = self.rnd_state.lognormal(debris['mass_mu'],
                                         debris['mass_std'])
 
-        frontal_area = self.rnd_state.lognormal(debris['frontalarea_mu'],
-                                                debris['frontalarea_std'])
+        frontal_area = self.rnd_state.lognormal(debris['frontal_area_mu'],
+                                                debris['frontal_area_std'])
 
         flight_time = self.rnd_state.lognormal(self.cfg.flight_time_log_mu,
                                                self.cfg.flight_time_log_std)

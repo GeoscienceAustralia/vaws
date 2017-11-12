@@ -6,6 +6,8 @@ import matplotlib.pyplot as plt
 from matplotlib import cm, colorbar, colors, ticker
 from matplotlib.collections import PatchCollection
 
+import logging
+
 
 def plot_heatmap(grouped, values, vmin, vmax, vstep, xlim_max, ylim_max,
                  file_name=None):
@@ -69,39 +71,44 @@ def plot_heatmap(grouped, values, vmin, vmax, vstep, xlim_max, ylim_max,
     cb.set_label('Wind speed (m/s)', size=10)
     cb.ax.tick_params(labelsize=8)
 
-    p = PatchCollection(grouped['coords'].tolist(), cmap=cmap, norm=norm)
-    p.set_array(values)
-    ax1.add_collection(p)
+    try:
+        p = PatchCollection(grouped['coords'].tolist(), cmap=cmap, norm=norm)
+    except AttributeError:
+        logging.warning('coords are not provided in the connections.csv')
 
-    for irow, row in grouped.iterrows():
+    else:
+        p.set_array(values)
+        ax1.add_collection(p)
 
-        # patches = [row['coords']]
-        # p = PatchCollection(patches, label=row['zone_loc'])
-        #p.set_array(values)
-        # ax1.add_collection(p)
-        ax1.annotate(irow, row['centroid'], color='w', weight='bold',
-                     fontsize=8, ha='center', va='center')
+        for irow, row in grouped.iterrows():
 
-    ax1.set_title('Heatmap of damage capacity for {}'.format(group_key))
+            # patches = [row['coords']]
+            # p = PatchCollection(patches, label=row['zone_loc'])
+            #p.set_array(values)
+            # ax1.add_collection(p)
+            ax1.annotate(irow, row['centroid'], color='w', weight='bold',
+                         fontsize=8, ha='center', va='center')
 
-    ax1.set_xlim([0, xlim_max])
-    ax1.set_ylim([0, ylim_max])
-    ax1.set_xbound(lower=0.0, upper=xlim_max)
-    ax1.set_ybound(lower=0.0, upper=ylim_max)
+        ax1.set_title('Heatmap of damage capacity for {}'.format(group_key))
 
-    # Hide major tick labels
-    ax1.xaxis.set_major_formatter(ticker.NullFormatter())
-    ax1.yaxis.set_major_formatter(ticker.NullFormatter())
-    ax1.tick_params(axis=u'both', which=u'both', length=0)
+        ax1.set_xlim([0, xlim_max])
+        ax1.set_ylim([0, ylim_max])
+        ax1.set_xbound(lower=0.0, upper=xlim_max)
+        ax1.set_ybound(lower=0.0, upper=ylim_max)
 
-    # Customize minor tick labels
-    # ax1.xaxis.set_minor_locator(ticker.FixedLocator(xticks))
-    # _list = [num2str(i) for i in range(1, len(xticks) + 1)]
-    # ax1.xaxis.set_minor_formatter(ticker.FixedFormatter(_list))
-    #
-    # ax1.yaxis.set_minor_locator(ticker.FixedLocator(yticks))
-    # _list = [i for i in range(1, len(yticks) + 1)]
-    # ax1.yaxis.set_minor_formatter(ticker.FixedFormatter(_list))
+        # Hide major tick labels
+        ax1.xaxis.set_major_formatter(ticker.NullFormatter())
+        ax1.yaxis.set_major_formatter(ticker.NullFormatter())
+        ax1.tick_params(axis=u'both', which=u'both', length=0)
+
+        # Customize minor tick labels
+        # ax1.xaxis.set_minor_locator(ticker.FixedLocator(xticks))
+        # _list = [num2str(i) for i in range(1, len(xticks) + 1)]
+        # ax1.xaxis.set_minor_formatter(ticker.FixedFormatter(_list))
+        #
+        # ax1.yaxis.set_minor_locator(ticker.FixedLocator(yticks))
+        # _list = [i for i in range(1, len(yticks) + 1)]
+        # ax1.yaxis.set_minor_formatter(ticker.FixedFormatter(_list))
 
     if file_name:
         fig.savefig('{}.png'.format(file_name), dpi=150)

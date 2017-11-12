@@ -83,23 +83,25 @@ class WaterIngressTestCase(unittest.TestCase):
     def test_compute_water_ingress_given_damage(self):
 
         di_array = [0, 0.15, 0.3, 0.7]
-        speed_array = np.arange(20, 100, 1.0)
+        dic_thresholds = {0: (0, 0.1), 0.15: (0.1, 0.2), 0.3: (0.2, 0.5), 0.7: (0.5, 2.0)}
+        speed_array = np.arange(0, 100, 1.0)
         a = np.zeros((len(di_array), len(speed_array)))
 
         for i, di in enumerate(di_array):
             for j, speed in enumerate(speed_array):
-                a[i, j] = compute_water_ingress_given_damage(
+                a[i, j] = 100.0 * compute_water_ingress_given_damage(
                     di, speed, self.cfg.water_ingress_given_di)
 
         plt.figure()
         for j in range(a.shape[0]):
             plt.plot(speed_array, a[j, :],
-                     label='DI={:.1f}'.format(di_array[j]))
+                     label='{:.1f} <= DI < {:.1f}'.format(*dic_thresholds[di_array[j]]))
 
         plt.legend()
-        plt.xlabel('wind speed')
-        plt.ylabel('Water ingress')
+        plt.xlabel('Wind speed (m/s)')
+        plt.ylabel('Water ingress (%)')
         plt.grid(1)
+        plt.savefig('./water_ingress.png', dpi=300)
         plt.pause(1.0)
         plt.close()
 

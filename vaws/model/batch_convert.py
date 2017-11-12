@@ -40,7 +40,7 @@ def change_header_by_dir(path_):
         change_header(path_, old_file, dic_string[old_file], new_file)
 
 
-path_ = '/Users/hyeuk/Projects/windtunnel/data/houses/test_scenario3'
+path_ = '/Users/hyeuk/Projects/vaws/data/houses/test_scenario3'
 
 num_list = range(4, 15)
 num_list.pop(2)
@@ -94,11 +94,11 @@ def create_dir(_path):
 
 def new_dir_structure(scen_name):
 
-    org_debris = '/Users/hyeuk/Projects/windtunnel/data/debris/'
-    org_gust = '/Users/hyeuk/Projects/windtunnel/data/gust_envelope_profiles/'
-    new_path = '/Users/hyeuk/Projects/windtunnel/scenarios/'
+    org_debris = '/Users/hyeuk/Projects/vaws/data/debris/'
+    org_gust = '/Users/hyeuk/Projects/vaws/data/gust_envelope_profiles/'
+    new_path = '/Users/hyeuk/Projects/vaws/scenarios/'
 
-    org_path = os.path.join('/Users/hyeuk/Projects/windtunnel/data/houses/',
+    org_path = os.path.join('/Users/hyeuk/Projects/vaws/data/houses/',
                                 scen_name)
 
     # make new directory

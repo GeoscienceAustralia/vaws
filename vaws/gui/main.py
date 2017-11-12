@@ -70,13 +70,11 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
         # scenario section
         self.ui.numHouses.setValidator(QIntValidator(1, 10000, self.ui.numHouses))
         self.ui.houseName.setText(self.cfg.house['name'])
-        self.ui.terrainCategory.addItems(self.cfg.terrain_categories)
-        self.ui.terrainCategory.setCurrentIndex(-1)
+        self.ui.terrainCategory.setText(self.cfg.file_wind_profiles)
         self.ui.windDirection.addItems(self.cfg.wind_dir)
 
         # debris
-        self.ui.debrisRegion.addItems(self.cfg.region_names)
-        self.ui.debrisRegion.setCurrentIndex(-1)
+        self.ui.debrisRegion.setText(self.cfg.region_name)
         self.ui.buildingSpacing.addItems(('20.0', '40.0'))
         self.ui.flighttimeMean.setValidator(
             QDoubleValidator(0.0, 100.0, 3, self.ui.flighttimeMean))
@@ -100,25 +98,31 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
         self.initSizePosFromSettings()
 
         # top panel
-        self.connect(self.ui.actionOpen_Scenario, SIGNAL("triggered()"), self.open_scenario)
-        self.connect(self.ui.actionRun, SIGNAL("triggered()"), self.runScenario)
-        self.connect(self.ui.actionStop, SIGNAL("triggered()"), self.stopScenario)
-        self.connect(self.ui.actionSave_Scenario, SIGNAL("triggered()"), self.save_scenario)
-        self.connect(self.ui.actionSave_Scenario_As, SIGNAL("triggered()"), self.save_as_scenario)
-        self.connect(self.ui.actionHouse_Info, SIGNAL("triggered()"), self.showHouseInfoDlg)
+        self.connect(self.ui.actionOpen_Scenario, SIGNAL("triggered()"),
+                     self.open_scenario)
+        self.connect(self.ui.actionRun, SIGNAL("triggered()"),
+                     self.runScenario)
+        self.connect(self.ui.actionStop, SIGNAL("triggered()"),
+                     self.stopScenario)
+        self.connect(self.ui.actionSave_Scenario, SIGNAL("triggered()"),
+                     self.save_scenario)
+        self.connect(self.ui.actionSave_Scenario_As, SIGNAL("triggered()"),
+                     self.save_as_scenario)
+        self.connect(self.ui.actionHouse_Info, SIGNAL("triggered()"),
+                     self.showHouseInfoDlg)
 
         # test panel
         self.connect(self.ui.testDebrisButton, SIGNAL("clicked()"), self.testDebrisSettings)
         self.connect(self.ui.testConstructionButton, SIGNAL("clicked()"), self.testConstructionLevels)
 
         # Scenario panel
-        self.connect(self.ui.terrainCategory, SIGNAL("currentIndexChanged(QString)"), self.updateTerrainCategoryTable)
+        self.connect(self.ui.terrainCategory, SIGNAL("returnPressed()"), self.updateTerrainCategoryTable)
         self.connect(self.ui.windMin, SIGNAL("valueChanged(int)"), lambda x: self.onSliderChanged(self.ui.windMinLabel, x))
         self.connect(self.ui.windMax, SIGNAL("valueChanged(int)"), lambda x: self.onSliderChanged(self.ui.windMaxLabel, x))
         self.connect(self.ui.windSteps, SIGNAL("valueChanged(int)"), lambda x: self.onSliderChanged(self.ui.windStepsLabel, x))
 
         # debris panel
-        self.connect(self.ui.debrisRegion, SIGNAL("currentIndexChanged(QString)"), self.updateDebrisRegionsTable)
+        self.connect(self.ui.debrisRegion, SIGNAL("returnPressed ()"), self.updateDebrisRegionsTable)
         self.connect(self.ui.debrisRadius, SIGNAL("valueChanged(int)"), lambda x: self.onSliderChanged(self.ui.debrisRadiusLabel, x))
         self.connect(self.ui.debrisAngle, SIGNAL("valueChanged(int)"), lambda x: self.onSliderChanged(self.ui.debrisAngleLabel, x))
         self.connect(self.ui.sourceItems, SIGNAL("valueChanged(int)"), lambda x: self.onSliderChanged(self.ui.sourceItemsLabel, x))
@@ -137,8 +141,7 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
         self.selected_conn = None
         self.selected_plotKey = None
 
-        if self.cfg.flags['debris']:
-            self.updateGlobalData()
+        self.updateGlobalData()
         self.ui.sourceItems.setValue(-1)
 
         QTimer.singleShot(0, self.set_scenario)
@@ -256,42 +259,43 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
             self.heatmap_house_change()
             
     def updateGlobalData(self):
-        # load up debris types
-        setupTable(self.ui.debrisTypes, self.cfg.debris_types)
-        for i, (key, value) in enumerate(self.cfg.debris_types.iteritems()):
-            self.ui.debrisTypes.setItem(i, 0, QTableWidgetItem(key))
-            self.ui.debrisTypes.setItem(i, 1, QTableWidgetItem(
-                '{:.2f}'.format(value['cdav'])))
-        finiTable(self.ui.debrisTypes)
+        # # load up debris types
+        # setupTable(self.ui.debrisTypes, self.cfg.debris_types)
+        # for i, (key, value) in enumerate(self.cfg.debris_types.iteritems()):
+        #     self.ui.debrisTypes.setItem(i, 0, QTableWidgetItem(key))
+        #     self.ui.debrisTypes.setItem(i, 1, QTableWidgetItem(
+        #         '{:.2f}'.format(value['cdav'])))
+        # finiTable(self.ui.debrisTypes)
 
         # load up debris regions
         _debris_region = self.cfg.debris_regions[self.cfg.region_name]
         setupTable(self.ui.debrisRegions, _debris_region)
 
-        for i, key1 in enumerate(self.cfg.debris_types):
+        for i, key1 in enumerate(self.cfg.debris_types_keys):
 
-            _str = '{}_ratio'.format(key1)
-            _value = _debris_region[_str]
-            self.ui.debrisRegions.setItem(5 * i, 0, QTableWidgetItem(_str))
-            self.ui.debrisRegions.setItem(5 * i, 1,
-                                          QTableWidgetItem(
-                                              '{:.3f}'.format(_value)))
+            for j, key2 in enumerate(['ratio', 'cdav']):
+                _str = '{}_{}'.format(key1, key2)
+                _value = _debris_region[_str]
+                self.ui.debrisRegions.setItem(6 * i + j, 0,
+                                              QTableWidgetItem(_str))
+                self.ui.debrisRegions.setItem(6 * i + j, 1,
+                                              QTableWidgetItem('{:.3f}'.format(_value)))
 
-            for j, key2 in enumerate(['frontalarea', 'mass'], 1):
+            for j, key2 in enumerate(['frontal_area', 'mass'], 1):
                 _mean_str = '{}_{}_mean'.format(key1, key2)
                 _std_str = '{}_{}_stddev'.format(key1, key2)
                 _mean = _debris_region[_mean_str]
                 _std = _debris_region[_std_str]
 
-                self.ui.debrisRegions.setItem(5 * i + 2 * j - 1, 0,
+                self.ui.debrisRegions.setItem(6 * i + 2 * j, 0,
                                               QTableWidgetItem(_mean_str))
-                self.ui.debrisRegions.setItem(5 * i + 2 * j - 1, 1,
+                self.ui.debrisRegions.setItem(6 * i + 2 * j, 1,
                                               QTableWidgetItem(
                                                   '{:.3f}'.format(_mean)))
 
-                self.ui.debrisRegions.setItem(5 * i + 2 * j, 0,
+                self.ui.debrisRegions.setItem(6 * i + 2 * j + 1, 0,
                                               QTableWidgetItem(_std_str))
-                self.ui.debrisRegions.setItem(5 * i + 2 * j, 1,
+                self.ui.debrisRegions.setItem(6 * i + 2 * j + 1, 1,
                                               QTableWidgetItem(
                                                   '{:.3f}'.format(_std)))
 
@@ -304,13 +308,13 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
 
     def updateDebrisRegionsTable(self):
 
-        self.cfg.region_name = unicode(self.ui.debrisRegion.currentText())
+        self.cfg.region_name = unicode(self.ui.debrisRegion.text())
         self.cfg.set_debris_types()
         self.updateGlobalData()
 
     def updateTerrainCategoryTable(self):
 
-        self.cfg.set_wind_profile(unicode(self.ui.terrainCategory.currentText()))
+        self.cfg.set_wind_profiles(unicode(self.ui.terrainCategory.text()))
 
         self.ui.boundaryProfile.setEditTriggers(QTableWidget.NoEditTriggers)
         self.ui.boundaryProfile.setRowCount(len(self.cfg.profile_heights))
@@ -320,7 +324,7 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
         for irow, head_col in enumerate(self.cfg.profile_heights):
             self.ui.boundaryProfile.setItem(irow, 0, QTableWidgetItem('{:.3f}'.format(head_col)))
 
-        for key, _list in self.cfg.wind_profile.iteritems():
+        for key, _list in self.cfg.wind_profiles.iteritems():
             for irow, value in enumerate(_list):
                 self.ui.boundaryProfile.setItem(irow, key, QTableWidgetItem('{:.3f}'.format(value)))
 
@@ -906,8 +910,7 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
             # Scenario
             self.ui.numHouses.setText('{:d}'.format(self.cfg.no_models))
             self.ui.houseName.setText(self.cfg.house_name)
-            self.ui.terrainCategory.setCurrentIndex(
-                    self.ui.terrainCategory.findText(self.cfg.terrain_category))
+            self.ui.terrainCategory.setText(self.cfg.file_wind_profiles)
             self.ui.regionalShielding.setText('{:.1f}'.format(
                 self.cfg.regional_shielding_factor))
             self.ui.windMin.setValue(self.cfg.wind_speed_min)
@@ -918,8 +921,7 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
             # Debris
             self.ui.debris.setChecked(self.cfg.flags.get('debris'))
             if self.cfg.region_name:
-                self.ui.debrisRegion.setCurrentIndex(
-                    self.ui.debrisRegion.findText(self.cfg.region_name))
+                self.ui.debrisRegion.setText(self.cfg.region_name)
             if self.cfg.building_spacing:
                 self.ui.buildingSpacing.setCurrentIndex(
                     self.ui.buildingSpacing.findText(
@@ -981,8 +983,8 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
 
         # Scenario section
         new_cfg.no_models = int(self.ui.numHouses.text())
-        new_cfg.house_name = (unicode(self.ui.houseName.text()))
-        new_cfg.terrain_category = unicode(self.ui.terrainCategory.currentText())
+        new_cfg.house_name = unicode(self.ui.houseName.text())
+        new_cfg.file_wind_profiles = unicode(self.ui.terrainCategory.text())
         new_cfg.regional_shielding_factor = float(unicode(self.ui.regionalShielding.text()))
         new_cfg.wind_speed_min = self.ui.windMin.value()
         new_cfg.wind_speed_max = self.ui.windMax.value()
@@ -990,7 +992,7 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
         new_cfg.wind_dir_index = self.ui.windDirection.currentIndex()
 
         # Debris section
-        new_cfg.set_region_name(unicode(self.ui.debrisRegion.currentText()))
+        new_cfg.set_region_name(unicode(self.ui.debrisRegion.text()))
         new_cfg.building_spacing = float(unicode(self.ui.buildingSpacing.currentText()))
         new_cfg.debris_radius = self.ui.debrisRadius.value()
         new_cfg.debris_angle = self.ui.debrisAngle.value()
@@ -1083,7 +1085,7 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
                                   self.cfg.getOpt_DebrisStaggeredSources(),
                                   self.cfg.debris_radius,
                                   self.cfg.debris_angle, 
-                                  self.cfg.debris_extension,
+                                  # self.cfg.debris_extension,
                                   self.cfg.building_spacing,
                                   self.cfg.source_items,
                                   self.cfg.flighttime_mean,
@@ -1125,16 +1127,16 @@ def run_gui():
 
     (options, args) = parser.parse_args()
 
-    file_prompt = False
+    # file_prompt = False
 
     if not options.config_file:
-        settings = QSettings()
-        if settings.contains("LastFile"):
-            initial_scenario = unicode(settings.value("LastFile").toString())
-        else:
-            initial_scenario = DEFAULT_SCENARIO
+        # settings = QSettings()
+        # if settings.contains("LastFile"):
+        #     initial_scenario = unicode(settings.value("LastFile").toString())
+        # else:
+        initial_scenario = DEFAULT_SCENARIO
 
-        file_prompt = True
+        # file_prompt = True
     else:
         initial_scenario = options.config_file
 
@@ -1169,8 +1171,8 @@ def run_gui():
     time.sleep(5)
     splash.finish(my_app)
 
-    if file_prompt:
-        my_app.open_scenario(initial_scenario)
+    # if file_prompt:
+    #     my_app.open_scenario(initial_scenario)
 
     sys.exit(app.exec_())
 

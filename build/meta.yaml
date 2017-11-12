@@ -10,6 +10,7 @@ build:
   number: 0
   entry_points:
     - vaws = vaws.gui.main:run_gui
+    - vaws_cmd = vaws.model.main:main
 
 requirements:
   build:

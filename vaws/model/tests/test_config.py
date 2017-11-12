@@ -65,16 +65,15 @@ class TestConfig(unittest.TestCase):
 
         self.assertEquals(self.cfg.regional_shielding_factor, 1.0)
 
-        self.assertEquals(self.cfg.terrain_category, '2')
+        self.assertEquals(self.cfg.file_wind_profiles,
+                          'cyclonic_terrain_cat2.csv')
 
     def test_set_wind_profile(self):
-        self.cfg.set_wind_profile('non_cyclonic')
-        self.assertEquals(self.cfg.terrain_category, 'non_cyclonic')
+        self.cfg.set_wind_profiles('non_cyclonic.csv')
+        self.assertEquals(self.cfg.file_wind_profiles, 'non_cyclonic.csv')
 
-        self.cfg.set_wind_profile('2.5')
-        self.assertEquals(self.cfg.terrain_category, '2.5')
-
-        self.assertRaises(AssertionError, self.cfg.set_wind_profile('dummy'))
+        self.assertRaises(IOError,
+                          self.cfg.set_wind_profiles('dummy'))
 
     def test_read_fragility_thresholds(self):
         ref = pd.DataFrame([[0.02, 'b'],
@@ -92,8 +91,8 @@ class TestConfig(unittest.TestCase):
         self.cfg.set_region_name('Tropical_town')
         self.assertEquals(self.cfg.region_name, 'Tropical_town')
 
-        self.assertRaises(AssertionError, self.cfg.set_region_name('dummy'))
-        self.assertEquals(self.cfg.region_name, 'Capital_city')
+        self.assertRaises(IOError,
+                          self.cfg.set_region_name('dummy'))
 
     def test_return_norm_cdf(self):
         row = {'upper': 75.0, 'lower': 50.0}
@@ -307,7 +306,7 @@ rafter,3,col,Loss of roof structure,0,1,0,3
             self.assertEqual(value['cdav'], self.cfg.debris_types[key]['cdav'])
             self.assertEqual(value['ratio'], _dic['{}_ratio'.format(key)])
 
-            for item in ['frontalarea', 'mass']:
+            for item in ['frontal_area', 'mass']:
                 _mean = _dic['{}_{}_mean'.format(key, item)]
                 _sd = _dic['{}_{}_stddev'.format(key, item)]
 

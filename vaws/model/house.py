@@ -340,10 +340,10 @@ class House(object):
 
         """
 
-        self.profile = self.rnd_state.random_integers(1, 10)
+        self.profile = self.rnd_state.random_integers(1, len(self.cfg.wind_profiles))
 
         self.mzcat = interp(self.height, self.cfg.profile_heights,
-                               self.cfg.wind_profile[self.profile])
+                            self.cfg.wind_profiles[self.profile])
 
     def set_construction_level(self):
         """

@@ -58,9 +58,9 @@ class MyTestCase(unittest.TestCase):
 
     def test_set_wind_profile(self):
         self.assertAlmostEqual(self.house.height, 4.5, places=1)
-        self.assertEquals(self.house.cfg.terrain_category, '2')
+        # self.assertEquals(self.house.cfg.wind_profiles, 'cyclonic_terrain_cat2.csv')
 
-        # copied from mzcat_terrain_2.csv
+        # copied from cyclonic_terrain_cat2.csv
         data = np.array([[3, 0.908, 0.896, 0.894, 0.933, 0.884, 0.903, 0.886, 0.902, 0.859, 0.927],
         [5, 0.995, 0.980, 0.946, 0.986, 0.962, 1.010, 0.978, 0.970, 0.945, 0.990],
         [7, 0.994, 1.031, 1.010, 0.986, 0.982, 0.987, 0.959, 0.984, 0.967, 0.998],

@@ -55,8 +55,8 @@ def generate_debris_item_alt(debris, wind_speed, source, rnd_state):
 
         mass = rnd_state.lognormal(debris['mass_mu'], debris['mass_std'])
 
-        frontal_area = rnd_state.lognormal(debris['frontalarea_mu'],
-                                                debris['frontalarea_std'])
+        frontal_area = rnd_state.lognormal(debris['frontal_area_mu'],
+                                                debris['frontal_area_std'])
 
         flight_time = rnd_state.lognormal(self.cfg.flight_time_log_mu,
                                                self.cfg.flight_time_log_std)
@@ -198,10 +198,15 @@ class MyTestCase(unittest.TestCase):
         self.assertEquals(len(sources1), 13)
 
         plt.figure()
+        source_x, source_y = [], []
         for source in sources1:
-            plt.scatter(source.x, source.y)
-        # plt.show()
+            source_x.append(source.x)
+            source_y.append(source.y)
+        plt.scatter(source_x, source_y, label='source', color='b')
+        plt.scatter(0, 0, label='target', color='r')
+        plt.legend(loc=2, scatterpoints=1)
         plt.pause(1.0)
+        # plt.savefig('./source.png', dpi=300)
         plt.close()
 
         # staggered source
@@ -213,10 +218,15 @@ class MyTestCase(unittest.TestCase):
         self.assertEquals(len(sources2), 15)
 
         plt.figure()
+        source_x, source_y = [], []
         for source in sources2:
-            plt.scatter(source.x, source.y)
-        # plt.show()
+            source_x.append(source.x)
+            source_y.append(source.y)
+        plt.scatter(source_x, source_y, label='source', color='b')
+        plt.scatter(0, 0, label='target', color='r')
+        plt.legend(loc=2, scatterpoints=1)
         plt.pause(1.0)
+        # plt.savefig('./source_staggered.png', dpi=300)
         plt.close()
 
     def test_footprint04(self):
@@ -347,7 +357,7 @@ class MyTestCase(unittest.TestCase):
 
         for _str, _value in self.cfg.debris_types.iteritems():
 
-            frontal_area = np.exp(_value['frontalarea_mu'])
+            frontal_area = np.exp(_value['frontal_area_mu'])
             mass = np.exp(_value['mass_mu'])
 
             momentum[_str] = np.zeros_like(wind_speeds)
@@ -384,7 +394,7 @@ class MyTestCase(unittest.TestCase):
 
         for _str, _value in self.cfg.debris_types.iteritems():
 
-            frontal_area = np.exp(_value['frontalarea_mu'])
+            frontal_area = np.exp(_value['frontal_area_mu'])
             mass = np.exp(_value['mass_mu'])
 
             flight_distance[_str] = np.zeros_like(wind_speeds)
