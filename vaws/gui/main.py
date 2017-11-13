@@ -267,6 +267,19 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
         #         '{:.2f}'.format(value['cdav'])))
         # finiTable(self.ui.debrisTypes)
 
+        self.updateTerrainCategoryTable()
+        self.updateDebrisRegionsTable()
+
+    def showHouseInfoDlg(self):
+        from vaws.gui import house as gui_house
+        dlg = gui_house.HouseViewer(self.cfg)
+        dlg.exec_()
+
+    def updateDebrisRegionsTable(self):
+
+        self.cfg.region_name = unicode(self.ui.debrisRegion.text())
+        self.cfg.set_debris_types()
+
         # load up debris regions
         _debris_region = self.cfg.debris_regions[self.cfg.region_name]
         setupTable(self.ui.debrisRegions, _debris_region)
@@ -298,19 +311,7 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
                 self.ui.debrisRegions.setItem(6 * i + 2 * j + 1, 1,
                                               QTableWidgetItem(
                                                   '{:.3f}'.format(_std)))
-
         finiTable(self.ui.debrisRegions)
-
-    def showHouseInfoDlg(self):
-        from vaws.gui import house as gui_house
-        dlg = gui_house.HouseViewer(self.cfg)
-        dlg.exec_()
-
-    def updateDebrisRegionsTable(self):
-
-        self.cfg.region_name = unicode(self.ui.debrisRegion.text())
-        self.cfg.set_debris_types()
-        self.updateGlobalData()
 
     def updateTerrainCategoryTable(self):
 
