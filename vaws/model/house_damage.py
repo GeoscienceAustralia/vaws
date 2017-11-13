@@ -269,9 +269,14 @@ class HouseDamage(object):
         # determine damage scenario
         damage_name = 'WI only'  # default
         for _name in self.cfg.damage_order_by_water_ingress:
-            if prop_area_by_scenario[_name]:
-                damage_name = _name
-                break
+            try:
+                prop_area_by_scenario[_name]
+            except KeyError:
+                logging.warning('{} is not defined in the costing'.format(_name))
+            else:
+                if prop_area_by_scenario[_name]:
+                    damage_name = _name
+                    break
 
         # finding index close to water ingress threshold
         _df = self.cfg.water_ingress_costings[damage_name]

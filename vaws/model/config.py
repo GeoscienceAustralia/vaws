@@ -510,20 +510,12 @@ class Config(object):
         except IOError as msg:
             logging.error('{}'.format(msg))
 
-    def set_costings(self, groups):
+    def set_costings(self, df_groups):
 
         # costing
         _file = os.path.join(self.path_house_data, FILE_DAMAGE_COSTING_DATA)
         self.costings, self.damage_order_by_water_ingress = \
             self.read_damage_costing_data(_file)
-
-        self.costing_to_group = defaultdict(list)
-        for key, value in groups['damage_scenario'].to_dict().iteritems():
-            if value:
-                self.costing_to_group[value].append(key)
-
-        if self.coverages is not None:
-            self.costing_to_group['Wall debris damage'] = ['debris']
 
         _file = os.path.join(self.path_house_data, FILE_DAMAGE_FACTORINGS)
         try:
@@ -534,6 +526,24 @@ class Config(object):
         _file = os.path.join(self.path_house_data,
                              FILE_WATER_INGRESS_COSTING_DATA)
         self.water_ingress_costings = self.read_water_ingress_costing_data(_file)
+
+        self.costing_to_group = defaultdict(list)
+        for key, value in df_groups['damage_scenario'].to_dict().iteritems():
+            if value:
+                self.costing_to_group[value].append(key)
+
+        if self.coverages is not None:
+            self.costing_to_group['Wall debris damage'] = ['debris']
+
+        # tidy up
+        for key in self.costings.keys():
+            if key not in self.costing_to_group:
+                del self.costings[key]
+                self.damage_order_by_water_ingress.remove(key)
+
+        for key in self.water_ingress_costings.keys():
+            if (key != 'WI only') and (key not in self.costing_to_group):
+                del self.water_ingress_costings[key]
 
     def set_zones(self):
 
@@ -619,6 +629,16 @@ class Config(object):
 
     @staticmethod
     def read_damage_costing_data(filename):
+        """
+
+        Args:
+            filename:
+
+        Returns:
+
+        Note: damage costing data may contain
+
+        """
         costing = {}
         damage_order_by_water_ingress = []
 
