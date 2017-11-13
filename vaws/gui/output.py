@@ -255,19 +255,18 @@ def plot_damage_show(fig, grouped, values_grid, xlim_max, ylim_max,
     axPlot.xaxis.set_major_formatter(mpl.ticker.NullFormatter())
     axPlot.yaxis.set_major_formatter(mpl.ticker.NullFormatter())
     axPlot.tick_params(axis=u'both', which=u'both', length=0)
+    # axPlot.get_xaxis().set_minor_locator(mpl.ticker.AutoMinorLocator())
+    # axPlot.get_yaxis().set_minor_locator(mpl.ticker.AutoMinorLocator())
+
 
     group_key = grouped['group_name'].unique()[0]
     if house_number == 0:
-        axPlot.set_title('Heatmap of damage capacity for {}'.format(group_key))
+        axPlot.set_title('Heatmap of failure wind speed for {}'.format(group_key))
     else:
-        axPlot.set_title('Heatmap of damage capacity of '
-                         'house {} for {}'.format(house_number,group_key))
+        axPlot.set_title('Heatmap of failure wind speed for {} of model {} '.format(group_key,
+                                                                                    house_number))
     axPlot.format_coord = format_coord
 
-    # fig.canvas.mpl_connect('motion_notify_event',
-    #                        PlotFlyoverCallback(axPlot, v_damaged_at, mplDict['statusbar'], numCols, numRows))
-    # fig.canvas.mpl_connect('button_press_event',
-    #                        PlotClickCallback(fig, axPlot, plotKey, mplDict['owner'], mplDict['house']))
     fig.canvas.draw()
 
 def plot_wind_event_damage(mp_widget, v, di):

@@ -130,6 +130,7 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
         # options
         self.connect(self.ui.redV, SIGNAL("valueChanged(int)"), lambda x: self.onSliderChanged(self.ui.redVLabel, x))
         self.connect(self.ui.blueV, SIGNAL("valueChanged(int)"), lambda x: self.onSliderChanged(self.ui.blueVLabel, x))
+        self.connect(self.ui.vStep, SIGNAL("valueChanged(int)"), lambda x: self.onSliderChanged(self.ui.vStepLabel, x))
         self.connect(self.ui.applyDisplayChangesButton, SIGNAL("clicked()"), self.updateDisplaySettings)
 
         self.ui.heatmap_house.valueChanged.connect(self.heatmap_house_change)
@@ -510,6 +511,7 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
     def updateHeatmap(self, bucket, house_number=0):
         red_v = self.ui.redV.value()
         blue_v = self.ui.blueV.value()
+        vstep = self.ui.vStep.value()
         self.ui.damages_tab.setUpdatesEnabled(False)
 
         group_widget = {'sheeting': [self.ui.mplsheeting, self.ui.tab_19, 0, "Batten"],
@@ -553,8 +555,7 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
                              mean_connection_capacity,
                              self.cfg.house['length'],
                              self.cfg.house['width'],
-                             red_v, blue_v,
-                             self.cfg.heatmap_vstep,
+                             red_v, blue_v, vstep,
                              house_number)
 
         wall_major_rows = 2
@@ -941,6 +942,7 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
             # options
             self.ui.redV.setValue(self.cfg.heatmap_vmin)
             self.ui.blueV.setValue(self.cfg.heatmap_vmax)
+            self.ui.vStep.setValue(self.cfg.heatmap_vstep)
             self.ui.seedRandom.setText(str(self.cfg.random_seed))
 
             self.ui.diffShielding.setChecked(self.cfg.flags.get('diff_shielding'))
@@ -1020,6 +1022,7 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
         new_cfg.random_seed = int(unicode(self.ui.seedRandom.text()))
         new_cfg.heatmap_vmin = float(unicode(self.ui.redV.value()))
         new_cfg.heatmap_vmax = float(unicode(self.ui.blueV.value()))
+        new_cfg.heatmap_vstep = float(unicode(self.ui.vStep.value()))
 
         # construction section
         new_cfg.flags['construction_levels'] = self.ui.constructionEnabled.isChecked()
