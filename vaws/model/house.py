@@ -323,15 +323,18 @@ class House(object):
             profile, mzcat
 
         """
+        self.set_wind_orientation()
+
+        self.set_construction_level()
+
+        self.set_wind_profile()
+
+    def set_wind_orientation(self):
         # set wind_orientation
         if self.cfg.wind_dir_index == 8:
             self.wind_orientation = self.rnd_state.random_integers(0, 7)
         else:
             self.wind_orientation = self.cfg.wind_dir_index
-
-        self.set_construction_level()
-
-        self.set_wind_profile()
 
     def set_wind_profile(self):
         """

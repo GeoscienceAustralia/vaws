@@ -16,8 +16,11 @@ from numpy import ones, where, float32, mean, nanmean, empty, array, \
     count_nonzero, nan, append, ones_like, nan_to_num, newaxis, zeros
 
 import pandas as pd
+from vaws.model.house import House
+from vaws.model.curve import vulnerability_lognorm, vulnerability_weibull, \
+    vulnerability_weibull_pdf
 
-from vaws.model.curve import vulnerability_lognorm, vulnerability_weibull
+from numpy.random import RandomState
 
 from vaws.gui.main_ui import Ui_main
 from vaws.model.main import process_commandline, set_logger, \
@@ -28,8 +31,6 @@ from vaws.model.stats import compute_logarithmic_mean_stddev
 from vaws.gui.output import plot_wind_event_damage, plot_wind_event_mean, \
                         plot_wind_event_show, plot_fitted_curve, \
                         plot_fragility_show, plot_damage_show, plot_wall_damage_show
-
-import vaws.model.debris as debris
 
 from mixins import PersistSizePosMixin, setupTable, finiTable
 
@@ -119,7 +120,7 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
         self.connect(self.ui.terrainCategory, SIGNAL("returnPressed()"), self.updateTerrainCategoryTable)
         self.connect(self.ui.windMin, SIGNAL("valueChanged(int)"), lambda x: self.onSliderChanged(self.ui.windMinLabel, x))
         self.connect(self.ui.windMax, SIGNAL("valueChanged(int)"), lambda x: self.onSliderChanged(self.ui.windMaxLabel, x))
-        self.connect(self.ui.windSteps, SIGNAL("valueChanged(int)"), lambda x: self.onSliderChanged(self.ui.windStepsLabel, x))
+        # self.connect(self.ui.windIncrement, SIGNAL("valueChanged(float)"), lambda x: self.onSliderChanged(self.ui.windStepsLabel, x))
 
         # debris panel
         self.connect(self.ui.debrisRegion, SIGNAL("returnPressed ()"), self.updateDebrisRegionsTable)
@@ -917,7 +918,7 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
                 self.cfg.regional_shielding_factor))
             self.ui.windMin.setValue(self.cfg.wind_speed_min)
             self.ui.windMax.setValue(self.cfg.wind_speed_max)
-            self.ui.windSteps.setValue(self.cfg.wind_speed_steps)
+            self.ui.windIncrement.setText('{:.3f}'.format(self.cfg.wind_speed_increment))
             self.ui.windDirection.setCurrentIndex(self.cfg.wind_dir_index)
 
             # Debris
@@ -987,15 +988,17 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
         # Scenario section
         new_cfg.no_models = int(self.ui.numHouses.text())
         new_cfg.house_name = unicode(self.ui.houseName.text())
-        new_cfg.file_wind_profiles = unicode(self.ui.terrainCategory.text())
+        new_cfg.set_wind_profiles(unicode(self.ui.terrainCategory.text()))
         new_cfg.regional_shielding_factor = float(unicode(self.ui.regionalShielding.text()))
         new_cfg.wind_speed_min = self.ui.windMin.value()
         new_cfg.wind_speed_max = self.ui.windMax.value()
-        new_cfg.wind_speed_steps = self.ui.windSteps.value()
+        new_cfg.wind_speed_increment = float(self.ui.windIncrement.text())
+        new_cfg.set_wind_speeds()
         new_cfg.wind_dir_index = self.ui.windDirection.currentIndex()
 
         # Debris section
         new_cfg.set_region_name(unicode(self.ui.debrisRegion.text()))
+        new_cfg.set_debris_types()
         new_cfg.building_spacing = float(unicode(self.ui.buildingSpacing.currentText()))
         new_cfg.debris_radius = self.ui.debrisRadius.value()
         new_cfg.debris_angle = self.ui.debrisAngle.value()
@@ -1005,6 +1008,7 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
             new_cfg.flight_time_mean = float(unicode(self.ui.flighttimeMean.text()))
         if self.ui.flighttimeStddev.text():
             new_cfg.flight_time_stddev = float(unicode(self.ui.flighttimeStddev.text()))
+        new_cfg.set_flight_time_log()
         new_cfg.staggered_sources = self.ui.staggeredDebrisSources.isChecked()
 
         new_cfg.flags['plot_fragility'] = True
@@ -1013,10 +1017,6 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
         # new_cfg.flags['dmg_distribute', self.ui.distribution.isChecked())
         new_cfg.flags['diff_shielding'] = self.ui.diffShielding.isChecked()
         new_cfg.flags['debris'] = self.ui.debris.isChecked()
-
-        new_cfg.flight_time_log_mu, new_cfg.flight_time_log_std = \
-            compute_logarithmic_mean_stddev(new_cfg.flight_time_mean,
-                                            new_cfg.flight_time_stddev)
 
         # option section
         new_cfg.random_seed = int(unicode(self.ui.seedRandom.text()))
@@ -1083,24 +1083,25 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
     
     def testDebrisSettings(self):
         self.update_config_from_ui()
-        mgr = debris.DebrisManager(self.cfg.house,
-                                  self.cfg.region,
-                                  self.cfg.wind_speed_min, self.cfg.wind_speed_max, self.cfg.wind_speed_steps,
-                                  self.cfg.getOpt_DebrisStaggeredSources(),
-                                  self.cfg.debris_radius,
-                                  self.cfg.debris_angle, 
-                                  # self.cfg.debris_extension,
-                                  self.cfg.building_spacing,
-                                  self.cfg.source_items,
-                                  self.cfg.flighttime_mean,
-                                  self.cfg.flighttime_stddev)
-        
-        v, ok = QInputDialog.getInteger(self, "Debris Test", "Wind Speed (m/s):", 50, 10, 200)
+
+        house = House(self.cfg, rnd_state=RandomState(self.cfg.random_seed))
+
+        wind_speed, ok = QInputDialog.getInteger(
+            self, "Debris Test", "Wind speed (m/s):", 50, 10, 200)
+
         if ok:
-            mgr.set_wind_direction_index(self.cfg.getWindDirIndex())
-            mgr.run(v, True)
-            mgr.render(v)
-    
+
+            incr_speed = self.cfg.speeds[1] - self.cfg.speeds[0]
+
+            damage_incr = vulnerability_weibull_pdf(x=wind_speed,
+                                                    alpha_=0.10304,
+                                                    beta_=4.18252) * incr_speed
+            house.debris.no_items_mean = damage_incr
+
+            house.debris.run(wind_speed)
+
+
+
     def testConstructionLevels(self):
         self.update_config_from_ui()
         items = []

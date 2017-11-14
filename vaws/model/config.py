@@ -112,14 +112,14 @@ class Config(object):
         self.random_seed = 0
         self.wind_speed_min = 0.0
         self.wind_speed_max = 0.0
-        # self.wind_speed_increment = 0.0
-        self.wind_speed_steps = None
-        self.speeds = None
-        self.terrain_category = None
+        self.wind_speed_increment = 0.0
+        self.wind_speed_steps = None  # set_wind_speeds
+        self.speeds = None  # set_wind_speeds
+        # self.terrain_category = None
         self.regional_shielding_factor = 1.0
         self.file_wind_profiles = None
-        self.wind_profiles = None
-        self.profile_heights = None
+        self.wind_profiles = None  # set_wind_profiles
+        self.profile_heights = None  # set_wind_profiles
         self.wind_dir_index = None
 
         self.construction_levels = OrderedDict()
@@ -250,14 +250,21 @@ class Config(object):
             self.random_seed = 0
         self.wind_speed_min = conf.getfloat(key, 'wind_speed_min')
         self.wind_speed_max = conf.getfloat(key, 'wind_speed_max')
-        self.wind_speed_steps = conf.getint(key, 'wind_speed_steps')
-        self.speeds = linspace(start=self.wind_speed_min,
-                               stop=self.wind_speed_max,
-                               num=self.wind_speed_steps)
+        self.wind_speed_increment = conf.getfloat(key, 'wind_speed_increment')
+        self.set_wind_speeds()
         self.set_wind_dir_index(conf.get(key, 'wind_direction'))
         self.regional_shielding_factor = conf.getfloat(
             key, 'regional_shielding_factor')
         self.set_wind_profiles(conf.get(key, 'wind_profiles'))
+
+    def set_wind_speeds(self):
+        self.wind_speed_steps = int(
+            (self.wind_speed_max - self.wind_speed_min) /
+            self.wind_speed_increment) + 1
+        self.speeds = linspace(start=self.wind_speed_min,
+                               stop=self.wind_speed_max,
+                               num=self.wind_speed_steps,
+                               endpoint=True)
 
     def read_water_ingress(self, conf, key):
         if conf.has_section(key):
@@ -339,9 +346,7 @@ class Config(object):
                      'flight_time_mean', 'flight_time_stddev']:
             setattr(self, item, conf.getfloat(key, item))
 
-        self.flight_time_log_mu, self.flight_time_log_std = \
-            compute_logarithmic_mean_stddev(self.flight_time_mean,
-                                            self.flight_time_stddev)
+        self.set_flight_time_log()
         self.set_region_name(conf.get(key, 'region_name'))
 
         _file = os.path.join(self.path_house_data, FILE_FOOTPRINT)
@@ -361,6 +366,11 @@ class Config(object):
                 self.staggered_sources)
 
             self.set_debris_types()
+
+    def set_flight_time_log(self):
+        self.flight_time_log_mu, self.flight_time_log_std = \
+            compute_logarithmic_mean_stddev(self.flight_time_mean,
+                                            self.flight_time_stddev)
 
     def read_fragility_thresholds(self, conf, key):
         if conf.has_section(key):
@@ -848,8 +858,8 @@ class Config(object):
         config.set(key, 'wind_direction', self.__class__.wind_dir[self.wind_dir_index])
         config.set(key, 'wind_speed_min', self.wind_speed_min)
         config.set(key, 'wind_speed_max', self.wind_speed_max)
-        config.set(key, 'wind_speed_steps', self.wind_speed_steps)
-        config.set(key, 'terrain_category', self.terrain_category)
+        config.set(key, 'wind_speed_increment', self.wind_speed_increment)
+        config.set(key, 'wind_profiles', self.file_wind_profiles)
         config.set(key, 'regional_shielding_factor', self.regional_shielding_factor)
 
         key = 'options'
