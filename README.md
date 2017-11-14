@@ -58,3 +58,26 @@ To run tests use `unittest`:
     cd vaws
     python -m unittest discover model/tests/
 
+
+## Building the VAWS conda package
+
+Prerequisites:
+
+    conda
+    conda-build
+    anaconda-client
+
+Build the package
+
+    cd <vaws dir>/build
+    ~/miniconda2/bin/conda-build .
+
+Upload to conda-forge
+
+    anaconda login
+    anaconda upload /home/ubuntu/miniconda2/conda-bld/linux-64/vaws-2.0-py27<package details>
+
+Windows upload to conda
+
+    \dev\Miniconda2\Scripts\anaconda -s anaconda.org login
+    \dev\Miniconda2\Scripts\anaconda upload --force c:\dev\Miniconda2\conda-bld\win-64\vaws-2.0-py27<package details>
