@@ -41,7 +41,7 @@ VAWS_DIR = os.sep.join(SOURCE_DIR.split(os.sep)[:-2])
 SCENARIOS_DIR = os.sep.join(SOURCE_DIR.split(os.sep)[:-1])
 SCENARIOS_DIR = os.path.join(SCENARIOS_DIR, 'scenarios')
 CONFIG_TEMPL = "Scenarios (*.cfg)"
-DEFAULT_SCENARIO = os.path.join(SCENARIOS_DIR, 'default/default.cfg')
+DEFAULT_SCENARIO = os.path.join(SCENARIOS_DIR, 'default', 'default.cfg')
 
 
 def progress_callback(percent_done):
@@ -255,6 +255,8 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
                                     fancybox=True,
                                     shadow=True,
                                     fontsize='small')
+
+        self.ui.mplfrag.axes.figure.canvas.draw()
 
     def updateDisplaySettings(self):
         if self.has_run:
@@ -1132,16 +1134,8 @@ def run_gui():
 
     (options, args) = parser.parse_args()
 
-    # file_prompt = False
-
     if not options.config_file:
-        # settings = QSettings()
-        # if settings.contains("LastFile"):
-        #     initial_scenario = unicode(settings.value("LastFile").toString())
-        # else:
         initial_scenario = DEFAULT_SCENARIO
-
-        # file_prompt = True
     else:
         initial_scenario = options.config_file
 
@@ -1175,9 +1169,6 @@ def run_gui():
 
     time.sleep(5)
     splash.finish(my_app)
-
-    # if file_prompt:
-    #     my_app.open_scenario(initial_scenario)
 
     sys.exit(app.exec_())
 
