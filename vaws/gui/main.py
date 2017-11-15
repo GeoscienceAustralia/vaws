@@ -41,7 +41,7 @@ VAWS_DIR = os.sep.join(SOURCE_DIR.split(os.sep)[:-2])
 SCENARIOS_DIR = os.sep.join(SOURCE_DIR.split(os.sep)[:-1])
 SCENARIOS_DIR = os.path.join(SCENARIOS_DIR, 'scenarios')
 CONFIG_TEMPL = "Scenarios (*.cfg)"
-DEFAULT_SCENARIO = os.path.join(SCENARIOS_DIR, 'default/default.cfg')
+DEFAULT_SCENARIO = os.path.join(SCENARIOS_DIR, 'default', 'default.cfg')
 
 
 def progress_callback(percent_done):
