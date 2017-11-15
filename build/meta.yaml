@@ -1,13 +1,13 @@
 
 package:
   name: "vaws"
-  version: "2.0"
+  version: "2.0.0"
 
 source:
   path: ../
 
 build:
-  number: 0
+  number: 1
   entry_points:
     - vaws = vaws.gui.main:run_gui
     - vaws_cmd = vaws.model.main:main
