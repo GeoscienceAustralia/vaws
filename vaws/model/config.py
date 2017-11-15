@@ -449,12 +449,22 @@ class Config(object):
         # house data
         _file = os.path.join(self.path_house_data, FILE_HOUSE_DATA)
         try:
-            self.house = pd.read_csv(_file).to_dict('records')[0]
+            tmp = pd.read_csv(_file, index_col=0, header=None).to_dict()[1]
         except IOError as msg:
             logging.error('{}'.format(msg))
         else:
+            self.house = {}
+            for k, v in tmp.iteritems():
+                try:
+                    self.house[k] = float(v)
+                except ValueError:
+                    self.house[k] = v
+
             self.house['big_a'], self.house['big_b'] = \
                 calc_big_a_b_values(shape_k=self.house['cpe_k'])
+
+            self.house['big_a_str'], self.house['big_b_str'] = \
+                calc_big_a_b_values(shape_k=self.house['cpe_str_k'])
 
     def set_groups(self):
         _file = os.path.join(self.path_house_data, FILE_CONN_GROUPS)

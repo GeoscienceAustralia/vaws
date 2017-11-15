@@ -34,9 +34,12 @@ class MyTestCase(unittest.TestCase):
         self.zone.sample_cpe(wind_dir_index=3,
                              cpe_cov=0.12,
                              cpe_k=0.1,
-                             cpe_str_cov=0.07,
                              big_a=0.486,
                              big_b=1.145,
+                             cpe_str_cov=0.07,
+                             cpe_str_k=0.1,
+                             big_a_str=0.486,
+                             big_b_str=1.145,
                              rnd_state=self.rnd_state)
 
         self.assertAlmostEqual(self.zone.cpe, -0.1084, places=4)

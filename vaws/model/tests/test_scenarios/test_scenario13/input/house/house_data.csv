@@ -1,2 +1,11 @@
-name,replace_cost,height,cpe_cov,cpe_k,cpe_str_cov,length,width,roof_cols,roof_rows
-Test1,3357.6,4.814,0.0,0.1,0.0,4.0,4.5,10,1
+name,Test1
+replace_cost,3357.6
+height,4.814
+cpe_cov,0.0
+cpe_k,0.1
+cpe_str_cov,0.0
+length,4.0
+width,4.5
+roof_cols,10
+roof_rows,1
+cpe_str_k,0.1

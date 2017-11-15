@@ -123,3 +123,13 @@ def new_dir_structure(scen_name):
     copy_file(os.path.join(new_path, '{}.cfg'.format(scen_name)),
               os.path.join(new_path_scen, '{}.cfg'.format(scen_name)))
 
+
+# transpose csv
+for root, dirs, files in os.walk(".", topdown=False):
+    for name in dirs:
+        if 'house' in name:
+            filename = os.path.join(root, name, 'house_data.csv')
+            if os.path.exists(filename):
+                a = pd.read_csv(filename)
+                a['cpe_str_k'] = a['cpe_k']
+                a.transpose().to_csv(filename, header=None)

@@ -1,2 +1,11 @@
-name,replace_cost,height,cpe_cov,cpe_k,cpe_str_cov,length,width,roof_cols,roof_rows
-Group 4 House,20654,4.814,0.0,0.1,0.0,5.4,7.2,14,15
+name,Group 4 House
+replace_cost,20654
+height,4.814
+cpe_cov,0.0
+cpe_k,0.1
+cpe_str_cov,0.0
+length,5.4
+width,7.2
+roof_cols,14
+roof_rows,15
+cpe_str_k,0.1

@@ -54,8 +54,8 @@ class Zone(object):
         self.cpe_eave = None
         self.pressure = None
 
-    def sample_cpe(self, wind_dir_index, cpe_cov, cpe_k,
-                   cpe_str_cov, big_a, big_b, rnd_state):
+    def sample_cpe(self, wind_dir_index, cpe_cov, cpe_k, big_a, big_b,
+                   cpe_str_cov, cpe_str_k, big_a_str, big_b_str, rnd_state):
 
         """
         Sample external Zone Pressures for sheeting, structure and eaves Cpe,
@@ -66,9 +66,12 @@ class Zone(object):
             wind_dir_index: 0 to 7
             cpe_cov: cov of dist. of CPE for sheeting and batten
             cpe_k: shape parameter of dist. of CPE
-            cpe_str_cov: cov. of dist of CPE for rafter
             big_a:
             big_b:
+            cpe_str_cov: cov. of dist of CPE for rafter
+            cpe_str_k
+            big_a_str:
+            big_b_str:
             rnd_state: default None
 
         Returns: cpe, cpe_str, cpe_eave
@@ -79,10 +82,10 @@ class Zone(object):
                               cpe_cov, big_a, big_b, cpe_k, rnd_state)
 
         self.cpe_str = sample_gev(self.cpe_str_mean[wind_dir_index],
-                                  cpe_str_cov, big_a, big_b, cpe_k, rnd_state)
+                                  cpe_str_cov, big_a_str, big_b_str, cpe_k, rnd_state)
 
         self.cpe_eave = sample_gev(self.cpe_eave_mean[wind_dir_index],
-                                   cpe_str_cov, big_a, big_b, cpe_k, rnd_state)
+                                   cpe_str_cov, big_a_str, big_b_str, cpe_str_k, rnd_state)
 
     def calc_zone_pressure(self, wind_dir_index, cpi, qz, ms, building_spacing,
                            flag_diff_shielding=False):

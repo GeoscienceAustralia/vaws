@@ -7,7 +7,8 @@ from shapely.geometry import Point, Polygon
 import logging
 
 from vaws.model.config import Config
-from vaws.model.debris import Debris, Coverage
+from vaws.model.debris import Debris
+from vaws.model.coverage import Coverage
 from vaws.model.curve import vulnerability_weibull_pdf
 
 

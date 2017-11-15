@@ -14,7 +14,8 @@ from collections import OrderedDict
 from vaws.model.connection import ConnectionTypeGroup
 from vaws.model.zone import Zone
 from vaws.model.config import Config
-from vaws.model.debris import Debris, Coverage
+from vaws.model.debris import Debris
+from vaws.model.coverage import Coverage
 
 
 class House(object):
@@ -90,9 +91,12 @@ class House(object):
                 wind_dir_index=self.wind_orientation,
                 cpe_cov=self.cpe_cov,
                 cpe_k=self.cpe_k,
-                cpe_str_cov=self.cpe_str_cov,
                 big_a=self.big_a,
                 big_b=self.big_b,
+                cpe_str_cov=self.cpe_str_cov,
+                cpe_str_k=self.cpe_str_k,
+                big_a_str=self.big_a,
+                big_b_str=self.big_b,
                 rnd_state=self.rnd_state)
 
             self.zones[_name] = _zone
@@ -221,9 +225,12 @@ class House(object):
                     wind_dir_index=self.wind_orientation,
                     cpe_cov=self.cpe_cov,
                     cpe_k=self.cpe_k,
-                    cpe_str_cov=self.cpe_str_cov,
                     big_a=self.big_a,
                     big_b=self.big_b,
+                    cpe_str_cov=self.cpe_str_cov,
+                    cpe_str_k=self.cpe_str_k,
+                    big_a_str=self.big_a_str,
+                    big_b_str=self.big_b_str,
                     rnd_state=self.rnd_state)
 
                 _coverage.sample_strength(rnd_state=self.rnd_state)
