@@ -589,7 +589,7 @@ class MyTestCase(unittest.TestCase):
         ax.set_ylim([-100, 100])
         plt.title('Wind direction: 0')
 
-        for _target in _debris.debris_items:
+        for _, _target in _debris.debris_items:
             x, y = _target.xy
             ax.plot(x, y, linestyle='-', color='c', alpha=0.1)
 

@@ -244,7 +244,7 @@ class Debris(object):
         pt_debris = Point(x + source.x - flight_distance, y + source.y)
         line_debris = LineString([source, pt_debris])
 
-        self.debris_items.append(line_debris)
+        self.debris_items.append((debris_type_str, line_debris))
 
         if line_debris.intersects(self.footprint):
 

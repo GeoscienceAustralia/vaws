@@ -6,6 +6,11 @@ import time
 import os.path
 import logging
 
+import matplotlib.pyplot as plt
+from matplotlib.patches import Polygon as patches_Polygon
+
+from collections import OrderedDict
+
 from mpl_toolkits.axes_grid.parasite_axes import SubplotHost
 
 from PyQt4.QtCore import SIGNAL, QTimer, Qt, QSettings, QVariant, QString, QFile
@@ -1086,6 +1091,11 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
     def testDebrisSettings(self):
         self.update_config_from_ui()
 
+        vul_dic = {'Capital_city': (0.1585, 3.8909),
+                   'Tropical_town': (0.10304, 4.18252)}
+
+        shape_type = {'Compact': 'c', 'Sheet': 'g', 'Rod': 'r'}
+
         house = House(self.cfg, rnd_state=RandomState(self.cfg.random_seed))
 
         wind_speed, ok = QInputDialog.getInteger(
@@ -1095,14 +1105,50 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
 
             incr_speed = self.cfg.speeds[1] - self.cfg.speeds[0]
 
-            damage_incr = vulnerability_weibull_pdf(x=wind_speed,
-                                                    alpha_=0.10304,
-                                                    beta_=4.18252) * incr_speed
+            damage_incr = vulnerability_weibull_pdf(
+                x=wind_speed,
+                alpha_=vul_dic[self.cfg.region_name][0],
+                beta_=vul_dic[self.cfg.region_name][1]) * incr_speed
+
             house.debris.no_items_mean = damage_incr
 
             house.debris.run(wind_speed)
 
+            fig = plt.figure()
+            ax = fig.add_subplot(111)
 
+            source_x, source_y = [], []
+            for source in self.cfg.debris_sources:
+                source_x.append(source.x)
+                source_y.append(source.y)
+            ax.scatter(source_x, source_y, label='source', color='b')
+            ax.scatter(0, 0, label='target', color='r')
+
+            # add footprint
+            _array = array(house.debris.footprint.exterior.xy).T
+
+            ax.add_patch(patches_Polygon(_array, alpha=0.5))
+
+            for debris_type, line_string in house.debris.debris_items:
+                _x, _y = line_string.xy
+                ax.plot(_x, _y,
+                        linestyle='-',
+                        color=shape_type[debris_type],
+                        alpha=0.5,
+                        label=debris_type)
+
+            handles, labels = ax.get_legend_handles_labels()
+            by_label = OrderedDict(zip(labels, handles))
+            ax.legend(by_label.values(), by_label.keys(), loc=2, scatterpoints=1)
+
+            title_str = 'Debris samples at {0:.3f} m/s in region of {1}'.format(
+                wind_speed, self.cfg.region_name)
+            ax.set_title(title_str)
+
+            ax.axes.set_xlim(-0.5*self.cfg.debris_radius, self.cfg.debris_radius)
+            ax.axes.set_ylim(-1.0*self.cfg.debris_radius, self.cfg.debris_radius)
+            # fig.canvas.draw()
+            fig.show()
 
     def testConstructionLevels(self):
         self.update_config_from_ui()
