@@ -24,6 +24,7 @@ import pandas as pd
 from vaws.model.house import House
 from vaws.model.curve import vulnerability_lognorm, vulnerability_weibull, \
     vulnerability_weibull_pdf
+from vaws.model.stats import compute_arithmetic_mean_stddev, sample_lognorm_given_mean_stddev
 
 from numpy.random import RandomState
 
@@ -32,7 +33,6 @@ from vaws.model.main import process_commandline, set_logger, \
     simulate_wind_damage_to_houses
 from vaws.model.config import Config, INPUT_DIR, OUTPUT_DIR
 from vaws.model.version import VERSION_DESC
-from vaws.model.stats import compute_logarithmic_mean_stddev
 from vaws.gui.output import plot_wind_event_damage, plot_wind_event_mean, \
                         plot_wind_event_show, plot_fitted_curve, \
                         plot_fragility_show, plot_damage_show, plot_wall_damage_show
@@ -1096,12 +1096,12 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
 
         shape_type = {'Compact': 'c', 'Sheet': 'g', 'Rod': 'r'}
 
-        house = House(self.cfg, rnd_state=RandomState(self.cfg.random_seed))
-
         wind_speed, ok = QInputDialog.getInteger(
             self, "Debris Test", "Wind speed (m/s):", 50, 10, 200)
 
         if ok:
+
+            house = House(self.cfg, rnd_state=RandomState(self.cfg.random_seed))
 
             incr_speed = self.cfg.speeds[1] - self.cfg.speeds[0]
 
@@ -1152,27 +1152,36 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
 
     def testConstructionLevels(self):
         self.update_config_from_ui()
-        items = []
-        for ctype in self.cfg.house.conn_types:
-            items.append(ctype.connection_type) 
-        selected_ctype, ok = QInputDialog.getItem(self, "Construction Test", "Connection Type:", items, 0, False)
+
+        selected_type, ok = QInputDialog.getItem(self, "Construction Test", "Connection Type:",
+            self.cfg.types.keys(), 0, False)
+
         if ok:
-            import matplotlib.pyplot as plt
-            for ctype in self.cfg.house.conn_types:
-                if ctype.connection_type == selected_ctype:
-                    
-                    fig = plt.figure()
-                    ax = fig.add_subplot(111)
-                    x = []
-                    n = 50000
-                    for i in xrange(n):
-                        level, mean_factor, cov_factor = self.cfg.sampleConstructionLevel()
-                        rv = ctype.sample_strength(mean_factor, cov_factor)
-                        x.append(rv)
-                        
-                    ax.hist(x, 50, normed=1, facecolor='green', alpha=0.75)
-                    fig.canvas.draw()
-                    plt.show()    
+
+            house = House(self.cfg, rnd_state=RandomState(self.cfg.random_seed))
+            house.set_construction_level()
+            lognormal_strength = self.cfg.types['{}'.format(selected_type)]['lognormal_strength']
+            mu, std = compute_arithmetic_mean_stddev(*lognormal_strength)
+            mu *= house.str_mean_factor
+            std *= house.str_cov_factor
+
+            x = []
+            n = 50000
+            for i in xrange(n):
+                rv = sample_lognorm_given_mean_stddev(mu, std, house.rnd_state)
+                x.append(rv)
+
+            fig = plt.figure()
+            ax = fig.add_subplot(111)
+            ax.hist(x, 50, normed=1, facecolor='green', alpha=0.75)
+            _mean = self.cfg.types['{}'.format(selected_type)]['strength_mean']
+            _std = self.cfg.types['{}'.format(selected_type)]['strength_std']
+            title_str = 'Sampled strength of {0} \n ' \
+                        'construction level: {1}, mean: {2:.2f}, std: {3:.2f}'.format(
+                selected_type, house.construction_level, _mean, _std)
+            ax.set_title(title_str)
+            # fig.canvas.draw()
+            fig.show()
 
 
 def run_gui():
