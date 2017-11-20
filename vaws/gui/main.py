@@ -522,8 +522,8 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
         vstep = self.ui.vStep.value()
         self.ui.damages_tab.setUpdatesEnabled(False)
 
-        group_widget = {'sheeting': [self.ui.mplsheeting, self.ui.tab_19, 0, "Batten"],
-                        'batten': [self.ui.mplbatten, self.ui.tab_20, 1, "Sheeting"],
+        group_widget = {'sheeting': [self.ui.mplsheeting, self.ui.tab_19, 0, "Sheeting"],
+                        'batten': [self.ui.mplbatten, self.ui.tab_20, 1, "Batten"],
                         'rafter': [self.ui.mplrafter, self.ui.tab_21, 2, "Rafter"],
                         'piersgroup': [self.ui.mplpiers, self.ui.tab_27, 3, "PiersGroup"],
                         'wallracking': [self.ui.mplwallracking, self.ui.tab_25, 4, "WallRacking"],

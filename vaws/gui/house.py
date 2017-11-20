@@ -44,4 +44,3 @@ class HouseViewer(QDialog, Ui_Dialog, mixins.PersistSizePosMixin):
         
     def reject(self):
         QDialog.reject(self)
-        
