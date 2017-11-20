@@ -19,41 +19,29 @@ class HouseViewer(QDialog, Ui_Dialog, mixins.PersistSizePosMixin):
         self.ui.cpeV.setText('{:.3f}'.format(cfg.house['cpe_cov']))
         self.ui.cpeK.setText('{:.3f}'.format(cfg.house['cpe_k']))
         self.ui.cpeStructV.setText('{:.3f}'.format(cfg.house['cpe_str_cov']))
+        self.ui.cpeStructK.setText('{:.3f}'.format(cfg.house['cpe_str_k']))
         self.ui.width.setText('{:.3f}'.format(cfg.house['width']))
         self.ui.length.setText('{:.3f}'.format(cfg.house['length']))
 
         # fill in walls table
-        # self.ui.tree.clear()
-        # parentFromWalls = {}
-        # TODO when DEBRIS completed
-        # for w in house.walls:
-        #     # add wall if it's not already there
-        #     ancestor = parentFromWalls.get(w)
-        #     if ancestor is None:
-        #         ancestor = QTreeWidgetItem(self.ui.tree, [scenario.Scenario.dirs[w.direction-1], 'wall', '%.3f'%w.area])
-        #         parentFromWalls[w] = ancestor
-        #     # add children of wall
-        #     for cov in w.coverages:
-        #         item = QTreeWidgetItem(ancestor, ['', cov.description, '%.3f'%cov.area, cov.type.name])
-        # self.ui.tree.resizeColumnToContents(0)
-        # self.ui.tree.resizeColumnToContents(1)
-        
+        self.ui.tree.clear()
+        parentFromWalls = {}
+        for w, grouped in cfg.coverages.groupby('wall_name'):
+            _area = grouped['area'].sum()
+            ancestor = QTreeWidgetItem(
+                self.ui.tree, ['{:d}'.format(w), '', '{:.3f}'.format(_area)])
+            parentFromWalls[w] = ancestor
+            # add children of wall
+            for _, _ps in grouped.iterrows():
+                _ = QTreeWidgetItem(ancestor, ['', _ps['description'],
+                                               '{:.3f}'.format(_ps['area']),
+                                               _ps['coverage_type']])
+        self.ui.tree.resizeColumnToContents(0)
+        self.ui.tree.resizeColumnToContents(1)
+
     def accept(self):
         QDialog.accept(self)
         
     def reject(self):
         QDialog.reject(self)
         
-
-"""        
-if __name__ == '__main__':
-    import sys
-    from model import database
-    database.configure()
-    s = scenario.Scenario(20, 40.0, 120.0, 60.0, '2')
-    s.setHouseName('Group 4 House')
-    app = QApplication(sys.argv)
-    my_app = HouseViewer(s.house)
-    my_app.show()
-    app.exec_()
-"""

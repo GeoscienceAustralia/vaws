@@ -22,6 +22,7 @@ from numpy import ones, where, float32, mean, nanmean, empty, array, \
 
 import pandas as pd
 from vaws.model.house import House
+from vaws.gui.house import HouseViewer
 from vaws.model.curve import vulnerability_lognorm, vulnerability_weibull, \
     vulnerability_weibull_pdf
 from vaws.model.stats import compute_arithmetic_mean_stddev, sample_lognorm_given_mean_stddev
@@ -280,8 +281,7 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
         self.updateDebrisRegionsTable()
 
     def showHouseInfoDlg(self):
-        from vaws.gui import house as gui_house
-        dlg = gui_house.HouseViewer(self.cfg)
+        dlg = HouseViewer(self.cfg)
         dlg.exec_()
 
     def updateDebrisRegionsTable(self):

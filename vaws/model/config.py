@@ -6,7 +6,6 @@
     Note: differential shielding may be indirectly disabled by setting
     'building_spacing' to 0
 """
-import copy
 import os
 import sys
 import logging
