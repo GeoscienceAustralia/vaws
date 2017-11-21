@@ -25,13 +25,16 @@ class TestConfig(unittest.TestCase):
         self.assertEquals(self.cfg.flags['debris'], True)
 
     def test_set_wind_dir_index(self):
-        self.cfg.set_wind_dir_index('Random')
+        self.cfg.wind_direction = 'Random'
+        self.cfg.set_wind_dir_index()
         self.assertEqual(self.cfg.wind_dir_index, 8)
 
-        self.cfg.set_wind_dir_index('SW')
+        self.cfg.wind_direction = 'SW'
+        self.cfg.set_wind_dir_index()
         self.assertEqual(self.cfg.wind_dir_index, 1)
 
-        self.assertRaises(ValueError, self.cfg.set_wind_dir_index('dummy'))
+        self.cfg.wind_direction = 'dummy'
+        self.assertRaises(ValueError, self.cfg.set_wind_dir_index())
         self.assertEqual(self.cfg.wind_dir_index, 8)
 
     def test_water_ingress(self):
@@ -69,11 +72,12 @@ class TestConfig(unittest.TestCase):
                           'cyclonic_terrain_cat2.csv')
 
     def test_set_wind_profile(self):
-        self.cfg.set_wind_profiles('non_cyclonic.csv')
-        self.assertEquals(self.cfg.file_wind_profiles, 'non_cyclonic.csv')
+        self.cfg.file_wind_profiles = 'non_cyclonic.csv'
+        self.cfg.set_wind_profiles()
 
+        self.cfg.file_wind_profiles = 'dummy'
         self.assertRaises(IOError,
-                          self.cfg.set_wind_profiles('dummy'))
+                          self.cfg.set_wind_profiles())
 
     def test_read_fragility_thresholds(self):
         ref = pd.DataFrame([[0.02, 'b'],

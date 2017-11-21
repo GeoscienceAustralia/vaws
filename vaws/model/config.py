@@ -109,6 +109,7 @@ class Config(object):
         self.house_name = None  # only used for gui display may be deleted later
         self.no_models = None
         self.random_seed = 0
+        self.wind_direction = None
         self.wind_speed_min = 0.0
         self.wind_speed_max = 0.0
         self.wind_speed_increment = 0.0
@@ -117,8 +118,8 @@ class Config(object):
         # self.terrain_category = None
         self.regional_shielding_factor = 1.0
         self.file_wind_profiles = None
-        self.wind_profiles = None  # set_wind_profiles
-        self.profile_heights = None  # set_wind_profiles
+        self.wind_profiles = None
+        self.profile_heights = None
         self.wind_dir_index = None
 
         self.construction_levels = OrderedDict()
@@ -195,6 +196,7 @@ class Config(object):
             self.path_debris = os.path.join(self.path_cfg, DEBRIS_DATA)
 
             self.read_config()
+            self.process_config()
             self.set_output_files()
 
     def set_output_files(self):
@@ -217,6 +219,13 @@ class Config(object):
         self.read_debris(conf, key='debris')
         self.read_water_ingress(conf, key='water_ingress')
 
+    def process_config(self):
+
+        self.set_wind_speeds()  # speeds, wind_speed_steps
+        self.set_wind_dir_index()  # wind_dir_index
+        self.set_wind_profiles()  # profile_heights, wind_profiles
+        self.set_flight_time_log()  # flight_time_log_mu, flight_time_log_std
+
         self.set_house()
         df_groups, list_groups = self.set_groups()
         df_types = self.set_types()
@@ -226,6 +235,18 @@ class Config(object):
 
         self.set_influences_and_influence_patches()
         self.set_costings(df_groups)
+
+        if self.flags['debris']:
+
+            from vaws.model.debris import Debris
+
+            self.debris_sources = Debris.create_sources(
+                self.debris_radius,
+                self.debris_angle,
+                self.building_spacing,
+                self.staggered_sources)
+
+            self.set_debris_types()
 
     def read_options(self, conf, key):
         for sub_key, value in conf.items(key):
@@ -250,11 +271,11 @@ class Config(object):
         self.wind_speed_min = conf.getfloat(key, 'wind_speed_min')
         self.wind_speed_max = conf.getfloat(key, 'wind_speed_max')
         self.wind_speed_increment = conf.getfloat(key, 'wind_speed_increment')
-        self.set_wind_speeds()
-        self.set_wind_dir_index(conf.get(key, 'wind_direction'))
+        # self.set_wind_speeds()
+        self.wind_direction = conf.get(key, 'wind_direction')
         self.regional_shielding_factor = conf.getfloat(
             key, 'regional_shielding_factor')
-        self.set_wind_profiles(conf.get(key, 'wind_profiles'))
+        self.file_wind_profiles = conf.get(key, 'wind_profiles')
 
     def set_wind_speeds(self):
         self.wind_speed_steps = int(
@@ -266,6 +287,16 @@ class Config(object):
                                endpoint=True)
 
     def read_water_ingress(self, conf, key):
+        """
+        read water ingress related parameters
+        Args:
+            conf:
+            key:
+
+        Returns:
+
+        TODO:
+        """
         if conf.has_section(key):
             thresholds = [float(x) for x in
                           conf.get(key, 'thresholds').split(',')]
@@ -345,7 +376,6 @@ class Config(object):
                      'flight_time_mean', 'flight_time_stddev']:
             setattr(self, item, conf.getfloat(key, item))
 
-        self.set_flight_time_log()
         self.set_region_name(conf.get(key, 'region_name'))
 
         _file = os.path.join(self.path_house_data, FILE_FOOTPRINT)
@@ -353,18 +383,6 @@ class Config(object):
             self.footprint = pd.read_csv(_file, skiprows=1, header=None).values
         except IOError as msg:
             logging.warning('{}'.format(msg))
-
-        if self.flags[key]:
-
-            from vaws.model.debris import Debris
-
-            self.debris_sources = Debris.create_sources(
-                self.debris_radius,
-                self.debris_angle,
-                self.building_spacing,
-                self.staggered_sources)
-
-            self.set_debris_types()
 
     def set_flight_time_log(self):
         self.flight_time_log_mu, self.flight_time_log_std = \
@@ -816,14 +834,13 @@ class Config(object):
         else:
             self.region_name = value
 
-    def set_wind_profiles(self, value):
-        _file = os.path.join(self.path_wind_profiles, value)
+    def set_wind_profiles(self):
+        _file = os.path.join(self.path_wind_profiles, self.file_wind_profiles)
         try:
             _df = pd.read_csv(_file, skiprows=1, header=None, index_col=0)
         except IOError:
             logging.error('invalid wind_profiles file: {}'.format(_file))
         else:
-            self.file_wind_profiles = value
             self.profile_heights = _df.index.tolist()
             self.wind_profiles = _df.to_dict('list')
 
@@ -845,14 +862,14 @@ class Config(object):
                 else:
                     self.debris_types[key][item] = _debris_region['{}_{}'.format(key, item)]
 
-    def set_wind_dir_index(self, wind_dir_str):
+    def set_wind_dir_index(self):
         try:
-            self.wind_dir_index = self.__class__.wind_dir.index(wind_dir_str.upper())
+            self.wind_dir_index = self.__class__.wind_dir.index(self.wind_direction.upper())
         except ValueError:
             logging.warning('8(i.e., RANDOM) is set for wind_dir_index')
             self.wind_dir_index = 8
 
-    def save_config(self):
+    def save_config(self, filename=None):
 
         config = ConfigParser.RawConfigParser()
 
@@ -926,7 +943,11 @@ class Config(object):
             config.set(key, item, ', '.join(
                 [str(x) for x in self.water_ingress_given_di[item].values]))
 
-        with open(self.cfg_file, 'wb') as configfile:
-            config.write(configfile)
-            print('{} is created'.format(self.cfg_file))
-
+        if filename:
+            with open(filename, 'wb') as configfile:
+                config.write(configfile)
+                logging.info('{} is created'.format(filename))
+        else:
+            with open(self.cfg_file, 'wb') as configfile:
+                config.write(configfile)
+                logging.info('{} is created'.format(self.cfg_file))
