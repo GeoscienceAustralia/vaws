@@ -192,7 +192,7 @@ rafter,3,col,Loss of roof structure,0,1,0,3
 
     def test_read_front_facing_walls(self):
 
-        _file = tempfile.NamedTemporaryFile(mode='w+t')
+        _file = tempfile.NamedTemporaryFile(mode='w+t', delete=False)
         try:
             _file.writelines(['wind_dir,wall_name\n',
                               'S,1\n',
@@ -212,10 +212,11 @@ rafter,3,col,Loss of roof structure,0,1,0,3
 
         finally:
             _file.close()
+            os.unlink(_file.name)
 
     def test_read_damage_factorings(self):
 
-        _file = tempfile.NamedTemporaryFile(mode='w+t')
+        _file = tempfile.NamedTemporaryFile(mode='w+t', delete=False)
         try:
 
             _file.writelines(['ParentGroup,FactorByGroup\n',
@@ -230,10 +231,11 @@ rafter,3,col,Loss of roof structure,0,1,0,3
 
         finally:
             _file.close()
+            os.unlink(_file.name)
 
     def test_read_influences(self):
 
-        _file = tempfile.NamedTemporaryFile(mode='w+t')
+        _file = tempfile.NamedTemporaryFile(mode='w+t', delete=False)
         try:
 
             _file.writelines(['conn_name, Zone, Coefficent\n',
@@ -257,10 +259,11 @@ rafter,3,col,Loss of roof structure,0,1,0,3
 
         finally:
             _file.close()
+            os.unlink(_file.name)
 
     def test_read_influence_patches(self):
 
-        _file = tempfile.NamedTemporaryFile(mode='w+t')
+        _file = tempfile.NamedTemporaryFile(mode='w+t', delete=False)
         try:
 
             _file.writelines(['Damaged connection,Connection,Zone,Inf factor,,\n',
@@ -286,6 +289,7 @@ rafter,3,col,Loss of roof structure,0,1,0,3
 
         finally:
             _file.close()
+            os.unlink(_file.name)
 
     def test_read_water_ingress(self):
         thresholds = [0.1, 0.2, 0.5]
