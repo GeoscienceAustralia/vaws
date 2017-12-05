@@ -90,7 +90,7 @@ class WaterIngressTestCase(unittest.TestCase):
         for i, di in enumerate(di_array):
             for j, speed in enumerate(speed_array):
                 a[i, j] = 100.0 * compute_water_ingress_given_damage(
-                    di, speed, self.cfg.water_ingress_given_di)
+                    di, speed, self.cfg.water_ingress)
 
         plt.figure()
         for j in range(a.shape[0]):
@@ -147,6 +147,7 @@ class WaterIngressTestCase(unittest.TestCase):
             # _df = self.cfg.dic_water_ingress_costings[name]
             for i, wi in enumerate(wi_array):
                 for j, di in enumerate(di_array):
+
                     idx = np.argsort(np.abs(_df.index - wi))[0]
                     a[i, j] = _df.iloc[idx]['costing'].compute_cost(di)
 

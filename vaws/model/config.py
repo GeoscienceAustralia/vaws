@@ -115,7 +115,6 @@ class Config(object):
         self.wind_speed_increment = 0.0
         self.wind_speed_steps = None  # set_wind_speeds
         self.speeds = None  # set_wind_speeds
-        # self.terrain_category = None
         self.regional_shielding_factor = 1.0
         self.file_wind_profiles = None
         self.wind_profiles = None
@@ -123,7 +122,19 @@ class Config(object):
         self.wind_dir_index = None
 
         self.construction_levels = OrderedDict()
-        self.fragility_thresholds = None
+        self.construction_levels_i_levels = ['low', 'medium', 'high']
+        self.construction_levels_i_mean_factors = [0.9, 1.0, 1.1]
+        self.construction_levels_i_cov_factors = [0.58, 0.58, 0.58]
+        self.construction_levels_i_probs = [0.33, 0.34, 0.33]
+
+        self.fragility = None
+        self.fragility_i_states = ['slight', 'medium', 'severe', 'complete']
+        self.fragility_i_thresholds = [0.15, 0.45, 0.6, 0.9]
+
+        self.water_ingress = None
+        self.water_ingress_i_thresholds = [0.1, 0.2, 0.5]
+        self.water_ingress_i_speed_at_zero_wi = [50.0, 35.0, 0.0, -20.0]
+        self.water_ingress_i_speed_at_full_wi = [75.0, 55.0, 40.0, 20.0]
 
         # debris related
         self.region_name = None
@@ -168,7 +179,6 @@ class Config(object):
         self.costing_to_group = None
         self.water_ingress_costings = None
         self.damage_factorings = None
-        self.water_ingress_given_di = None
 
         # debris related
         self.front_facing_walls = None
@@ -248,6 +258,10 @@ class Config(object):
 
             self.set_debris_types()
 
+        self.set_wawter_ingress()
+        self.set_fragility_thresholds()
+        self.set_construction_levels()
+
     def read_options(self, conf, key):
         for sub_key, value in conf.items(key):
             self.flags[sub_key] = conf.getboolean(key, sub_key)
@@ -298,19 +312,21 @@ class Config(object):
         TODO:
         """
         if conf.has_section(key):
-            thresholds = [float(x) for x in
-                          conf.get(key, 'thresholds').split(',')]
-            lower = [float(x) for x in conf.get(key, 'lower').split(',')]
-            upper = [float(x) for x in conf.get(key, 'upper').split(',')]
+            for k in ['thresholds', 'speed_at_zero_wi', 'speed_at_full_wi']:
+                setattr(self, 'water_ingress_i_{}'.format(k),
+                        self.read_column_separated_entry(conf.get(key, k)))
         else:
-            thresholds = [0.1, 0.2, 0.5, 2.0]
-            lower = [40.0, 35.0, 0.0, -20.0]
-            upper = [60.0, 55.0, 40.0, 20.0]
             logging.info('default water ingress thresholds is used')
-        self.water_ingress_given_di = pd.DataFrame(array([lower, upper]).T,
-                                                   index=thresholds,
-                                                   columns=['lower', 'upper'])
-        self.water_ingress_given_di['wi'] = self.water_ingress_given_di.apply(
+
+    def set_wawter_ingress(self):
+        thresholds = [x for x in self.water_ingress_i_thresholds]
+        thresholds.append(1.1)
+        self.water_ingress = pd.DataFrame(
+            array([self.water_ingress_i_speed_at_zero_wi,
+                   self.water_ingress_i_speed_at_full_wi]).T,
+            columns=['speed_at_zero_wi', 'speed_at_full_wi'],
+            index=thresholds)
+        self.water_ingress['wi'] = self.water_ingress.apply(
             self.return_norm_cdf, axis=1)
 
     def set_coverages(self):
@@ -391,52 +407,43 @@ class Config(object):
 
     def read_fragility_thresholds(self, conf, key):
         if conf.has_section(key):
-            states = [x.strip() for x in conf.get(key, 'states').split(',')]
-            thresholds = [float(x) for x in
-                          conf.get(key, 'thresholds').split(',')]
+            for k in ['states', 'thresholds']:
+                setattr(self, 'fragility_i_{}'.format(k),
+                        self.read_column_separated_entry(conf.get(key, k)))
         else:
-            states = ['slight', 'medium', 'severe', 'complete']
-            thresholds = [0.15, 0.45, 0.6, 0.9]
             logging.info('default fragility thresholds is used')
-        self.fragility_thresholds = pd.DataFrame(thresholds,
-                                                 index=states,
-                                                 columns=['threshold'])
-        self.fragility_thresholds['color'] = ['b', 'g', 'y', 'r']
 
-    def get_construction_level(self, name):
-        try:
-            return (self.construction_levels[name]['probability'],
-                    self.construction_levels[name]['mean_factor'],
-                    self.construction_levels[name]['cov_factor'])
-        except KeyError:
-            msg = '{} not found in the construction_levels'.format(name)
-            raise KeyError(msg)
-
-    def set_construction_level(self, name, prob, mf, cf):
-        self.construction_levels[name] = OrderedDict(zip(
-            ['probability', 'mean_factor', 'cov_factor'],
-            [prob, mf, cf]))
+    def set_fragility_thresholds(self):
+        self.fragility = pd.DataFrame(self.fragility_i_thresholds,
+                                      index=self.fragility_i_states,
+                                      columns=['threshold'])
+        self.fragility['color'] = ['b', 'g', 'y', 'r']
 
     def read_construction_levels(self, conf, key):
         if self.flags[key]:
-            levels = [x.strip() for x in conf.get(key, 'levels').split(',')]
-            probabilities = [float(x) for x in conf.get(
-                key, 'probabilities').split(',')]
-            mean_factors = [float(x) for x in conf.get(
-                key, 'mean_factors').split(',')]
-            cov_factors = [float(x) for x in conf.get(
-                key, 'cov_factors').split(',')]
-
-            for i, level in enumerate(levels):
-                self.construction_levels.setdefault(
-                    level, {})['probability'] = probabilities[i]
-                self.construction_levels[level]['mean_factor'] = mean_factors[i]
-                self.construction_levels[level]['cov_factor'] = cov_factors[i]
+            for k in ['levels', 'probabilities', 'mean_factors', 'cov_factors']:
+                setattr(self, 'construction_levels_i_{}'.format(k),
+                        self.read_column_separated_entry(conf.get(key, k)))
         else:
-            self.construction_levels = {'medium': {'probability': 1.0,
-                                                   'mean_factor': 1.0,
-                                                   'cov_factor': 0.58}}
-            logging.info('construction level is set to be medium')
+            logging.info('default construction levels is used')
+
+    def set_construction_levels(self):
+        self.construction_levels = OrderedDict()
+        for _level, _prob, _mean, _cov in zip(
+                self.construction_levels_i_levels,
+                self.construction_levels_i_probs,
+                self.construction_levels_i_mean_factors,
+                self.construction_levels_i_cov_factors):
+            self.construction_levels[_level] = {'probability': _prob,
+                                                'mean_factor': _mean,
+                                                'cov_factor': _cov}
+
+    @staticmethod
+    def read_column_separated_entry(value):
+        try:
+            return [float(x) for x in value.split(',')]
+        except ValueError:
+            return [x.strip() for x in value.split(',')]
 
     def read_heatmap(self, conf, key):
         for item in ['vmin', 'vmax', 'vstep']:
@@ -456,8 +463,8 @@ class Config(object):
 
         """
 
-        _mean = (row['upper'] + row['lower']) / 2.0
-        _sd = (row['upper'] - row['lower']) / 6.0
+        _mean = (row['speed_at_zero_wi'] + row['speed_at_full_wi']) / 2.0
+        _sd = (row['speed_at_full_wi'] - row['speed_at_zero_wi']) / 6.0
 
         return norm(loc=_mean, scale=_sd).cdf
 
@@ -901,10 +908,9 @@ class Config(object):
 
         key = 'fragility_thresholds'
         config.add_section(key)
-        config.set(key, 'states', ', '.join(self.fragility_thresholds.index))
+        config.set(key, 'states', ', '.join(self.fragility_i_states))
         config.set(key, 'thresholds',
-                   ', '.join(str(x) for x in
-                             self.fragility_thresholds['threshold'].values))
+                   ', '.join(str(x) for x in self.fragility_i_thresholds))
 
         key = 'debris'
         config.add_section(key)
@@ -919,29 +925,23 @@ class Config(object):
 
         key = 'construction_levels'
         config.add_section(key)
-        _levels = []
-        _probabilities = []
-        _mean_factor = []
-        _cov_factor = []
-        for sub_key, value in self.construction_levels.iteritems():
-            _levels.append(sub_key)
-            _probabilities.append(str(value['probability']))
-            _mean_factor.append(str(value['mean_factor']))
-            _cov_factor.append(str(value['cov_factor']))
-
-        config.set(key, 'levels', ', '.join(_levels))
-        config.set(key, 'probabilities', ', '.join(_probabilities))
-        config.set(key, 'mean_factors', ', '.join(_mean_factor))
-        config.set(key, 'cov_factors', ', '.join(_cov_factor))
+        config.set(key, 'levels',
+                   ', '.join(self.construction_levels_i_levels))
+        config.set(key, 'probabilities',
+                   ', '.join(str(x) for x in self.construction_levels_i_probs))
+        config.set(key, 'mean_factors',
+                   ', '.join(str(x) for x in self.construction_levels_i_mean_factors))
+        config.set(key, 'cov_factors',
+                   ', '.join(str(x) for x in self.construction_levels_i_cov_factors))
 
         key = 'water_ingress'
         config.add_section(key)
-        config.set(key, 'thresholds', ', '.join(
-            [str(x) for x in self.water_ingress_given_di.index.values]))
-
-        for item in ['lower', 'upper']:
-            config.set(key, item, ', '.join(
-                [str(x) for x in self.water_ingress_given_di[item].values]))
+        config.set(key, 'thresholds',
+                   ', '.join(str(x) for x in self.water_ingress_i_thresholds))
+        config.set(key, 'speed_at_zero_wi',
+                   ', '.join(str(x) for x in self.water_ingress_i_speed_at_zero_wi))
+        config.set(key, 'speed_at_full_wi',
+                   ', '.join(str(x) for x in self.water_ingress_i_speed_at_full_wi))
 
         if filename:
             with open(filename, 'wb') as configfile:

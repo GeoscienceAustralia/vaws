@@ -264,7 +264,7 @@ class HouseDamage(object):
         # compute water ingress
         water_ingress_perc = 100.0 * compute_water_ingress_given_damage(
             self.di_except_water, wind_speed,
-            self.cfg.water_ingress_given_di)
+            self.cfg.water_ingress)
 
         # determine damage scenario
         damage_name = 'WI only'  # default

@@ -182,19 +182,18 @@ class WaterIngressCosting(object):
 
 
 def compute_water_ingress_given_damage(damage_index, wind_speed,
-                                       water_ingress_given_di):
+                                       water_ingress):
     """
 
     Args:
         damage_index:
         wind_speed:
-        water_ingress_given_di: pd.DataFrame
+        water_ingress: pd.DataFrame
     Returns:
 
     """
     assert 0.0 <= damage_index <= 1.0
 
     # Note that thresholds are upper values
-    idx = water_ingress_given_di.index[(water_ingress_given_di.index <
-                                        damage_index).sum()]
-    return water_ingress_given_di.at[idx, 'wi'](wind_speed)
+    idx = water_ingress.index[(water_ingress.index < damage_index).sum()]
+    return water_ingress.at[idx, 'wi'](wind_speed)

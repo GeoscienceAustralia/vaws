@@ -86,7 +86,7 @@ class TestConfig(unittest.TestCase):
                             [0.90, 'r']],
                            columns=['threshold', 'color'],
                            index=['slight', 'medium', 'severe', 'complete'])
-        assert_frame_equal(self.cfg.fragility_thresholds, ref)
+        assert_frame_equal(self.cfg.fragility, ref)
 
     def test_set_region_name(self):
         self.cfg.set_region_name('Capital_city')
@@ -99,7 +99,7 @@ class TestConfig(unittest.TestCase):
                           self.cfg.set_region_name('dummy'))
 
     def test_return_norm_cdf(self):
-        row = {'upper': 75.0, 'lower': 50.0}
+        row = {'speed_at_full_wi': 75.0, 'speed_at_zero_wi': 50.0}
         # mean = 62.5, std = 4.166
         a = self.cfg.return_norm_cdf(row)
         self.assertAlmostEqual(a(55.0), 0.03593, places=4)
@@ -288,17 +288,21 @@ rafter,3,col,Loss of roof structure,0,1,0,3
             _file.close()
 
     def test_read_water_ingress(self):
-        index = [0.1, 0.2, 0.5, 2.0]
-        lower = [50.0, 35.0, 0.0, -20.0]
-        upper = [75.0, 55.0, 40.0, 20.0]
+        thresholds = [0.1, 0.2, 0.5]
+        index = [0.1, 0.2, 0.5, 1.1]
+        speed_zero = [50.0, 35.0, 0.0, -20.0]
+        speed_full = [75.0, 55.0, 40.0, 20.0]
 
-        assert_array_equal(self.cfg.water_ingress_given_di.index, index)
-        assert_array_equal(self.cfg.water_ingress_given_di['lower'].values, lower)
-        assert_array_equal(self.cfg.water_ingress_given_di['upper'].values, upper)
+        assert_array_equal(self.cfg.water_ingress_i_thresholds, thresholds)
+        assert_array_equal(self.cfg.water_ingress.index, index)
+        assert_array_equal(self.cfg.water_ingress['speed_at_zero_wi'].values,
+                           speed_zero)
+        assert_array_equal(self.cfg.water_ingress['speed_at_full_wi'].values,
+                           speed_full)
 
-        for ind, low, up in zip(index, lower, upper):
+        for ind, low, up in zip(index, speed_zero, speed_full):
             _mean = 0.5 * (low + up)
-            est = self.cfg.water_ingress_given_di.loc[ind, 'wi'](_mean)
+            est = self.cfg.water_ingress.loc[ind, 'wi'](_mean)
             self.assertAlmostEqual(est, 0.5)
 
     def test_set_debris_types(self):
@@ -324,12 +328,21 @@ rafter,3,col,Loss of roof structure,0,1,0,3
         ref = {'low': (0.33, 0.9, 0.58),
                'medium': (0.34, 1.0, 0.58),
                'high': (0.33, 1.1, 0.58)}
-        for key, value in ref.iteritems():
-            self.assertEqual(value, self.cfg.get_construction_level(key))
+        keys = ['probability', 'mean_factor', 'cov_factor']
+        for key, values in ref.iteritems():
+            for sub_key, value in zip(keys, values):
+                self.assertEqual(value,
+                                 self.cfg.construction_levels[key][sub_key])
 
-    def test_set_construction_level(self):
+    def test_set_construction_levels(self):
 
-        self.cfg.set_construction_level(name='dummy', prob=0.5, mf=0.5, cf=0.5)
+        self.cfg.construction_levels_i_levels = ['dummy']
+        self.cfg.construction_levels_i_probs = [0.5]
+        self.cfg.construction_levels_i_mean_factors = [0.5]
+        self.cfg.construction_levels_i_cov_factors = [0.5]
+
+        self.cfg.set_construction_levels()
+
         self.assertDictEqual(self.cfg.construction_levels['dummy'],
                              {'probability': 0.5,
                               'mean_factor': 0.5,

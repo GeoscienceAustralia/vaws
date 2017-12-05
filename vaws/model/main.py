@@ -5,7 +5,7 @@ import logging
 
 import pandas as pd
 import h5py
-from numpy import zeros, array
+from numpy import zeros, array, string_
 from optparse import OptionParser
 
 from vaws.model.house_damage import HouseDamage
@@ -185,7 +185,7 @@ def save_results_to_files(cfg, bucket):
 
     # plot fragility and vulnerability curves
 
-    if cfg.flags['plot_fragility']:
+    if cfg.no_models > 1:
         frag_counted = fit_fragility_curves(cfg, bucket['house_damage']['di'])
         if frag_counted:
             pd.DataFrame.from_dict(frag_counted).transpose().to_csv(
@@ -194,15 +194,14 @@ def save_results_to_files(cfg, bucket):
             with open(cfg.file_curve, 'w') as fid:
                 fid.write(', error, param1, param2\n')
 
-    if cfg.flags['plot_vulnerability']:
-        fitted_curve = fit_vulnerability_curve(cfg, bucket['house_damage']['di'])
-        if not os.path.isfile(cfg.file_curve):
-            with open(cfg.file_curve, 'w') as fid:
-                fid.write(', error, param1, param2\n')
-        with open(cfg.file_curve, 'a') as f:
-            pd.DataFrame.from_dict(fitted_curve).transpose().to_csv(f, header=None)
+    fitted_curve = fit_vulnerability_curve(cfg, bucket['house_damage']['di'])
+    if not os.path.isfile(cfg.file_curve):
+        with open(cfg.file_curve, 'w') as fid:
+            fid.write(', error, param1, param2\n')
+    with open(cfg.file_curve, 'a') as f:
+        pd.DataFrame.from_dict(fitted_curve).transpose().to_csv(f, header=None)
 
-    if cfg.flags['plot_connection_damage']:
+    if cfg.flags['save_heatmaps']:
 
         for group_name, grouped in cfg.connections.groupby('group_name'):
 

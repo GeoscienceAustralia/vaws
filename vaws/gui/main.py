@@ -34,6 +34,8 @@ from vaws.model.main import process_commandline, set_logger, \
     simulate_wind_damage_to_houses
 from vaws.model.config import Config, INPUT_DIR, OUTPUT_DIR
 from vaws.model.version import VERSION_DESC
+from vaws.model.damage_costing import compute_water_ingress_given_damage
+
 from vaws.gui.output import plot_wind_event_damage, plot_wind_event_mean, \
                         plot_wind_event_show, plot_fitted_curve, \
                         plot_fragility_show, plot_damage_show, plot_wall_damage_show
@@ -121,6 +123,8 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
                      self.testDebrisSettings)
         self.connect(self.ui.testConstructionButton, SIGNAL("clicked()"),
                      self.testConstructionLevels)
+        self.connect(self.ui.testWaterIngressButton, SIGNAL("clicked()"),
+                     self.testWaterIngress)
 
         # Scenario panel
         self.connect(self.ui.terrainCategory, SIGNAL("returnPressed()"),
@@ -253,7 +257,7 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
         self.ui.mplfrag.axes.hold(True)
         self.ui.mplfrag.axes.plot(self.cfg.speeds, _array, 'k+', 0.3)
 
-        for ds, value in self.cfg.fragility_thresholds.iterrows():
+        for ds, value in self.cfg.fragility.iterrows():
             try:
                 y = vulnerability_lognorm(self.cfg.speeds,
                                           df_fitted_curves.at[ds, 'param1'],
@@ -288,7 +292,7 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
 
     def updateDebrisRegionsTable(self):
 
-        self.cfg.region_name = unicode(self.ui.debrisRegion.text())
+        self.cfg.set_region_name(str(self.ui.debrisRegion.text()))
 
         # load up debris regions
         _debris_region = self.cfg.debris_regions[self.cfg.region_name]
@@ -311,7 +315,7 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
 
     def updateTerrainCategoryTable(self):
 
-        self.cfg.file_wind_profiles = unicode(self.ui.terrainCategory.text())
+        self.cfg.file_wind_profiles = str(self.ui.terrainCategory.text())
         self.cfg.set_wind_profiles()
 
         self.ui.boundaryProfile.setEditTriggers(QTableWidget.NoEditTriggers)
@@ -415,20 +419,20 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
         self.ui.connections.horizontalHeader().resizeSection(1, 110)
         self.updateZonesTable()
         
-    def updateModelFromUI(self):
-        if self.dirty_conntypes:
-            irow = 0
-            for ctype in self.cfg.house.conn_types:
-                sm = float(unicode(self.ui.connectionsTypes.item(irow, 1).text())) 
-                ss = float(unicode(self.ui.connectionsTypes.item(irow, 2).text())) 
-                dm = float(unicode(self.ui.connectionsTypes.item(irow, 3).text())) 
-                ds = float(unicode(self.ui.connectionsTypes.item(irow, 4).text()))
-                ctype.set_strength_params(sm, ss) 
-                ctype.set_deadload_params(dm, ds)
-                irow += 1
-            self.dirty_conntypes = False
-            
-        self.cfg.updateModel()
+    # def updateModelFromUI(self):
+    #     if self.dirty_conntypes:
+    #         irow = 0
+    #         for ctype in self.cfg.house.conn_types:
+    #             sm = float(unicode(self.ui.connectionsTypes.item(irow, 1).text()))
+    #             ss = float(unicode(self.ui.connectionsTypes.item(irow, 2).text()))
+    #             dm = float(unicode(self.ui.connectionsTypes.item(irow, 3).text()))
+    #             ds = float(unicode(self.ui.connectionsTypes.item(irow, 4).text()))
+    #             ctype.set_strength_params(sm, ss)
+    #             ctype.set_deadload_params(dm, ds)
+    #             irow += 1
+    #         self.dirty_conntypes = False
+    #
+    #     self.cfg.updateModel()
     
     def stopScenario(self):
         self.stopTriggered = True
@@ -955,7 +959,7 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
             self.ui.seedRandom.setText(str(self.cfg.random_seed))
 
             self.ui.diffShielding.setChecked(self.cfg.flags.get('diff_shielding'))
-            self.ui.waterIngress.setChecked(self.cfg.flags.get('water_ingress'))
+            self.ui.waterEnabled.setChecked(self.cfg.flags.get('water_ingress'))
 
             # self.ui.distribution.setChecked(self.cfg.flags.get('dmg_distribute'))
             self.ui.actionRun.setEnabled(True)
@@ -963,30 +967,33 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
 
             self.ui.constructionEnabled.setChecked(self.cfg.flags.get('construction_levels'))
 
-            prob, mf, cf = self.cfg.get_construction_level('low')
-            self.ui.lowProb.setValue(float(prob))
-            self.ui.lowMean.setValue(float(mf))
-            self.ui.lowCov.setValue(float(cf))
+            self.ui.constLevels.setText(
+                ', '.join(self.cfg.construction_levels_i_levels))
+            self.ui.constProbs.setText(
+                ', '.join([str(x) for x in self.cfg.construction_levels_i_probabilities]))
+            self.ui.constMeans.setText(
+                ', '.join([str(x) for x in self.cfg.construction_levels_i_mean_factors]))
+            self.ui.constCovs.setText(
+                ', '.join([str(x) for x in self.cfg.construction_levels_i_cov_factors]))
 
-            prob, mf, cf = self.cfg.get_construction_level('medium')
-            self.ui.mediumProb.setValue(float(prob))
-            self.ui.mediumMean.setValue(float(mf))
-            self.ui.mediumCov.setValue(float(cf))
+            self.ui.fragilityStates.setText(
+                ', '.join(self.cfg.fragility_i_states))
+            self.ui.fragilityThresholds.setText(
+                ', '.join([str(x) for x in self.cfg.fragility_i_thresholds]))
 
-            prob, mf, cf = self.cfg.get_construction_level('high')
-            self.ui.highProb.setValue(float(prob))
-            self.ui.highMean.setValue(float(mf))
-            self.ui.highCov.setValue(float(cf))
-            
-            self.ui.slight.setValue(self.cfg.fragility_thresholds.loc['slight', 'threshold'])
-            self.ui.medium.setValue(self.cfg.fragility_thresholds.loc['medium', 'threshold'])
-            self.ui.severe.setValue(self.cfg.fragility_thresholds.loc['severe', 'threshold'])
-            self.ui.complete.setValue(self.cfg.fragility_thresholds.loc['complete', 'threshold'])
+            # water ingress
+            self.ui.waterThresholds.setText(
+                ', '.join([str(x) for x in self.cfg.water_ingress_i_thresholds]))
+            self.ui.waterSpeed0.setText(
+                ', '.join([str(x) for x in self.cfg.water_ingress_i_speed_at_zero_wi]))
+            self.ui.waterSpeed1.setText(
+                ', '.join([str(x) for x in self.cfg.water_ingress_i_speed_at_full_wi]))
 
             self.update_house_panel()
 
             if self.cfg.cfg_file:
-                self.statusBarScenarioLabel.setText('Scenario: %s' % (os.path.basename(self.cfg.cfg_file)))
+                self.statusBarScenarioLabel.setText(
+                    'Scenario: {}'.format(os.path.basename(self.cfg.cfg_file)))
         else:
             self.statusBarScenarioLabel.setText('Scenario: None')
         
@@ -995,9 +1002,9 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
 
         # Scenario section
         new_cfg.no_models = int(self.ui.numHouses.text())
-        new_cfg.house_name = unicode(self.ui.houseName.text())
-        new_cfg.file_wind_profiles = unicode(self.ui.terrainCategory.text())
-        new_cfg.regional_shielding_factor = float(unicode(self.ui.regionalShielding.text()))
+        new_cfg.house_name = str(self.ui.houseName.text())
+        new_cfg.file_wind_profiles = str(self.ui.terrainCategory.text())
+        new_cfg.regional_shielding_factor = float(self.ui.regionalShielding.text())
         new_cfg.wind_speed_min = self.ui.windMin.value()
         new_cfg.wind_speed_max = self.ui.windMax.value()
         new_cfg.wind_speed_increment = float(self.ui.windIncrement.text())
@@ -1005,50 +1012,55 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
         # new_cfg.wind_dir_index = self.ui.windDirection.currentIndex()
 
         # Debris section
-        new_cfg.set_region_name(unicode(self.ui.debrisRegion.text()))
-        new_cfg.building_spacing = float(unicode(self.ui.buildingSpacing.currentText()))
+        new_cfg.set_region_name(str(self.ui.debrisRegion.text()))
+        new_cfg.building_spacing = float(self.ui.buildingSpacing.currentText())
         new_cfg.debris_radius = self.ui.debrisRadius.value()
         new_cfg.debris_angle = self.ui.debrisAngle.value()
         new_cfg.source_items = self.ui.sourceItems.value()
         if self.ui.flighttimeMean.text():
-            new_cfg.flight_time_mean = float(unicode(self.ui.flighttimeMean.text()))
+            new_cfg.flight_time_mean = float(self.ui.flighttimeMean.text())
         if self.ui.flighttimeStddev.text():
-            new_cfg.flight_time_stddev = float(unicode(self.ui.flighttimeStddev.text()))
+            new_cfg.flight_time_stddev = float(self.ui.flighttimeStddev.text())
         new_cfg.staggered_sources = self.ui.staggeredDebrisSources.isChecked()
 
         new_cfg.flags['plot_fragility'] = True
         new_cfg.flags['plot_vulnerability'] = True
-        new_cfg.flags['water_ingress'] = self.ui.waterIngress.isChecked()
+        new_cfg.flags['water_ingress'] = self.ui.waterEnabled.isChecked()
         # new_cfg.flags['dmg_distribute', self.ui.distribution.isChecked())
         new_cfg.flags['diff_shielding'] = self.ui.diffShielding.isChecked()
         new_cfg.flags['debris'] = self.ui.debris.isChecked()
 
         # option section
-        new_cfg.random_seed = int(unicode(self.ui.seedRandom.text()))
-        new_cfg.heatmap_vmin = float(unicode(self.ui.redV.value()))
-        new_cfg.heatmap_vmax = float(unicode(self.ui.blueV.value()))
-        new_cfg.heatmap_vstep = float(unicode(self.ui.vStep.value()))
+        new_cfg.random_seed = int(self.ui.seedRandom.text())
+        new_cfg.heatmap_vmin = float(self.ui.redV.value())
+        new_cfg.heatmap_vmax = float(self.ui.blueV.value())
+        new_cfg.heatmap_vstep = float(self.ui.vStep.value())
 
         # construction section
         new_cfg.flags['construction_levels'] = self.ui.constructionEnabled.isChecked()
-        new_cfg.set_construction_level('low',
-                                float(unicode(self.ui.lowProb.value())), 
-                                float(unicode(self.ui.lowMean.value())), 
-                                float(unicode(self.ui.lowCov.value())))
-        new_cfg.set_construction_level('medium',
-                                float(unicode(self.ui.mediumProb.value())), 
-                                float(unicode(self.ui.mediumMean.value())), 
-                                float(unicode(self.ui.mediumCov.value())))
-        new_cfg.set_construction_level('high',
-                                float(unicode(self.ui.highProb.value())), 
-                                float(unicode(self.ui.highMean.value())), 
-                                float(unicode(self.ui.highCov.value())))
+        new_cfg.construction_levels_i_levels = [
+            x.strip() for x in str(self.ui.constLevels.text()).split(',')]
+        new_cfg.construction_levels_i_probs = [
+            float(x) for x in unicode(self.ui.constProbs.text()).split(',')]
+        new_cfg.construction_levels_i_mean_factors = [
+            float(x) for x in unicode(self.ui.constMeans.text()).split(',')]
+        new_cfg.construction_levels_i_cov_factors = [
+            float(x) for x in unicode(self.ui.constCovs.text()).split(',')]
 
         # fragility section
-        new_cfg.fragility_thresholds['slight'] = float(self.ui.slight.value())
-        new_cfg.fragility_thresholds['medium'] = float(self.ui.medium.value())
-        new_cfg.fragility_thresholds['severe'] = float(self.ui.severe.value())
-        new_cfg.fragility_thresholds['complete'] = float(self.ui.complete.value())
+        new_cfg.fragility_i_thresholds = [
+            float(x) for x in unicode(self.ui.fragilityThresholds.text()).split(',')]
+        new_cfg.fragility_i_states = [
+            x.strip() for x in unicode(self.ui.fragilityStates.text()).split(',')]
+
+        # water ingress
+        new_cfg.flags['water_ingress'] = self.ui.waterEnabled.isChecked()
+        new_cfg.water_ingress_i_thresholds = [
+            float(x) for x in unicode(self.ui.waterThresholds.text()).split(',')]
+        new_cfg.water_ingress_i_zero_wi = [
+            float(x) for x in unicode(self.ui.waterSpeed0.text()).split(',')]
+        new_cfg.water_ingress_i_full_wi = [
+            float(x) for x in unicode(self.ui.waterSpeed1.text()).split(',')]
 
         # house / groups section
         # for irow, (index, ctg) in enumerate(self.cfg.groups.iteritems()):
@@ -1180,6 +1192,38 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
             ax.set_title(title_str)
             # fig.canvas.draw()
             fig.show()
+
+    def testWaterIngress(self):
+
+        self.update_config_from_ui()
+
+        di_array = []
+        dic_thresholds = {}
+        for i, value in enumerate(self.cfg.water_ingress.index):
+            if i == 0:
+                dic_thresholds[i] = (0.0, value)
+            else:
+                dic_thresholds[i] = (self.cfg.water_ingress.index[i-1], value)
+
+            di_array.append(0.5*(dic_thresholds[i][0] + dic_thresholds[i][1]))
+
+        a = zeros((len(di_array), len(self.cfg.speeds)))
+
+        for i, di in enumerate(di_array):
+            for j, speed in enumerate(self.cfg.speeds):
+                a[i, j] = 100.0 * compute_water_ingress_given_damage(
+                    di, speed, self.cfg.water_ingress)
+
+        fig = plt.figure()
+        ax = fig.add_subplot(111)
+        for j in range(a.shape[0]):
+            ax.plot(self.cfg.speeds, a[j, :],
+                    label='{:.1f} <= DI < {:.1f}'.format(*dic_thresholds[j]))
+
+        ax.legend(loc=1)
+        ax.set_xlabel('Wind speed (m/s)')
+        ax.set_ylabel('Water ingress (%)')
+        fig.show()
 
 
 def run_gui():

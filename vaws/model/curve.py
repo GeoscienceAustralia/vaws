@@ -57,7 +57,7 @@ def fit_fragility_curves(cfg, df_dmg_idx):
 
     # calculate damage probability
     frag_counted = OrderedDict()
-    for state, value in cfg.fragility_thresholds.iterrows():
+    for state, value in cfg.fragility.iterrows():
         counted = (df_dmg_idx > value['threshold']).sum(axis=1) / \
             float(cfg.no_models)
 
