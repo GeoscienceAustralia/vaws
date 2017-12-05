@@ -12,8 +12,9 @@ class MyTestCase(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        path = '/'.join(__file__.split('/')[:-1])
-        cfg_file = os.path.join(path, './test_scenarios/test_sheeting_batten/test_sheeting_batten.cfg')
+        path = os.sep.join(__file__.split(os.sep)[:-1])
+        cfg_file = os.path.join(
+            path, 'test_scenarios', 'test_sheeting_batten', 'test_sheeting_batten.cfg')
         cfg = Config(cfg_file=cfg_file)
         rnd_state = np.random.RandomState(1)
         cls.house = House(cfg, rnd_state)
@@ -193,9 +194,9 @@ class TestHouseCoverage(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        path = '/'.join(__file__.split('/')[:-1])
+        path = os.sep.join(__file__.split(os.sep)[:-1])
         cls.cfg_file = os.path.join(
-            path, './test_scenarios/test_scenario19/test_scenario19.cfg')
+            path, 'test_scenarios', 'test_scenario19', 'test_scenario19.cfg')
         cls.cfg = Config(cfg_file=cls.cfg_file)
         cls.rnd_state = np.random.RandomState(1)
         cls.house = House(cls.cfg, cls.rnd_state)

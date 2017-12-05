@@ -122,10 +122,9 @@ class TestScenario1(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
 
-        path = '/'.join(__file__.split('/')[:-1])
-
-        cfg = Config(
-            cfg_file=os.path.join(path, './test_scenarios/test_scenario1/test_scenario1.cfg'))
+        path = os.sep.join(__file__.split(os.sep)[:-1])
+        cfg = Config(cfg_file=os.path.join(
+            path, 'test_scenarios', 'test_scenario1', 'test_scenario1.cfg'))
 
         cls.house_damage = HouseDamage(cfg, seed=0)
 
@@ -190,10 +189,9 @@ class TestScenario2(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
 
-        path = '/'.join(__file__.split('/')[:-1])
-
-        cfg = Config(
-            cfg_file=os.path.join(path, './test_scenarios/test_scenario2/test_scenario2.cfg'))
+        path = os.sep.join(__file__.split(os.sep)[:-1])
+        cfg = Config(cfg_file=os.path.join(
+            path, 'test_scenarios', 'test_scenario2', 'test_scenario2.cfg'))
 
         cls.house_damage = HouseDamage(cfg, seed=0)
 
@@ -236,10 +234,9 @@ class TestScenario3(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
 
-        path = '/'.join(__file__.split('/')[:-1])
-
-        cfg = Config(
-            cfg_file=os.path.join(path, './test_scenarios/test_scenario3/test_scenario3.cfg'))
+        path = os.sep.join(__file__.split(os.sep)[:-1])
+        cfg = Config(cfg_file=os.path.join(
+            path, 'test_scenarios', 'test_scenario3', 'test_scenario3.cfg'))
 
         cls.house_damage = HouseDamage(cfg, seed=0)
 
@@ -284,10 +281,9 @@ class TestScenario4(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
 
-        path = '/'.join(__file__.split('/')[:-1])
-
-        cfg = Config(
-            cfg_file=os.path.join(path, './test_scenarios/test_scenario4/test_scenario4.cfg'))
+        path = os.sep.join(__file__.split(os.sep)[:-1])
+        cfg = Config(cfg_file=os.path.join(
+            path, 'test_scenarios', 'test_scenario4', 'test_scenario4.cfg'))
 
         cls.house_damage = HouseDamage(cfg, seed=0)
 
@@ -328,10 +324,9 @@ class TestScenario5(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
 
-        path = '/'.join(__file__.split('/')[:-1])
-
-        cfg = Config(
-            cfg_file=os.path.join(path, './test_scenarios/test_scenario5/test_scenario5.cfg'))
+        path = os.sep.join(__file__.split(os.sep)[:-1])
+        cfg = Config(cfg_file=os.path.join(
+            path, 'test_scenarios', 'test_scenario5', 'test_scenario5.cfg'))
 
         cls.house_damage = HouseDamage(cfg, seed=0)
 
@@ -374,10 +369,9 @@ class TestScenario6(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
 
-        path = '/'.join(__file__.split('/')[:-1])
-
-        cfg = Config(
-            cfg_file=os.path.join(path, './test_scenarios/test_scenario6/test_scenario6.cfg'))
+        path = os.sep.join(__file__.split(os.sep)[:-1])
+        cfg = Config(cfg_file=os.path.join(
+            path, 'test_scenarios', 'test_scenario6', 'test_scenario6.cfg'))
         cls.house_damage = HouseDamage(cfg, seed=0)
 
         # set up logging
@@ -407,10 +401,9 @@ class TestScenario7(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
 
-        path = '/'.join(__file__.split('/')[:-1])
-
-        cfg = Config(
-            cfg_file=os.path.join(path, './test_scenarios/test_scenario7/test_scenario7.cfg'))
+        path = os.sep.join(__file__.split(os.sep)[:-1])
+        cfg = Config(cfg_file=os.path.join(
+            path, 'test_scenarios', 'test_scenario7', 'test_scenario7.cfg'))
 
         cls.house_damage = HouseDamage(cfg, seed=0)
 
@@ -445,10 +438,9 @@ class TestScenario8(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
 
-        path = '/'.join(__file__.split('/')[:-1])
-
-        cfg = Config(
-            cfg_file=os.path.join(path, './test_scenarios/test_scenario8/test_scenario8.cfg'))
+        path = os.sep.join(__file__.split(os.sep)[:-1])
+        cfg = Config(cfg_file=os.path.join(
+            path, 'test_scenarios', 'test_scenario8', 'test_scenario8.cfg'))
 
         cls.house_damage = HouseDamage(cfg, seed=0)
 
@@ -483,10 +475,9 @@ class TestScenario9(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
 
-        path = '/'.join(__file__.split('/')[:-1])
-
-        cfg = Config(
-            cfg_file=os.path.join(path, './test_scenarios/test_scenario9/test_scenario9.cfg'))
+        path = os.sep.join(__file__.split(os.sep)[:-1])
+        cfg = Config(cfg_file=os.path.join(
+            path, 'test_scenarios', 'test_scenario9', 'test_scenario9.cfg'))
 
         cls.house_damage = HouseDamage(cfg, seed=0)
 
@@ -522,10 +513,9 @@ class TestScenario10(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
 
-        path = '/'.join(__file__.split('/')[:-1])
-
-        cfg = Config(
-            cfg_file=os.path.join(path, './test_scenarios/test_scenario10/test_scenario10.cfg'))
+        path = os.sep.join(__file__.split(os.sep)[:-1])
+        cfg = Config(cfg_file=os.path.join(
+            path, 'test_scenarios', 'test_scenario10', 'test_scenario10.cfg'))
 
         cls.house_damage = HouseDamage(cfg, seed=0)
 
@@ -557,10 +547,9 @@ class TestScenario11(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
 
-        path = '/'.join(__file__.split('/')[:-1])
-
-        cfg = Config(
-            cfg_file=os.path.join(path, './test_scenarios/test_scenario11/test_scenario11.cfg'))
+        path = os.sep.join(__file__.split(os.sep)[:-1])
+        cfg = Config(cfg_file=os.path.join(
+            path, 'test_scenarios', 'test_scenario11', 'test_scenario11.cfg'))
 
         cls.house_damage = HouseDamage(cfg, seed=0)
 
@@ -595,10 +584,9 @@ class TestScenario12(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
 
-        path = '/'.join(__file__.split('/')[:-1])
-
-        cfg = Config(
-            cfg_file=os.path.join(path, './test_scenarios/test_scenario12/test_scenario12.cfg'))
+        path = os.sep.join(__file__.split(os.sep)[:-1])
+        cfg = Config(cfg_file=os.path.join(
+            path, 'test_scenarios', 'test_scenario12', 'test_scenario12.cfg'))
 
         cls.house_damage = HouseDamage(cfg, seed=0)
 
@@ -634,10 +622,9 @@ class TestScenario13(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
 
-        path = '/'.join(__file__.split('/')[:-1])
-
-        cfg = Config(
-            cfg_file=os.path.join(path, './test_scenarios/test_scenario13/test_scenario13.cfg'))
+        path = os.sep.join(__file__.split(os.sep)[:-1])
+        cfg = Config(cfg_file=os.path.join(
+            path, 'test_scenarios', 'test_scenario13', 'test_scenario13.cfg'))
 
         cls.house_damage = HouseDamage(cfg, seed=0)
 
@@ -672,10 +659,9 @@ class TestScenario14(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
 
-        path = '/'.join(__file__.split('/')[:-1])
-
-        cfg = Config(
-            cfg_file=os.path.join(path, './test_scenarios/test_scenario14/test_scenario14.cfg'))
+        path = os.sep.join(__file__.split(os.sep)[:-1])
+        cfg = Config(cfg_file=os.path.join(
+            path, 'test_scenarios', 'test_scenario14', 'test_scenario14.cfg'))
 
         cls.house_damage = HouseDamage(cfg, seed=0)
 
@@ -708,10 +694,9 @@ class TestScenario15(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
 
-        path = '/'.join(__file__.split('/')[:-1])
-
-        cfg = Config(
-            cfg_file=os.path.join(path, './test_scenarios/test_scenario15/test_scenario15.cfg'))
+        path = os.sep.join(__file__.split(os.sep)[:-1])
+        cfg = Config(cfg_file=os.path.join(
+            path, 'test_scenarios', 'test_scenario15', 'test_scenario15.cfg'))
         cls.house_damage = HouseDamage(cfg, seed=0)
 
         # set up logging
@@ -739,10 +724,9 @@ class TestScenario16(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
 
-        path = '/'.join(__file__.split('/')[:-1])
-
-        cfg = Config(
-            cfg_file=os.path.join(path, './test_scenarios/test_scenario16/test_scenario16.cfg'))
+        path = os.sep.join(__file__.split(os.sep)[:-1])
+        cfg = Config(cfg_file=os.path.join(
+            path, 'test_scenarios', 'test_scenario16', 'test_scenario16.cfg'))
         cls.house_damage = HouseDamage(cfg, seed=0)
 
         # set up logging
@@ -780,10 +764,9 @@ class TestScenario17(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
 
-        path = '/'.join(__file__.split('/')[:-1])
-
-        cfg = Config(
-            cfg_file=os.path.join(path, './test_scenarios/test_scenario17/test_scenario17.cfg'))
+        path = os.sep.join(__file__.split(os.sep)[:-1])
+        cfg = Config(cfg_file=os.path.join(
+            path, 'test_scenarios', 'test_scenario17', 'test_scenario17.cfg'))
         cls.house_damage = HouseDamage(cfg, seed=0)
 
         # set up logging
@@ -832,10 +815,9 @@ class TestScenario18(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
 
-        path = '/'.join(__file__.split('/')[:-1])
-
-        cfg = Config(
-            cfg_file=os.path.join(path, './test_scenarios/test_scenario18/test_scenario18.cfg'))
+        path = os.sep.join(__file__.split(os.sep)[:-1])
+        cfg = Config(cfg_file=os.path.join(
+            path, 'test_scenarios', 'test_scenario18', 'test_scenario18.cfg'))
         cls.house_damage = HouseDamage(cfg, seed=0)
 
         # set up logging
@@ -875,10 +857,9 @@ class TestScenario19(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
 
-        path = '/'.join(__file__.split('/')[:-1])
-
-        cfg = Config(
-            cfg_file=os.path.join(path, './test_scenarios/test_scenario19/test_scenario19.cfg'))
+        path = os.sep.join(__file__.split(os.sep)[:-1])
+        cfg = Config(cfg_file=os.path.join(
+            path, 'test_scenarios', 'test_scenario19', 'test_scenario19.cfg'))
         cls.house_damage = HouseDamage(cfg, seed=0)
 
         # set up logging
@@ -945,10 +926,9 @@ class TestScenario20(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
 
-        path = '/'.join(__file__.split('/')[:-1])
-
-        cfg = Config(
-            cfg_file=os.path.join(path, './test_scenarios/test_scenario20/test_scenario20.cfg'))
+        path = os.sep.join(__file__.split(os.sep)[:-1])
+        cfg = Config(cfg_file=os.path.join(
+            path, 'test_scenarios', 'test_scenario20', 'test_scenario20.cfg'))
         cls.house_damage = HouseDamage(cfg, seed=0)
 
         # set up logging
@@ -996,10 +976,9 @@ class TestScenario21(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
 
-        path = '/'.join(__file__.split('/')[:-1])
-
-        cfg = Config(
-            cfg_file=os.path.join(path, './test_scenarios/test_scenario21/test_scenario21.cfg'))
+        path = os.sep.join(__file__.split(os.sep)[:-1])
+        cfg = Config(cfg_file=os.path.join(
+            path, 'test_scenarios', 'test_scenario21', 'test_scenario21.cfg'))
         cls.house_damage = HouseDamage(cfg, seed=0)
 
         # set up logging
@@ -1053,10 +1032,9 @@ class TestScenario22a(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
 
-        path = '/'.join(__file__.split('/')[:-1])
-
-        cfg = Config(
-            cfg_file=os.path.join(path, './test_scenarios/test_scenario22/test_scenario22.cfg'))
+        path = os.sep.join(__file__.split(os.sep)[:-1])
+        cfg = Config(cfg_file=os.path.join(
+            path, 'test_scenarios', 'test_scenario22', 'test_scenario22.cfg'))
         cfg.wind_dir_index = 0
 
         cls.house_damage = HouseDamage(cfg, seed=0)
@@ -1111,10 +1089,9 @@ class TestScenario22b(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
 
-        path = '/'.join(__file__.split('/')[:-1])
-
-        cfg = Config(
-            cfg_file=os.path.join(path, './test_scenarios/test_scenario22/test_scenario22.cfg'))
+        path = os.sep.join(__file__.split(os.sep)[:-1])
+        cfg = Config(cfg_file=os.path.join(
+            path, 'test_scenarios', 'test_scenario22', 'test_scenario22.cfg'))
 
         cfg.wind_dir_index = 4
         cls.house_damage = HouseDamage(cfg, seed=0)
@@ -1167,10 +1144,9 @@ class TestScenario23a(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
 
-        path = '/'.join(__file__.split('/')[:-1])
-
-        cfg = Config(
-            cfg_file=os.path.join(path, './test_scenarios/test_scenario23/test_scenario23.cfg'))
+        path = os.sep.join(__file__.split(os.sep)[:-1])
+        cfg = Config(cfg_file=os.path.join(
+            path, 'test_scenarios', 'test_scenario23', 'test_scenario23.cfg'))
 
         cfg.wind_dir_index = 0
         cls.house_damage = HouseDamage(cfg, seed=0)
@@ -1225,10 +1201,9 @@ class TestScenario23b(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
 
-        path = '/'.join(__file__.split('/')[:-1])
-
-        cfg = Config(
-            cfg_file=os.path.join(path, './test_scenarios/test_scenario23/test_scenario23.cfg'))
+        path = os.sep.join(__file__.split(os.sep)[:-1])
+        cfg = Config(cfg_file=os.path.join(
+            path, 'test_scenarios', 'test_scenario23', 'test_scenario23.cfg'))
 
         cfg.wind_dir_index = 1
         cls.house_damage = HouseDamage(cfg, seed=0)
@@ -1282,10 +1257,10 @@ class TestScenario23c(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
 
-        path = '/'.join(__file__.split('/')[:-1])
+        path = os.sep.join(__file__.split(os.sep)[:-1])
 
-        cfg = Config(
-            cfg_file=os.path.join(path, './test_scenarios/test_scenario23/test_scenario23.cfg'))
+        cfg = Config(cfg_file=os.path.join(
+            path, 'test_scenarios', 'test_scenario23', 'test_scenario23.cfg'))
 
         cfg.wind_dir_index = 2
         cls.house_damage = HouseDamage(cfg, seed=0)
@@ -1332,6 +1307,6 @@ class TestScenario23c(unittest.TestCase):
                     _id, _coverage.capacity, coverage_capacity2[_id]))
 
 if __name__ == '__main__':
-    suite = unittest.TestLoader().loadTestsFromTestCase(TestScenario23b)
+    suite = unittest.TestLoader().loadTestsFromTestCase(TestScenario23c)
     unittest.TextTestRunner(verbosity=2).run(suite)
     #unittest.main(verbosity=2)

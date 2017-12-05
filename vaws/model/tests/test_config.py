@@ -15,9 +15,9 @@ class TestConfig(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
 
-        path = '/'.join(__file__.split('/')[:-1])
-        scenario_filename1 = os.path.abspath(
-            os.path.join(path, './test_scenarios/test_house/test_house.cfg'))
+        path = os.sep.join(__file__.split(os.sep)[:-1])
+        scenario_filename1 = os.path.abspath(os.path.join(
+            path, 'test_scenarios', 'test_house', 'test_house.cfg'))
         cls.cfg = Config(cfg_file=scenario_filename1)
         cls.path_cfg = os.path.dirname(os.path.realpath(scenario_filename1))
 

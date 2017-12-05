@@ -14,12 +14,12 @@ class TestHouseDamage(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
 
-        path = '/'.join(__file__.split('/')[:-1])
+        path = os.sep.join(__file__.split(os.sep)[:-1])
         cls.path_reference = path
 
         cls.cfg = Config(
-            cfg_file=os.path.join(path,
-                                  './test_scenarios/test_scenario15/test_scenario15.cfg'))
+            cfg_file=os.path.join(
+                path, 'test_scenarios', 'test_scenario15', 'test_scenario15.cfg'))
 
         cls.house_damage = HouseDamage(cfg=cls.cfg, seed=1)
         cls.house_damage.house.replace_cost = 45092.97
@@ -283,12 +283,11 @@ dmg_ratio_sheeting,dmg_ratio_batten,dmg_ratio_rafter,loss_ratio
 class TestHouseDamage2(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
-        path = '/'.join(__file__.split('/')[:-1])
+        path = os.sep.join(__file__.split(os.sep)[:-1])
         cls.path_reference = path
 
-        cls.cfg = Config(
-            cfg_file=os.path.join(path,
-                                  './test_scenarios/test_house/test_house.cfg'))
+        cls.cfg = Config(cfg_file=os.path.join(
+            path, 'test_scenarios', 'test_house', 'test_house.cfg'))
 
         cls.house_damage = HouseDamage(cfg=cls.cfg, seed=1)
         cls.house_damage.house.replace_cost = 198859.27

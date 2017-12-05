@@ -10,9 +10,9 @@ class MyTestCase(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
 
-        path = '/'.join(__file__.split('/')[:-1])
-        cfg_file = os.path.join(path,
-                                './test_scenarios/test_sheeting_batten/test_sheeting_batten.cfg')
+        path = os.sep.join(__file__.split(os.sep)[:-1])
+        cfg_file = os.path.join(path, 'test_scenarios', 'test_sheeting_batten',
+                                'test_sheeting_batten.cfg')
         cls.cfg = Config(cfg_file=cfg_file)
 
     def test_compute_prop_damaged(self):

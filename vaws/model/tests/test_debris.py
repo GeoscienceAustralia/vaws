@@ -121,10 +121,9 @@ class MyTestCase(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        path = '/'.join(__file__.split('/')[:-1])
-
-        cls.path_scenario = os.path.join(path,
-                                         './test_scenarios/test_roof_sheeting')
+        path = os.sep.join(__file__.split(os.sep)[:-1])
+        cls.path_scenario = os.path.join(
+            path, 'test_scenarios', 'test_roof_sheeting')
         # set up logging
         file_logger = os.path.join(cls.path_scenario, 'output', 'log.txt')
         logging.basicConfig(filename=file_logger,

@@ -13,10 +13,10 @@ from vaws.model.config import Config
 class MyTestCase(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
-        path = '/'.join(__file__.split('/')[:-1])
+        path = os.sep.join(__file__.split(os.sep)[:-1])
         filename = 'damage_costing_data.csv'
-        df_costing = pd.read_csv(os.path.join(path, './test_scenarios/test_roof_sheeting/input/house/',
-                                              filename))
+        df_costing = pd.read_csv(os.path.join(
+            path, 'test_scenarios', 'test_roof_sheeting', 'input', 'house', filename))
         adic = df_costing.loc[0].to_dict()
         cls.costing1 = Costing(costing_name=adic['name'],
                                **adic)
@@ -75,10 +75,9 @@ class WaterIngressTestCase(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        path = '/'.join(__file__.split('/')[:-1])
-        cls.cfg = Config(
-            cfg_file=os.path.join(path,
-                                  './test_scenarios/test_scenario16/test_scenario16.cfg'))
+        path = os.sep.join(__file__.split(os.sep)[:-1])
+        cls.cfg = Config(cfg_file=os.path.join(
+            path, 'test_scenarios', 'test_scenario16', 'test_scenario16.cfg'))
 
     def test_compute_water_ingress_given_damage(self):
 

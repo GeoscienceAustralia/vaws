@@ -199,8 +199,7 @@ class TestDistributeMultiSwitchesOFF(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
 
-        path = '/'.join(__file__.split('/')[:-1])
-
+        path = os.sep.join(__file__.split(os.sep)[:-1])
         cls.path_reference = os.path.join(path, 'test/output_roof_sheeting2_OFF')
         # cls.path_reference = os.path.join(path, 'test/output_no_dist')
         cls.path_output = os.path.join(path, 'output')
@@ -238,8 +237,7 @@ class TestDistributeMultiSwitchesOn(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
 
-        path = '/'.join(__file__.split('/')[:-1])
-
+        path = os.sep.join(__file__.split(os.sep)[:-1])
         cls.path_reference = os.path.join(path, 'test/output_roof_sheeting2_ON')
         # cls.path_reference = os.path.join(path, 'test/output_no_dist')
         cls.path_output = os.path.join(path, 'output')
@@ -295,12 +293,12 @@ class TestHouseDamage(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
 
-        path = '/'.join(__file__.split('/')[:-1])
+        path = os.sep.join(__file__.split(os.sep)[:-1])
         cls.path_reference = os.path.join(path, 'test')
         cls.path_output = os.path.join(path, 'output')
 
-        cfg = Config(
-            cfg_file=os.path.join(path, './test_scenarios/test_sheeting_batten/test_sheeting_batten.cfg'))
+        cfg = Config(cfg_file=os.path.join(
+            path, 'test_scenarios', 'test_sheeting_batten', 'test_sheeting_batten.cfg'))
 
         cls.house_damage = HouseDamage(cfg, seed=1)
 
