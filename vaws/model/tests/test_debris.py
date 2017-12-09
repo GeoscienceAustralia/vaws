@@ -446,7 +446,6 @@ class MyTestCase(unittest.TestCase):
 
         for _name, item in _coverages.iterrows():
 
-            item['cpe_mean'] = self.cfg.coverages_cpe_mean[_name]
             _coverage = Coverage(coverage_name=_name, **item)
             _coverages.loc[_name, 'coverage'] = _coverage
 
@@ -555,7 +554,6 @@ class MyTestCase(unittest.TestCase):
 
         for _name, item in _coverages.iterrows():
 
-            item['cpe_mean'] = self.cfg.coverages_cpe_mean[_name]
             _coverage = Coverage(coverage_name=_name, **item)
             _coverages.loc[_name, 'coverage'] = _coverage
 

@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1920</width>
-    <height>1109</height>
+    <width>1280</width>
+    <height>711</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -48,7 +48,7 @@
          </size>
         </property>
         <property name="currentIndex">
-         <number>0</number>
+         <number>4</number>
         </property>
         <widget class="QWidget" name="scenario_tab">
          <attribute name="title">
@@ -58,7 +58,7 @@
           <item row="1" column="0">
            <widget class="QLabel" name="label_11">
             <property name="text">
-             <string>House name</string>
+             <string>Model name</string>
             </property>
             <property name="alignment">
              <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
@@ -74,7 +74,7 @@
           <item row="0" column="0">
            <widget class="QLabel" name="label_12">
             <property name="text">
-             <string>Number of houses</string>
+             <string>Number of models</string>
             </property>
             <property name="alignment">
              <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
@@ -1024,16 +1024,6 @@
             </property>
            </widget>
           </item>
-          <item row="0" column="0">
-           <widget class="QLabel" name="label_50">
-            <property name="text">
-             <string>Fragility</string>
-            </property>
-            <property name="alignment">
-             <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-            </property>
-           </widget>
-          </item>
           <item row="17" column="0">
            <widget class="QLabel" name="label_51">
             <property name="text">
@@ -1091,6 +1081,16 @@
            <widget class="QLabel" name="label_47">
             <property name="text">
              <string>Option</string>
+            </property>
+            <property name="alignment">
+             <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+            </property>
+           </widget>
+          </item>
+          <item row="0" column="1" alignment="Qt::AlignLeft|Qt::AlignVCenter">
+           <widget class="QLabel" name="label_50">
+            <property name="text">
+             <string>Fragility</string>
             </property>
             <property name="alignment">
              <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
@@ -1621,8 +1621,124 @@
        </sizepolicy>
       </property>
       <property name="currentIndex">
-       <number>0</number>
+       <number>1</number>
       </property>
+      <widget class="QWidget" name="tab_influence">
+       <attribute name="title">
+        <string>Influences</string>
+       </attribute>
+       <layout class="QVBoxLayout" name="verticalLayout_4">
+        <item>
+         <layout class="QHBoxLayout" name="horizontalLayout_43">
+          <property name="topMargin">
+           <number>5</number>
+          </property>
+          <property name="rightMargin">
+           <number>1</number>
+          </property>
+          <item>
+           <widget class="QLabel" name="label_influence">
+            <property name="text">
+             <string>Connection id:</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QLabel" name="slider_influenceLabel">
+            <property name="text">
+             <string>100</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QSlider" name="slider_influence">
+            <property name="minimum">
+             <number>1</number>
+            </property>
+            <property name="singleStep">
+             <number>0</number>
+            </property>
+            <property name="orientation">
+             <enum>Qt::Horizontal</enum>
+            </property>
+            <property name="tickPosition">
+             <enum>QSlider::TicksBelow</enum>
+            </property>
+            <property name="tickInterval">
+             <number>1</number>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </item>
+        <item>
+         <widget class="MatplotlibWidget" name="mplinfluecnes" native="true"/>
+        </item>
+       </layout>
+      </widget>
+      <widget class="QWidget" name="tab_patch">
+       <attribute name="title">
+        <string>Patches</string>
+       </attribute>
+       <layout class="QVBoxLayout" name="verticalLayout_4">
+        <item>
+         <layout class="QHBoxLayout" name="horizontalLayout_42">
+          <property name="topMargin">
+           <number>5</number>
+          </property>
+          <property name="rightMargin">
+           <number>1</number>
+          </property>
+          <item>
+           <widget class="QLabel" name="label_patch">
+            <property name="text">
+             <string>Failed connection id:</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QLabel" name="slider_patchLabel">
+            <property name="text">
+             <string>100</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QSlider" name="slider_patch">
+            <property name="minimum">
+             <number>1</number>
+            </property>
+            <property name="singleStep">
+             <number>0</number>
+            </property>
+            <property name="orientation">
+             <enum>Qt::Horizontal</enum>
+            </property>
+            <property name="tickPosition">
+             <enum>QSlider::TicksBelow</enum>
+            </property>
+            <property name="tickInterval">
+             <number>1</number>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QLabel" name="label_patch_2">
+            <property name="text">
+             <string>Connection id:</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QSpinBox" name="spinBox"/>
+          </item>
+         </layout>
+        </item>
+        <item>
+         <widget class="MatplotlibWidget" name="mplpatches" native="true"/>
+        </item>
+       </layout>
+      </widget>
       <widget class="QWidget" name="tab_13">
        <attribute name="title">
         <string>Results</string>
@@ -1634,7 +1750,7 @@
            <enum>QTabWidget::East</enum>
           </property>
           <property name="currentIndex">
-           <number>0</number>
+           <number>3</number>
           </property>
           <widget class="QWidget" name="tab_10">
            <attribute name="title">
@@ -1750,12 +1866,32 @@
             <item>
              <widget class="QLabel" name="label_36">
               <property name="text">
-               <string>View an individual house (0 for mean)</string>
+               <string>Model id (0 for mean): </string>
               </property>
              </widget>
             </item>
             <item>
-             <widget class="QSpinBox" name="heatmap_house"/>
+             <widget class="QLabel" name="heatmap_houseLabel">
+              <property name="text">
+               <string>100</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QSlider" name="heatmap_house">
+              <property name="singleStep">
+               <number>0</number>
+              </property>
+              <property name="orientation">
+               <enum>Qt::Horizontal</enum>
+              </property>
+              <property name="tickPosition">
+               <enum>QSlider::TicksBelow</enum>
+              </property>
+              <property name="tickInterval">
+               <number>1</number>
+              </property>
+             </widget>
             </item>
            </layout>
           </item>
@@ -1969,7 +2105,7 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>1920</width>
+     <width>1280</width>
      <height>22</height>
     </rect>
    </property>
@@ -2094,7 +2230,7 @@
   <customwidget>
    <class>MatplotlibWidget</class>
    <extends>QWidget</extends>
-   <header>matplotlibwidget</header>
+   <header location="global">matplotlibwidget</header>
   </customwidget>
  </customwidgets>
  <tabstops>
@@ -2127,8 +2263,6 @@
   <tabstop>tabWidget_4</tabstop>
   <tabstop>zoneResults</tabstop>
   <tabstop>connectionResults</tabstop>
-  <tabstop>heatmap_house</tabstop>
-  <tabstop>damages_tab</tabstop>
   <tabstop>tabWidget_3</tabstop>
   <tabstop>ln_coeff_1</tabstop>
   <tabstop>ln_coeff_2</tabstop>

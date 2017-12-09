@@ -79,13 +79,7 @@ class House(object):
 
         for _name, item in self.cfg.zones.iteritems():
 
-            dic_zone = copy.deepcopy(item)
-            dic_zone['cpe_mean'] = self.cfg.zones_cpe_mean[_name]
-            dic_zone['cpe_str_mean'] = self.cfg.zones_cpe_str_mean[_name]
-            dic_zone['cpe_eave_mean'] = self.cfg.zones_cpe_eave_mean[_name]
-            dic_zone['is_roof_edge'] = self.cfg.zones_edge[_name]
-
-            _zone = Zone(zone_name=_name, **dic_zone)
+            _zone = Zone(zone_name=_name, **item)
 
             _zone.sample_cpe(
                 wind_dir_index=self.wind_orientation,
@@ -218,7 +212,6 @@ class House(object):
 
             for _name, item in self.coverages.iterrows():
 
-                item['cpe_mean'] = self.cfg.coverages_cpe_mean[_name]
                 _coverage = Coverage(coverage_name=_name, **item)
 
                 _coverage.sample_cpe(

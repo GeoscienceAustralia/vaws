@@ -89,7 +89,7 @@ def plot_heatmap(grouped, values, vmin, vmax, vstep, xlim_max, ylim_max,
             ax1.annotate(irow, row['centroid'], color='w', weight='bold',
                          fontsize=8, ha='center', va='center')
 
-        ax1.set_title('Heatmap of damage capacity for {}'.format(group_key))
+        ax1.set_title('Heatmap of failure wind speed for {}'.format(group_key))
 
         ax1.set_xlim([0, xlim_max])
         ax1.set_ylim([0, ylim_max])
@@ -114,6 +114,106 @@ def plot_heatmap(grouped, values, vmin, vmax, vstep, xlim_max, ylim_max,
         fig.savefig('{}.png'.format(file_name), dpi=150)
     plt.close(fig)
 
+
+def plot_influence(cfg, conn_name, file_name=None):
+    """
+
+    Args:
+        grouped: pd.DataFrame (x_coord, y_coord, width, height)
+        values: np.array(N,1)
+        vmin: min. of scale in color bar
+        vmax: max. of scale in color bar
+        vstep: no. of scales in color bar
+        file_name: file to save
+
+    Returns:
+
+    """
+
+    try:
+        infl_dic = cfg.influences[conn_name]
+    except KeyError:
+        print('influence is not defined for {}'.format(conn_name))
+
+    xlim_max, ylim_max = cfg.house['length'], cfg.house['width']
+
+    fig = plt.figure(figsize=(6, 8), dpi=80)
+    fig.suptitle('influence of connection {}'.format(conn_name))
+
+    ax = fig.add_subplot(2, 2, 1)
+
+    # zone
+    for key, value in cfg.zones.iteritems():
+        if key in infl_dic:
+            face_color, font_weight, font_size = 'r', 'bold', 'x-small'
+            _str = '{}:{}'.format(key, infl_dic[key])
+        else:
+            face_color, font_weight, font_size = 'none', 'light', 'small'
+            _str = '{}'.format(key)
+
+        p = PatchCollection([value['coords']], label=key, facecolors=face_color)
+        ax.annotate(_str, value['centroid'], color='k', weight=font_weight,
+                    fontsize=font_size, ha='center', va='center')
+
+        ax.add_collection(p)
+
+    ax.set_title('{}'.format('zone'))
+    ax.set_xlim([0, xlim_max])
+    ax.set_ylim([0, ylim_max])
+    ax.set_xbound(lower=0.0, upper=xlim_max)
+    ax.set_ybound(lower=0.0, upper=ylim_max)
+
+    # Hide major tick labels
+    ax.xaxis.set_major_formatter(ticker.NullFormatter())
+    ax.yaxis.set_major_formatter(ticker.NullFormatter())
+    ax.tick_params(axis=u'both', which=u'both', length=0)
+
+    for i, group_name in enumerate(['sheeting', 'batten', 'rafter'], 1):
+
+        ax = plt.subplot(2, 2, i + 1)
+
+        # zone
+        grouped = cfg.connections.loc[cfg.connections['group_name'] == group_name]
+        p = PatchCollection(grouped['coords'].tolist(), facecolors='none')
+
+        ax.add_collection(p)
+
+        for key, value in grouped.iterrows():
+
+            if key in infl_dic:
+                face_color, font_weight, font_size = 'r', 'bold', 'x-small'
+                _str = '{}:{}'.format(key, infl_dic[key])
+            elif key == conn_name:
+                face_color, font_weight, font_size = 'b', 'bold', 'small'
+                _str = '{}'.format(key)
+            else:
+                face_color, font_weight, font_size = 'none', 'light', 'small'
+                _str = '{}'.format(key)
+
+            p = PatchCollection([value['coords']], label=key,
+                                facecolors=face_color)
+            ax.annotate(_str, value['centroid'], color='k', weight=font_weight,
+                        fontsize=font_size, ha='center', va='center')
+
+            ax.add_collection(p)
+
+        ax.set_title('{}'.format(group_name))
+
+        ax.set_xlim([0, xlim_max])
+        ax.set_ylim([0, ylim_max])
+        ax.set_xbound(lower=0.0, upper=xlim_max)
+        ax.set_ybound(lower=0.0, upper=ylim_max)
+
+        # Hide major tick labels
+        ax.xaxis.set_major_formatter(ticker.NullFormatter())
+        ax.yaxis.set_major_formatter(ticker.NullFormatter())
+        ax.tick_params(axis=u'both', which=u'both', length=0)
+
+    if file_name:
+        fig.savefig('{}.png'.format(file_name), dpi=150)
+    plt.close(fig)
+
+
 '''
 def plot_curve(x_value, y_value, **kwargs):
     plt.plot(x_value, y_value, **kwargs)
@@ -121,7 +221,7 @@ def plot_curve(x_value, y_value, **kwargs):
 
 def plot_show(axis_range, *args, **kwargs):
     """
-    
+
     Args:
         axis_range: [xmin, xmax, ymin, ymax] 
         *args: no_models

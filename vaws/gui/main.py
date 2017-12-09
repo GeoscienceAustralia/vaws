@@ -38,7 +38,7 @@ from vaws.model.damage_costing import compute_water_ingress_given_damage
 
 from vaws.gui.output import plot_wind_event_damage, plot_wind_event_mean, \
                         plot_wind_event_show, plot_fitted_curve, \
-                        plot_fragility_show, plot_damage_show, plot_wall_damage_show
+                        plot_fragility_show, plot_damage_show, plot_wall_damage_show, plot_influence, plot_influence_patch
 
 from mixins import PersistSizePosMixin, setupTable, finiTable
 
@@ -89,6 +89,24 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
             QDoubleValidator(0.0, 100.0, 3, self.ui.flighttimeMean))
         self.ui.flighttimeStddev.setValidator(QDoubleValidator(
             0.0, 100.0, 3, self.ui.flighttimeStddev))
+
+        self.ui.heatmap_house.setRange(0, self.cfg.no_models)
+        self.ui.heatmap_house.setValue(0)
+        self.ui.heatmap_houseLabel.setText('{:d}'.format(0))
+
+        self.ui.slider_influence.setRange(1, len(self.cfg.connections))
+        self.ui.slider_influence.setValue(1)
+        self.ui.slider_influenceLabel.setText('{:d}'.format(1))
+
+        self.updateInfluence()
+
+        _list = sorted(self.cfg.influence_patches.keys())
+        self.ui.slider_patch.setRange(_list[0], _list[-1])
+        self.ui.slider_patch.setValue(_list[0])
+        self.ui.slider_patchLabel.setText('{:d}'.format(_list[0]))
+
+        self.updateSpinBox(failed_conn_name=_list[0])
+        self.updatePatch()
 
         self.statusProgressBar = QProgressBar()
         self.statusProgressBar.setMinimum(0)
@@ -154,7 +172,21 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
         self.connect(self.ui.applyDisplayChangesButton, SIGNAL("clicked()"),
                      self.updateDisplaySettings)
 
+        self.connect(self.ui.heatmap_house, SIGNAL("valueChanged(int)"),
+                     lambda x: self.onSliderChanged(self.ui.heatmap_houseLabel, x))
+
+        self.connect(self.ui.slider_influence, SIGNAL("valueChanged(int)"),
+                     lambda x: self.onSliderChanged(self.ui.slider_influenceLabel, x))
+
+        self.connect(self.ui.slider_patch, SIGNAL("valueChanged(int)"),
+                     lambda x: self.onSliderChanged(self.ui.slider_patchLabel, x))
+
         self.ui.heatmap_house.valueChanged.connect(self.heatmap_house_change)
+
+        self.ui.slider_influence.valueChanged.connect(self.updateInfluence)
+
+        self.ui.slider_patch.valueChanged.connect(self.updatePatchSlider)
+        self.ui.spinBox.valueChanged.connect(self.updatePatch)
 
         self.statusBar().showMessage('Loading')
         self.stopTriggered = False
@@ -366,13 +398,13 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
                 irow, 2, QTableWidgetItem('{:.3f}'.format(z['cpi_alpha'])))
             for _dir in range(8):
                 self.ui.zones.setItem(
-                    irow, 3 + _dir, QTableWidgetItem('{:.3f}'.format(self.cfg.zones_cpe_mean[index][_dir])))
+                    irow, 3 + _dir, QTableWidgetItem('{:.3f}'.format(z['cpe_mean'][_dir])))
             for _dir in range(8):
                 self.ui.zones.setItem(
-                    irow, 11 + _dir, QTableWidgetItem('{:.3f}'.format(self.cfg.zones_cpe_str_mean[index][_dir])))
+                    irow, 11 + _dir, QTableWidgetItem('{:.3f}'.format(z['cpe_str_mean'][_dir])))
             for _dir in range(8):
                 self.ui.zones.setItem(
-                    irow, 19 + _dir, QTableWidgetItem('{:.3f}'.format(self.cfg.zones_cpe_eave_mean[index][_dir])))
+                    irow, 19 + _dir, QTableWidgetItem('{:.3f}'.format(z['cpe_eave_mean'][_dir])))
         finiTable(self.ui.zones)
     
     def updateConnectionGroupTable(self):
@@ -442,8 +474,10 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
         self.statusProgressBar.show()
         self.update_config_from_ui()
 
-        self.ui.heatmap_house.setMaximum(self.cfg.no_models)
+        # self.ui.heatmap_house.setMaximum(self.cfg.no_models)
+        self.ui.heatmap_house.setRange(0, self.cfg.no_models)
         self.ui.heatmap_house.setValue(0)
+        self.ui.heatmap_houseLabel.setText('{:d}'.format(0))
 
         self.ui.mplsheeting.axes.cla()
         self.ui.mplsheeting.axes.figure.canvas.draw()
@@ -468,6 +502,9 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
 
         self.ui.mplfrag.axes.cla()
         self.ui.mplfrag.axes.figure.canvas.draw()
+
+        self.ui.mplinfluecnes.axes.cla()
+        self.ui.mplpatches.axes.figure.canvas.draw()
 
         # run simulation with progress bar
         self.ui.actionStop.setEnabled(True)
@@ -627,6 +664,29 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
                                   wall_minor_cols, wall_minor_rows,red_v, blue_v)
 
         self.ui.damages_tab.setUpdatesEnabled(True)
+
+    def updateInfluence(self):
+        conn_name = self.ui.slider_influence.value()
+        self.ui.mplinfluecnes.axes.figure.clf()
+        plot_influence(self.ui.mplinfluecnes, self.cfg, conn_name)
+
+    def updatePatchSlider(self):
+        failed_conn_name = self.ui.slider_patch.value()
+        self.updateSpinBox(failed_conn_name)
+        self.updatePatch()
+
+    def updateSpinBox(self, failed_conn_name):
+        _sub_list = sorted(self.cfg.influence_patches[failed_conn_name].keys())
+        self.ui.spinBox.setRange(_sub_list[0], _sub_list[-1])
+        self.ui.spinBox.setValue(_sub_list[0])
+
+    def updatePatch(self):
+        failed_conn_name = self.ui.slider_patch.value()
+        conn_name = self.ui.spinBox.value()
+
+        self.ui.mplpatches.axes.figure.clf()
+        plot_influence_patch(self.ui.mplpatches, self.cfg, failed_conn_name,
+                             conn_name)
 
     def updateWaterIngressPlot(self, bucket):
         self.statusBar().showMessage('Plotting Water Ingress')

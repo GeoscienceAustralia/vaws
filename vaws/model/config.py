@@ -155,10 +155,6 @@ class Config(object):
         # house data
         self.house = None
         self.zones = None
-        self.zones_cpe_mean = None
-        self.zones_cpe_eave_mean = None
-        self.zones_cpe_str_mean = None
-        self.zones_edge = None
         self.coverages = None
 
         self.groups = None
@@ -182,7 +178,6 @@ class Config(object):
 
         # debris related
         self.front_facing_walls = None
-        self.coverages_cpe_mean = None
         self.coverages_area = 0.0
 
         self.file_results = None
@@ -366,10 +361,12 @@ class Config(object):
         names_ = ['name'] + range(8)
         _file = os.path.join(self.path_house_data, FILE_COVERAGES_CPE)
         try:
-            self.coverages_cpe_mean = pd.read_csv(
+            coverages_cpe_mean = pd.read_csv(
                 _file, names=names_, index_col=0, skiprows=1).to_dict('index')
         except (IOError, TypeError) as msg:
             logging.warning('{}'.format(msg))
+        else:
+            self.coverages['cpe_mean'] = pd.Series(coverages_cpe_mean)
 
         _file = os.path.join(self.path_house_data, FILE_FRONT_FACING_WALLS)
         try:
@@ -593,9 +590,7 @@ class Config(object):
 
         _file = os.path.join(self.path_house_data, FILE_ZONES)
         try:
-            _df = pd.read_csv(_file, index_col=0, dtype={'cpi_alpha': float,
-                                                         'area': float,
-                                                         'wall_dir': int})
+            _df = self.read_file_zones(_file)
         except IOError as msg:
             logging.error('{}'.format(msg))
         else:
@@ -613,30 +608,72 @@ class Config(object):
             except IOError as msg:
                 logging.error('{}'.format(msg))
             else:
-                setattr(self, 'zones_{}'.format(item), _value)
+                for key, value in self.zones.iteritems():
+                    value[item] = _value[key]
+
+    @classmethod
+    def read_file_zones(cls, file_zones):
+
+        dump = []
+        with open(file_zones, 'rU') as f:
+            next(f)  # skip the first line
+            for line in f:
+                fields = line.strip().rstrip(',').split(',')
+                if len(fields) > 3:
+                    tmp = [x.strip() for x in fields[:4]]
+
+                    _array = array([float(x) for x in fields[4:]])
+                    if _array.size:
+                        try:
+                            _array = reshape(_array, (-1, 2))
+                        except ValueError:
+                            logging.warning(
+                                'Coordinates are incomplete: {}'.format(_array))
+                        else:
+                            tmp.append(Polygon(_array))
+                    else:
+                        tmp.append([])
+                    dump.append(tmp)
+
+        _df = pd.DataFrame(dump, columns=['zone_name', 'area', 'cpi_alpha',
+                                          'wall_dir', 'coords'])
+        _df.set_index('zone_name', drop=True, inplace=True)
+
+        try:
+            _df['centroid'] = _df['coords'].apply(
+                lambda x: x._get_xy()[:-1].mean(axis=0))
+        except AttributeError:
+            logging.warning('No coordinates for zones are provided')
+
+        _df['area'] = _df['area'].astype(dtype=float)
+        _df['cpi_alpha'] = _df['cpi_alpha'].astype(dtype=float)
+        _df['wall_dir'] = _df['wall_dir'].astype(dtype=int)
+
+        return _df
 
     @classmethod
     def read_file_connections(cls, file_connections, types):
 
         dump = []
-        with open(file_connections, 'r') as f:
+        with open(file_connections, 'rU') as f:
             next(f)  # skip the first line
             for line in f:
                 fields = line.strip().rstrip(',').split(',')
-                tmp = [x.strip() for x in fields[:4]]
-                _array = array([float(x) for x in fields[4:]])
-                if _array.size:
-                    try:
-                        _array = reshape(_array, (-1, 2))
-                    except ValueError:
-                        logging.warning(
-                            'Coordinates are incomplete: {}'.format(_array))
+                if len(fields) > 3:
+                    tmp = [x.strip() for x in fields[:4]]
+                    _array = array([float(x) for x in fields[4:]])
+                    if _array.size:
+                        try:
+                            _array = reshape(_array, (-1, 2))
+                        except ValueError:
+                            logging.warning(
+                                'Coordinates are incomplete: {}'.format(_array))
+                        else:
+                            tmp.append(Polygon(_array))
                     else:
-                        tmp.append(Polygon(_array))
-                else:
-                    tmp.append([])
+                        tmp.append([])
 
-                dump.append(tmp)
+                    dump.append(tmp)
 
         _df = pd.DataFrame(dump, columns=['conn_name', 'type_name', 'zone_loc',
                                           'section', 'coords'])
@@ -644,9 +681,9 @@ class Config(object):
         _df.set_index('conn_name', drop=True, inplace=True)
 
         try:
-            _df['centroid'] = _df['coords'].apply(lambda x: x._get_xy().mean(axis=0))
+            _df['centroid'] = _df['coords'].apply(lambda x: x._get_xy()[:-1].mean(axis=0))
         except AttributeError:
-            logging.warning('No coordinates are provided')
+            logging.warning('No coordinates for connections are provided')
 
         _df['group_name'] = types.loc[_df['type_name'], 'group_name'].values
         _df['sub_group'] = _df.apply(
@@ -723,7 +760,7 @@ class Config(object):
     @staticmethod
     def read_front_facing_walls(filename):
         _dic = {}
-        with open(filename, 'r') as f:
+        with open(filename, 'rU') as f:
             next(f)  # skip the first line
             for line in f:
                 fields = line.strip().rstrip(',').split(',')
@@ -751,7 +788,7 @@ class Config(object):
 
         """
         _dic = {}
-        with open(filename, 'r') as f:
+        with open(filename, 'rU') as f:
             next(f)  # skip the first line
             for line in f:
                 fields = line.strip().rstrip(',').split(',')
@@ -770,7 +807,7 @@ class Config(object):
 
         """
         _dic = {}
-        with open(filename, 'r') as f:
+        with open(filename, 'rU') as f:
             next(f)  # skip the first line
             for line in f:
                 key = None
@@ -803,7 +840,7 @@ class Config(object):
 
         """
         _dic = {}
-        with open(filename, 'r') as f:
+        with open(filename, 'rU') as f:
             next(f)  # skip the first line
             for line in f:
                 damaged_conn = None
@@ -944,10 +981,10 @@ class Config(object):
                    ', '.join(str(x) for x in self.water_ingress_i_speed_at_full_wi))
 
         if filename:
-            with open(filename, 'wb') as configfile:
+            with open(filename, 'w') as configfile:
                 config.write(configfile)
                 logging.info('{} is created'.format(filename))
         else:
-            with open(self.cfg_file, 'wb') as configfile:
+            with open(self.cfg_file, 'w') as configfile:
                 config.write(configfile)
                 logging.info('{} is created'.format(self.cfg_file))

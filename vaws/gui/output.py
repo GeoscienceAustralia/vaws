@@ -8,6 +8,7 @@ import matplotlib.pyplot as plt
 
 import logging
 import numpy as np
+from itertools import cycle
 
 from vaws.model import house
 from vaws.model.zone import Zone
@@ -312,3 +313,146 @@ def format_coord(x, y):
     col = int(x + 0.5)
     row = int(y + 0.5)
     return Zone.get_zone_location_from_grid((col, row,))
+
+
+def plot_influence(fig, cfg, conn_name, file_name=None):
+
+    fig.axes.figure.clf()
+
+    dic_ax = {'zone': fig.figure.add_subplot(2, 2, 1)}
+    _list_groups = cfg.connections.group_name.unique().tolist()
+    for i, name in enumerate(_list_groups, 2):
+        dic_ax[name] = fig.figure.add_subplot(2, 2, i)
+
+    xlim_max, ylim_max = cfg.house['length'], cfg.house['width']
+
+    # zone
+    for key, value in cfg.zones.iteritems():
+        p = PatchCollection([value['coords']], facecolors='none')
+        dic_ax['zone'].add_collection(p)
+
+    # groups
+    for group_name in _list_groups:
+        grouped = cfg.connections.loc[cfg.connections['group_name'] == group_name]
+        p = PatchCollection(grouped['coords'].tolist(), facecolors='none')
+        dic_ax[group_name].add_collection(p)
+
+    try:
+        infl_dic = cfg.influences[conn_name]
+    except KeyError:
+        print('influence is not defined for {}'.format(conn_name))
+    else:
+        dic_ax = draw_influence(cfg, infl_dic, dic_ax, conn_name)
+
+    finally:
+
+        _list_groups.append('zone')
+        for item in _list_groups:
+            dic_ax[item].set_title('{}'.format(item))
+            set_axis_etc(dic_ax[item], xlim_max, ylim_max)
+
+        fig.canvas.draw()
+
+    if file_name:
+        fig.savefig('{}.png'.format(file_name), dpi=150)
+
+
+def set_axis_etc(ax, xlim_max, ylim_max):
+
+    ax.set_xlim([0, xlim_max])
+    ax.set_ylim([0, ylim_max])
+    ax.set_xbound(lower=0.0, upper=xlim_max)
+    ax.set_ybound(lower=0.0, upper=ylim_max)
+
+    # Hide major tick labels
+    ax.xaxis.set_major_formatter(mpl.ticker.NullFormatter())
+    ax.yaxis.set_major_formatter(mpl.ticker.NullFormatter())
+    ax.tick_params(axis=u'both', which=u'both', length=0)
+
+
+def plot_influence_patch(fig, cfg, failed_conn_name, conn_name, file_name=None):
+
+    fig.axes.figure.clf()
+
+    dic_ax = {'zone': fig.figure.add_subplot(2, 2, 1)}
+    _list_groups = cfg.connections.group_name.unique().tolist()
+    for i, name in enumerate(_list_groups, 2):
+        dic_ax[name] = fig.figure.add_subplot(2, 2, i)
+
+    xlim_max, ylim_max = cfg.house['length'], cfg.house['width']
+
+    # pool = cycle(['skyblue', 'orange', 'olive', 'pink', 'violet'])
+
+    # zone
+    for key, value in cfg.zones.iteritems():
+        p = PatchCollection([value['coords']], facecolors='none')
+        dic_ax['zone'].add_collection(p)
+
+    # groups
+    for group_name in _list_groups:
+        grouped = cfg.connections.loc[cfg.connections['group_name'] == group_name]
+        p = PatchCollection(grouped['coords'].tolist(), facecolors='none')
+        dic_ax[group_name].add_collection(p)
+
+    try:
+        infl_dic = cfg.influence_patches[failed_conn_name][conn_name]
+
+    except KeyError:
+        print('influence patch is not defined for {}'.format(failed_conn_name))
+
+    else:
+
+        # failed connection: grey
+        target = cfg.connections.loc[failed_conn_name]
+        p = PatchCollection([target['coords']], facecolors='grey')
+        dic_ax[target.group_name].add_collection(p)
+        dic_ax[target.group_name].annotate(failed_conn_name, target['centroid'],
+                                           color='k', weight='bold',
+                                           fontsize='small', ha='center', va='center')
+
+        dic_ax = draw_influence(cfg, infl_dic, dic_ax, conn_name)
+
+    finally:
+
+        _list_groups.append('zone')
+        for item in _list_groups:
+            dic_ax[item].set_title('{}'.format(item))
+            set_axis_etc(dic_ax[item], xlim_max, ylim_max)
+
+        fig.canvas.draw()
+
+    if file_name:
+        fig.savefig('{}.png'.format(file_name), dpi=150)
+
+
+def draw_influence(cfg, infl_dic, dic_ax, conn_name):
+
+    # target: blue
+    target = cfg.connections.loc[conn_name]
+    p = PatchCollection([target['coords']], facecolors='skyblue')
+    dic_ax[target.group_name].add_collection(p)
+    dic_ax[target.group_name].annotate(conn_name, target['centroid'],
+                                       color='k', weight='bold',
+                                       fontsize='small', ha='center',
+                                       va='center')
+    # influences: red
+    for key, value in infl_dic.iteritems():
+
+        face_color, font_weight, font_size = 'orange', 'bold', 'x-small'
+        _str = '{}:{}'.format(key, value)
+
+        if key in cfg.zones:
+            item = cfg.zones[key]
+            ax_key = 'zone'
+        else:
+            item = cfg.connections.loc[key]
+            ax_key = item['group_name']
+
+        p = PatchCollection([item['coords']], facecolors=face_color)
+        dic_ax[ax_key].annotate(_str, item['centroid'], color='k',
+                                weight=font_weight,
+                                fontsize=font_size, ha='center', va='center')
+
+        dic_ax[ax_key].add_collection(p)
+
+    return dic_ax
