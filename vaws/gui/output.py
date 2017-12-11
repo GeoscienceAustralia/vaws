@@ -328,8 +328,12 @@ def plot_influence(fig, cfg, conn_name, file_name=None):
 
     # zone
     for key, value in cfg.zones.iteritems():
-        p = PatchCollection([value['coords']], facecolors='none')
-        dic_ax['zone'].add_collection(p)
+        try:
+            p = PatchCollection([value['coords']], facecolors='none')
+        except AttributeError:
+            pass
+        else:
+            dic_ax['zone'].add_collection(p)
 
     # groups
     for group_name in _list_groups:
@@ -340,9 +344,9 @@ def plot_influence(fig, cfg, conn_name, file_name=None):
     try:
         infl_dic = cfg.influences[conn_name]
     except KeyError:
-        print('influence is not defined for {}'.format(conn_name))
+        logging.warning('influence is not defined for {}'.format(conn_name))
     else:
-        dic_ax = draw_influence(cfg, infl_dic, dic_ax, conn_name)
+        draw_influence(cfg, infl_dic, dic_ax, conn_name)
 
     finally:
 
@@ -385,8 +389,12 @@ def plot_influence_patch(fig, cfg, failed_conn_name, conn_name, file_name=None):
 
     # zone
     for key, value in cfg.zones.iteritems():
-        p = PatchCollection([value['coords']], facecolors='none')
-        dic_ax['zone'].add_collection(p)
+        try:
+            p = PatchCollection([value['coords']], facecolors='none')
+        except AttributeError:
+            pass
+        else:
+            dic_ax['zone'].add_collection(p)
 
     # groups
     for group_name in _list_groups:
@@ -398,7 +406,7 @@ def plot_influence_patch(fig, cfg, failed_conn_name, conn_name, file_name=None):
         infl_dic = cfg.influence_patches[failed_conn_name][conn_name]
 
     except KeyError:
-        print('influence patch is not defined for {}'.format(failed_conn_name))
+        logging.warning('influence patch is not defined for {}:{}'.format(failed_conn_name, conn_name))
 
     else:
 
@@ -410,7 +418,7 @@ def plot_influence_patch(fig, cfg, failed_conn_name, conn_name, file_name=None):
                                            color='k', weight='bold',
                                            fontsize='small', ha='center', va='center')
 
-        dic_ax = draw_influence(cfg, infl_dic, dic_ax, conn_name)
+        draw_influence(cfg, infl_dic, dic_ax, conn_name)
 
     finally:
 
@@ -448,11 +456,17 @@ def draw_influence(cfg, infl_dic, dic_ax, conn_name):
             item = cfg.connections.loc[key]
             ax_key = item['group_name']
 
-        p = PatchCollection([item['coords']], facecolors=face_color)
-        dic_ax[ax_key].annotate(_str, item['centroid'], color='k',
-                                weight=font_weight,
-                                fontsize=font_size, ha='center', va='center')
+        try:
+            p = PatchCollection([item['coords']], facecolors=face_color)
+        except AttributeError:
+            pass
+        else:
 
-        dic_ax[ax_key].add_collection(p)
+            try:
+                dic_ax[ax_key].annotate(_str, item['centroid'], color='k',
+                                    weight=font_weight,
+                                    fontsize=font_size, ha='center', va='center')
+            except KeyError:
+                pass
 
-    return dic_ax
+            dic_ax[ax_key].add_collection(p)

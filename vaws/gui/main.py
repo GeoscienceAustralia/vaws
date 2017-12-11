@@ -101,12 +101,12 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
         self.updateInfluence()
 
         _list = sorted(self.cfg.influence_patches.keys())
-        self.ui.slider_patch.setRange(_list[0], _list[-1])
-        self.ui.slider_patch.setValue(_list[0])
-        self.ui.slider_patchLabel.setText('{:d}'.format(_list[0]))
-
-        self.updateSpinBox(failed_conn_name=_list[0])
-        self.updatePatch()
+        if _list:
+            self.ui.slider_patch.setRange(_list[0], _list[-1])
+            self.ui.slider_patch.setValue(_list[0])
+            self.ui.slider_patchLabel.setText('{:d}'.format(_list[0]))
+            self.updateSpinBox(failed_conn_name=_list[0])
+            self.updatePatch()
 
         self.statusProgressBar = QProgressBar()
         self.statusProgressBar.setMinimum(0)
@@ -676,9 +676,13 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
         self.updatePatch()
 
     def updateSpinBox(self, failed_conn_name):
-        _sub_list = sorted(self.cfg.influence_patches[failed_conn_name].keys())
-        self.ui.spinBox.setRange(_sub_list[0], _sub_list[-1])
-        self.ui.spinBox.setValue(_sub_list[0])
+        try:
+            _sub_list = sorted(self.cfg.influence_patches[failed_conn_name].keys())
+        except KeyError:
+            pass
+        else:
+            self.ui.spinBox.setRange(_sub_list[0], _sub_list[-1])
+            self.ui.spinBox.setValue(_sub_list[0])
 
     def updatePatch(self):
         failed_conn_name = self.ui.slider_patch.value()
