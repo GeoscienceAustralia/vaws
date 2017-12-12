@@ -1,17 +1,15 @@
 '''
     output.py - output module, postprocess and plot display engine
 '''
-import matplotlib as mpl
-from matplotlib import cm, colors
+from matplotlib import cm, colors, ticker, colorbar
 from matplotlib.collections import PatchCollection
-import matplotlib.pyplot as plt
 
 import logging
-import numpy as np
-from itertools import cycle
+from numpy import ceil, linspace
 
 from vaws.model import house
 from vaws.model.zone import Zone
+
 
 class PlotFlyoverCallback(object):
     def __init__(self, axes, data, statusbar, num_cols, num_rows):
@@ -34,175 +32,6 @@ class PlotFlyoverCallback(object):
         self.statusbar.showMessage(locStr)
 
 
-class PlotClickCallback(object):
-    def __init__(self, figure, axes, plotKey, owner, aHouse, walldir=None):
-        self.figure = figure
-        self.axes = axes
-        self.plotKey = plotKey
-        self.house = aHouse
-        self.owner = owner
-        self.walldir = walldir
-        self.selected, = axes.plot([0], [0], 'ws', ms=12, alpha=1.0, visible=False, markeredgecolor='black',
-                                   markeredgewidth=2)
-
-    def select(self, col, row):
-        self.selected.set_visible(True)
-        self.selected.set_data(col, row)
-        self.figure.canvas.draw()
-
-    def __call__(self, event):
-        if event.inaxes != self.axes:
-            return
-
-        col = int(event.xdata + 0.5)
-        row = int(event.ydata + 0.5)
-
-        mplDict['south'].selected.set_visible(False)
-        mplDict['north'].selected.set_visible(False)
-        mplDict['east'].selected.set_visible(False)
-        mplDict['west'].selected.set_visible(False)
-
-        self.select(col, row)
-
-        zoneLoc = zone.getZoneLocFromGrid(col, row)
-
-        if self.walldir is not None:
-            if self.walldir == 'south':
-                zoneLoc = 'WS%s' % (zoneLoc)
-            elif self.walldir == 'north':
-                zoneLoc = 'WN%s' % (zoneLoc)
-            elif self.walldir == 'east':
-                zoneLoc = 'WE%d%d' % (col + 2, row + 1)
-            elif self.walldir == 'west':
-                zoneLoc = 'WW%d%d' % (col + 2, row + 1)
-
-        self.owner.onSelectZone(zoneLoc)
-
-        if zoneLoc in house.zoneByLocationMap:
-            z = house.zoneByLocationMap[zoneLoc]
-            self.owner.onZoneSelected(z, self.plotKey)
-
-            ctg = house.ctgMap[self.plotKey]
-            for c in z.located_conns:
-                if c.ctype.group.id == ctg.id:
-                    self.owner.onSelectConnection(c.connection_name)
-                    break
-
-
-def plot_wall_damage_show(fig,
-                          wall_south_V,
-                          wall_north_V,
-                          wall_west_V,
-                          wall_east_V,
-                          num_major_cols, num_major_rows,
-                          num_minor_cols, num_minor_rows,
-                          v_min, v_max):
-    # add the legend colorbar axes to base of plot
-    fig.clf()
-    fig.canvas.draw()
-    left = 0.1
-    bottom = left
-    width = (1.0 - left * 2.0)
-    height = 0.05
-    axLegend = fig.add_axes([left, bottom, width, height])
-    cmap = mpl.cm.jet_r
-    norm = mpl.colors.Normalize(vmin=v_min, vmax=v_max)
-    cb1 = mpl.colorbar.ColorbarBase(axLegend, cmap=cmap, norm=norm, orientation='horizontal')
-    cb1.set_label('Wind Speed')
-
-    # setup south ticks
-    xticks = range(0, num_major_cols)
-    xticklabels = []
-    for tick in xticks:
-        base = 'WS'
-        letter = chr(ord('A') + tick)
-        xticklabels.append(base + letter)
-    yticks = range(0, num_major_rows)
-    yticklabels = range(1, num_major_rows + 1)
-
-    # add the south wall
-    bottom = 0.2
-    height = 0.1
-    axPlot = fig.add_axes([left, bottom, width, height])
-    axPlot.imshow(wall_south_V, cmap=cm.jet_r, interpolation='nearest', origin='lower', vmin=v_min, vmax=v_max)
-    axPlot.set_yticks(yticks)
-    axPlot.set_yticklabels(yticklabels)
-    axPlot.set_xticks(xticks)
-    axPlot.set_xticklabels(xticklabels)
-    mplDict['south'] = PlotClickCallback(fig, axPlot, plotKey, mplDict['owner'], mplDict['house'], 'south')
-    fig.canvas.mpl_connect('motion_notify_event',
-                           PlotFlyoverCallback(axPlot, wall_south_V, mplDict['statusbar'], num_major_cols,
-                                               num_major_rows))
-    fig.canvas.mpl_connect('button_press_event', mplDict['south'])
-
-    # setup north ticks
-    xticklabels = []
-    for tick in xticks:
-        base = 'WN'
-        letter = chr(ord('A') + tick)
-        xticklabels.append(base + letter)
-
-    # add the north wall
-    bottom = 0.8
-    height = 0.1
-    axPlot = fig.add_axes([left, bottom, width, height])
-    axPlot.imshow(wall_north_V, cmap=cm.jet_r, interpolation='nearest', origin='lower', vmin=v_min, vmax=v_max)
-    axPlot.set_yticks(yticks)
-    axPlot.set_yticklabels(yticklabels)
-    axPlot.set_xticks(xticks)
-    axPlot.set_xticklabels(xticklabels)
-    mplDict['north'] = PlotClickCallback(fig, axPlot, plotKey, mplDict['owner'], mplDict['house'], 'north')
-    fig.canvas.mpl_connect('motion_notify_event',
-                           PlotFlyoverCallback(axPlot, wall_north_V, mplDict['statusbar'], num_major_cols,
-                                               num_major_rows))
-    fig.canvas.mpl_connect('button_press_event', mplDict['north'])
-
-    # setup west ticks
-    xticks = range(0, num_minor_cols)
-    xticklabels = []
-    for tick in xticks:
-        xticklabels.append('WW%d' % (tick + 2))
-    yticks = range(0, num_minor_rows)
-    yticklabels = range(1, num_minor_rows + 1)
-
-    # add the west wall
-    bottom = 0.4
-    height = 0.1
-    axPlot = fig.add_axes([left, bottom, width, height])
-    axPlot.imshow(wall_west_V, cmap=cm.jet_r, interpolation='nearest', origin='lower', vmin=v_min, vmax=v_max)
-    axPlot.set_yticks(yticks)
-    axPlot.set_yticklabels(yticklabels)
-    axPlot.set_xticks(xticks)
-    axPlot.set_xticklabels(xticklabels)
-    mplDict['west'] = PlotClickCallback(fig, axPlot, plotKey, mplDict['owner'], mplDict['house'], 'west')
-    fig.canvas.mpl_connect('motion_notify_event',
-                           PlotFlyoverCallback(axPlot, wall_west_V, mplDict['statusbar'], num_minor_cols,
-                                               num_minor_rows))
-    fig.canvas.mpl_connect('button_press_event', mplDict['west'])
-
-    # setup east ticks
-    xticklabels = []
-    for tick in xticks:
-        xticklabels.append('WE%d' % (tick + 2))
-
-    # add the east wall
-    bottom = 0.6
-    height = 0.1
-    axPlot = fig.add_axes([left, bottom, width, height])
-    axPlot.imshow(wall_east_V, cmap=cm.jet_r, interpolation='nearest', origin='lower', vmin=v_min, vmax=v_max)
-    axPlot.set_yticks(yticks)
-    axPlot.set_yticklabels(yticklabels)
-    axPlot.set_xticks(xticks)
-    axPlot.set_xticklabels(xticklabels)
-    mplDict['east'] = PlotClickCallback(fig, axPlot, plotKey, mplDict['owner'], mplDict['house'], 'east')
-    fig.canvas.mpl_connect('motion_notify_event',
-                           PlotFlyoverCallback(axPlot, wall_east_V, mplDict['statusbar'], num_minor_cols,
-                                               num_minor_rows))
-    fig.canvas.mpl_connect('button_press_event', mplDict['east'])
-
-    fig.canvas.draw()
-
-
 def plot_damage_show(fig, grouped, values_grid, xlim_max, ylim_max,
                      v_min, v_max, v_step, house_number=0):
 
@@ -217,10 +46,10 @@ def plot_damage_show(fig, grouped, values_grid, xlim_max, ylim_max,
     axLegend = fig.figure.add_axes([left, bottom, width, height])
 
     cmap = cm.jet_r
-    bounds = np.linspace(v_min, v_max, v_step)
+    bounds = linspace(v_min, v_max, v_step)
     norm = colors.BoundaryNorm(bounds, cmap.N)
     cmap.set_under('gray')
-    cb1 = mpl.colorbar.ColorbarBase(axLegend.axes,
+    cb1 = colorbar.ColorbarBase(axLegend.axes,
                                     cmap=cmap,
                                     norm=norm,
                                     spacing='proportional',
@@ -253,12 +82,11 @@ def plot_damage_show(fig, grouped, values_grid, xlim_max, ylim_max,
     axPlot.set_ylim([0, ylim_max])
     axPlot.set_xbound(lower=0.0, upper=xlim_max)
     axPlot.set_ybound(lower=0.0, upper=ylim_max)
-    axPlot.xaxis.set_major_formatter(mpl.ticker.NullFormatter())
-    axPlot.yaxis.set_major_formatter(mpl.ticker.NullFormatter())
+    axPlot.xaxis.set_major_formatter(ticker.NullFormatter())
+    axPlot.yaxis.set_major_formatter(ticker.NullFormatter())
     axPlot.tick_params(axis=u'both', which=u'both', length=0)
-    # axPlot.get_xaxis().set_minor_locator(mpl.ticker.AutoMinorLocator())
-    # axPlot.get_yaxis().set_minor_locator(mpl.ticker.AutoMinorLocator())
-
+    # axPlot.get_xaxis().set_minor_locator(ticker.AutoMinorLocator())
+    # axPlot.get_yaxis().set_minor_locator(ticker.AutoMinorLocator())
 
     group_key = grouped['group_name'].unique()[0]
     if house_number == 0:
@@ -319,58 +147,70 @@ def plot_influence(fig, cfg, conn_name, file_name=None):
 
     fig.axes.figure.clf()
 
-    dic_ax = {'zone': fig.figure.add_subplot(2, 2, 1)}
-    _list_groups = cfg.connections.group_name.unique().tolist()
-    for i, name in enumerate(_list_groups, 2):
-        dic_ax[name] = fig.figure.add_subplot(2, 2, i)
-
-    xlim_max, ylim_max = cfg.house['length'], cfg.house['width']
-
-    # zone
-    for key, value in cfg.zones.iteritems():
-        try:
-            p = PatchCollection([value['coords']], facecolors='none')
-        except AttributeError:
-            pass
-        else:
-            dic_ax['zone'].add_collection(p)
-
-    # groups
-    for group_name in _list_groups:
-        grouped = cfg.connections.loc[cfg.connections['group_name'] == group_name]
-        p = PatchCollection(grouped['coords'].tolist(), facecolors='none')
-        dic_ax[group_name].add_collection(p)
-
     try:
         infl_dic = cfg.influences[conn_name]
     except KeyError:
         logging.warning('influence is not defined for {}'.format(conn_name))
     else:
-        draw_influence(cfg, infl_dic, dic_ax, conn_name)
+        _list_groups = [cfg.connections.loc[conn_name].group_name]
+        for key in infl_dic.keys():
+            try:
+                _group_name = cfg.connections.loc[key].group_name
+            except KeyError:
+                if (key in cfg.zones) and ('zone' not in _list_groups):
+                    _list_groups.append('zone')
+            else:
+                if _group_name not in _list_groups:
+                    _list_groups.append(_group_name)
+
+        no_rows = ceil(len(_list_groups) / 2.0)
+
+        dic_ax = {}
+        for i, name in enumerate(_list_groups, 1):
+            dic_ax[name] = fig.figure.add_subplot(no_rows, 2, i)
+
+        for group_name in _list_groups:
+
+            if group_name == 'zone':
+                for key, value in cfg.zones.iteritems():
+                    try:
+                        p = PatchCollection([value['coords']], facecolors='none')
+                    except AttributeError:
+                        pass
+                    else:
+                        dic_ax['zone'].add_collection(p)
+            else:
+                grouped = cfg.connections.loc[
+                    cfg.connections['group_name'] == group_name]
+                p = PatchCollection(grouped['coords'].tolist(), facecolors='none')
+                dic_ax[group_name].add_collection(p)
+
+        dic_ax = draw_influence(cfg, infl_dic, dic_ax, conn_name)
+
+        for item in _list_groups:
+            set_axis_etc(dic_ax[item],
+                         title=item,
+                         xlim_max=cfg.house['length'],
+                         ylim_max=cfg.house['width'])
 
     finally:
-
-        _list_groups.append('zone')
-        for item in _list_groups:
-            dic_ax[item].set_title('{}'.format(item))
-            set_axis_etc(dic_ax[item], xlim_max, ylim_max)
-
         fig.canvas.draw()
 
     if file_name:
         fig.savefig('{}.png'.format(file_name), dpi=150)
 
 
-def set_axis_etc(ax, xlim_max, ylim_max):
+def set_axis_etc(ax, title, xlim_max, ylim_max):
 
+    ax.set_title(title)
     ax.set_xlim([0, xlim_max])
     ax.set_ylim([0, ylim_max])
     ax.set_xbound(lower=0.0, upper=xlim_max)
     ax.set_ybound(lower=0.0, upper=ylim_max)
 
     # Hide major tick labels
-    ax.xaxis.set_major_formatter(mpl.ticker.NullFormatter())
-    ax.yaxis.set_major_formatter(mpl.ticker.NullFormatter())
+    ax.xaxis.set_major_formatter(ticker.NullFormatter())
+    ax.yaxis.set_major_formatter(ticker.NullFormatter())
     ax.tick_params(axis=u'both', which=u'both', length=0)
 
 
@@ -378,37 +218,49 @@ def plot_influence_patch(fig, cfg, failed_conn_name, conn_name, file_name=None):
 
     fig.axes.figure.clf()
 
-    dic_ax = {'zone': fig.figure.add_subplot(2, 2, 1)}
-    _list_groups = cfg.connections.group_name.unique().tolist()
-    for i, name in enumerate(_list_groups, 2):
-        dic_ax[name] = fig.figure.add_subplot(2, 2, i)
-
-    xlim_max, ylim_max = cfg.house['length'], cfg.house['width']
-
-    # pool = cycle(['skyblue', 'orange', 'olive', 'pink', 'violet'])
-
-    # zone
-    for key, value in cfg.zones.iteritems():
-        try:
-            p = PatchCollection([value['coords']], facecolors='none')
-        except AttributeError:
-            pass
-        else:
-            dic_ax['zone'].add_collection(p)
-
-    # groups
-    for group_name in _list_groups:
-        grouped = cfg.connections.loc[cfg.connections['group_name'] == group_name]
-        p = PatchCollection(grouped['coords'].tolist(), facecolors='none')
-        dic_ax[group_name].add_collection(p)
-
     try:
         infl_dic = cfg.influence_patches[failed_conn_name][conn_name]
 
     except KeyError:
         logging.warning('influence patch is not defined for {}:{}'.format(failed_conn_name, conn_name))
-
     else:
+
+        _list_groups = [cfg.connections.loc[failed_conn_name].group_name]
+        _name = cfg.connections.loc[conn_name].group_name
+        if _name not in _list_groups:
+            _list_groups.append(_name)
+
+        for key in infl_dic.keys():
+            try:
+                _group_name = cfg.connections.loc[key].group_name
+            except KeyError:
+                if (key in cfg.zones) and ('zone' not in _list_groups):
+                    _list_groups.append('zone')
+            else:
+                if _group_name not in _list_groups:
+                    _list_groups.append(_group_name)
+
+        no_rows = ceil(len(_list_groups) / 2.0)
+
+        dic_ax = {}
+        for i, name in enumerate(_list_groups, 1):
+            dic_ax[name] = fig.figure.add_subplot(no_rows, 2, i)
+
+        for group_name in _list_groups:
+
+            if group_name == 'zone':
+                for key, value in cfg.zones.iteritems():
+                    try:
+                        p = PatchCollection([value['coords']], facecolors='none')
+                    except AttributeError:
+                        pass
+                    else:
+                        dic_ax['zone'].add_collection(p)
+            else:
+                grouped = cfg.connections.loc[
+                    cfg.connections['group_name'] == group_name]
+                p = PatchCollection(grouped['coords'].tolist(), facecolors='none')
+                dic_ax[group_name].add_collection(p)
 
         # failed connection: grey
         target = cfg.connections.loc[failed_conn_name]
@@ -420,13 +272,13 @@ def plot_influence_patch(fig, cfg, failed_conn_name, conn_name, file_name=None):
 
         draw_influence(cfg, infl_dic, dic_ax, conn_name)
 
-    finally:
-
-        _list_groups.append('zone')
         for item in _list_groups:
-            dic_ax[item].set_title('{}'.format(item))
-            set_axis_etc(dic_ax[item], xlim_max, ylim_max)
+            set_axis_etc(dic_ax[item],
+                         title=item,
+                         xlim_max=cfg.house['length'],
+                         ylim_max=cfg.house['width'])
 
+    finally:
         fig.canvas.draw()
 
     if file_name:
@@ -461,12 +313,10 @@ def draw_influence(cfg, infl_dic, dic_ax, conn_name):
         except AttributeError:
             pass
         else:
-
-            try:
-                dic_ax[ax_key].annotate(_str, item['centroid'], color='k',
-                                    weight=font_weight,
-                                    fontsize=font_size, ha='center', va='center')
-            except KeyError:
-                pass
+            dic_ax[ax_key].annotate(_str, item['centroid'], color='k',
+                                weight=font_weight,
+                                fontsize=font_size, ha='center', va='center')
 
             dic_ax[ax_key].add_collection(p)
+
+    return dic_ax

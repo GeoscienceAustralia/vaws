@@ -38,7 +38,8 @@ from vaws.model.damage_costing import compute_water_ingress_given_damage
 
 from vaws.gui.output import plot_wind_event_damage, plot_wind_event_mean, \
                         plot_wind_event_show, plot_fitted_curve, \
-                        plot_fragility_show, plot_damage_show, plot_wall_damage_show, plot_influence, plot_influence_patch
+                        plot_fragility_show, plot_damage_show, plot_influence, \
+                        plot_influence_patch
 
 from mixins import PersistSizePosMixin, setupTable, finiTable
 

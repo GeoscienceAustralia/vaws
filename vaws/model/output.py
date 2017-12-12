@@ -1,10 +1,11 @@
 """
     output.py - output module, postprocess and plot display engine
 """
-from numpy import linspace
+from numpy import linspace, ceil
 import matplotlib.pyplot as plt
 from matplotlib import cm, colorbar, colors, ticker
 from matplotlib.collections import PatchCollection
+import matplotlib as mpl
 
 import logging
 
@@ -115,104 +116,114 @@ def plot_heatmap(grouped, values, vmin, vmax, vstep, xlim_max, ylim_max,
     plt.close(fig)
 
 
-def plot_influence(cfg, conn_name, file_name=None):
-    """
+def draw_influence(cfg, infl_dic, dic_ax, conn_name):
 
-    Args:
-        grouped: pd.DataFrame (x_coord, y_coord, width, height)
-        values: np.array(N,1)
-        vmin: min. of scale in color bar
-        vmax: max. of scale in color bar
-        vstep: no. of scales in color bar
-        file_name: file to save
+    # target: blue
+    target = cfg.connections.loc[conn_name]
+    p = PatchCollection([target['coords']], facecolors='skyblue')
+    dic_ax[target.group_name].add_collection(p)
+    dic_ax[target.group_name].annotate(conn_name, target['centroid'],
+                                       color='k', weight='bold',
+                                       fontsize='small', ha='center',
+                                       va='center')
+    # influences: red
+    for key, value in infl_dic.iteritems():
 
-    Returns:
+        face_color, font_weight, font_size = 'orange', 'bold', 'x-small'
+        _str = '{}:{}'.format(key, value)
 
-    """
-
-    try:
-        infl_dic = cfg.influences[conn_name]
-    except KeyError:
-        print('influence is not defined for {}'.format(conn_name))
-
-    xlim_max, ylim_max = cfg.house['length'], cfg.house['width']
-
-    fig = plt.figure(figsize=(6, 8), dpi=80)
-    fig.suptitle('influence of connection {}'.format(conn_name))
-
-    ax = fig.add_subplot(2, 2, 1)
-
-    # zone
-    for key, value in cfg.zones.iteritems():
-        if key in infl_dic:
-            face_color, font_weight, font_size = 'r', 'bold', 'x-small'
-            _str = '{}:{}'.format(key, infl_dic[key])
+        if key in cfg.zones:
+            item = cfg.zones[key]
+            ax_key = 'zone'
         else:
-            face_color, font_weight, font_size = 'none', 'light', 'small'
-            _str = '{}'.format(key)
+            item = cfg.connections.loc[key]
+            ax_key = item['group_name']
 
-        p = PatchCollection([value['coords']], label=key, facecolors=face_color)
-        ax.annotate(_str, value['centroid'], color='k', weight=font_weight,
-                    fontsize=font_size, ha='center', va='center')
+        try:
+            p = PatchCollection([item['coords']], facecolors=face_color)
+        except AttributeError:
+            pass
+        else:
 
-        ax.add_collection(p)
+            try:
+                dic_ax[ax_key].annotate(_str, item['centroid'], color='k',
+                                    weight=font_weight,
+                                    fontsize=font_size, ha='center', va='center')
+            except KeyError:
+                pass
 
-    ax.set_title('{}'.format('zone'))
+            dic_ax[ax_key].add_collection(p)
+
+
+def set_axis_etc(ax, xlim_max, ylim_max):
+
     ax.set_xlim([0, xlim_max])
     ax.set_ylim([0, ylim_max])
     ax.set_xbound(lower=0.0, upper=xlim_max)
     ax.set_ybound(lower=0.0, upper=ylim_max)
 
     # Hide major tick labels
-    ax.xaxis.set_major_formatter(ticker.NullFormatter())
-    ax.yaxis.set_major_formatter(ticker.NullFormatter())
+    ax.xaxis.set_major_formatter(mpl.ticker.NullFormatter())
+    ax.yaxis.set_major_formatter(mpl.ticker.NullFormatter())
     ax.tick_params(axis=u'both', which=u'both', length=0)
 
-    for i, group_name in enumerate(['sheeting', 'batten', 'rafter'], 1):
 
-        ax = plt.subplot(2, 2, i + 1)
+def plot_influence(cfg, conn_name, file_name=None):
+
+    fig = plt.figure()
+
+    #fig.axes.figure.clf()
+
+    try:
+        infl_dic = cfg.influences[conn_name]
+    except KeyError:
+        logging.warning('influence is not defined for {}'.format(conn_name))
+    else:
+        _list_groups = [cfg.connections.loc[conn_name].group_name]
+        for key in infl_dic.keys():
+            if key in cfg.zones:
+                _list_groups.append('zone')
+            elif cfg.connections.loc[key].group_name not in _list_groups:
+                _list_groups.append(cfg.connections.loc[key].group_name)
+
+        no_rows = ceil(len(_list_groups) / 2.0)
+
+        dic_ax = {}
+        for i, name in enumerate(_list_groups, 1):
+            dic_ax[name] = fig.add_subplot(no_rows, 2, i)
+
+        xlim_max, ylim_max = cfg.house['length'], cfg.house['width']
 
         # zone
-        grouped = cfg.connections.loc[cfg.connections['group_name'] == group_name]
-        p = PatchCollection(grouped['coords'].tolist(), facecolors='none')
+        for group_name in _list_groups:
 
-        ax.add_collection(p)
-
-        for key, value in grouped.iterrows():
-
-            if key in infl_dic:
-                face_color, font_weight, font_size = 'r', 'bold', 'x-small'
-                _str = '{}:{}'.format(key, infl_dic[key])
-            elif key == conn_name:
-                face_color, font_weight, font_size = 'b', 'bold', 'small'
-                _str = '{}'.format(key)
+            if group_name == 'zone':
+                for key, value in cfg.zones.iteritems():
+                    try:
+                        p = PatchCollection([value['coords']], facecolors='none')
+                    except AttributeError:
+                        pass
+                    else:
+                        dic_ax['zone'].add_collection(p)
             else:
-                face_color, font_weight, font_size = 'none', 'light', 'small'
-                _str = '{}'.format(key)
+                grouped = cfg.connections.loc[
+                    cfg.connections['group_name'] == group_name]
+                p = PatchCollection(grouped['coords'].tolist(), facecolors='none')
+                dic_ax[group_name].add_collection(p)
 
-            p = PatchCollection([value['coords']], label=key,
-                                facecolors=face_color)
-            ax.annotate(_str, value['centroid'], color='k', weight=font_weight,
-                        fontsize=font_size, ha='center', va='center')
+        draw_influence(cfg, infl_dic, dic_ax, conn_name)
 
-            ax.add_collection(p)
+    finally:
 
-        ax.set_title('{}'.format(group_name))
+        for item in _list_groups:
+            dic_ax[item].set_title('{}'.format(item))
+            set_axis_etc(dic_ax[item], xlim_max, ylim_max)
 
-        ax.set_xlim([0, xlim_max])
-        ax.set_ylim([0, ylim_max])
-        ax.set_xbound(lower=0.0, upper=xlim_max)
-        ax.set_ybound(lower=0.0, upper=ylim_max)
-
-        # Hide major tick labels
-        ax.xaxis.set_major_formatter(ticker.NullFormatter())
-        ax.yaxis.set_major_formatter(ticker.NullFormatter())
-        ax.tick_params(axis=u'both', which=u'both', length=0)
+        fig.canvas.draw()
 
     if file_name:
         fig.savefig('{}.png'.format(file_name), dpi=150)
-    plt.close(fig)
-
+    fig.close()
 
 '''
 def plot_curve(x_value, y_value, **kwargs):
