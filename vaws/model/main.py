@@ -237,11 +237,18 @@ def set_logger(path_cfg, logging_level=None):
     logger.setLevel(logging.NOTSET)
     formatter = logging.Formatter('%(levelname)s - %(message)s')
 
-    # create console handler and set level to WARNING
-    ch = logging.StreamHandler()
-    ch.setFormatter(formatter)
-    ch.setLevel(logging.WARNING)
-    logger.addHandler(ch)
+    add_stream = True
+    for h in list(logger.handlers):
+        if h.__class__.__name__ == 'StreamHandler':
+            add_stream = False
+            break
+
+    if add_stream:
+        # create console handler and set level to WARNING
+        ch = logging.StreamHandler()
+        ch.setFormatter(formatter)
+        ch.setLevel(logging.WARNING)
+        logger.addHandler(ch)
 
     if logging_level:
 
@@ -251,6 +258,11 @@ def set_logger(path_cfg, logging_level=None):
             os.makedirs(path_logger)
         fh = logging.FileHandler(os.path.join(path_logger, 'log.txt'), mode='w')
         fh.setFormatter(formatter)
+
+        for h in list(logger.handlers):
+            if h.__class__.__name__ == 'FileHandler':
+                logger.removeHandler(h)
+                break
         logger.addHandler(fh)
 
         try:

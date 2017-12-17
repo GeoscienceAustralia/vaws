@@ -495,6 +495,7 @@ class Config(object):
             logging.error('{}'.format(msg))
         else:
             self.groups = df_groups.to_dict('index')
+            df_groups.sort_values(by='dist_order', inplace=True)
             list_groups = df_groups.index.tolist()
         return df_groups, list_groups
 

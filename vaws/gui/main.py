@@ -5,6 +5,7 @@ import shutil
 import time
 import os.path
 import logging
+import warnings
 
 import matplotlib.pyplot as plt
 from matplotlib.patches import Polygon as patches_Polygon
@@ -52,6 +53,8 @@ SCENARIOS_DIR = os.path.join(SCENARIOS_DIR, 'scenarios')
 CONFIG_TEMPL = "Scenarios (*.cfg)"
 DEFAULT_SCENARIO = os.path.join(SCENARIOS_DIR, 'default', 'default.cfg')
 
+warnings.filterwarnings("ignore")
+
 
 def progress_callback(percent_done):
     my_app.statusProgressBar.setValue(percent_done)
@@ -64,7 +67,7 @@ def progress_callback(percent_done):
 
 
 class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
-    def __init__(self, parent=None, init_scenario=None, file_prompt=False):
+    def __init__(self, parent=None, init_scenario=None):
         super(MyForm, self).__init__(parent)
         PersistSizePosMixin.__init__(self, "MainWindow")
         
@@ -77,37 +80,27 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
         self.cfg = init_scenario
         self.results_dict = None
 
+        # initial setting
         # scenario section
-        self.ui.numHouses.setValidator(QIntValidator(1, 10000, self.ui.numHouses))
-        self.ui.houseName.setText(self.cfg.house['name'])
-        self.ui.terrainCategory.setText(self.cfg.file_wind_profiles)
+        #self.ui.numHouses.setValidator(QIntValidator(1, 10000, self.ui.numHouses))
+        #self.ui.numHouses.setText('{:d}'.format(self.cfg.no_models))
+        #self.ui.houseName.setText(self.cfg.house['name'])
+        #self.ui.terrainCategory.setText(self.cfg.file_wind_profiles)
         self.ui.windDirection.addItems(self.cfg.wind_dir)
 
         # debris
-        self.ui.debrisRegion.setText(self.cfg.region_name)
+        #self.ui.debrisRegion.setText(self.cfg.region_name)
         self.ui.buildingSpacing.addItems(('20.0', '40.0'))
-        self.ui.flighttimeMean.setValidator(
-            QDoubleValidator(0.0, 100.0, 3, self.ui.flighttimeMean))
-        self.ui.flighttimeStddev.setValidator(QDoubleValidator(
-            0.0, 100.0, 3, self.ui.flighttimeStddev))
+        #self.ui.flighttimeMean.setValidator(
+        #    QDoubleValidator(0.0, 100.0, 3, self.ui.flighttimeMean))
+        #self.ui.flighttimeStddev.setValidator(QDoubleValidator(
+        #    0.0, 100.0, 3, self.ui.flighttimeStddev))
 
-        self.ui.heatmap_house.setRange(0, self.cfg.no_models)
-        self.ui.heatmap_house.setValue(0)
-        self.ui.heatmap_houseLabel.setText('{:d}'.format(0))
+        #self.ui.heatmap_house.setRange(0, self.cfg.no_models)
+        #self.ui.heatmap_house.setValue(0)
+        #self.ui.heatmap_houseLabel.setText('{:d}'.format(0))
 
-        self.ui.slider_influence.setRange(1, len(self.cfg.connections))
-        self.ui.slider_influence.setValue(1)
-        self.ui.slider_influenceLabel.setText('{:d}'.format(1))
-
-        self.updateInfluence()
-
-        _list = sorted(self.cfg.influence_patches.keys())
-        if _list:
-            self.ui.slider_patch.setRange(_list[0], _list[-1])
-            self.ui.slider_patch.setValue(_list[0])
-            self.ui.slider_patchLabel.setText('{:d}'.format(_list[0]))
-            self.updateSpinBox(failed_conn_name=_list[0])
-            self.updatePatch()
+        self.init_influence_and_patch()
 
         self.statusProgressBar = QProgressBar()
         self.statusProgressBar.setMinimum(0)
@@ -195,26 +188,49 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
         self.selected_conn = None
         self.selected_plotKey = None
 
-        self.updateGlobalData()
-        self.ui.sourceItems.setValue(-1)
+        # self.update_ui_from_config()
+        # self.ui.sourceItems.setValue(-1)
+        # QTimer.singleShot(0, self.set_scenario)
 
-        QTimer.singleShot(0, self.set_scenario)
+        self.update_ui_from_config()
 
-    def onZoneSelected(self, z, plotKey):
-        self.selected_zone = z
-        self.selected_plotKey = plotKey
+        self.statusBar().showMessage('Ready')
 
-    def onSelectConnection(self, connection_name):
-        for irow in range(len(self.cfg.house.connections)):
-            if unicode(self.ui.connections.item(irow, 0).text()) == connection_name:
-                self.ui.connections.setCurrentCell(irow, 0)
-                break
+    def init_influence_and_patch(self):
+        # init_influence
+        self.ui.slider_influence.setRange(self.cfg.connections.index[0],
+                                          self.cfg.connections.index[-1])
+        self.ui.slider_influence.setValue(self.cfg.connections.index[0])
+        self.ui.slider_influenceLabel.setText(
+            '{:d}'.format(self.cfg.connections.index[0]))
+        # self.updateInfluence()
+
+        # init_patch
+        _list = sorted(self.cfg.influence_patches.keys())
+        if _list:
+            self.ui.slider_patch.setRange(_list[0], _list[-1])
+            self.ui.slider_patch.setValue(_list[0])
+            self.ui.slider_patchLabel.setText('{:d}'.format(_list[0]))
+            self.updateSpinBox(failed_conn_name=_list[0])
+            #self.updatePatch()
+        else:
+            self.ui.mplpatches.axes.figure.clf()
+
+    # def onZoneSelected(self, z, plotKey):
+    #     self.selected_zone = z
+    #     self.selected_plotKey = plotKey
+
+    # def onSelectConnection(self, connection_name):
+    #     for irow in range(len(self.cfg.house.connections)):
+    #         if unicode(self.ui.connections.item(irow, 0).text()) == connection_name:
+    #             self.ui.connections.setCurrentCell(irow, 0)
+    #             break
         
-    def onSelectZone(self, zoneLoc):
-        for irow in range(len(self.cfg.house.zones)):
-            if unicode(self.ui.zones.item(irow, 0).text()) == zoneLoc:
-                self.ui.zones.setCurrentCell(irow, 0)
-                break
+    # def onSelectZone(self, zoneLoc):
+    #     for irow in range(len(self.cfg.house.zones)):
+    #         if unicode(self.ui.zones.item(irow, 0).text()) == zoneLoc:
+    #             self.ui.zones.setCurrentCell(irow, 0)
+    #             break
 
     def onSliderChanged(self, label, x):
         label.setText('{:d}'.format(x))
@@ -222,7 +238,8 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
     def updateVulnCurve(self, _array):
         self.ui.mplvuln.axes.hold(True)
 
-        plot_wind_event_show(self.ui.mplvuln, self.cfg.no_models, self.cfg.speeds[0], self.cfg.speeds[-1])
+        plot_wind_event_show(self.ui.mplvuln, self.cfg.no_models,
+                             self.cfg.speeds[0], self.cfg.speeds[-1])
 
         mean_cols = mean(_array.T, axis=0)
         plot_wind_event_mean(self.ui.mplvuln, self.cfg.speeds, mean_cols)
@@ -241,7 +258,7 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
             try:
                 y = vulnerability_weibull(self.cfg.speeds, param_1, param_2)
             except KeyError as msg:
-                logging.warning(msg)
+                logging.warning('weibull vulnerability: {}'.format(msg))
             else:
                 plot_fitted_curve(self.ui.mplvuln,
                                   self.cfg.speeds,
@@ -263,7 +280,7 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
             try:
                 y = vulnerability_lognorm(self.cfg.speeds, ln_param_1, ln_param_2)
             except KeyError as msg:
-                logging.warning(msg)
+                logging.warning('lognormal vulnerability: {}'.format(msg))
             else:
                 plot_fitted_curve(self.ui.mplvuln,
                                   self.cfg.speeds,
@@ -295,8 +312,9 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
                 y = vulnerability_lognorm(self.cfg.speeds,
                                           df_fitted_curves.at[ds, 'param1'],
                                           df_fitted_curves.at[ds, 'param2'])
-            except KeyError as msg:
-                logging.warning(msg)
+            except KeyError:
+                pass
+                #logging.warning('fragility {}'.format(msg))
             else:
                 plot_fitted_curve(self.ui.mplfrag,
                                   self.cfg.speeds, y,
@@ -416,33 +434,43 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
             self.ui.connGroups.setItem(irow, 2, QTableWidgetItem(ctg['dist_dir']))
             self.ui.connGroups.setItem(irow, 3, QTableWidgetItem(index))
 
-            checked = self.cfg.flags.get('conn_type_group_{}'.format(index), False)
-            cellWidget = QCheckBox()
-            cellWidget.setCheckState(Qt.Checked if checked else Qt.Unchecked)
-            self.ui.connGroups.setCellWidget(irow, 4, cellWidget)
+            #checked = self.cfg.flags.get('conn_type_group_{}'.format(index), False)
+            #cellWidget = QCheckBox()
+            #cellWidget.setCheckState(Qt.Checked if checked else Qt.Unchecked)
+            #self.ui.connGroups.setCellWidget(irow, 4, cellWidget)
         finiTable(self.ui.connGroups)
 
     def update_house_panel(self):
-        self.updateConnectionGroupTable()
+
+        self.updateConnectionTable()
         self.updateConnectionTypeTable()
-        
+        self.updateConnectionGroupTable()
+        self.updateZonesTable()
+        self.updateDamageTable()
+
+    def updateDamageTable(self):
         # load up damage scenarios grid
         setupTable(self.ui.damageScenarios, self.cfg.costings)
-
         for irow, (name, _inst) in enumerate(self.cfg.costings.iteritems()):
             self.ui.damageScenarios.setItem(irow, 0, QTableWidgetItem(name))
-            self.ui.damageScenarios.setItem(irow, 1, QTableWidgetItem('{:.3f}'.format(_inst.surface_area)))
-            self.ui.damageScenarios.setItem(irow, 2, QTableWidgetItem('{:.3f}'.format(_inst.envelope_repair_rate)))
-            self.ui.damageScenarios.setItem(irow, 3, QTableWidgetItem('{:.3f}'.format(_inst.internal_repair_rate)))
-
+            self.ui.damageScenarios.setItem(irow, 1, QTableWidgetItem(
+                '{:.3f}'.format(_inst.surface_area)))
+            self.ui.damageScenarios.setItem(irow, 2, QTableWidgetItem(
+                '{:.3f}'.format(_inst.envelope_repair_rate)))
+            self.ui.damageScenarios.setItem(irow, 3, QTableWidgetItem(
+                '{:.3f}'.format(_inst.internal_repair_rate)))
         finiTable(self.ui.damageScenarios)
-        
+
+    def updateConnectionTable(self):
         # load up connections grid
         setupTable(self.ui.connections, self.cfg.connections)
         for irow, (index, c) in enumerate(self.cfg.connections.iterrows()):
-            self.ui.connections.setItem(irow, 0, QTableWidgetItem(c['group_name']))
-            self.ui.connections.setItem(irow, 1, QTableWidgetItem(c['type_name']))
-            self.ui.connections.setItem(irow, 2, QTableWidgetItem(c['zone_loc']))
+            self.ui.connections.setItem(irow, 0,
+                                        QTableWidgetItem(c['group_name']))
+            self.ui.connections.setItem(irow, 1,
+                                        QTableWidgetItem(c['type_name']))
+            self.ui.connections.setItem(irow, 2,
+                                        QTableWidgetItem(c['zone_loc']))
             # edge = 'False'
             # if c['edge'] != 0:
             #     edge = 'True'
@@ -450,8 +478,7 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
         finiTable(self.ui.connections)
         self.ui.connections.horizontalHeader().resizeSection(2, 70)
         self.ui.connections.horizontalHeader().resizeSection(1, 110)
-        self.updateZonesTable()
-        
+
     # def updateModelFromUI(self):
     #     if self.dirty_conntypes:
     #         irow = 0
@@ -474,6 +501,7 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
         self.statusBar().showMessage('Running Scenario')
         self.statusProgressBar.show()
         self.update_config_from_ui()
+        self.cfg.process_config()
 
         # self.ui.heatmap_house.setMaximum(self.cfg.no_models)
         self.ui.heatmap_house.setRange(0, self.cfg.no_models)
@@ -505,6 +533,9 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
         self.ui.mplfrag.axes.figure.canvas.draw()
 
         self.ui.mplinfluecnes.axes.cla()
+        self.ui.mplinfluecnes.axes.figure.canvas.draw()
+
+        self.ui.mplpatches.axes.cla()
         self.ui.mplpatches.axes.figure.canvas.draw()
 
         # run simulation with progress bar
@@ -527,7 +558,7 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
                 self.updateVulnCurve(bucket['house_damage']['di'])
                 self.updateFragCurve(bucket['house_damage']['di'])
                 self.updateHouseResultsTable(bucket)
-                self.updateConnectionTable(bucket)
+                self.updateConnectionTable_with_results(bucket)
                 self.updateConnectionTypePlots(bucket)
                 self.updateHeatmap(bucket)
                 self.updateWaterIngressPlot(bucket)
@@ -667,8 +698,8 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
         self.ui.damages_tab.setUpdatesEnabled(True)
 
     def updateInfluence(self):
-        conn_name = self.ui.slider_influence.value()
         self.ui.mplinfluecnes.axes.figure.clf()
+        conn_name = self.ui.slider_influence.value()
         plot_influence(self.ui.mplinfluecnes, self.cfg, conn_name)
 
     def updatePatchSlider(self):
@@ -804,7 +835,7 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
         self.updateStrengthPlot(bucket)
         self.updateTypeDamagePlot(bucket)
 
-    def updateConnectionTable(self, bucket):
+    def updateConnectionTable_with_results(self, bucket):
         self.statusBar().showMessage('Updating Connections Table')
 
         connections_damaged = bucket['connection']['damaged']
@@ -874,11 +905,11 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
                 else:
                     load_desc = 'collapse'
 
-                conn_parent = QTreeWidgetItem(parent, ['{}_{}'.format(value['type_name'], _id),
-                                                       '{:.3}'.format(capacity if capacity > 0 else 'NA'),
-                                                       '{:.3}'.format(strength),
-                                                       '{:.3}'.format(dead_load),
-                                                       '{}'.format(load_desc)])
+                # conn_parent = QTreeWidgetItem(parent, ['{}_{}'.format(value['type_name'], _id),
+                #                                        '{:.3}'.format(capacity if capacity > 0 else 'NA'),
+                #                                        '{:.3}'.format(strength),
+                #                                        '{:.3}'.format(dead_load),
+                #                                        '{}'.format(load_desc)])
 
                 # TODO for infl_dict in damage_report.get('infls', {}):
                 #     QTreeWidgetItem(conn_parent, ['%.3f(%s) = %.3f(i) * %.3f(area) * %.3f(pz)' % (infl_dict['load'],
@@ -910,7 +941,7 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
         if not filename:
             return
 
-        config_file = '%s' % (filename)
+        config_file = '{}'.format(filename)
         if os.path.isfile(config_file):
             self.file_load(config_file)
             settings.setValue("ScenarioFolder", QVariant(QString(os.path.dirname(config_file))))
@@ -922,9 +953,10 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
         self.update_config_from_ui()
         self.cfg.save_config()
         self.ui.statusbar.showMessage('Saved to file {}'.format(self.cfg.cfg_file))
-        self.update_ui_from_config()
+        # self.update_ui_from_config()
         
     def save_as_scenario(self):
+        # TODO: check
         self.update_config_from_ui()
         current_parent, _ = os.path.split(self.cfg.path_cfg)
 
@@ -964,14 +996,14 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
             msg = 'No scenario name entered. Action cancelled'
             QMessageBox.warning(self, "VAWS Program Warning", unicode(msg))
 
-    def set_scenario(self, s=None):
-        if s:
-            self.cfg = s
-            self.cfg.process_config()
+#    def set_scenario(self, s=None):
+        # if s:
+        #     self.cfg = s
+        #     self.cfg.process_config()
 
-        self.update_ui_from_config()
-
-        self.statusBar().showMessage('Ready')
+        # self.update_ui_from_config()
+        #
+        # self.statusBar().showMessage('Ready')
 
     def closeEvent(self, event):
         if self.okToContinue():
@@ -990,6 +1022,7 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
             # Scenario
             self.ui.numHouses.setText('{:d}'.format(self.cfg.no_models))
             self.ui.houseName.setText(self.cfg.house_name)
+            self.ui.seedRandom.setText(str(self.cfg.random_seed))
             self.ui.terrainCategory.setText(self.cfg.file_wind_profiles)
             self.ui.regionalShielding.setText('{:.1f}'.format(
                 self.cfg.regional_shielding_factor))
@@ -999,39 +1032,24 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
             self.ui.windDirection.setCurrentIndex(self.cfg.wind_dir_index)
 
             # Debris
-            self.ui.debris.setChecked(self.cfg.flags.get('debris'))
             if self.cfg.region_name:
                 self.ui.debrisRegion.setText(self.cfg.region_name)
             if self.cfg.building_spacing:
                 self.ui.buildingSpacing.setCurrentIndex(
                     self.ui.buildingSpacing.findText(
                         '{:.1f}'.format(self.cfg.building_spacing)))
-            self.ui.sourceItems.setValue(self.cfg.source_items)
             self.ui.debrisRadius.setValue(self.cfg.debris_radius)
             self.ui.debrisAngle.setValue(self.cfg.debris_angle)
+            self.ui.sourceItems.setValue(self.cfg.source_items)
             self.ui.flighttimeMean.setText(
                 '{:.3f}'.format(self.cfg.flight_time_mean))
             self.ui.flighttimeStddev.setText(
                 '{:.3f}'.format(self.cfg.flight_time_stddev))
-            if self.cfg.staggered_sources:
-                self.ui.staggeredDebrisSources.setChecked(
-                    self.cfg.staggered_sources)
+            self.ui.staggeredDebrisSources.setChecked(self.cfg.staggered_sources)
+            self.ui.debris.setChecked(self.cfg.flags['debris'])
 
-            # options
-            self.ui.redV.setValue(self.cfg.heatmap_vmin)
-            self.ui.blueV.setValue(self.cfg.heatmap_vmax)
-            self.ui.vStep.setValue(self.cfg.heatmap_vstep)
-            self.ui.seedRandom.setText(str(self.cfg.random_seed))
-
-            self.ui.diffShielding.setChecked(self.cfg.flags.get('diff_shielding'))
-            self.ui.waterEnabled.setChecked(self.cfg.flags.get('water_ingress'))
-
-            # self.ui.distribution.setChecked(self.cfg.flags.get('dmg_distribute'))
-            self.ui.actionRun.setEnabled(True)
-            # self.ui.debrisExtension.setText('%f' % self.cfg.debris_extension)
-
-            self.ui.constructionEnabled.setChecked(self.cfg.flags.get('construction_levels'))
-
+            # construction levels
+            self.ui.constructionEnabled.setChecked(self.cfg.flags['construction_levels'])
             self.ui.constLevels.setText(
                 ', '.join(self.cfg.construction_levels_i_levels))
             self.ui.constProbs.setText(
@@ -1041,11 +1059,6 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
             self.ui.constCovs.setText(
                 ', '.join([str(x) for x in self.cfg.construction_levels_i_cov_factors]))
 
-            self.ui.fragilityStates.setText(
-                ', '.join(self.cfg.fragility_i_states))
-            self.ui.fragilityThresholds.setText(
-                ', '.join([str(x) for x in self.cfg.fragility_i_thresholds]))
-
             # water ingress
             self.ui.waterThresholds.setText(
                 ', '.join([str(x) for x in self.cfg.water_ingress_i_thresholds]))
@@ -1053,8 +1066,26 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
                 ', '.join([str(x) for x in self.cfg.water_ingress_i_speed_at_zero_wi]))
             self.ui.waterSpeed1.setText(
                 ', '.join([str(x) for x in self.cfg.water_ingress_i_speed_at_full_wi]))
+            self.ui.waterEnabled.setChecked(self.cfg.flags.get('water_ingress'))
+
+            # options
+            self.ui.fragilityStates.setText(
+                ', '.join(self.cfg.fragility_i_states))
+            self.ui.fragilityThresholds.setText(
+                ', '.join([str(x) for x in self.cfg.fragility_i_thresholds]))
+            self.ui.diffShielding.setChecked(self.cfg.flags.get('diff_shielding'))
+
+            self.ui.redV.setValue(self.cfg.heatmap_vmin)
+            self.ui.blueV.setValue(self.cfg.heatmap_vmax)
+            self.ui.vStep.setValue(self.cfg.heatmap_vstep)
 
             self.update_house_panel()
+            self.updateGlobalData()
+
+            self.updateInfluence()
+            self.updatePatch()
+
+            self.ui.actionRun.setEnabled(True)
 
             if self.cfg.cfg_file:
                 self.statusBarScenarioLabel.setText(
@@ -1088,10 +1119,7 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
             new_cfg.flight_time_stddev = float(self.ui.flighttimeStddev.text())
         new_cfg.staggered_sources = self.ui.staggeredDebrisSources.isChecked()
 
-        new_cfg.flags['plot_fragility'] = True
-        new_cfg.flags['plot_vulnerability'] = True
         new_cfg.flags['water_ingress'] = self.ui.waterEnabled.isChecked()
-        # new_cfg.flags['dmg_distribute', self.ui.distribution.isChecked())
         new_cfg.flags['diff_shielding'] = self.ui.diffShielding.isChecked()
         new_cfg.flags['debris'] = self.ui.debris.isChecked()
 
@@ -1133,16 +1161,13 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
         #     new_cfg.flags['conn_type_group_{}'.format(index)] = True \
         #         if cellWidget.checkState() == Qt.Checked else False
 
-        # self.dirty_scenario = new_cfg != self.cfg
-        # if self.dirty_scenario:
-        self.set_scenario(new_cfg)
-        
     def file_load(self, fname):
         try:
             path_cfg = os.path.dirname(os.path.realpath(fname))
-            set_logger(path_cfg, logging_level='warning')
+            set_logger(path_cfg)
             self.cfg = Config(fname)
-            self.set_scenario(self.cfg)
+            self.update_ui_from_config()
+            self.statusBar().showMessage('Ready')
         except Exception as excep:
             logging.exception("Loading configuration caused exception")
 
@@ -1165,6 +1190,7 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
     
     def testDebrisSettings(self):
         self.update_config_from_ui()
+        self.cfg.process_config()
 
         vul_dic = {'Capital_city': (0.1585, 3.8909),
                    'Tropical_town': (0.10304, 4.18252)}
@@ -1227,6 +1253,7 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
 
     def testConstructionLevels(self):
         self.update_config_from_ui()
+        self.cfg.process_config()
 
         selected_type, ok = QInputDialog.getItem(self, "Construction Test", "Connection Type:",
             self.cfg.types.keys(), 0, False)
@@ -1261,6 +1288,7 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
     def testWaterIngress(self):
 
         self.update_config_from_ui()
+        self.cfg.process_config()
 
         di_array = []
         dic_thresholds = {}
@@ -1305,7 +1333,7 @@ def run_gui():
     if options.verbose:
         set_logger(path_cfg, logging_level=options.verbose)
     else:
-        set_logger(path_cfg, logging_level='warning')
+        set_logger(path_cfg)
 
     initial_config = Config(cfg_file=initial_scenario)
 
