@@ -48,7 +48,7 @@
          </size>
         </property>
         <property name="currentIndex">
-         <number>4</number>
+         <number>0</number>
         </property>
         <widget class="QWidget" name="scenario_tab">
          <attribute name="title">
@@ -131,16 +131,6 @@
             </property>
             <property name="alignment">
              <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-            </property>
-           </widget>
-          </item>
-          <item row="3" column="1">
-           <widget class="QLineEdit" name="terrainCategory">
-            <property name="sizePolicy">
-             <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
-              <horstretch>0</horstretch>
-              <verstretch>0</verstretch>
-             </sizepolicy>
             </property>
            </widget>
           </item>
@@ -237,6 +227,9 @@
             </property>
            </widget>
           </item>
+          <item row="3" column="1">
+           <widget class="QComboBox" name="terrainCategory"/>
+          </item>
          </layout>
         </widget>
         <widget class="QWidget" name="debris_tab">
@@ -299,9 +292,6 @@
              <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
             </property>
            </widget>
-          </item>
-          <item row="9" column="1">
-           <widget class="QLineEdit" name="debrisRegion"/>
           </item>
           <item row="12" column="0">
            <widget class="QLabel" name="label_23">
@@ -489,6 +479,9 @@
              <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
             </property>
            </widget>
+          </item>
+          <item row="9" column="1">
+           <widget class="QComboBox" name="debrisRegion"/>
           </item>
          </layout>
         </widget>
@@ -1621,7 +1614,7 @@
        </sizepolicy>
       </property>
       <property name="currentIndex">
-       <number>1</number>
+       <number>0</number>
       </property>
       <widget class="QWidget" name="tab_influence">
        <attribute name="title">
@@ -2240,9 +2233,7 @@
   <tabstop>windMax</tabstop>
   <tabstop>windDirection</tabstop>
   <tabstop>houseName</tabstop>
-  <tabstop>terrainCategory</tabstop>
   <tabstop>windIncrement</tabstop>
-  <tabstop>debrisRegion</tabstop>
   <tabstop>buildingSpacing</tabstop>
   <tabstop>debrisRadius</tabstop>
   <tabstop>debrisAngle</tabstop>

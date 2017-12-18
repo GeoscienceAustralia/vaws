@@ -193,7 +193,7 @@ class Config(object):
             msg = 'Error: {} not found'.format(cfg_file)
             sys.exit(msg)
         else:
-            self.path_cfg = os.path.dirname(os.path.realpath(cfg_file))
+            self.path_cfg = os.sep.join(os.path.abspath(cfg_file).split(os.sep)[:-1])
             self.path_output = os.path.join(self.path_cfg, OUTPUT_DIR)
             self.path_house_data = os.path.join(self.path_cfg, HOUSE_DATA)
             self.path_wind_profiles = os.path.join(self.path_cfg,
@@ -883,7 +883,7 @@ class Config(object):
         _file = os.path.join(self.path_wind_profiles, self.file_wind_profiles)
         try:
             _df = pd.read_csv(_file, skiprows=1, header=None, index_col=0)
-        except IOError:
+        except (IOError, ValueError):
             logging.error('invalid wind_profiles file: {}'.format(_file))
         else:
             self.profile_heights = _df.index.tolist()
