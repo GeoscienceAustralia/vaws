@@ -1614,7 +1614,7 @@
        </sizepolicy>
       </property>
       <property name="currentIndex">
-       <number>0</number>
+       <number>1</number>
       </property>
       <widget class="QWidget" name="tab_influence">
        <attribute name="title">
@@ -1723,7 +1723,7 @@
            </widget>
           </item>
           <item>
-           <widget class="QSpinBox" name="spinBox"/>
+           <widget class="QComboBox" name="comboBox"/>
           </item>
          </layout>
         </item>

@@ -80,16 +80,6 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
         self.cfg = init_scenario
         self.results_dict = None
 
-        # initial setting
-        self.init_terrain_category()
-        self.init_debris_region()
-
-        self.ui.windDirection.clear()
-        self.ui.windDirection.addItems(self.cfg.wind_dir)
-
-        self.ui.buildingSpacing.clear()
-        self.ui.buildingSpacing.addItems(('20.0', '40.0'))
-
         #self.ui.numHouses.setValidator(QIntValidator(1, 10000, self.ui.numHouses))
         #self.ui.numHouses.setText('{:d}'.format(self.cfg.no_models))
         #self.ui.houseName.setText(self.cfg.house['name'])
@@ -119,11 +109,6 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
         self.has_run = False
         self.initSizePosFromSettings()
 
-        self.init_influence_and_patch()
-        self.update_ui_from_config()
-        # self.updateTerrainCategoryTable()
-        # self.updateDebrisRegionsTable()
-
         # top panel
         self.connect(self.ui.actionOpen_Scenario, SIGNAL("triggered()"),
                      self.open_scenario)
@@ -147,9 +132,6 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
                      self.testWaterIngress)
 
         # Scenario panel
-        # self.connect(self.ui.terrainCategory,
-        #              SIGNAL("currentIndexChanged(QString)"),
-        #              self.updateTerrainCategoryTable)
         self.connect(self.ui.windMin, SIGNAL("valueChanged(int)"),
                      lambda x: self.onSliderChanged(self.ui.windMinLabel, x))
         self.connect(self.ui.windMax, SIGNAL("valueChanged(int)"),
@@ -183,9 +165,6 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
 
         self.connect(self.ui.slider_patch, SIGNAL("valueChanged(int)"),
                      lambda x: self.onSliderChanged(self.ui.slider_patchLabel, x))
-        self.ui.slider_patch.valueChanged.connect(self.updatePatchSlider)
-
-        self.ui.spinBox.valueChanged.connect(self.updatePatch)
 
         self.statusBar().showMessage('Loading')
         self.stopTriggered = False
@@ -194,6 +173,18 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
         self.selected_plotKey = None
 
         # self.ui.sourceItems.setValue(-1)
+        # initial setting
+        self.init_terrain_category()
+        self.init_debris_region()
+
+        self.ui.windDirection.clear()
+        self.ui.windDirection.addItems(self.cfg.wind_dir)
+
+        self.ui.buildingSpacing.clear()
+        self.ui.buildingSpacing.addItems(('20.0', '40.0'))
+
+        self.init_influence_and_patch()
+        self.update_ui_from_config()
         # QTimer.singleShot(0, self.set_scenario)
 
         self.statusBar().showMessage('Ready')
@@ -216,28 +207,42 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
                         self.updateDebrisRegionsTable)
         self.ui.debrisRegion.clear()
         self.ui.debrisRegion.addItems(self.cfg.debris_regions.keys())
-
         self.connect(self.ui.debrisRegion,
                      SIGNAL("currentIndexChanged(QString)"),
                      self.updateDebrisRegionsTable)
 
     def init_influence_and_patch(self):
         # init_influence
-        self.ui.slider_influence.setRange(self.cfg.connections.index[0],
-                                          self.cfg.connections.index[-1])
-        self.ui.slider_influence.setValue(self.cfg.connections.index[0])
-        self.ui.slider_influenceLabel.setText(
-            '{:d}'.format(self.cfg.connections.index[0]))
+        self.ui.mplinfluecnes.figure.clear()
+        self.ui.mplinfluecnes.axes.cla()
+        self.ui.mplinfluecnes.axes.figure.canvas.draw()
+
+        _list = self.cfg.connections.index.tolist()
+        if self.ui.slider_influence.value() == _list[0]:
+            self.updateInfluence()
+        else:
+            self.ui.slider_influence.setRange(_list[0], _list[-1])
+            self.ui.slider_influence.setValue(_list[0])
 
         # init_patch
+        self.ui.mplpatches.figure.clear()
+        self.ui.mplpatches.axes.cla()
+        self.ui.mplpatches.axes.figure.canvas.draw()
+
+        self.disconnect(self.ui.slider_patch, SIGNAL("valueChanged(int)"),
+                        self.updateComboBox)
+
         _list = sorted(self.cfg.influence_patches.keys())
+
         if _list:
-            self.ui.slider_patch.setRange(_list[0], _list[-1])
-            self.ui.slider_patch.setValue(_list[0])
-            self.ui.slider_patchLabel.setText('{:d}'.format(_list[0]))
-            self.updateSpinBox(failed_conn_name=_list[0])
-        else:
-            self.ui.mplpatches.axes.figure.clf()
+            self.connect(self.ui.slider_patch, SIGNAL("valueChanged(int)"),
+                         self.updateComboBox)
+
+            if self.ui.slider_patch.value() == _list[0]:
+                self.updateComboBox()
+            else:
+                self.ui.slider_patch.setRange(_list[0], _list[-1])
+                self.ui.slider_patch.setValue(_list[0])
 
     # def onZoneSelected(self, z, plotKey):
     #     self.selected_zone = z
@@ -354,11 +359,6 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
     def updateDisplaySettings(self):
         if self.has_run:
             self.heatmap_house_change()
-            
-    def updateGlobalData(self):
-
-        self.updateTerrainCategoryTable()
-        self.updateDebrisRegionsTable()
 
     def showHouseInfoDlg(self):
         dlg = HouseViewer(self.cfg)
@@ -388,6 +388,7 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
         finiTable(self.ui.debrisRegions)
 
     def updateTerrainCategoryTable(self):
+
         self.cfg.file_wind_profiles = str(self.ui.terrainCategory.currentText())
         self.cfg.set_wind_profiles()
 
@@ -554,12 +555,6 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
         self.ui.mplfrag.axes.cla()
         self.ui.mplfrag.axes.figure.canvas.draw()
 
-        self.ui.mplinfluecnes.axes.cla()
-        self.ui.mplinfluecnes.axes.figure.canvas.draw()
-
-        self.ui.mplpatches.axes.cla()
-        self.ui.mplpatches.axes.figure.canvas.draw()
-
         # run simulation with progress bar
         self.ui.actionStop.setEnabled(True)
         self.ui.actionRun.setEnabled(False)
@@ -720,29 +715,38 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
         self.ui.damages_tab.setUpdatesEnabled(True)
 
     def updateInfluence(self):
-        self.ui.mplinfluecnes.axes.figure.clf()
         conn_name = self.ui.slider_influence.value()
         plot_influence(self.ui.mplinfluecnes, self.cfg, conn_name)
 
-    def updatePatchSlider(self):
-        failed_conn_name = self.ui.slider_patch.value()
-        self.updateSpinBox(failed_conn_name)
-        self.updatePatch()
+    def updateComboBox(self):
 
-    def updateSpinBox(self, failed_conn_name):
+        failed_conn_name = self.ui.slider_patch.value()
+
         try:
             _sub_list = sorted(self.cfg.influence_patches[failed_conn_name].keys())
         except KeyError:
             pass
         else:
-            self.ui.spinBox.setRange(_sub_list[0], _sub_list[-1])
-            self.ui.spinBox.setValue(_sub_list[0])
+            _sub_list = [str(x) for x in _sub_list]
+            self.disconnect(self.ui.comboBox,
+                            SIGNAL("currentIndexChanged(QString)"),
+                            self.updatePatch)
+            self.ui.comboBox.clear()
+            self.ui.comboBox.addItems(_sub_list)
+            self.connect(self.ui.comboBox,
+                         SIGNAL("currentIndexChanged(QString)"),
+                         self.updatePatch)
+
+            idx = self.ui.comboBox.findText(_sub_list[0])
+            if self.ui.comboBox.currentIndex() == idx:
+                self.updatePatch()
+            else:
+                self.ui.comboBox.setCurrentIndex(idx)
 
     def updatePatch(self):
         failed_conn_name = self.ui.slider_patch.value()
-        conn_name = self.ui.spinBox.value()
+        conn_name = int(self.ui.comboBox.currentText())
 
-        self.ui.mplpatches.axes.figure.clf()
         plot_influence_patch(self.ui.mplpatches, self.cfg, failed_conn_name,
                              conn_name)
 
@@ -952,7 +956,6 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
         scenario_path = SCENARIOS_DIR
         if config_file:
             scenario_path = config_file
-            print('scenario_path: config {}'.format(config_file))
         elif settings.contains("ScenarioFolder"):
             # we have a saved scenario path so use that
             scenario_path = unicode(settings.value("ScenarioFolder").toString())
@@ -1047,8 +1050,12 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
             self.ui.houseName.setText(self.cfg.house_name)
             self.ui.seedRandom.setText(str(self.cfg.random_seed))
 
-            self.ui.terrainCategory.setCurrentIndex(
-                self.ui.terrainCategory.findText(self.cfg.file_wind_profiles))
+            idx = self.ui.terrainCategory.findText(self.cfg.file_wind_profiles)
+            if self.ui.terrainCategory.currentIndex() == idx:
+                self.updateTerrainCategoryTable()
+            else:
+                self.ui.terrainCategory.setCurrentIndex(idx)
+
             self.ui.regionalShielding.setText('{:.1f}'.format(
                 self.cfg.regional_shielding_factor))
             self.ui.windMin.setValue(self.cfg.wind_speed_min)
@@ -1057,8 +1064,12 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
             self.ui.windDirection.setCurrentIndex(self.cfg.wind_dir_index)
 
             # Debris
-            self.ui.debrisRegion.setCurrentIndex(
-                self.ui.debrisRegion.findText(self.cfg.region_name))
+            idx = self.ui.debrisRegion.findText(self.cfg.region_name)
+            if self.ui.debrisRegion.currentIndex() == idx:
+                self.updateDebrisRegionsTable()
+            else:
+                self.ui.debrisRegion.setCurrentIndex(idx)
+
             self.ui.buildingSpacing.setCurrentIndex(
                 self.ui.buildingSpacing.findText(
                     '{:.1f}'.format(self.cfg.building_spacing)))
@@ -1104,10 +1115,7 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
             self.ui.vStep.setValue(self.cfg.heatmap_vstep)
 
             self.update_house_panel()
-            self.updateGlobalData()
-
-            self.updateInfluence()
-            self.updatePatch()
+            # self.updateGlobalData()
 
             self.ui.actionRun.setEnabled(True)
 
@@ -1190,9 +1198,9 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
             path_cfg = os.path.dirname(os.path.realpath(fname))
             set_logger(path_cfg)
             self.cfg = Config(fname)
-            self.init_influence_and_patch()
             self.init_terrain_category()
             self.init_debris_region()
+            self.init_influence_and_patch()
             self.update_ui_from_config()
             self.statusBar().showMessage('Ready')
         except Exception as excep:
