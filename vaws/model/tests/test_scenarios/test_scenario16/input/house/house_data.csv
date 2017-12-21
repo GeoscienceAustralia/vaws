@@ -5,7 +5,7 @@ cpe_cov,0.0
 cpe_k,0.1
 cpe_str_cov,0.0
 length,1.0
-width,7.0
+width,6.0
 roof_cols,5
 roof_rows,14
 cpe_str_k,0.1

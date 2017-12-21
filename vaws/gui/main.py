@@ -218,10 +218,11 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
         self.ui.mplinfluecnes.axes.figure.canvas.draw()
 
         _list = self.cfg.connections.index.tolist()
+        self.ui.slider_influence.setRange(_list[0], _list[-1])
         if self.ui.slider_influence.value() == _list[0]:
+            self.onSliderChanged(self.ui.slider_influenceLabel, _list[0])
             self.updateInfluence()
         else:
-            self.ui.slider_influence.setRange(_list[0], _list[-1])
             self.ui.slider_influence.setValue(_list[0])
 
         # init_patch
@@ -238,10 +239,11 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
             self.connect(self.ui.slider_patch, SIGNAL("valueChanged(int)"),
                          self.updateComboBox)
 
+            self.ui.slider_patch.setRange(_list[0], _list[-1])
             if self.ui.slider_patch.value() == _list[0]:
+                self.onSliderChanged(self.ui.slider_patchLabel, _list[0])
                 self.updateComboBox()
             else:
-                self.ui.slider_patch.setRange(_list[0], _list[-1])
                 self.ui.slider_patch.setValue(_list[0])
 
     # def onZoneSelected(self, z, plotKey):

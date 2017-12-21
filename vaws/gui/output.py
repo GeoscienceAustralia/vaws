@@ -313,10 +313,13 @@ def draw_influence(cfg, infl_dic, dic_ax, conn_name):
         except AttributeError:
             pass
         else:
-            dic_ax[ax_key].annotate(_str, item['centroid'], color='k',
-                                weight=font_weight,
-                                fontsize=font_size, ha='center', va='center')
-
-            dic_ax[ax_key].add_collection(p)
+            try:
+                dic_ax[ax_key].annotate(_str, item['centroid'], color='k',
+                                    weight=font_weight,
+                                    fontsize=font_size, ha='center', va='center')
+            except KeyError:
+                pass
+            else:
+                dic_ax[ax_key].add_collection(p)
 
     return dic_ax

@@ -640,17 +640,20 @@ class Config(object):
                                           'wall_dir', 'coords'])
         _df.set_index('zone_name', drop=True, inplace=True)
 
-        try:
-            _df['centroid'] = _df['coords'].apply(
-                lambda x: x._get_xy()[:-1].mean(axis=0))
-        except AttributeError:
-            logging.warning('No coordinates for zones are provided')
+        _df['centroid'] = _df.apply(cls.return_centroid, axis=1)
 
         _df['area'] = _df['area'].astype(dtype=float)
         _df['cpi_alpha'] = _df['cpi_alpha'].astype(dtype=float)
         _df['wall_dir'] = _df['wall_dir'].astype(dtype=int)
 
         return _df
+
+    @staticmethod
+    def return_centroid(row):
+        try:
+            return row['coords']._get_xy()[:-1].mean(axis=0).tolist()
+        except AttributeError:
+            return []
 
     @classmethod
     def read_file_connections(cls, file_connections, types):
@@ -681,10 +684,7 @@ class Config(object):
         _df['conn_name'] = _df['conn_name'].astype(int)
         _df.set_index('conn_name', drop=True, inplace=True)
 
-        try:
-            _df['centroid'] = _df['coords'].apply(lambda x: x._get_xy()[:-1].mean(axis=0))
-        except AttributeError:
-            logging.warning('No coordinates for connections are provided')
+        _df['centroid'] = _df.apply(cls.return_centroid, axis=1)
 
         _df['group_name'] = types.loc[_df['type_name'], 'group_name'].values
         _df['sub_group'] = _df.apply(
