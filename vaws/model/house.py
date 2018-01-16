@@ -37,8 +37,6 @@ class House(object):
         self.cpe_cov = None
         self.cpe_str_cov = None
         self.cpe_k = None
-        self.roof_rows = None
-        self.roof_cols = None
         self.big_a = None
         self.big_b = None
 

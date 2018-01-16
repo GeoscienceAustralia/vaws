@@ -100,7 +100,7 @@ class WaterIngressTestCase(unittest.TestCase):
         plt.xlabel('Wind speed (m/s)')
         plt.ylabel('Water ingress (%)')
         plt.grid(1)
-        plt.savefig('./water_ingress.png', dpi=300)
+        #plt.savefig('./water_ingress.png', dpi=300)
         plt.pause(1.0)
         plt.close()
 
