@@ -1,1 +1,0 @@
-$PREFIX/gui/build.cmd

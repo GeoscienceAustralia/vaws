@@ -1,0 +1,1767 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="AnalysisUIOptions">
+    <option name="SCOPE_TYPE" value="3" />
+  </component>
+  <component name="ChangeListManager">
+    <list default="true" id="cad3e020-8e75-482d-999a-ce5feb85a72e" name="Default" comment="">
+      <change type="DELETED" beforePath="$PROJECT_DIR$/.gitattributes" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/.gitignore" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/LICENSE" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/README.md" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/build/Scripts/.vaws-post-link.bat" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/build/bin/.vaws-post-link.sh" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/build/bld.bat" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/build/build.sh" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/build/meta.yaml" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/design/16.pdf" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/design/DCC Schedule 6 Phase 3 reporting v3.pdf" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/design/DCCEE Schedule 7 cut-down report.pdf" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/design/Heatmap.md" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/design/House Data Model.jpg" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/design/Sim Components.jpg" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/design/TechnicalManual.doc" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/design/UserGuide.doc" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/design/current_logic.txt" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/design/curve1.png" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/design/data_model.jude" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/design/gev.pdf" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/design/test_15.pdf" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/design/test_scenario17.pdf" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/release.txt" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/__init__.py" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/bin/activate" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/bin/conda" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/bin/deactivate" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/gui/__init__.py" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/gui/build.cmd" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/gui/build.sh" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/gui/help/editmenu.html" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/gui/help/filemenu.html" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/gui/help/index.html" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/gui/house.py" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/gui/images/back.png" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/gui/images/bicycle.png" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/gui/images/editinvert.png" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/gui/images/editmirror.png" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/gui/images/editmirrorhoriz.png" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/gui/images/editmirrorvert.png" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/gui/images/editresize.png" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/gui/images/editswap.png" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/gui/images/editunmirror.png" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/gui/images/editzoom.png" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/gui/images/fan.png" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/gui/images/faucet.png" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/gui/images/filenew.png" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/gui/images/fileopen.png" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/gui/images/fileprint.png" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/gui/images/filequit.png" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/gui/images/filesave.png" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/gui/images/filesaveas.png" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/gui/images/forward.png" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/gui/images/hand.png" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/gui/images/home.png" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/gui/images/home2.ico" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/gui/images/home2.png" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/gui/images/icon.png" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/gui/images/matplotlib.png" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/gui/images/move.png" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/gui/images/printer.png" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/gui/images/recycler_bin.png" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/gui/images/splash/Thumbs.db" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/gui/images/splash/abtract_house.jpg" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/gui/images/splash/cyclone.jpg" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/gui/images/splash/ga_logo_inline.jpg" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/gui/images/splash/ga_logo_slogan.jpg" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/gui/images/splash/ga_logo_small.gif" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/gui/images/splash/ga_logo_stacked.jpg" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/gui/images/splash/jcu_med.gif" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/gui/images/splash/jdh_consulting.gif" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/gui/images/splash/splash.png" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/gui/images/splash/splash_base_layer.png" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/gui/images/subplots.png" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/gui/images/switch.png" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/gui/images/tree.png" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/gui/images/wheel.png" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/gui/images/zoom_to_rect.png" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/gui/main.py" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/gui/matplotlibwidget.py" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/gui/mixins.py" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/gui/output.py" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/gui/ui/connection.ui" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/gui/ui/connection_type.ui" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/gui/ui/house.ui" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/gui/ui/main.ui" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/gui/ui/zone.ui" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/gui/windsim.qrc" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/gui/windsim_rc.py" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/__init__.py" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/batch_convert.py" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/config.py" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/connection.py" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/coverage.py" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/curve.py" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/damage_costing.py" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/debris.py" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/house.py" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/house_damage.py" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/main.py" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/output.py" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/runme.sh" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/stats.py" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/__init__.py" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/repair_cost_by_conn_type_group.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_config.py" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_connection.py" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_curve.py" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_damage_costing.py" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_debris.py" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_house.py" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_house_damage.py" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios.py" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_house/input/debris/debris.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_house/input/gust_envelope_profiles/cyclonic_terrain_cat2.5.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_house/input/gust_envelope_profiles/cyclonic_terrain_cat2.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_house/input/gust_envelope_profiles/cyclonic_terrain_cat3.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_house/input/gust_envelope_profiles/non_cyclonic.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_house/input/house/conn_groups.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_house/input/house/conn_types.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_house/input/house/connections.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_house/input/house/coverage_types.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_house/input/house/coverages.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_house/input/house/coverages_cpe.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_house/input/house/damage_costing_data.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_house/input/house/damage_factorings.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_house/input/house/footprint.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_house/input/house/front_facing_walls.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_house/input/house/house_data.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_house/input/house/influence_patches.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_house/input/house/influences.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_house/input/house/water_ingress_costing_data.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_house/input/house/zones.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_house/input/house/zones_cpe_eave_mean.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_house/input/house/zones_cpe_mean.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_house/input/house/zones_cpe_str_mean.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_house/input/house/zones_edge.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_house/test_house.cfg" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_roof_sheeting/input/debris/debris.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_roof_sheeting/input/gust_envelope_profiles/cyclonic_terrain_cat2.5.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_roof_sheeting/input/gust_envelope_profiles/cyclonic_terrain_cat2.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_roof_sheeting/input/gust_envelope_profiles/cyclonic_terrain_cat3.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_roof_sheeting/input/gust_envelope_profiles/non_cyclonic.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_roof_sheeting/input/house/conn_groups.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_roof_sheeting/input/house/conn_types.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_roof_sheeting/input/house/connections.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_roof_sheeting/input/house/coverage_types.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_roof_sheeting/input/house/coverages.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_roof_sheeting/input/house/coverages_cpe.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_roof_sheeting/input/house/damage_costing_data.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_roof_sheeting/input/house/damage_factorings.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_roof_sheeting/input/house/footprint.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_roof_sheeting/input/house/front_facing_walls.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_roof_sheeting/input/house/house_data.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_roof_sheeting/input/house/influence_patches.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_roof_sheeting/input/house/influences.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_roof_sheeting/input/house/water_ingress_costing_data.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_roof_sheeting/input/house/zones.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_roof_sheeting/input/house/zones_cpe_eave_mean.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_roof_sheeting/input/house/zones_cpe_mean.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_roof_sheeting/input/house/zones_cpe_str_mean.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_roof_sheeting/input/house/zones_edge.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_roof_sheeting/test_roof_sheeting.cfg" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario1/input/debris/debris.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario1/input/gust_envelope_profiles/cyclonic_terrain_cat2.5.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario1/input/gust_envelope_profiles/cyclonic_terrain_cat2.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario1/input/gust_envelope_profiles/cyclonic_terrain_cat3.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario1/input/gust_envelope_profiles/non_cyclonic.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario1/input/house/conn_groups.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario1/input/house/conn_types.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario1/input/house/connections.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario1/input/house/coverage_types.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario1/input/house/coverages.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario1/input/house/damage_costing_data.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario1/input/house/damage_factorings.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario1/input/house/footprint.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario1/input/house/front_facing_walls.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario1/input/house/house_data.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario1/input/house/influence_patches.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario1/input/house/influences.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario1/input/house/water_ingress_costing_data.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario1/input/house/zones.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario1/input/house/zones_cpe_eave_mean.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario1/input/house/zones_cpe_mean.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario1/input/house/zones_cpe_str_mean.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario1/input/house/zones_edge.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario1/test_scenario1.cfg" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario10/input/debris/debris.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario10/input/gust_envelope_profiles/cyclonic_terrain_cat2.5.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario10/input/gust_envelope_profiles/cyclonic_terrain_cat2.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario10/input/gust_envelope_profiles/cyclonic_terrain_cat3.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario10/input/gust_envelope_profiles/non_cyclonic.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario10/input/house/conn_groups.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario10/input/house/conn_types.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario10/input/house/connections.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario10/input/house/coverage_types.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario10/input/house/coverages.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario10/input/house/damage_costing_data.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario10/input/house/damage_factorings.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario10/input/house/footprint.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario10/input/house/front_facing_walls.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario10/input/house/house_data.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario10/input/house/influence_patches.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario10/input/house/influences.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario10/input/house/water_ingress_costing_data.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario10/input/house/zones.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario10/input/house/zones_cpe_eave_mean.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario10/input/house/zones_cpe_mean.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario10/input/house/zones_cpe_str_mean.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario10/input/house/zones_edge.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario10/test_scenario10.cfg" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario11/input/debris/debris.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario11/input/gust_envelope_profiles/cyclonic_terrain_cat2.5.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario11/input/gust_envelope_profiles/cyclonic_terrain_cat2.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario11/input/gust_envelope_profiles/cyclonic_terrain_cat3.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario11/input/gust_envelope_profiles/non_cyclonic.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario11/input/house/conn_groups.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario11/input/house/conn_types.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario11/input/house/connections.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario11/input/house/coverage_types.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario11/input/house/coverages.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario11/input/house/damage_costing_data.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario11/input/house/damage_factorings.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario11/input/house/footprint.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario11/input/house/front_facing_walls.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario11/input/house/house_data.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario11/input/house/influence_patches.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario11/input/house/influences.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario11/input/house/water_ingress_costing_data.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario11/input/house/zones.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario11/input/house/zones_cpe_eave_mean.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario11/input/house/zones_cpe_mean.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario11/input/house/zones_cpe_str_mean.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario11/input/house/zones_edge.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario11/test_scenario11.cfg" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario12/input/debris/debris.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario12/input/gust_envelope_profiles/cyclonic_terrain_cat2.5.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario12/input/gust_envelope_profiles/cyclonic_terrain_cat2.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario12/input/gust_envelope_profiles/cyclonic_terrain_cat3.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario12/input/gust_envelope_profiles/non_cyclonic.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario12/input/house/conn_groups.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario12/input/house/conn_types.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario12/input/house/connections.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario12/input/house/coverage_types.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario12/input/house/coverages.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario12/input/house/damage_costing_data.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario12/input/house/damage_factorings.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario12/input/house/footprint.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario12/input/house/front_facing_walls.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario12/input/house/house_data.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario12/input/house/influence_patches.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario12/input/house/influences.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario12/input/house/water_ingress_costing_data.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario12/input/house/zones.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario12/input/house/zones_cpe_eave_mean.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario12/input/house/zones_cpe_mean.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario12/input/house/zones_cpe_str_mean.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario12/input/house/zones_edge.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario12/test_scenario12.cfg" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario13/input/debris/debris.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario13/input/gust_envelope_profiles/cyclonic_terrain_cat2.5.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario13/input/gust_envelope_profiles/cyclonic_terrain_cat2.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario13/input/gust_envelope_profiles/cyclonic_terrain_cat3.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario13/input/gust_envelope_profiles/non_cyclonic.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario13/input/house/conn_groups.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario13/input/house/conn_types.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario13/input/house/connections.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario13/input/house/coverage_types.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario13/input/house/coverages.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario13/input/house/damage_costing_data.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario13/input/house/damage_factorings.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario13/input/house/footprint.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario13/input/house/front_facing_walls.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario13/input/house/house_data.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario13/input/house/influence_patches.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario13/input/house/influences.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario13/input/house/water_ingress_costing_data.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario13/input/house/zones.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario13/input/house/zones_cpe_eave_mean.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario13/input/house/zones_cpe_mean.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario13/input/house/zones_cpe_str_mean.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario13/input/house/zones_edge.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario13/test_scenario13.cfg" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario14/input/debris/debris.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario14/input/gust_envelope_profiles/cyclonic_terrain_cat2.5.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario14/input/gust_envelope_profiles/cyclonic_terrain_cat2.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario14/input/gust_envelope_profiles/cyclonic_terrain_cat3.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario14/input/gust_envelope_profiles/non_cyclonic.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario14/input/house/conn_groups.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario14/input/house/conn_types.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario14/input/house/connections.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario14/input/house/coverage_types.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario14/input/house/coverages.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario14/input/house/damage_costing_data.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario14/input/house/damage_factorings.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario14/input/house/footprint.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario14/input/house/front_facing_walls.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario14/input/house/house_data.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario14/input/house/influence_patches.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario14/input/house/influences.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario14/input/house/water_ingress_costing_data.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario14/input/house/zones.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario14/input/house/zones_cpe_eave_mean.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario14/input/house/zones_cpe_mean.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario14/input/house/zones_cpe_str_mean.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario14/input/house/zones_edge.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario14/test_scenario14.cfg" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario15/input/debris/debris.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario15/input/gust_envelope_profiles/cyclonic_terrain_cat2.5.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario15/input/gust_envelope_profiles/cyclonic_terrain_cat2.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario15/input/gust_envelope_profiles/cyclonic_terrain_cat3.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario15/input/gust_envelope_profiles/non_cyclonic.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario15/input/house/conn_groups.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario15/input/house/conn_types.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario15/input/house/connections.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario15/input/house/coverage_types.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario15/input/house/coverages.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario15/input/house/damage_costing_data.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario15/input/house/damage_factorings.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario15/input/house/footprint.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario15/input/house/front_facing_walls.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario15/input/house/house_data.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario15/input/house/influence_patches.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario15/input/house/influences.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario15/input/house/water_ingress_costing_data.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario15/input/house/zones.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario15/input/house/zones_cpe_eave_mean.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario15/input/house/zones_cpe_mean.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario15/input/house/zones_cpe_str_mean.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario15/input/house/zones_edge.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario15/test_scenario15.cfg" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario16/input/debris/debris.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario16/input/gust_envelope_profiles/cyclonic_terrain_cat2.5.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario16/input/gust_envelope_profiles/cyclonic_terrain_cat2.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario16/input/gust_envelope_profiles/cyclonic_terrain_cat3.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario16/input/gust_envelope_profiles/non_cyclonic.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario16/input/house/conn_groups.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario16/input/house/conn_types.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario16/input/house/connections.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario16/input/house/coverage_types.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario16/input/house/coverages.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario16/input/house/damage_costing_data.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario16/input/house/damage_factorings.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario16/input/house/footprint.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario16/input/house/front_facing_walls.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario16/input/house/house_data.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario16/input/house/influence_patches.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario16/input/house/influences.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario16/input/house/water_ingress_costing_data.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario16/input/house/zones.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario16/input/house/zones_cpe_eave_mean.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario16/input/house/zones_cpe_mean.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario16/input/house/zones_cpe_str_mean.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario16/input/house/zones_edge.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario16/test_scenario16.cfg" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario17/input/debris/debris.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario17/input/gust_envelope_profiles/cyclonic_terrain_cat2.5.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario17/input/gust_envelope_profiles/cyclonic_terrain_cat2.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario17/input/gust_envelope_profiles/cyclonic_terrain_cat3.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario17/input/gust_envelope_profiles/non_cyclonic.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario17/input/house/conn_groups.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario17/input/house/conn_types.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario17/input/house/connections.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario17/input/house/coverage_types.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario17/input/house/coverages.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario17/input/house/damage_costing_data.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario17/input/house/damage_factorings.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario17/input/house/footprint.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario17/input/house/front_facing_walls.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario17/input/house/house_data.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario17/input/house/influence_patches.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario17/input/house/influences.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario17/input/house/water_ingress_costing_data.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario17/input/house/zones.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario17/input/house/zones_cpe_eave_mean.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario17/input/house/zones_cpe_mean.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario17/input/house/zones_cpe_str_mean.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario17/input/house/zones_edge.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario17/test_scenario17.cfg" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario18/input/debris/debris.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario18/input/gust_envelope_profiles/cyclonic_terrain_cat2.5.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario18/input/gust_envelope_profiles/cyclonic_terrain_cat2.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario18/input/gust_envelope_profiles/cyclonic_terrain_cat3.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario18/input/gust_envelope_profiles/non_cyclonic.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario18/input/house/conn_groups.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario18/input/house/conn_types.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario18/input/house/connections.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario18/input/house/coverage_types.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario18/input/house/coverages.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario18/input/house/coverages_cpe.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario18/input/house/damage_costing_data.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario18/input/house/damage_factorings.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario18/input/house/footprint.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario18/input/house/front_facing_walls.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario18/input/house/house_data.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario18/input/house/influence_patches.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario18/input/house/influences.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario18/input/house/water_ingress_costing_data.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario18/input/house/zones.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario18/input/house/zones_cpe_eave_mean.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario18/input/house/zones_cpe_mean.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario18/input/house/zones_cpe_str_mean.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario18/input/house/zones_edge.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario18/test_scenario18.cfg" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario19/input/debris/debris.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario19/input/gust_envelope_profiles/cyclonic_terrain_cat2.5.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario19/input/gust_envelope_profiles/cyclonic_terrain_cat2.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario19/input/gust_envelope_profiles/cyclonic_terrain_cat3.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario19/input/gust_envelope_profiles/non_cyclonic.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario19/input/house/conn_groups.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario19/input/house/conn_types.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario19/input/house/connections.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario19/input/house/coverage_types.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario19/input/house/coverages.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario19/input/house/coverages_cpe.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario19/input/house/damage_costing_data.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario19/input/house/damage_factorings.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario19/input/house/footprint.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario19/input/house/front_facing_walls.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario19/input/house/house_data.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario19/input/house/influence_patches.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario19/input/house/influences.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario19/input/house/water_ingress_costing_data.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario19/input/house/zones.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario19/input/house/zones_cpe_eave_mean.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario19/input/house/zones_cpe_mean.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario19/input/house/zones_cpe_str_mean.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario19/input/house/zones_edge.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario19/test_scenario19.cfg" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario2/input/debris/debris.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario2/input/gust_envelope_profiles/cyclonic_terrain_cat2.5.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario2/input/gust_envelope_profiles/cyclonic_terrain_cat2.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario2/input/gust_envelope_profiles/cyclonic_terrain_cat3.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario2/input/gust_envelope_profiles/non_cyclonic.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario2/input/house/conn_groups.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario2/input/house/conn_types.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario2/input/house/connections.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario2/input/house/coverage_types.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario2/input/house/coverages.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario2/input/house/damage_costing_data.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario2/input/house/damage_factorings.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario2/input/house/footprint.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario2/input/house/front_facing_walls.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario2/input/house/house_data.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario2/input/house/influence_patches.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario2/input/house/influences.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario2/input/house/test_scenario2.md" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario2/input/house/water_ingress_costing_data.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario2/input/house/zones.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario2/input/house/zones_cpe_eave_mean.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario2/input/house/zones_cpe_mean.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario2/input/house/zones_cpe_str_mean.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario2/input/house/zones_edge.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario2/test_scenario2.cfg" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario20/input/debris/debris.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario20/input/gust_envelope_profiles/cyclonic_terrain_cat2.5.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario20/input/gust_envelope_profiles/cyclonic_terrain_cat2.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario20/input/gust_envelope_profiles/cyclonic_terrain_cat3.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario20/input/gust_envelope_profiles/non_cyclonic.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario20/input/house/conn_groups.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario20/input/house/conn_types.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario20/input/house/connections.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario20/input/house/coverage_types.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario20/input/house/coverages.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario20/input/house/damage_costing_data.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario20/input/house/damage_factorings.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario20/input/house/front_facing_walls.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario20/input/house/house_data.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario20/input/house/influence_patches.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario20/input/house/influences.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario20/input/house/water_ingress_costing_data.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario20/input/house/zones.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario20/input/house/zones_cpe_eave_mean.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario20/input/house/zones_cpe_mean.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario20/input/house/zones_cpe_str_mean.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario20/input/house/zones_edge.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario20/test_scenario20.cfg" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario21/input/debris/debris.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario21/input/gust_envelope_profiles/cyclonic_terrain_cat2.5.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario21/input/gust_envelope_profiles/cyclonic_terrain_cat2.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario21/input/gust_envelope_profiles/cyclonic_terrain_cat3.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario21/input/gust_envelope_profiles/non_cyclonic.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario21/input/house/conn_groups.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario21/input/house/conn_types.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario21/input/house/connections.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario21/input/house/coverage_types.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario21/input/house/coverages.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario21/input/house/damage_costing_data.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario21/input/house/damage_factorings.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario21/input/house/front_facing_walls.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario21/input/house/house_data.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario21/input/house/influence_patches.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario21/input/house/influences.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario21/input/house/water_ingress_costing_data.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario21/input/house/zones.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario21/input/house/zones_cpe_eave_mean.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario21/input/house/zones_cpe_mean.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario21/input/house/zones_cpe_str_mean.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario21/input/house/zones_edge.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario21/test_scenario21.cfg" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario22/input/debris/debris.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario22/input/gust_envelope_profiles/cyclonic_terrain_cat2.5.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario22/input/gust_envelope_profiles/cyclonic_terrain_cat2.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario22/input/gust_envelope_profiles/cyclonic_terrain_cat3.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario22/input/gust_envelope_profiles/non_cyclonic.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario22/input/house/conn_groups.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario22/input/house/conn_types.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario22/input/house/connections.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario22/input/house/coverage_types.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario22/input/house/coverages.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario22/input/house/coverages_cpe.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario22/input/house/damage_costing_data.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario22/input/house/damage_factorings.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario22/input/house/front_facing_walls.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario22/input/house/house_data.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario22/input/house/influence_patches.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario22/input/house/influences.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario22/input/house/water_ingress_costing_data.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario22/input/house/zones.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario22/input/house/zones_cpe_eave_mean.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario22/input/house/zones_cpe_mean.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario22/input/house/zones_cpe_str_mean.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario22/input/house/zones_edge.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario22/test_scenario22.cfg" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario23/input/debris/debris.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario23/input/gust_envelope_profiles/cyclonic_terrain_cat2.5.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario23/input/gust_envelope_profiles/cyclonic_terrain_cat2.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario23/input/gust_envelope_profiles/cyclonic_terrain_cat3.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario23/input/gust_envelope_profiles/non_cyclonic.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario23/input/house/conn_groups.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario23/input/house/conn_types.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario23/input/house/connections.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario23/input/house/coverage_types.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario23/input/house/coverages.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario23/input/house/coverages_cpe.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario23/input/house/damage_costing_data.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario23/input/house/damage_factorings.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario23/input/house/front_facing_walls.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario23/input/house/house_data.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario23/input/house/influence_patches.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario23/input/house/influences.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario23/input/house/water_ingress_costing_data.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario23/input/house/zones.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario23/input/house/zones_cpe_eave_mean.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario23/input/house/zones_cpe_mean.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario23/input/house/zones_cpe_str_mean.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario23/input/house/zones_edge.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario23/test_scenario23.cfg" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario3/input/debris/debris.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario3/input/gust_envelope_profiles/cyclonic_terrain_cat2.5.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario3/input/gust_envelope_profiles/cyclonic_terrain_cat2.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario3/input/gust_envelope_profiles/cyclonic_terrain_cat3.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario3/input/gust_envelope_profiles/non_cyclonic.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario3/input/house/conn_groups.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario3/input/house/conn_types.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario3/input/house/connections.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario3/input/house/coverage_types.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario3/input/house/coverages.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario3/input/house/damage_costing_data.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario3/input/house/damage_factorings.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario3/input/house/footprint.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario3/input/house/front_facing_walls.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario3/input/house/house_data.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario3/input/house/influence_patches.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario3/input/house/influences.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario3/input/house/water_ingress_costing_data.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario3/input/house/zones.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario3/input/house/zones_cpe_eave_mean.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario3/input/house/zones_cpe_mean.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario3/input/house/zones_cpe_str_mean.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario3/input/house/zones_edge.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario3/test_scenario3.cfg" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario4/input/debris/debris.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario4/input/gust_envelope_profiles/cyclonic_terrain_cat2.5.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario4/input/gust_envelope_profiles/cyclonic_terrain_cat2.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario4/input/gust_envelope_profiles/cyclonic_terrain_cat3.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario4/input/gust_envelope_profiles/non_cyclonic.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario4/input/house/conn_groups.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario4/input/house/conn_types.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario4/input/house/connections.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario4/input/house/coverage_types.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario4/input/house/coverages.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario4/input/house/damage_costing_data.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario4/input/house/damage_factorings.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario4/input/house/footprint.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario4/input/house/front_facing_walls.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario4/input/house/house_data.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario4/input/house/influence_patches.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario4/input/house/influences.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario4/input/house/water_ingress_costing_data.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario4/input/house/zones.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario4/input/house/zones_cpe_eave_mean.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario4/input/house/zones_cpe_mean.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario4/input/house/zones_cpe_str_mean.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario4/input/house/zones_edge.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario4/test_scenario4.cfg" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario5/input/debris/debris.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario5/input/gust_envelope_profiles/cyclonic_terrain_cat2.5.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario5/input/gust_envelope_profiles/cyclonic_terrain_cat2.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario5/input/gust_envelope_profiles/cyclonic_terrain_cat3.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario5/input/gust_envelope_profiles/non_cyclonic.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario5/input/house/conn_groups.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario5/input/house/conn_types.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario5/input/house/connections.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario5/input/house/coverage_types.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario5/input/house/coverages.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario5/input/house/damage_costing_data.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario5/input/house/damage_factorings.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario5/input/house/footprint.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario5/input/house/front_facing_walls.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario5/input/house/house_data.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario5/input/house/influence_patches.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario5/input/house/influences.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario5/input/house/water_ingress_costing_data.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario5/input/house/zones.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario5/input/house/zones_cpe_eave_mean.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario5/input/house/zones_cpe_mean.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario5/input/house/zones_cpe_str_mean.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario5/input/house/zones_edge.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario5/test_scenario5.cfg" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario6/input/debris/debris.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario6/input/gust_envelope_profiles/cyclonic_terrain_cat2.5.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario6/input/gust_envelope_profiles/cyclonic_terrain_cat2.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario6/input/gust_envelope_profiles/cyclonic_terrain_cat3.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario6/input/gust_envelope_profiles/non_cyclonic.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario6/input/house/conn_groups.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario6/input/house/conn_types.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario6/input/house/connections.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario6/input/house/coverage_types.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario6/input/house/coverages.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario6/input/house/damage_costing_data.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario6/input/house/damage_factorings.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario6/input/house/footprint.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario6/input/house/front_facing_walls.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario6/input/house/house_data.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario6/input/house/influence_patches.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario6/input/house/influences.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario6/input/house/water_ingress_costing_data.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario6/input/house/zones.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario6/input/house/zones_cpe_eave_mean.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario6/input/house/zones_cpe_mean.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario6/input/house/zones_cpe_str_mean.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario6/input/house/zones_edge.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario6/test_scenario6.cfg" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario7/input/debris/debris.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario7/input/gust_envelope_profiles/cyclonic_terrain_cat2.5.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario7/input/gust_envelope_profiles/cyclonic_terrain_cat2.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario7/input/gust_envelope_profiles/cyclonic_terrain_cat3.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario7/input/gust_envelope_profiles/non_cyclonic.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario7/input/house/conn_groups.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario7/input/house/conn_types.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario7/input/house/connections.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario7/input/house/coverage_types.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario7/input/house/coverages.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario7/input/house/damage_costing_data.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario7/input/house/damage_factorings.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario7/input/house/footprint.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario7/input/house/front_facing_walls.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario7/input/house/house_data.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario7/input/house/influence_patches.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario7/input/house/influences.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario7/input/house/water_ingress_costing_data.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario7/input/house/zones.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario7/input/house/zones_cpe_eave_mean.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario7/input/house/zones_cpe_mean.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario7/input/house/zones_cpe_str_mean.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario7/input/house/zones_edge.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario7/test_scenario7.cfg" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario8/input/debris/debris.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario8/input/gust_envelope_profiles/cyclonic_terrain_cat2.5.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario8/input/gust_envelope_profiles/cyclonic_terrain_cat2.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario8/input/gust_envelope_profiles/cyclonic_terrain_cat3.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario8/input/gust_envelope_profiles/non_cyclonic.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario8/input/house/conn_groups.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario8/input/house/conn_types.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario8/input/house/connections.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario8/input/house/coverage_types.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario8/input/house/coverages.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario8/input/house/damage_costing_data.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario8/input/house/damage_factorings.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario8/input/house/footprint.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario8/input/house/front_facing_walls.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario8/input/house/house_data.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario8/input/house/influence_patches.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario8/input/house/influences.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario8/input/house/water_ingress_costing_data.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario8/input/house/zones.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario8/input/house/zones_cpe_eave_mean.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario8/input/house/zones_cpe_mean.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario8/input/house/zones_cpe_str_mean.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario8/input/house/zones_edge.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario8/test_scenario8.cfg" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario9/input/debris/debris.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario9/input/gust_envelope_profiles/cyclonic_terrain_cat2.5.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario9/input/gust_envelope_profiles/cyclonic_terrain_cat2.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario9/input/gust_envelope_profiles/cyclonic_terrain_cat3.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario9/input/gust_envelope_profiles/non_cyclonic.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario9/input/house/conn_groups.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario9/input/house/conn_types.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario9/input/house/connections.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario9/input/house/coverage_types.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario9/input/house/coverages.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario9/input/house/damage_costing_data.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario9/input/house/damage_factorings.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario9/input/house/footprint.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario9/input/house/front_facing_walls.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario9/input/house/house_data.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario9/input/house/influence_patches.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario9/input/house/influences.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario9/input/house/water_ingress_costing_data.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario9/input/house/zones.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario9/input/house/zones_cpe_eave_mean.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario9/input/house/zones_cpe_mean.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario9/input/house/zones_cpe_str_mean.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario9/input/house/zones_edge.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario9/test_scenario9.cfg" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_sheeting_batten/input/debris/debris.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_sheeting_batten/input/gust_envelope_profiles/cyclonic_terrain_cat2.5.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_sheeting_batten/input/gust_envelope_profiles/cyclonic_terrain_cat2.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_sheeting_batten/input/gust_envelope_profiles/cyclonic_terrain_cat3.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_sheeting_batten/input/gust_envelope_profiles/non_cyclonic.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_sheeting_batten/input/house/conn_groups.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_sheeting_batten/input/house/conn_types.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_sheeting_batten/input/house/connections.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_sheeting_batten/input/house/coverage_types.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_sheeting_batten/input/house/coverages.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_sheeting_batten/input/house/damage_costing_data.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_sheeting_batten/input/house/damage_factorings.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_sheeting_batten/input/house/footprint.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_sheeting_batten/input/house/front_facing_walls.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_sheeting_batten/input/house/house_data.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_sheeting_batten/input/house/influence_patches.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_sheeting_batten/input/house/influences.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_sheeting_batten/input/house/water_ingress_costing_data.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_sheeting_batten/input/house/zones.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_sheeting_batten/input/house/zones_cpe_eave_mean.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_sheeting_batten/input/house/zones_cpe_mean.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_sheeting_batten/input/house/zones_cpe_str_mean.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_sheeting_batten/input/house/zones_edge.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_sheeting_batten/test_sheeting_batten.cfg" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_simulation_batten.py" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_stats.py" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/tests/test_zone.py" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/version.py" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/model/zone.py" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/scenarios/default/default.cfg" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/scenarios/default/input/debris/debris.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/scenarios/default/input/gust_envelope_profiles/cyclonic_terrain_cat2.5.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/scenarios/default/input/gust_envelope_profiles/cyclonic_terrain_cat2.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/scenarios/default/input/gust_envelope_profiles/cyclonic_terrain_cat3.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/scenarios/default/input/gust_envelope_profiles/non_cyclonic.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/scenarios/default/input/house/conn_groups.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/scenarios/default/input/house/conn_types.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/scenarios/default/input/house/connections.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/scenarios/default/input/house/coverage_types.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/scenarios/default/input/house/coverages.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/scenarios/default/input/house/coverages_cpe.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/scenarios/default/input/house/damage_costing_data.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/scenarios/default/input/house/damage_factorings.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/scenarios/default/input/house/footprint.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/scenarios/default/input/house/front_facing_walls.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/scenarios/default/input/house/house_data.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/scenarios/default/input/house/influence_patches.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/scenarios/default/input/house/influences.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/scenarios/default/input/house/water_ingress_costing_data.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/scenarios/default/input/house/zones.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/scenarios/default/input/house/zones_cpe_eave_mean.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/scenarios/default/input/house/zones_cpe_mean.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/scenarios/default/input/house/zones_cpe_str_mean.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws/scenarios/default/input/house/zones_edge.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws_env.yml" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/vaws_win.yml" afterPath="" />
+    </list>
+    <ignored path="vaws.iws" />
+    <ignored path=".idea/workspace.xml" />
+    <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
+    <option name="TRACKING_ENABLED" value="true" />
+    <option name="SHOW_DIALOG" value="false" />
+    <option name="HIGHLIGHT_CONFLICTS" value="true" />
+    <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
+    <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="CreatePatchCommitExecutor">
+    <option name="PATCH_PATH" value="" />
+  </component>
+  <component name="FavoritesManager">
+    <favorites_list name="vaws" />
+  </component>
+  <component name="FileEditorManager">
+    <leaf SIDE_TABS_SIZE_LIMIT_KEY="300">
+      <file leaf-file-name="Makefile" pinned="false" current-in-tab="true">
+        <entry file="file://$PROJECT_DIR$/Makefile">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="342">
+              <caret line="19" column="13" lean-forward="true" selection-start-line="19" selection-start-column="13" selection-end-line="19" selection-end-column="13" />
+              <folding />
+            </state>
+          </provider>
+        </entry>
+      </file>
+    </leaf>
+  </component>
+  <component name="FileTemplateManagerImpl">
+    <option name="RECENT_TEMPLATES">
+      <list>
+        <option value="Python Script" />
+      </list>
+    </option>
+  </component>
+  <component name="FindInProjectRecents">
+    <findStrings>
+      <find>Ui_main</find>
+      <find>run_gui</find>
+      <find>att_non_float</find>
+      <find>att_non_</find>
+      <find>mzcat</find>
+      <find>cpi_alpha</find>
+      <find>wall_dir</find>
+      <find>positive</find>
+      <find>water_ingress_cost</find>
+      <find>front_facing_walls</find>
+      <find>coverages</find>
+      <find>no_items_mean</find>
+      <find>FOOTPRINT</find>
+      <find>no_models</find>
+      <find>fig</find>
+      <find>damage_costing</find>
+      <find>restrict_y_cord</find>
+      <find>costing_function_types</find>
+      <find>\text</find>
+      <find>above</find>
+      <find>wind_speed_</find>
+      <find>water</find>
+      <find>section</find>
+      <find>shielding</find>
+      <find>area</find>
+      <find>math</find>
+      <find>where</find>
+      <find>costing</find>
+      <find>water_ingress</find>
+      <find>edge</find>
+    </findStrings>
+    <replaceStrings>
+      <replace>{}</replace>
+      <replace>dic_house</replace>
+      <replace>update_influence_by_patch</replace>
+      <replace>compute_</replace>
+      <replace>house</replace>
+      <replace>zones</replace>
+      <replace>cfg.</replace>
+      <replace>logging.INFO</replace>
+      <replace>bucket</replace>
+      <replace>from vaws.main</replace>
+      <replace>zeros</replace>
+      <replace>no_models</replace>
+      <replace>,</replace>
+      <replace>wind_profiles: cyclonic_terrain_cat2.csv</replace>
+      <replace>wind_speed_increment: 1.0</replace>
+      <replace>wind_speed_increment: 1.0\n</replace>
+      <replace>di_lower = 0, 0.1, 0.2, 0.5di_upper = 0.1, 0.2, 0.5, 1.1speed_at_zero_wi = 50.0, 35.0, 0.0, -20.0speed_at_full_wi = 75.0, 55.0, 40.0, 20.0</replace>
+      <replace>di_lower = 0, 0.1, 0.2, 0.5\ndi_upper = 0.1, 0.2, 0.5, 1.1\nspeed_at_zero_wi = 50.0, 35.0, 0.0, -20.0\nspeed_at_full_wi = 75.0, 55.0, 40.0, 20.0</replace>
+      <replace>speed_zero</replace>
+      <replace>speed_full</replace>
+      <replace>speed_at_zero_wi</replace>
+      <replace>speed_at_full_wi</replace>
+      <replace>.water_ingress</replace>
+      <replace>water_ingress</replace>
+      <replace>thresholds = 0.1, 0.2, 0.5, 1.1</replace>
+      <replace>0.0, 0.1, 0.2, 0.5</replace>
+      <replace>0.1, 0.2, 0.5</replace>
+      <replace>save_heatmaps</replace>
+      <replace />
+      <replace>path = os.sep.join(__file__.split(os.sep)[:-1])</replace>
+    </replaceStrings>
+  </component>
+  <component name="Git.Settings">
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
+    <option name="RECENT_BRANCH_BY_REPOSITORY">
+      <map>
+        <entry key="$PROJECT_DIR$" value="test1" />
+      </map>
+    </option>
+  </component>
+  <component name="IdeDocumentHistory">
+    <option name="CHANGED_PATHS">
+      <list>
+        <option value="$PROJECT_DIR$/vaws/model/main.py" />
+        <option value="$PROJECT_DIR$/vaws/model/version.py" />
+        <option value="$PROJECT_DIR$/vaws/gui/output.py" />
+        <option value="$PROJECT_DIR$/vaws/model/config.py" />
+        <option value="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario23/test_scenario23.cfg" />
+        <option value="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario22/test_scenario22.cfg" />
+        <option value="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario21/test_scenario21.cfg" />
+        <option value="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario20/test_scenario20.cfg" />
+        <option value="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario19/test_scenario19.cfg" />
+        <option value="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario18/test_scenario18.cfg" />
+        <option value="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario17/test_scenario17.cfg" />
+        <option value="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario16/test_scenario16.cfg" />
+        <option value="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario15/test_scenario15.cfg" />
+        <option value="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario14/test_scenario14.cfg" />
+        <option value="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario13/test_scenario13.cfg" />
+        <option value="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario12/test_scenario12.cfg" />
+        <option value="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario11/test_scenario11.cfg" />
+        <option value="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario10/test_scenario10.cfg" />
+        <option value="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario9/test_scenario9.cfg" />
+        <option value="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario8/test_scenario8.cfg" />
+        <option value="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario7/test_scenario7.cfg" />
+        <option value="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario6/test_scenario6.cfg" />
+        <option value="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario5/test_scenario5.cfg" />
+        <option value="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario4/test_scenario4.cfg" />
+        <option value="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario3/test_scenario3.cfg" />
+        <option value="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario2/test_scenario2.cfg" />
+        <option value="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario1/test_scenario1.cfg" />
+        <option value="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_roof_sheeting/test_roof_sheeting.cfg" />
+        <option value="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_sheeting_batten/test_sheeting_batten.cfg" />
+        <option value="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_sheeting_batten/input/house/house_data.csv" />
+        <option value="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_roof_sheeting/input/house/connections.csv" />
+        <option value="$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_roof_sheeting/input/house/zones.csv" />
+        <option value="$PROJECT_DIR$/vaws/gui/main.py" />
+        <option value="$PROJECT_DIR$/vaws/gui/aaa.py" />
+        <option value="$PROJECT_DIR$/vaws/model/house.py" />
+        <option value="$PROJECT_DIR$/docs/source/draft.rst" />
+        <option value="$PROJECT_DIR$/vaws/model/tests/test_damage_costing.py" />
+        <option value="$PROJECT_DIR$/docs/Makefile" />
+        <option value="$PROJECT_DIR$/docs/source/conf.py" />
+        <option value="$PROJECT_DIR$/docs/source/bibliography.rst" />
+        <option value="$PROJECT_DIR$/docs/source/ch00_toc_figures.rst" />
+        <option value="$PROJECT_DIR$/docs/source/ch01_introduction.rst" />
+        <option value="$PROJECT_DIR$/docs/source/ch02_software.rst" />
+        <option value="$PROJECT_DIR$/docs/source/ch03_input.rst" />
+        <option value="$PROJECT_DIR$/docs/source/ch04_use_GUI.rst" />
+        <option value="$PROJECT_DIR$/docs/source/ch05_logic.rst" />
+        <option value="$PROJECT_DIR$/docs/source/glossary.rst" />
+        <option value="$PROJECT_DIR$/docs/source/index.rst" />
+        <option value="$PROJECT_DIR$/docs/source/vaws.gui.rst" />
+        <option value="$PROJECT_DIR$/docs/source/vaws.model.rst" />
+        <option value="$PROJECT_DIR$/docs/source/vaws.rst" />
+      </list>
+    </option>
+  </component>
+  <component name="ProjectFrameBounds" fullScreen="true">
+    <option name="width" value="1920" />
+    <option name="height" value="1200" />
+  </component>
+  <component name="ProjectInspectionProfilesVisibleTreeState">
+    <entry key="Project Default">
+      <profile-state>
+        <expanded-state>
+          <State>
+            <id />
+          </State>
+          <State>
+            <id>General</id>
+          </State>
+          <State>
+            <id>Python</id>
+          </State>
+          <State>
+            <id>ReST</id>
+          </State>
+          <State>
+            <id>XML</id>
+          </State>
+        </expanded-state>
+        <selected-state>
+          <State>
+            <id>PyCompatibilityInspection</id>
+          </State>
+        </selected-state>
+      </profile-state>
+    </entry>
+  </component>
+  <component name="ProjectView">
+    <navigator currentView="ProjectPane" proportions="" version="1">
+      <flattenPackages />
+      <showMembers />
+      <showModules />
+      <showLibraryContents />
+      <hideEmptyPackages />
+      <abbreviatePackageNames />
+      <autoscrollToSource />
+      <autoscrollFromSource />
+      <sortByType />
+      <manualOrder />
+      <foldersAlwaysOnTop value="true" />
+    </navigator>
+    <panes>
+      <pane id="Scope" />
+      <pane id="ProjectPane">
+        <subPane>
+          <expand>
+            <path>
+              <item name="vaws" type="b2602c69:ProjectViewProjectNode" />
+              <item name="vaws" type="462c0819:PsiDirectoryNode" />
+            </path>
+          </expand>
+          <select />
+        </subPane>
+      </pane>
+      <pane id="Scratches" />
+    </panes>
+  </component>
+  <component name="PropertiesComponent">
+    <property name="settings.editor.selected.configurable" value="terminal" />
+    <property name="settings.editor.splitter.proportion" value="0.26542604" />
+    <property name="last_opened_file_path" value="$USER_HOME$/anaconda2/envs/vaws/bin/python2.7" />
+    <property name="FileHistory.git4idea.history.GitHistoryProvider_flatWidth0" value="261" />
+    <property name="FileHistory.git4idea.history.GitHistoryProvider_flatOrder0" value="0" />
+    <property name="FileHistory.git4idea.history.GitHistoryProvider_flatWidth1" value="263" />
+    <property name="FileHistory.git4idea.history.GitHistoryProvider_flatOrder1" value="1" />
+    <property name="FileHistory.git4idea.history.GitHistoryProvider_flatWidth2" value="268" />
+    <property name="FileHistory.git4idea.history.GitHistoryProvider_flatOrder2" value="2" />
+    <property name="FileHistory.git4idea.history.GitHistoryProvider_flatWidth3" value="1056" />
+    <property name="FileHistory.git4idea.history.GitHistoryProvider_flatOrder3" value="3" />
+    <property name="FileHistory.git4idea.history.GitHistoryProvider_treeWidth0" value="261" />
+    <property name="FileHistory.git4idea.history.GitHistoryProvider_treeOrder0" value="0" />
+    <property name="FileHistory.git4idea.history.GitHistoryProvider_treeWidth1" value="263" />
+    <property name="FileHistory.git4idea.history.GitHistoryProvider_treeOrder1" value="1" />
+    <property name="FileHistory.git4idea.history.GitHistoryProvider_treeWidth2" value="268" />
+    <property name="FileHistory.git4idea.history.GitHistoryProvider_treeOrder2" value="2" />
+    <property name="FileHistory.git4idea.history.GitHistoryProvider_treeWidth3" value="1056" />
+    <property name="FileHistory.git4idea.history.GitHistoryProvider_treeOrder3" value="3" />
+    <property name="SearchEverywhereHistoryKey" value="&#9;FILE&#9;file:///Users/hyeuk/Projects/vaws/src/core/simulation.py" />
+    <property name="com.intellij.ide.scratch.LRUPopupBuilder$2/Languages" value="Python" />
+    <property name="two.files.diff.last.used.file" value="$PROJECT_DIR$/src/tests/output/log_test16.txt" />
+    <property name="run.code.analysis.last.selected.profile" value="pProject Default" />
+  </component>
+  <component name="PyConsoleOptionsProvider">
+    <option name="myPythonConsoleState">
+      <console-settings module-name="vaws" sdk-home="$USER_HOME$/anaconda2/envs/vaws/bin/python2.7">
+        <option name="mySdkHome" value="$USER_HOME$/anaconda2/envs/vaws/bin/python2.7" />
+        <option name="myModuleName" value="vaws" />
+        <option name="myAddSourceRoots" value="true" />
+      </console-settings>
+    </option>
+  </component>
+  <component name="RecentsManager">
+    <key name="CopyFile.RECENT_KEYS">
+      <recent name="$PROJECT_DIR$/scenarios/test_scenario16p1/input/houses" />
+      <recent name="$PROJECT_DIR$/scenarios/default/input/houses" />
+      <recent name="$PROJECT_DIR$/src/tests" />
+      <recent name="$PROJECT_DIR$/src/gui" />
+      <recent name="$PROJECT_DIR$/src/scenarios" />
+    </key>
+    <key name="MoveFile.RECENT_KEYS">
+      <recent name="$PROJECT_DIR$/vaws/scenarios" />
+      <recent name="$PROJECT_DIR$" />
+      <recent name="$PROJECT_DIR$/vaws" />
+      <recent name="$PROJECT_DIR$/src/tests" />
+      <recent name="$PROJECT_DIR$/scenarios/test_roof_sheeting2" />
+    </key>
+  </component>
+  <component name="RunDashboard">
+    <option name="ruleStates">
+      <list>
+        <RuleState>
+          <option name="name" value="ConfigurationTypeDashboardGroupingRule" />
+        </RuleState>
+        <RuleState>
+          <option name="name" value="StatusDashboardGroupingRule" />
+        </RuleState>
+      </list>
+    </option>
+  </component>
+  <component name="RunManager" selected="Python.test_scenarios">
+    <configuration default="true" type="PythonConfigurationType" factoryName="Python">
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="" />
+      <option name="IS_MODULE_SDK" value="false" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <module name="vaws" />
+      <option name="SCRIPT_NAME" value="" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <method />
+    </configuration>
+    <configuration default="true" type="Tox" factoryName="Tox">
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs />
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="" />
+      <option name="IS_MODULE_SDK" value="false" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <module name="vaws" />
+      <method />
+    </configuration>
+    <configuration default="true" type="tests" factoryName="Doctests">
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs />
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="" />
+      <option name="IS_MODULE_SDK" value="false" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <module name="vaws" />
+      <option name="SCRIPT_NAME" value="" />
+      <option name="CLASS_NAME" value="" />
+      <option name="METHOD_NAME" value="" />
+      <option name="FOLDER_NAME" value="" />
+      <option name="TEST_TYPE" value="TEST_SCRIPT" />
+      <option name="PATTERN" value="" />
+      <option name="USE_PATTERN" value="false" />
+      <method />
+    </configuration>
+    <configuration default="true" type="tests" factoryName="Nosetests">
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs />
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="" />
+      <option name="IS_MODULE_SDK" value="false" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <module name="vaws" />
+      <option name="_new_regexPattern" value="&quot;&quot;" />
+      <option name="_new_additionalArguments" value="&quot;&quot;" />
+      <option name="_new_target" value="&quot;.&quot;" />
+      <option name="_new_targetType" value="&quot;PATH&quot;" />
+      <method />
+    </configuration>
+    <configuration default="true" type="tests" factoryName="Unittests">
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs />
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="" />
+      <option name="IS_MODULE_SDK" value="false" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <module name="vaws" />
+      <option name="_new_additionalArguments" value="&quot;&quot;" />
+      <option name="_new_target" value="&quot;.&quot;" />
+      <option name="_new_targetType" value="&quot;PATH&quot;" />
+      <method />
+    </configuration>
+    <configuration default="true" type="tests" factoryName="py.test">
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs />
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="" />
+      <option name="IS_MODULE_SDK" value="false" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <module name="vaws" />
+      <option name="_new_keywords" value="&quot;&quot;" />
+      <option name="_new_additionalArguments" value="&quot;&quot;" />
+      <option name="_new_target" value="&quot;.&quot;" />
+      <option name="_new_targetType" value="&quot;PATH&quot;" />
+      <method />
+    </configuration>
+    <configuration default="true" type="tests" factoryName="Attests">
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs />
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="" />
+      <option name="IS_MODULE_SDK" value="false" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <module name="vaws" />
+      <option name="SCRIPT_NAME" value="" />
+      <option name="CLASS_NAME" value="" />
+      <option name="METHOD_NAME" value="" />
+      <option name="FOLDER_NAME" value="" />
+      <option name="TEST_TYPE" value="TEST_SCRIPT" />
+      <option name="PATTERN" value="" />
+      <option name="USE_PATTERN" value="false" />
+      <method />
+    </configuration>
+    <configuration name="test_17" type="PythonConfigurationType" factoryName="Python">
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/src/vaws" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <module name="vaws" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/src/vaws/simulation.py" />
+      <option name="PARAMETERS" value="-c $PROJECT_DIR$/scenarios/test_scenario17/test_scenario17.cfg" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
+      <option name="EMULATE_TERMINAL" value="false" />
+    </configuration>
+    <configuration name="test_scenarios" type="PythonConfigurationType" factoryName="Python">
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="$USER_HOME$/anaconda2/envs/vaws/bin/python2.7" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/vaws/gui" />
+      <option name="IS_MODULE_SDK" value="false" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <module name="vaws" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/vaws/gui/main.py" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
+      <option name="EMULATE_TERMINAL" value="false" />
+    </configuration>
+    <list size="2">
+      <item index="0" class="java.lang.String" itemvalue="Python.test_17" />
+      <item index="1" class="java.lang.String" itemvalue="Python.test_scenarios" />
+    </list>
+  </component>
+  <component name="ShelveChangesManager" show_recycled="false">
+    <option name="remove_strategy" value="false" />
+  </component>
+  <component name="StructureViewFactory">
+    <option name="ACTIVE_ACTIONS" value=",ALPHA_COMPARATOR" />
+  </component>
+  <component name="SvnConfiguration">
+    <configuration />
+  </component>
+  <component name="TaskManager">
+    <task active="true" id="Default" summary="Default task">
+      <changelist id="cad3e020-8e75-482d-999a-ce5feb85a72e" name="Default" comment="" />
+      <created>1457672605422</created>
+      <option name="number" value="Default" />
+      <option name="presentableId" value="Default" />
+      <updated>1457672605422</updated>
+    </task>
+    <servers />
+  </component>
+  <component name="TodoView">
+    <todo-panel id="selected-file">
+      <is-autoscroll-to-source value="true" />
+    </todo-panel>
+    <todo-panel id="all">
+      <are-packages-shown value="true" />
+      <is-autoscroll-to-source value="true" />
+    </todo-panel>
+  </component>
+  <component name="ToolWindowManager">
+    <frame x="0" y="0" width="1920" height="1200" extended-state="0" />
+    <editor active="true" />
+    <layout>
+      <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.16347177" sideWeight="0.5" order="0" side_tool="false" content_ui="combo" />
+      <window_info id="TODO" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.32830524" sideWeight="0.4978701" order="9" side_tool="false" content_ui="tabs" />
+      <window_info id="Event Log" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.42090786" sideWeight="0.50692225" order="0" side_tool="true" content_ui="tabs" />
+      <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.16770187" sideWeight="0.4946752" order="5" side_tool="false" content_ui="tabs" />
+      <window_info id="Version Control" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.4085282" sideWeight="0.49245432" order="2" side_tool="false" content_ui="tabs" />
+      <window_info id="Python Console" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.44154057" sideWeight="0.49307775" order="1" side_tool="false" content_ui="tabs" />
+      <window_info id="Structure" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.24866879" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
+      <window_info id="Terminal" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.41320553" sideWeight="0.50532484" order="4" side_tool="true" content_ui="tabs" x="301" y="28" width="678" height="730" />
+      <window_info id="Debug" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.39752406" sideWeight="0.66397417" order="6" side_tool="false" content_ui="tabs" />
+      <window_info id="Favorites" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="2" side_tool="true" content_ui="tabs" />
+      <window_info id="Data View" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.32956383" sideWeight="0.5" order="0" side_tool="false" content_ui="tabs" />
+      <window_info id="Cvs" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.25" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
+      <window_info id="Message" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
+      <window_info id="Commander" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.4" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
+      <window_info id="Inspection" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.0" sideWeight="0.5" order="8" side_tool="false" content_ui="tabs" />
+      <window_info id="Hierarchy" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.25" sideWeight="0.5" order="3" side_tool="false" content_ui="combo" />
+      <window_info id="Inspection Results" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.3274179" sideWeight="0.49722" order="10" side_tool="false" content_ui="tabs" />
+      <window_info id="Find" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.48535937" sideWeight="0.48142165" order="4" side_tool="false" content_ui="tabs" />
+      <window_info id="Ant Build" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.25" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" />
+    </layout>
+    <layout-to-restore>
+      <window_info id="TODO" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.32876712" sideWeight="0.4978701" order="9" side_tool="false" content_ui="tabs" />
+      <window_info id="Cvs" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.25" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
+      <window_info id="Message" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
+      <window_info id="Commander" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.4" sideWeight="0.5" order="0" side_tool="false" content_ui="tabs" />
+      <window_info id="Event Log" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.27345133" sideWeight="0.50692225" order="0" side_tool="true" content_ui="tabs" />
+      <window_info id="Inspection" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.0" sideWeight="0.5" order="8" side_tool="false" content_ui="tabs" />
+      <window_info id="Version Control" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.19557522" sideWeight="0.49201277" order="2" side_tool="false" content_ui="tabs" />
+      <window_info id="Python Console" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.44246575" sideWeight="0.49307775" order="1" side_tool="false" content_ui="tabs" />
+      <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="5" side_tool="false" content_ui="tabs" />
+      <window_info id="Terminal" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.46645367" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" x="301" y="28" width="678" height="730" />
+      <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.09904154" sideWeight="0.5" order="0" side_tool="false" content_ui="combo" />
+      <window_info id="Hierarchy" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.25" sideWeight="0.5" order="2" side_tool="false" content_ui="combo" />
+      <window_info id="Inspection Results" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.32876712" sideWeight="0.5" order="10" side_tool="false" content_ui="tabs" />
+      <window_info id="Find" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.48938054" sideWeight="0.5" order="4" side_tool="false" content_ui="tabs" />
+      <window_info id="Structure" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.2494043" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
+      <window_info id="Ant Build" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.25" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
+      <window_info id="Favorites" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="2" side_tool="true" content_ui="tabs" />
+      <window_info id="Debug" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.4" sideWeight="0.5" order="6" side_tool="false" content_ui="tabs" />
+    </layout-to-restore>
+  </component>
+  <component name="UnknownFeatures">
+    <option featureType="com.intellij.fileTypeFactory" implementationName="*.sh" />
+    <option featureType="com.intellij.fileTypeFactory" implementationName="*.yml" />
+    <option featureType="com.intellij.fileTypeFactory" implementationName="*.gitignore" />
+    <option featureType="com.intellij.fileTypeFactory" implementationName="*.org" />
+  </component>
+  <component name="Vcs.Log.Tabs.Properties">
+    <option name="TAB_STATES">
+      <map>
+        <entry key="MAIN">
+          <value>
+            <State>
+              <option name="RECENTLY_FILTERED_USER_GROUPS">
+                <collection />
+              </option>
+              <option name="RECENTLY_FILTERED_BRANCH_GROUPS">
+                <collection />
+              </option>
+              <option name="COLUMN_ORDER">
+                <list>
+                  <option value="0" />
+                  <option value="1" />
+                  <option value="2" />
+                  <option value="3" />
+                </list>
+              </option>
+            </State>
+          </value>
+        </entry>
+      </map>
+    </option>
+  </component>
+  <component name="Vcs.Log.UiProperties">
+    <option name="RECENTLY_FILTERED_USER_GROUPS">
+      <collection />
+    </option>
+    <option name="RECENTLY_FILTERED_BRANCH_GROUPS">
+      <collection>
+        <UserGroup>
+          <option name="users">
+            <list>
+              <option value="master" />
+            </list>
+          </option>
+        </UserGroup>
+      </collection>
+    </option>
+  </component>
+  <component name="VcsContentAnnotationSettings">
+    <option name="myLimit" value="2678400000" />
+  </component>
+  <component name="XDebuggerManager">
+    <breakpoint-manager>
+      <breakpoints>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/src/tests/test_simulation_sheeting2.py</url>
+          <line>1</line>
+          <option name="timeStamp" value="31" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/src/vaws/curve.py</url>
+          <option name="timeStamp" value="36" />
+        </line-breakpoint>
+      </breakpoints>
+      <default-breakpoints>
+        <breakpoint type="python-exception">
+          <properties notifyOnTerminate="true" exception="BaseException">
+            <option name="notifyOnTerminate" value="true" />
+          </properties>
+        </breakpoint>
+      </default-breakpoints>
+      <option name="time" value="46" />
+    </breakpoint-manager>
+    <watches-manager />
+  </component>
+  <component name="editorHistoryManager">
+    <entry file="file://$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_sheeting_batten/input/house/water_ingress_costing_data.csv">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="0">
+          <caret line="0" column="0" lean-forward="false" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario1/input/house/zones.csv">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="0">
+          <caret line="0" column="0" lean-forward="false" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_sheeting_batten/input/house/zones.csv">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="0">
+          <caret line="0" column="0" lean-forward="false" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_sheeting_batten/input/house/front_facing_walls.csv">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="0">
+          <caret line="0" column="0" lean-forward="false" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_sheeting_batten/input/house/footprint.csv">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="0">
+          <caret line="0" column="0" lean-forward="false" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_sheeting_batten/input/house/damage_factorings.csv">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="0">
+          <caret line="0" column="0" lean-forward="false" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_sheeting_batten/input/house/damage_costing_data.csv">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="0">
+          <caret line="0" column="0" lean-forward="false" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario1/input/house/house_data.csv">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="0">
+          <caret line="0" column="0" lean-forward="false" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_sheeting_batten/input/house/house_data.csv">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="108">
+          <caret line="6" column="10" lean-forward="true" selection-start-line="6" selection-start-column="10" selection-end-line="6" selection-end-column="10" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_roof_sheeting/input/house/zones.csv">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="342">
+          <caret line="19" column="0" lean-forward="true" selection-start-line="19" selection-start-column="0" selection-end-line="19" selection-end-column="0" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario2/input/house/zones.csv">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="180">
+          <caret line="10" column="43" lean-forward="true" selection-start-line="10" selection-start-column="43" selection-end-line="10" selection-end-column="43" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario2/input/house/connections.csv">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="0">
+          <caret line="0" column="0" lean-forward="false" selection-start-line="0" selection-start-column="0" selection-end-line="18" selection-end-column="56" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario6/input/house/connections.csv">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="0">
+          <caret line="0" column="0" lean-forward="false" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_scenario1/input/house/connections.csv">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="994">
+          <caret line="61" column="0" lean-forward="true" selection-start-line="61" selection-start-column="0" selection-end-line="61" selection-end-column="0" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_roof_sheeting/input/house/connections.csv">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="324">
+          <caret line="18" column="56" lean-forward="false" selection-start-line="18" selection-start-column="56" selection-end-line="18" selection-end-column="56" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_roof_sheeting/input/house/conn_types.csv">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="0">
+          <caret line="0" column="0" lean-forward="false" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_roof_sheeting/input/house/conn_groups.csv">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="0">
+          <caret line="0" column="0" lean-forward="false" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_sheeting_batten/input/house/influences.csv">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="0">
+          <caret line="0" column="0" lean-forward="false" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/vaws/model/tests/test_scenarios/test_sheeting_batten/input/house/influence_patches.csv">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="0">
+          <caret line="0" column="0" lean-forward="false" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/vaws/gui/aaa.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="720">
+          <caret line="49" column="20" lean-forward="false" selection-start-line="49" selection-start-column="20" selection-end-line="49" selection-end-column="20" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/vaws/gui/main.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="23688">
+          <caret line="1358" column="14" lean-forward="false" selection-start-line="1358" selection-start-column="14" selection-end-line="1358" selection-end-column="14" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/vaws/model/house.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="273">
+          <caret line="43" column="13" lean-forward="false" selection-start-line="43" selection-start-column="13" selection-end-line="43" selection-end-column="13" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/vaws/model/batch_convert.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="0">
+          <caret line="0" column="0" lean-forward="false" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/vaws/model/stats.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="350">
+          <caret line="25" column="14" lean-forward="false" selection-start-line="25" selection-start-column="4" selection-end-line="25" selection-end-column="14" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/docs/source/draft.rst">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="666">
+          <caret line="37" column="0" lean-forward="true" selection-start-line="37" selection-start-column="0" selection-end-line="37" selection-end-column="0" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/vaws/model/debris.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="558">
+          <caret line="95" column="0" lean-forward="true" selection-start-line="94" selection-start-column="0" selection-end-line="95" selection-end-column="0" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/vaws/model/config.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="218">
+          <caret line="288" column="8" lean-forward="false" selection-start-line="288" selection-start-column="8" selection-end-line="288" selection-end-column="8" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/vaws/model/tests/test_damage_costing.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="234">
+          <caret line="88" column="8" lean-forward="true" selection-start-line="88" selection-start-column="8" selection-end-line="88" selection-end-column="8" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/vaws/model/coverage.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="207">
+          <caret line="94" column="20" lean-forward="false" selection-start-line="94" selection-start-column="8" selection-end-line="94" selection-end-column="20" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/vaws/model/connection.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="1436">
+          <caret line="192" column="17" lean-forward="true" selection-start-line="192" selection-start-column="17" selection-end-line="192" selection-end-column="17" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/vaws/model/output.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="0">
+          <caret line="0" column="0" lean-forward="false" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/vaws/model/main.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="560">
+          <caret line="188" column="43" lean-forward="false" selection-start-line="188" selection-start-column="23" selection-end-line="188" selection-end-column="43" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/vaws/model/curve.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="440">
+          <caret line="50" column="12" lean-forward="true" selection-start-line="50" selection-start-column="12" selection-end-line="50" selection-end-column="12" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/vaws/model/damage_costing.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="306">
+          <caret line="79" column="20" lean-forward="false" selection-start-line="79" selection-start-column="8" selection-end-line="79" selection-end-column="20" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/vaws/model/house_damage.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="396">
+          <caret line="233" column="0" lean-forward="true" selection-start-line="233" selection-start-column="0" selection-end-line="233" selection-end-column="0" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/vaws/model/zone.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="2232">
+          <caret line="126" column="44" lean-forward="false" selection-start-line="126" selection-start-column="40" selection-end-line="126" selection-end-column="44" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/docs/Makefile">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="0">
+          <caret line="0" column="0" lean-forward="false" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/docs/source/bibliography.rst">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="0">
+          <caret line="0" column="4" lean-forward="false" selection-start-line="0" selection-start-column="4" selection-end-line="0" selection-end-column="4" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/docs/source/ch00_toc_figures.rst">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="0">
+          <caret line="0" column="0" lean-forward="false" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/docs/source/ch01_introduction.rst">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="0">
+          <caret line="0" column="0" lean-forward="false" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/docs/source/ch02_software.rst">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="0">
+          <caret line="0" column="45" lean-forward="false" selection-start-line="0" selection-start-column="45" selection-end-line="0" selection-end-column="45" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/docs/source/ch03_input.rst">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="0">
+          <caret line="0" column="51" lean-forward="false" selection-start-line="0" selection-start-column="51" selection-end-line="0" selection-end-column="51" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/docs/source/ch04_use_GUI.rst">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="0">
+          <caret line="0" column="0" lean-forward="false" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/docs/source/ch05_logic.rst">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="0">
+          <caret line="0" column="12" lean-forward="false" selection-start-line="0" selection-start-column="12" selection-end-line="0" selection-end-column="12" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/docs/source/conf.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="166">
+          <caret line="138" column="46" lean-forward="false" selection-start-line="138" selection-start-column="46" selection-end-line="138" selection-end-column="46" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/docs/source/glossary.rst">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="0">
+          <caret line="0" column="0" lean-forward="false" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/docs/source/index.rst">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="0">
+          <caret line="0" column="13" lean-forward="false" selection-start-line="0" selection-start-column="13" selection-end-line="0" selection-end-column="13" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/docs/source/vaws.gui.rst">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="0">
+          <caret line="0" column="0" lean-forward="false" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/docs/source/vaws.model.rst">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="0">
+          <caret line="0" column="0" lean-forward="false" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/docs/source/vaws.rst">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="0">
+          <caret line="0" column="0" lean-forward="false" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/Makefile">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="342">
+          <caret line="19" column="13" lean-forward="true" selection-start-line="19" selection-start-column="13" selection-end-line="19" selection-end-column="13" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+  </component>
+</project>
