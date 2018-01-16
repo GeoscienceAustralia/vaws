@@ -1,9 +1,0 @@
-wind_dir,wall_name
-S,1
-SW,1,3
-W,3
-NW,3,5
-N,5
-NE,5,7
-E,7
-SE,1,7

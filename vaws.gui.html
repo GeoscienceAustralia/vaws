@@ -1,0 +1,547 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>vaws.gui package &#8212; VAWS 2.0 documentation</title>
+    
+    <link rel="stylesheet" href="_static/classic.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '2.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" /> 
+  </head>
+  <body role="document">
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">VAWS 2.0 documentation</a> &#187;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="vaws-gui-package">
+<h1>vaws.gui package<a class="headerlink" href="#vaws-gui-package" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="module-vaws.gui.house">
+<span id="vaws-gui-house-module"></span><h2>vaws.gui.house module<a class="headerlink" href="#module-vaws.gui.house" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="vaws.gui.house.HouseViewer">
+<em class="property">class </em><code class="descclassname">vaws.gui.house.</code><code class="descname">HouseViewer</code><span class="sig-paren">(</span><em>cfg</em>, <em>parent=None</em><span class="sig-paren">)</span><a class="headerlink" href="#vaws.gui.house.HouseViewer" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">PyQt4.QtGui.QDialog</span></code>, <code class="xref py py-class docutils literal"><span class="pre">vaws.gui.house_ui.Ui_Dialog</span></code>, <a class="reference internal" href="#vaws.gui.mixins.PersistSizePosMixin" title="vaws.gui.mixins.PersistSizePosMixin"><code class="xref py py-class docutils literal"><span class="pre">vaws.gui.mixins.PersistSizePosMixin</span></code></a></p>
+<dl class="method">
+<dt id="vaws.gui.house.HouseViewer.accept">
+<code class="descname">accept</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#vaws.gui.house.HouseViewer.accept" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="vaws.gui.house.HouseViewer.reject">
+<code class="descname">reject</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#vaws.gui.house.HouseViewer.reject" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="function">
+<dt id="vaws.gui.house.bin">
+<code class="descclassname">vaws.gui.house.</code><code class="descname">bin</code><span class="sig-paren">(</span><em>QTextStream</em><span class="sig-paren">)</span> &rarr; QTextStream<a class="headerlink" href="#vaws.gui.house.bin" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="vaws.gui.house.hex">
+<code class="descclassname">vaws.gui.house.</code><code class="descname">hex</code><span class="sig-paren">(</span><em>QTextStream</em><span class="sig-paren">)</span> &rarr; QTextStream<a class="headerlink" href="#vaws.gui.house.hex" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="vaws.gui.house.oct">
+<code class="descclassname">vaws.gui.house.</code><code class="descname">oct</code><span class="sig-paren">(</span><em>QTextStream</em><span class="sig-paren">)</span> &rarr; QTextStream<a class="headerlink" href="#vaws.gui.house.oct" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</div>
+<div class="section" id="module-vaws.gui.main">
+<span id="vaws-gui-main-module"></span><h2>vaws.gui.main module<a class="headerlink" href="#module-vaws.gui.main" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="vaws.gui.main.MyForm">
+<em class="property">class </em><code class="descclassname">vaws.gui.main.</code><code class="descname">MyForm</code><span class="sig-paren">(</span><em>parent=None</em>, <em>init_scenario=None</em><span class="sig-paren">)</span><a class="headerlink" href="#vaws.gui.main.MyForm" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">PyQt4.QtGui.QMainWindow</span></code>, <code class="xref py py-class docutils literal"><span class="pre">vaws.gui.main_ui.Ui_main</span></code>, <a class="reference internal" href="#vaws.gui.mixins.PersistSizePosMixin" title="vaws.gui.mixins.PersistSizePosMixin"><code class="xref py py-class docutils literal"><span class="pre">vaws.gui.mixins.PersistSizePosMixin</span></code></a></p>
+<dl class="method">
+<dt id="vaws.gui.main.MyForm.closeEvent">
+<code class="descname">closeEvent</code><span class="sig-paren">(</span><em>event</em><span class="sig-paren">)</span><a class="headerlink" href="#vaws.gui.main.MyForm.closeEvent" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="vaws.gui.main.MyForm.determine_capacities">
+<code class="descname">determine_capacities</code><span class="sig-paren">(</span><em>bucket</em><span class="sig-paren">)</span><a class="headerlink" href="#vaws.gui.main.MyForm.determine_capacities" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="vaws.gui.main.MyForm.file_load">
+<code class="descname">file_load</code><span class="sig-paren">(</span><em>fname</em><span class="sig-paren">)</span><a class="headerlink" href="#vaws.gui.main.MyForm.file_load" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="vaws.gui.main.MyForm.heatmap_house_change">
+<code class="descname">heatmap_house_change</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#vaws.gui.main.MyForm.heatmap_house_change" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="vaws.gui.main.MyForm.init_debris_region">
+<code class="descname">init_debris_region</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#vaws.gui.main.MyForm.init_debris_region" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="vaws.gui.main.MyForm.init_influence_and_patch">
+<code class="descname">init_influence_and_patch</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#vaws.gui.main.MyForm.init_influence_and_patch" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="vaws.gui.main.MyForm.init_terrain_category">
+<code class="descname">init_terrain_category</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#vaws.gui.main.MyForm.init_terrain_category" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="vaws.gui.main.MyForm.okToContinue">
+<code class="descname">okToContinue</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#vaws.gui.main.MyForm.okToContinue" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="vaws.gui.main.MyForm.onSliderChanged">
+<code class="descname">onSliderChanged</code><span class="sig-paren">(</span><em>label</em>, <em>x</em><span class="sig-paren">)</span><a class="headerlink" href="#vaws.gui.main.MyForm.onSliderChanged" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="vaws.gui.main.MyForm.open_scenario">
+<code class="descname">open_scenario</code><span class="sig-paren">(</span><em>config_file=None</em><span class="sig-paren">)</span><a class="headerlink" href="#vaws.gui.main.MyForm.open_scenario" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="vaws.gui.main.MyForm.runScenario">
+<code class="descname">runScenario</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#vaws.gui.main.MyForm.runScenario" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="vaws.gui.main.MyForm.save_as_scenario">
+<code class="descname">save_as_scenario</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#vaws.gui.main.MyForm.save_as_scenario" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="vaws.gui.main.MyForm.save_scenario">
+<code class="descname">save_scenario</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#vaws.gui.main.MyForm.save_scenario" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="vaws.gui.main.MyForm.showHouseInfoDlg">
+<code class="descname">showHouseInfoDlg</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#vaws.gui.main.MyForm.showHouseInfoDlg" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="vaws.gui.main.MyForm.stopScenario">
+<code class="descname">stopScenario</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#vaws.gui.main.MyForm.stopScenario" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="vaws.gui.main.MyForm.testConstructionLevels">
+<code class="descname">testConstructionLevels</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#vaws.gui.main.MyForm.testConstructionLevels" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="vaws.gui.main.MyForm.testDebrisSettings">
+<code class="descname">testDebrisSettings</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#vaws.gui.main.MyForm.testDebrisSettings" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="vaws.gui.main.MyForm.testWaterIngress">
+<code class="descname">testWaterIngress</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#vaws.gui.main.MyForm.testWaterIngress" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="vaws.gui.main.MyForm.updateBreachPlot">
+<code class="descname">updateBreachPlot</code><span class="sig-paren">(</span><em>bucket</em><span class="sig-paren">)</span><a class="headerlink" href="#vaws.gui.main.MyForm.updateBreachPlot" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="vaws.gui.main.MyForm.updateComboBox">
+<code class="descname">updateComboBox</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#vaws.gui.main.MyForm.updateComboBox" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="vaws.gui.main.MyForm.updateConnectionGroupTable">
+<code class="descname">updateConnectionGroupTable</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#vaws.gui.main.MyForm.updateConnectionGroupTable" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="vaws.gui.main.MyForm.updateConnectionTable">
+<code class="descname">updateConnectionTable</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#vaws.gui.main.MyForm.updateConnectionTable" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="vaws.gui.main.MyForm.updateConnectionTable_with_results">
+<code class="descname">updateConnectionTable_with_results</code><span class="sig-paren">(</span><em>bucket</em><span class="sig-paren">)</span><a class="headerlink" href="#vaws.gui.main.MyForm.updateConnectionTable_with_results" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="vaws.gui.main.MyForm.updateConnectionTypePlots">
+<code class="descname">updateConnectionTypePlots</code><span class="sig-paren">(</span><em>bucket</em><span class="sig-paren">)</span><a class="headerlink" href="#vaws.gui.main.MyForm.updateConnectionTypePlots" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="vaws.gui.main.MyForm.updateConnectionTypeTable">
+<code class="descname">updateConnectionTypeTable</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#vaws.gui.main.MyForm.updateConnectionTypeTable" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="vaws.gui.main.MyForm.updateDamageTable">
+<code class="descname">updateDamageTable</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#vaws.gui.main.MyForm.updateDamageTable" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="vaws.gui.main.MyForm.updateDebrisRegionsTable">
+<code class="descname">updateDebrisRegionsTable</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#vaws.gui.main.MyForm.updateDebrisRegionsTable" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="vaws.gui.main.MyForm.updateDisplaySettings">
+<code class="descname">updateDisplaySettings</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#vaws.gui.main.MyForm.updateDisplaySettings" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="vaws.gui.main.MyForm.updateFragCurve">
+<code class="descname">updateFragCurve</code><span class="sig-paren">(</span><em>_array</em><span class="sig-paren">)</span><a class="headerlink" href="#vaws.gui.main.MyForm.updateFragCurve" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="vaws.gui.main.MyForm.updateHeatmap">
+<code class="descname">updateHeatmap</code><span class="sig-paren">(</span><em>bucket</em>, <em>house_number=0</em><span class="sig-paren">)</span><a class="headerlink" href="#vaws.gui.main.MyForm.updateHeatmap" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="vaws.gui.main.MyForm.updateHouseResultsTable">
+<code class="descname">updateHouseResultsTable</code><span class="sig-paren">(</span><em>bucket</em><span class="sig-paren">)</span><a class="headerlink" href="#vaws.gui.main.MyForm.updateHouseResultsTable" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="vaws.gui.main.MyForm.updateInfluence">
+<code class="descname">updateInfluence</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#vaws.gui.main.MyForm.updateInfluence" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="vaws.gui.main.MyForm.updatePatch">
+<code class="descname">updatePatch</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#vaws.gui.main.MyForm.updatePatch" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="vaws.gui.main.MyForm.updateStrengthPlot">
+<code class="descname">updateStrengthPlot</code><span class="sig-paren">(</span><em>bucket</em><span class="sig-paren">)</span><a class="headerlink" href="#vaws.gui.main.MyForm.updateStrengthPlot" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="vaws.gui.main.MyForm.updateTerrainCategoryTable">
+<code class="descname">updateTerrainCategoryTable</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#vaws.gui.main.MyForm.updateTerrainCategoryTable" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="vaws.gui.main.MyForm.updateTypeDamagePlot">
+<code class="descname">updateTypeDamagePlot</code><span class="sig-paren">(</span><em>bucket</em><span class="sig-paren">)</span><a class="headerlink" href="#vaws.gui.main.MyForm.updateTypeDamagePlot" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="vaws.gui.main.MyForm.updateVulnCurve">
+<code class="descname">updateVulnCurve</code><span class="sig-paren">(</span><em>_array</em><span class="sig-paren">)</span><a class="headerlink" href="#vaws.gui.main.MyForm.updateVulnCurve" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="vaws.gui.main.MyForm.updateWaterIngressPlot">
+<code class="descname">updateWaterIngressPlot</code><span class="sig-paren">(</span><em>bucket</em><span class="sig-paren">)</span><a class="headerlink" href="#vaws.gui.main.MyForm.updateWaterIngressPlot" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="vaws.gui.main.MyForm.updateZonesTable">
+<code class="descname">updateZonesTable</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#vaws.gui.main.MyForm.updateZonesTable" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="vaws.gui.main.MyForm.update_config_from_ui">
+<code class="descname">update_config_from_ui</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#vaws.gui.main.MyForm.update_config_from_ui" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="vaws.gui.main.MyForm.update_house_panel">
+<code class="descname">update_house_panel</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#vaws.gui.main.MyForm.update_house_panel" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="vaws.gui.main.MyForm.update_ui_from_config">
+<code class="descname">update_ui_from_config</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#vaws.gui.main.MyForm.update_ui_from_config" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="function">
+<dt id="vaws.gui.main.progress_callback">
+<code class="descclassname">vaws.gui.main.</code><code class="descname">progress_callback</code><span class="sig-paren">(</span><em>percent_done</em><span class="sig-paren">)</span><a class="headerlink" href="#vaws.gui.main.progress_callback" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="vaws.gui.main.run_gui">
+<code class="descclassname">vaws.gui.main.</code><code class="descname">run_gui</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#vaws.gui.main.run_gui" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</div>
+<div class="section" id="module-vaws.gui.matplotlibwidget">
+<span id="vaws-gui-matplotlibwidget-module"></span><h2>vaws.gui.matplotlibwidget module<a class="headerlink" href="#module-vaws.gui.matplotlibwidget" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="matplotlibwidget">
+<h3>MatplotlibWidget<a class="headerlink" href="#matplotlibwidget" title="Permalink to this headline">¶</a></h3>
+<p>Example of matplotlib widget for PyQt4</p>
+<p>Copyright © 2009 Pierre Raybaut
+This software is licensed under the terms of the MIT License</p>
+<p>Derived from &#8216;embedding_in_pyqt4.py&#8217;:
+Copyright © 2005 Florent Rougon, 2006 Darren Dale</p>
+<dl class="class">
+<dt id="vaws.gui.matplotlibwidget.MatplotlibWidget">
+<em class="property">class </em><code class="descclassname">vaws.gui.matplotlibwidget.</code><code class="descname">MatplotlibWidget</code><span class="sig-paren">(</span><em>parent=None</em>, <em>title=''</em>, <em>xlabel=''</em>, <em>ylabel=''</em>, <em>xlim=None</em>, <em>ylim=None</em>, <em>xscale='linear'</em>, <em>yscale='linear'</em>, <em>width=4</em>, <em>height=3</em>, <em>dpi=100</em>, <em>hold=False</em><span class="sig-paren">)</span><a class="headerlink" href="#vaws.gui.matplotlibwidget.MatplotlibWidget" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">PyQt4.QtGui.QWidget</span></code></p>
+</dd></dl>
+
+<dl class="class">
+<dt id="vaws.gui.matplotlibwidget.MatplotlibWidget2">
+<em class="property">class </em><code class="descclassname">vaws.gui.matplotlibwidget.</code><code class="descname">MatplotlibWidget2</code><span class="sig-paren">(</span><em>parent=None</em>, <em>title=''</em>, <em>xlabel=''</em>, <em>ylabel=''</em>, <em>xlim=None</em>, <em>ylim=None</em>, <em>xscale='linear'</em>, <em>yscale='linear'</em>, <em>width=4</em>, <em>height=3</em>, <em>dpi=100</em>, <em>hold=False</em><span class="sig-paren">)</span><a class="headerlink" href="#vaws.gui.matplotlibwidget.MatplotlibWidget2" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">matplotlib.backends.backend_qt4agg.FigureCanvasQTAgg</span></code></p>
+<p>MatplotlibWidget inherits PyQt4.QtGui.QWidget
+and matplotlib.backend_bases.FigureCanvasBase</p>
+<p>parent (None): parent widget
+title (&#8216;&#8217;): figure title
+xlabel (&#8216;&#8217;): X-axis label
+ylabel (&#8216;&#8217;): Y-axis label
+xlim (None): X-axis limits ([min, max])
+ylim (None): Y-axis limits ([min, max])
+xscale (&#8216;linear&#8217;): X-axis scale
+yscale (&#8216;linear&#8217;): Y-axis scale
+width (4): width in inches
+height (3): height in inches
+dpi (100): resolution in dpi
+hold (False): if False, figure will be cleared each time plot is called</p>
+<p>figure: instance of matplotlib.figure.Figure
+axes: figure axes</p>
+<p>self.widget = MatplotlibWidget(self, yscale=&#8217;log&#8217;, hold=True)
+from numpy import linspace
+x = linspace(-10, 10)
+self.widget.axes.plot(x, x**2)
+self.wdiget.axes.plot(x, x**3)</p>
+<dl class="method">
+<dt id="vaws.gui.matplotlibwidget.MatplotlibWidget2.minimumSizeHint">
+<code class="descname">minimumSizeHint</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#vaws.gui.matplotlibwidget.MatplotlibWidget2.minimumSizeHint" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="vaws.gui.matplotlibwidget.MatplotlibWidget2.sizeHint">
+<code class="descname">sizeHint</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#vaws.gui.matplotlibwidget.MatplotlibWidget2.sizeHint" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</div>
+</div>
+<div class="section" id="module-vaws.gui.mixins">
+<span id="vaws-gui-mixins-module"></span><h2>vaws.gui.mixins module<a class="headerlink" href="#module-vaws.gui.mixins" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="vaws.gui.mixins.PersistSizePosMixin">
+<em class="property">class </em><code class="descclassname">vaws.gui.mixins.</code><code class="descname">PersistSizePosMixin</code><span class="sig-paren">(</span><em>name</em><span class="sig-paren">)</span><a class="headerlink" href="#vaws.gui.mixins.PersistSizePosMixin" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">object</span></code></p>
+<dl class="method">
+<dt id="vaws.gui.mixins.PersistSizePosMixin.initSizePosFromSettings">
+<code class="descname">initSizePosFromSettings</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#vaws.gui.mixins.PersistSizePosMixin.initSizePosFromSettings" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="vaws.gui.mixins.PersistSizePosMixin.storeSizePosToSettings">
+<code class="descname">storeSizePosToSettings</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#vaws.gui.mixins.PersistSizePosMixin.storeSizePosToSettings" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="function">
+<dt id="vaws.gui.mixins.finiTable">
+<code class="descclassname">vaws.gui.mixins.</code><code class="descname">finiTable</code><span class="sig-paren">(</span><em>t</em><span class="sig-paren">)</span><a class="headerlink" href="#vaws.gui.mixins.finiTable" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="vaws.gui.mixins.setupTable">
+<code class="descclassname">vaws.gui.mixins.</code><code class="descname">setupTable</code><span class="sig-paren">(</span><em>t</em>, <em>l=None</em><span class="sig-paren">)</span><a class="headerlink" href="#vaws.gui.mixins.setupTable" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</div>
+<div class="section" id="module-vaws.gui.output">
+<span id="vaws-gui-output-module"></span><h2>vaws.gui.output module<a class="headerlink" href="#module-vaws.gui.output" title="Permalink to this headline">¶</a></h2>
+<p>output.py - output module, postprocess and plot display engine</p>
+<dl class="class">
+<dt id="vaws.gui.output.PlotFlyoverCallback">
+<em class="property">class </em><code class="descclassname">vaws.gui.output.</code><code class="descname">PlotFlyoverCallback</code><span class="sig-paren">(</span><em>axes</em>, <em>data</em>, <em>statusbar</em>, <em>num_cols</em>, <em>num_rows</em><span class="sig-paren">)</span><a class="headerlink" href="#vaws.gui.output.PlotFlyoverCallback" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">object</span></code></p>
+</dd></dl>
+
+<dl class="function">
+<dt id="vaws.gui.output.draw_influence">
+<code class="descclassname">vaws.gui.output.</code><code class="descname">draw_influence</code><span class="sig-paren">(</span><em>cfg</em>, <em>infl_dic</em>, <em>dic_ax</em>, <em>conn_name</em><span class="sig-paren">)</span><a class="headerlink" href="#vaws.gui.output.draw_influence" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="vaws.gui.output.format_coord">
+<code class="descclassname">vaws.gui.output.</code><code class="descname">format_coord</code><span class="sig-paren">(</span><em>x</em>, <em>y</em><span class="sig-paren">)</span><a class="headerlink" href="#vaws.gui.output.format_coord" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="vaws.gui.output.plot_damage_show">
+<code class="descclassname">vaws.gui.output.</code><code class="descname">plot_damage_show</code><span class="sig-paren">(</span><em>fig</em>, <em>grouped</em>, <em>values_grid</em>, <em>xlim_max</em>, <em>ylim_max</em>, <em>v_min</em>, <em>v_max</em>, <em>v_step</em>, <em>house_number=0</em><span class="sig-paren">)</span><a class="headerlink" href="#vaws.gui.output.plot_damage_show" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="vaws.gui.output.plot_fitted_curve">
+<code class="descclassname">vaws.gui.output.</code><code class="descname">plot_fitted_curve</code><span class="sig-paren">(</span><em>mp_widget</em>, <em>v</em>, <em>di</em>, <em>label='Fitted Curve'</em>, <em>alpha=1.0</em>, <em>col='b'</em><span class="sig-paren">)</span><a class="headerlink" href="#vaws.gui.output.plot_fitted_curve" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="vaws.gui.output.plot_fragility_show">
+<code class="descclassname">vaws.gui.output.</code><code class="descname">plot_fragility_show</code><span class="sig-paren">(</span><em>mp_widget</em>, <em>num_iters</em>, <em>Vmin</em>, <em>Vmax</em><span class="sig-paren">)</span><a class="headerlink" href="#vaws.gui.output.plot_fragility_show" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="vaws.gui.output.plot_influence">
+<code class="descclassname">vaws.gui.output.</code><code class="descname">plot_influence</code><span class="sig-paren">(</span><em>fig</em>, <em>cfg</em>, <em>conn_name</em>, <em>file_name=None</em><span class="sig-paren">)</span><a class="headerlink" href="#vaws.gui.output.plot_influence" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="vaws.gui.output.plot_influence_patch">
+<code class="descclassname">vaws.gui.output.</code><code class="descname">plot_influence_patch</code><span class="sig-paren">(</span><em>fig</em>, <em>cfg</em>, <em>failed_conn_name</em>, <em>conn_name</em>, <em>file_name=None</em><span class="sig-paren">)</span><a class="headerlink" href="#vaws.gui.output.plot_influence_patch" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="vaws.gui.output.plot_model_curve">
+<code class="descclassname">vaws.gui.output.</code><code class="descname">plot_model_curve</code><span class="sig-paren">(</span><em>mp_widget</em>, <em>v</em>, <em>di</em>, <em>label='Model Curve'</em><span class="sig-paren">)</span><a class="headerlink" href="#vaws.gui.output.plot_model_curve" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="vaws.gui.output.plot_wind_event_damage">
+<code class="descclassname">vaws.gui.output.</code><code class="descname">plot_wind_event_damage</code><span class="sig-paren">(</span><em>mp_widget</em>, <em>v</em>, <em>di</em><span class="sig-paren">)</span><a class="headerlink" href="#vaws.gui.output.plot_wind_event_damage" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="vaws.gui.output.plot_wind_event_mean">
+<code class="descclassname">vaws.gui.output.</code><code class="descname">plot_wind_event_mean</code><span class="sig-paren">(</span><em>mp_widget</em>, <em>v</em>, <em>di</em><span class="sig-paren">)</span><a class="headerlink" href="#vaws.gui.output.plot_wind_event_mean" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="vaws.gui.output.plot_wind_event_show">
+<code class="descclassname">vaws.gui.output.</code><code class="descname">plot_wind_event_show</code><span class="sig-paren">(</span><em>mp_widget</em>, <em>num_iters</em>, <em>Vmin</em>, <em>Vmax</em><span class="sig-paren">)</span><a class="headerlink" href="#vaws.gui.output.plot_wind_event_show" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="vaws.gui.output.set_axis_etc">
+<code class="descclassname">vaws.gui.output.</code><code class="descname">set_axis_etc</code><span class="sig-paren">(</span><em>ax</em>, <em>title</em>, <em>xlim_max</em>, <em>ylim_max</em><span class="sig-paren">)</span><a class="headerlink" href="#vaws.gui.output.set_axis_etc" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</div>
+<div class="section" id="module-vaws.gui.windsim_rc">
+<span id="vaws-gui-windsim-rc-module"></span><h2>vaws.gui.windsim_rc module<a class="headerlink" href="#module-vaws.gui.windsim_rc" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="vaws.gui.windsim_rc.qCleanupResources">
+<code class="descclassname">vaws.gui.windsim_rc.</code><code class="descname">qCleanupResources</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#vaws.gui.windsim_rc.qCleanupResources" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="vaws.gui.windsim_rc.qInitResources">
+<code class="descclassname">vaws.gui.windsim_rc.</code><code class="descname">qInitResources</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#vaws.gui.windsim_rc.qInitResources" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</div>
+<div class="section" id="module-vaws.gui">
+<span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-vaws.gui" title="Permalink to this headline">¶</a></h2>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">vaws.gui package</a><ul>
+<li><a class="reference internal" href="#module-vaws.gui.house">vaws.gui.house module</a></li>
+<li><a class="reference internal" href="#module-vaws.gui.main">vaws.gui.main module</a></li>
+<li><a class="reference internal" href="#module-vaws.gui.matplotlibwidget">vaws.gui.matplotlibwidget module</a><ul>
+<li><a class="reference internal" href="#matplotlibwidget">MatplotlibWidget</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#module-vaws.gui.mixins">vaws.gui.mixins module</a></li>
+<li><a class="reference internal" href="#module-vaws.gui.output">vaws.gui.output module</a></li>
+<li><a class="reference internal" href="#module-vaws.gui.windsim_rc">vaws.gui.windsim_rc module</a></li>
+<li><a class="reference internal" href="#module-vaws.gui">Module contents</a></li>
+</ul>
+</li>
+</ul>
+
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="_sources/vaws.gui.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">VAWS 2.0 documentation</a> &#187;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2017, Geoscience Australia.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.5.1.
+    </div>
+  </body>
+</html>

@@ -1,0 +1,251 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Program Logic &#8212; VAWS 2.0 documentation</title>
+    
+    <link rel="stylesheet" href="_static/classic.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '2.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Glossary" href="glossary.html" />
+    <link rel="prev" title="Use of the GUI" href="ch04_use_GUI.html" /> 
+  </head>
+  <body role="document">
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="glossary.html" title="Glossary"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="ch04_use_GUI.html" title="Use of the GUI"
+             accesskey="P">previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">VAWS 2.0 documentation</a> &#187;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="program-logic">
+<h1>Program Logic<a class="headerlink" href="#program-logic" title="Permalink to this headline">¶</a></h1>
+<p>This chapter describes the logic of the program.</p>
+<div class="section" id="overall-logic">
+<h2>Overall logic<a class="headerlink" href="#overall-logic" title="Permalink to this headline">¶</a></h2>
+<p>The program is built around the following high level sequence:</p>
+<ol class="arabic simple">
+<li>Create a group of models by random sampling</li>
+</ol>
+<blockquote>
+<div><ul class="simple">
+<li>For each model (<a class="reference internal" href="vaws.model.html#vaws.model.house.House" title="vaws.model.house.House"><code class="xref py py-class docutils literal"><span class="pre">House</span></code></a>)<ul>
+<li>sample wind direction (<a class="reference internal" href="vaws.model.html#vaws.model.house.House.set_wind_orientation" title="vaws.model.house.House.set_wind_orientation"><code class="xref py py-meth docutils literal"><span class="pre">House.set_wind_orientation()</span></code></a>)</li>
+<li>sample wind profile (<a class="reference internal" href="vaws.model.html#vaws.model.house.House.set_wind_profile" title="vaws.model.house.House.set_wind_profile"><code class="xref py py-meth docutils literal"><span class="pre">House.set_wind_profile()</span></code></a>)</li>
+<li>sample construction quality level (<a class="reference internal" href="vaws.model.html#vaws.model.house.House.set_construction_level" title="vaws.model.house.House.set_construction_level"><code class="xref py py-meth docutils literal"><span class="pre">House.set_construction_level()</span></code></a>)</li>
+<li>set up coverages given the wind direction (<a class="reference internal" href="vaws.model.html#vaws.model.house.House.set_coverages" title="vaws.model.house.House.set_coverages"><code class="xref py py-meth docutils literal"><span class="pre">House.set_coverages()</span></code></a>)</li>
+<li>set up connections (<a class="reference internal" href="vaws.model.html#vaws.model.house.House.set_connections" title="vaws.model.house.House.set_connections"><code class="xref py py-meth docutils literal"><span class="pre">House.set_connections()</span></code></a>)</li>
+<li>set up zones (<a class="reference internal" href="vaws.model.html#vaws.model.house.House.set_zones" title="vaws.model.house.House.set_zones"><code class="xref py py-meth docutils literal"><span class="pre">House.set_zones()</span></code></a>)</li>
+<li>set up debris generation model (<a class="reference internal" href="vaws.model.html#vaws.model.house.House.set_debris" title="vaws.model.house.House.set_debris"><code class="xref py py-meth docutils literal"><span class="pre">House.set_debris()</span></code></a>)</li>
+</ul>
+</li>
+</ul>
+</div></blockquote>
+<ol class="arabic simple" start="2">
+<li>Calculate damage indices of the models over a range of wind speeds</li>
+</ol>
+<blockquote>
+<div><ul class="simple">
+<li>For each wind speed<ul>
+<li>calculate damage index for each model (<a class="reference internal" href="vaws.model.html#vaws.model.house_damage.HouseDamage.run_simulation" title="vaws.model.house_damage.HouseDamage.run_simulation"><code class="xref py py-meth docutils literal"><span class="pre">HouseDamage.run_simulation()</span></code></a>)<ul>
+<li>assign the increment in the mean damage index from the previous wind step as an input to the debris generation model (<a class="reference internal" href="vaws.model.html#vaws.model.debris.Debris.no_items_mean" title="vaws.model.debris.Debris.no_items_mean"><code class="xref py py-attr docutils literal"><span class="pre">Debris.no_items_mean</span></code></a>)</li>
+<li>calculate free stream wind pressure (qz), optionally applying a regional shielding factor (<a class="reference internal" href="vaws.model.html#vaws.model.house_damage.HouseDamage.compute_qz_ms" title="vaws.model.house_damage.HouseDamage.compute_qz_ms"><code class="xref py py-meth docutils literal"><span class="pre">HouseDamage.compute_qz_ms()</span></code></a>)</li>
+<li>calculate zone pressures from qz (<a class="reference internal" href="vaws.model.html#vaws.model.zone.Zone.calc_zone_pressure" title="vaws.model.zone.Zone.calc_zone_pressure"><code class="xref py py-meth docutils literal"><span class="pre">Zone.calc_zone_pressure()</span></code></a>)</li>
+<li>check damage of envelope coverages by wind load (<a class="reference internal" href="vaws.model.html#vaws.model.coverage.Coverage.check_damage" title="vaws.model.coverage.Coverage.check_damage"><code class="xref py py-meth docutils literal"><span class="pre">Coverage.check_damage()</span></code></a>)</li>
+<li>calculate connection loads (<a class="reference internal" href="vaws.model.html#vaws.model.connection.Connection.compute_load" title="vaws.model.connection.Connection.compute_load"><code class="xref py py-meth docutils literal"><span class="pre">Connection.compute_load()</span></code></a>)</li>
+<li>check damage of each connection by connection group (<a class="reference internal" href="vaws.model.html#vaws.model.connection.ConnectionTypeGroup.check_damage" title="vaws.model.connection.ConnectionTypeGroup.check_damage"><code class="xref py py-meth docutils literal"><span class="pre">ConnectionTypeGroup.check_damage()</span></code></a>)</li>
+<li>check damage and compute damaged area by connection group (<a class="reference internal" href="vaws.model.html#vaws.model.connection.ConnectionTypeGroup.compute_damaged_area" title="vaws.model.connection.ConnectionTypeGroup.compute_damaged_area"><code class="xref py py-meth docutils literal"><span class="pre">ConnectionTypeGroup.compute_damaged_area()</span></code></a>)</li>
+<li>update influence by connection group (<a class="reference internal" href="vaws.model.html#vaws.model.connection.ConnectionTypeGroup.update_influence" title="vaws.model.connection.ConnectionTypeGroup.update_influence"><code class="xref py py-meth docutils literal"><span class="pre">ConnectionTypeGroup.update_influence()</span></code></a>)</li>
+<li>check for total house collapse event (<a class="reference internal" href="vaws.model.html#vaws.model.house_damage.HouseDamage.check_house_collapse" title="vaws.model.house_damage.HouseDamage.check_house_collapse"><code class="xref py py-meth docutils literal"><span class="pre">HouseDamage.check_house_collapse()</span></code></a>)</li>
+<li>compute damage index of the model (<a class="reference internal" href="vaws.model.html#vaws.model.house_damage.HouseDamage.compute_damage_index" title="vaws.model.house_damage.HouseDamage.compute_damage_index"><code class="xref py py-meth docutils literal"><span class="pre">HouseDamage.compute_damage_index()</span></code></a>)</li>
+<li>compute damage index of the model (<a class="reference internal" href="vaws.model.html#vaws.model.house_damage.HouseDamage.compute_damage_index" title="vaws.model.house_damage.HouseDamage.compute_damage_index"><code class="xref py py-meth docutils literal"><span class="pre">HouseDamage.compute_damage_index()</span></code></a>)</li>
+<li>generate debris and update Cpi in case of internal pressurisation event (<a class="reference internal" href="vaws.model.html#vaws.model.house_damage.HouseDamage.check_internal_pressurisation" title="vaws.model.house_damage.HouseDamage.check_internal_pressurisation"><code class="xref py py-meth docutils literal"><span class="pre">HouseDamage.check_internal_pressurisation()</span></code></a>)</li>
+</ul>
+</li>
+<li>calculate increment in mean damage index of the group of models (<a class="reference internal" href="vaws.model.html#vaws.model.main.update_bucket" title="vaws.model.main.update_bucket"><code class="xref py py-func docutils literal"><span class="pre">update_bucket()</span></code></a>)</li>
+</ul>
+</li>
+</ul>
+</div></blockquote>
+<ol class="arabic simple" start="3">
+<li>Fit fragility and vulnerability curves and save outputs (<a class="reference internal" href="vaws.model.html#vaws.model.main.save_results_to_files" title="vaws.model.main.save_results_to_files"><code class="xref py py-func docutils literal"><span class="pre">save_results_to_files()</span></code></a>)</li>
+</ol>
+</div>
+<div class="section" id="detailed-logic">
+<h2>Detailed logic<a class="headerlink" href="#detailed-logic" title="Permalink to this headline">¶</a></h2>
+<p>-. Generate debris and check any breach by debris
+-. Update cpi in case of internal pressurization event</p>
+<p>-. determine footprint and coverages given the wind direction
+-. sample cpe and calculate pressure
+-. sample construction quality level and determine factors applied to mean and cov of strength
+-. sample connection strength and dead load</p>
+<div class="section" id="debris-damage-module">
+<h3>Debris damage module<a class="headerlink" href="#debris-damage-module" title="Permalink to this headline">¶</a></h3>
+<p>The methdology of modelling damage from wind-borne debris implemented in the code is described in the [<a href="#id6"><span class="problematic" id="id7">JDH2010d_</span></a>] and [<a href="#id8"><span class="problematic" id="id9">JDH2010d_</span></a>]. The debris damage module consists of four parts: 1) debris generation, 2) debris trajectory, 3) debris impact, and 4) debris damage costing.</p>
+<div class="section" id="debris-generation">
+<h4>Debris generation<a class="headerlink" href="#debris-generation" title="Permalink to this headline">¶</a></h4>
+<p>The mean number of debris items to be generated (<span class="math">\(N_{mean}) is calculated by :eq:`number_of_debris_items_eq\)</span>.</p>
+<div class="math" id="equation-number_of_debris_items_eq">
+<span class="eqno">(1)<a class="headerlink" href="#equation-number_of_debris_items_eq" title="Permalink to this equation">¶</a></span>\[N_{mean} = \text{nint} \left( \Delta{DI} \times N_{items} \right)\]</div>
+<p>where <span class="math">\(\Delta{DI}\)</span>:, <span class="math">\(\Delta{DI}\)</span>:, <span class="math">\(\Delta{DI}\)</span>: increment in damage index from previous wind step, <span class="math">\(B\)</span>: base cost, and <span class="math">\(C\)</span>: costing function. Like the damage costing functions, two types of costing functions are defined as <a class="reference internal" href="ch03_input.html#equation-costing_function_types">(3)</a>.</p>
+<p>The debris sources are generated by calling <a class="reference internal" href="vaws.model.html#vaws.model.debris.Debris.create_sources" title="vaws.model.debris.Debris.create_sources"><code class="xref py py-meth docutils literal"><span class="pre">Debris.create_sources()</span></code></a>, which requires a number of parameters as shown in the <a class="reference internal" href="#debris-source-parameters-fig"><span class="std std-numref">Fig. 10</span></a>.</p>
+<div class="figure align-center" id="id2">
+<span id="debris-source-parameters-fig"></span><a class="reference internal image-reference" href="_images/debris_source_parameters.png"><img alt="_images/debris_source_parameters.png" src="_images/debris_source_parameters.png" style="width: 80%;" /></a>
+<p class="caption"><span class="caption-number">Fig. 10 </span><span class="caption-text">Distribution of debris sources with parameters</span></p>
+</div>
+<p>Depending on the value for <em>staggered_sources</em>, <a class="reference internal" href="#debris-source-staggered-true-fig"><span class="std std-numref">Fig. 11</span></a> and <a class="reference internal" href="#debris-source-staggered-false-fig"><span class="std std-numref">Fig. 12</span></a> are displayed.</p>
+<div class="figure align-center" id="id3">
+<span id="debris-source-staggered-true-fig"></span><a class="reference internal image-reference" href="_images/source_staggered_true.png"><img alt="_images/source_staggered_true.png" src="_images/source_staggered_true.png" style="width: 70%;" /></a>
+<p class="caption"><span class="caption-number">Fig. 11 </span><span class="caption-text">Distribution of debris source buildings generated with debris_radius = 100.0 (m), debris_angle = 45.0 (deg), debris_space = 20.0 (m), and staggered_sources = <em>True</em>.</span></p>
+</div>
+<div class="figure align-center" id="id4">
+<span id="debris-source-staggered-false-fig"></span><a class="reference internal image-reference" href="_images/source_staggered_false.png"><img alt="_images/source_staggered_false.png" src="_images/source_staggered_false.png" style="width: 70%;" /></a>
+<p class="caption"><span class="caption-number">Fig. 12 </span><span class="caption-text">Distribution of debris source buildings generated with debris_radius = 100.0 (m), debris_angle = 45.0 (deg), debris_space = 20.0 (m), and staggered_sources = <em>False</em>.</span></p>
+</div>
+</div>
+</div>
+<div class="section" id="water-ingress">
+<h3>Water ingress<a class="headerlink" href="#water-ingress" title="Permalink to this headline">¶</a></h3>
+<div class="figure align-center" id="id5">
+<span id="id1"></span><a class="reference internal image-reference" href="_images/water_ingress.png"><img alt="_images/water_ingress.png" src="_images/water_ingress.png" style="width: 70%;" /></a>
+<p class="caption"><span class="caption-number">Fig. 13 </span><span class="caption-text">water ingress vs. wind speed for various damage index values.</span></p>
+</div>
+</div>
+<div class="section" id="cpe">
+<h3>Cpe<a class="headerlink" href="#cpe" title="Permalink to this headline">¶</a></h3>
+<p>Note that Cpe is used in computing zone pressures, and is sampled from Type III extreme value distribution (or Weibull) (<code class="xref py py-meth docutils literal"><span class="pre">stats.sample_gev()</span></code>)</p>
+<div class="math">
+\[F(x; u, a, k) = \exp\left[-\left(1-k\frac{x-u}{a}\right)^{\frac{1}{k}}\right]\]</div>
+<p>where <span class="math">\(u\)</span>: location factor (<span class="math">\(\in \rm I\!R\)</span>), <span class="math">\(a\)</span>: scale factor (<span class="math">\(&gt; 0\)</span>), and <span class="math">\(k\)</span>: shape factor (<span class="math">\(&gt; 0\)</span>). The mean and variance are calculated as follows:</p>
+<div class="math">
+\[\begin{split}\text{mean} &amp;= u + \frac{a}{k}\left[1-\Gamma(1+k)\right] \\
+\text{variance} &amp;= (\frac{a}{k})^{2}\left[\Gamma(1+2k)-\Gamma^{2}(1+k)\right]\end{split}\]</div>
+<p>The <span class="math">\(u\)</span> and <span class="math">\(a\)</span> are estimated given cov and <span class="math">\(k\)</span> values:</p>
+<div class="math">
+\[\begin{split}a &amp;= \text{mean} \times \frac{\text{cov}}{B} \\
+u &amp;= \text{mean} - a \times A\end{split}\]</div>
+<p>where <span class="math">\(A=1/k\left(1-\Gamma(1+k)\right)\)</span>, and <span class="math">\(B=(1/k)\sqrt{\Gamma(1+2k)-\Gamma^{2}(1+k)}\)</span>.</p>
+</div>
+<div class="section" id="costing-damage">
+<h3>Costing damage<a class="headerlink" href="#costing-damage" title="Permalink to this headline">¶</a></h3>
+<p>ix. cost damage
+1. Calculate percentage of damaged area per connection group.
+2. Translate percentage into repair cost via damage scenarios.
+3. cost damage from water ingress if required
+4. calculate damage index</p>
+</div>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Program Logic</a><ul>
+<li><a class="reference internal" href="#overall-logic">Overall logic</a></li>
+<li><a class="reference internal" href="#detailed-logic">Detailed logic</a><ul>
+<li><a class="reference internal" href="#debris-damage-module">Debris damage module</a><ul>
+<li><a class="reference internal" href="#debris-generation">Debris generation</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#water-ingress">Water ingress</a></li>
+<li><a class="reference internal" href="#cpe">Cpe</a></li>
+<li><a class="reference internal" href="#costing-damage">Costing damage</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="ch04_use_GUI.html"
+                        title="previous chapter">Use of the GUI</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="glossary.html"
+                        title="next chapter">Glossary</a></p>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="_sources/ch05_logic.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="glossary.html" title="Glossary"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="ch04_use_GUI.html" title="Use of the GUI"
+             >previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">VAWS 2.0 documentation</a> &#187;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2017, Geoscience Australia.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.5.1.
+    </div>
+  </body>
+</html>

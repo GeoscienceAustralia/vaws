@@ -1,9 +1,0 @@
-type_name,strength_mean,strength_std,dead_load_mean,dead_load_std,group_name,costing_area
-sheetinggable,1.54,0.16334,0.02025,0.0246,sheeting,0.405
-sheetingeave,4.62,0.28292,0.02025,0.0246,sheeting,0.405
-sheetingcorner,2.31,0.2,0.01013,0.0246,sheeting,0.225
-sheeting,2.695,0.21608,0.0405,0.0246,sheeting,0.81
-batten,3.6,1.26,0.089,0.0708,batten,0.81
-battenend,3.6,1.26,0.089,0.0708,batten,0.405
-batteneave,3.6,1.26,0.089,0.0708,batten,0.405
-battencorner,3.6,1.26,0.089,0.0708,batten,0.225

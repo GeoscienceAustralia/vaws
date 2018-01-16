@@ -1,0 +1,1497 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>vaws.model package &#8212; VAWS 2.0 documentation</title>
+    
+    <link rel="stylesheet" href="_static/classic.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '2.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" /> 
+  </head>
+  <body role="document">
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">VAWS 2.0 documentation</a> &#187;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="vaws-model-package">
+<h1>vaws.model package<a class="headerlink" href="#vaws-model-package" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="module-vaws.model.config">
+<span id="vaws-model-config-module"></span><h2>vaws.model.config module<a class="headerlink" href="#module-vaws.model.config" title="Permalink to this headline">¶</a></h2>
+<p>Configuration module - user input to model run (file or gui)</p>
+<p>Note: regional shielding may be indirectly disabled by setting
+&#8216;regional_shielding_factor&#8217; to 1.0
+Note: differential shielding may be indirectly disabled by setting
+&#8216;building_spacing&#8217; to 0</p>
+<dl class="class">
+<dt id="vaws.model.config.Config">
+<em class="property">class </em><code class="descclassname">vaws.model.config.</code><code class="descname">Config</code><span class="sig-paren">(</span><em>cfg_file=None</em><span class="sig-paren">)</span><a class="headerlink" href="#vaws.model.config.Config" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">object</span></code></p>
+<dl class="attribute">
+<dt id="vaws.model.config.Config.att_non_float">
+<code class="descname">att_non_float</code><em class="property"> = ['construction_level']</em><a class="headerlink" href="#vaws.model.config.Config.att_non_float" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="vaws.model.config.Config.att_time_invariant">
+<code class="descname">att_time_invariant</code><em class="property"> = ['strength', 'strength_negative', 'strength_positive', 'dead_load', 'cpe', 'cpe_str', 'cpe_eave', 'capacity', 'collapse']</em><a class="headerlink" href="#vaws.model.config.Config.att_time_invariant" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="vaws.model.config.Config.connection_bucket">
+<code class="descname">connection_bucket</code><em class="property"> = ['damaged', 'capacity', 'load', 'strength', 'dead_load']</em><a class="headerlink" href="#vaws.model.config.Config.connection_bucket" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="vaws.model.config.Config.coverage_bucket">
+<code class="descname">coverage_bucket</code><em class="property"> = ['strength_negative', 'strength_positive', 'load', 'breached', 'breached_area', 'capacity']</em><a class="headerlink" href="#vaws.model.config.Config.coverage_bucket" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="vaws.model.config.Config.cpi_table_for_dominant_opening">
+<code class="descname">cpi_table_for_dominant_opening</code><em class="property"> = {0: {'windward': -0.3, 'leeward': -0.3, 'side2': -0.3, 'side1': -0.3}, 1: {'windward': 0.2, 'leeward': -0.3, 'side2': -0.3, 'side1': -0.3}, 2: {'windward': 0.7, 'leeward': 1.0, 'side2': 1.0, 'side1': 1.0}, 3: {'windward': 0.85, 'leeward': 1.0, 'side2': 1.0, 'side1': 1.0}, 4: {'windward': 1.0, 'leeward': 1.0, 'side2': 1.0, 'side1': 1.0}}</em><a class="headerlink" href="#vaws.model.config.Config.cpi_table_for_dominant_opening" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="vaws.model.config.Config.debris_bucket">
+<code class="descname">debris_bucket</code><em class="property"> = ['no_items', 'no_touched', 'damaged_area']</em><a class="headerlink" href="#vaws.model.config.Config.debris_bucket" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="vaws.model.config.Config.debris_types_atts">
+<code class="descname">debris_types_atts</code><em class="property"> = ['mass', 'frontal_area', 'cdav', 'ratio']</em><a class="headerlink" href="#vaws.model.config.Config.debris_types_atts" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="vaws.model.config.Config.debris_types_keys">
+<code class="descname">debris_types_keys</code><em class="property"> = ['Rod', 'Compact', 'Sheet']</em><a class="headerlink" href="#vaws.model.config.Config.debris_types_keys" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="vaws.model.config.Config.dic_obj_for_fitting">
+<code class="descname">dic_obj_for_fitting</code><em class="property"> = {'weibull': 'vulnerability_weibull', 'lognorm': 'vulnerability_lognorm'}</em><a class="headerlink" href="#vaws.model.config.Config.dic_obj_for_fitting" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="vaws.model.config.Config.dominant_opening_ratio_thresholds">
+<code class="descname">dominant_opening_ratio_thresholds</code><em class="property"> = [0.5, 1.5, 2.5, 6.0]</em><a class="headerlink" href="#vaws.model.config.Config.dominant_opening_ratio_thresholds" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="staticmethod">
+<dt id="vaws.model.config.Config.get_diff_tuples">
+<em class="property">static </em><code class="descname">get_diff_tuples</code><span class="sig-paren">(</span><em>row</em>, <em>key1</em>, <em>key2</em><span class="sig-paren">)</span><a class="headerlink" href="#vaws.model.config.Config.get_diff_tuples" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="staticmethod">
+<dt id="vaws.model.config.Config.get_lognormal_tuple">
+<em class="property">static </em><code class="descname">get_lognormal_tuple</code><span class="sig-paren">(</span><em>row</em>, <em>dic_</em>, <em>key</em><span class="sig-paren">)</span><a class="headerlink" href="#vaws.model.config.Config.get_lognormal_tuple" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="vaws.model.config.Config.group_bucket">
+<code class="descname">group_bucket</code><em class="property"> = ['damaged_area']</em><a class="headerlink" href="#vaws.model.config.Config.group_bucket" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="vaws.model.config.Config.house_bucket">
+<code class="descname">house_bucket</code><em class="property"> = ['profile', 'wind_orientation', 'construction_level', 'mzcat', 'str_mean_factor', 'str_cov_factor']</em><a class="headerlink" href="#vaws.model.config.Config.house_bucket" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="vaws.model.config.Config.house_damage_bucket">
+<code class="descname">house_damage_bucket</code><em class="property"> = ['qz', 'ms', 'cpi', 'collapse', 'di', 'di_except_water', 'repair_cost', 'water_ingress_cost', 'breached']</em><a class="headerlink" href="#vaws.model.config.Config.house_damage_bucket" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="vaws.model.config.Config.list_components">
+<code class="descname">list_components</code><em class="property"> = ['group', 'connection', 'zone', 'coverage']</em><a class="headerlink" href="#vaws.model.config.Config.list_components" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="vaws.model.config.Config.process_config">
+<code class="descname">process_config</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#vaws.model.config.Config.process_config" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="staticmethod">
+<dt id="vaws.model.config.Config.read_column_separated_entry">
+<em class="property">static </em><code class="descname">read_column_separated_entry</code><span class="sig-paren">(</span><em>value</em><span class="sig-paren">)</span><a class="headerlink" href="#vaws.model.config.Config.read_column_separated_entry" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="vaws.model.config.Config.read_config">
+<code class="descname">read_config</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#vaws.model.config.Config.read_config" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="vaws.model.config.Config.read_construction_levels">
+<code class="descname">read_construction_levels</code><span class="sig-paren">(</span><em>conf</em>, <em>key</em><span class="sig-paren">)</span><a class="headerlink" href="#vaws.model.config.Config.read_construction_levels" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="staticmethod">
+<dt id="vaws.model.config.Config.read_damage_costing_data">
+<em class="property">static </em><code class="descname">read_damage_costing_data</code><span class="sig-paren">(</span><em>filename</em><span class="sig-paren">)</span><a class="headerlink" href="#vaws.model.config.Config.read_damage_costing_data" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="docutils">
+<dt>Args:</dt>
+<dd>filename:</dd>
+</dl>
+<p>Returns:</p>
+<p>Note: damage costing data may contain</p>
+</dd></dl>
+
+<dl class="staticmethod">
+<dt id="vaws.model.config.Config.read_damage_factorings">
+<em class="property">static </em><code class="descname">read_damage_factorings</code><span class="sig-paren">(</span><em>filename</em><span class="sig-paren">)</span><a class="headerlink" href="#vaws.model.config.Config.read_damage_factorings" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="docutils">
+<dt>Args:</dt>
+<dd>filename: damage_factorings.csv
+connection_name, zone1_name, zone1_infl, (.....)</dd>
+</dl>
+<p>Returns: dictionary</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="vaws.model.config.Config.read_debris">
+<code class="descname">read_debris</code><span class="sig-paren">(</span><em>conf</em>, <em>key</em><span class="sig-paren">)</span><a class="headerlink" href="#vaws.model.config.Config.read_debris" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="classmethod">
+<dt id="vaws.model.config.Config.read_file_connections">
+<em class="property">classmethod </em><code class="descname">read_file_connections</code><span class="sig-paren">(</span><em>file_connections</em>, <em>types</em><span class="sig-paren">)</span><a class="headerlink" href="#vaws.model.config.Config.read_file_connections" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="classmethod">
+<dt id="vaws.model.config.Config.read_file_zones">
+<em class="property">classmethod </em><code class="descname">read_file_zones</code><span class="sig-paren">(</span><em>file_zones</em><span class="sig-paren">)</span><a class="headerlink" href="#vaws.model.config.Config.read_file_zones" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="vaws.model.config.Config.read_fragility_thresholds">
+<code class="descname">read_fragility_thresholds</code><span class="sig-paren">(</span><em>conf</em>, <em>key</em><span class="sig-paren">)</span><a class="headerlink" href="#vaws.model.config.Config.read_fragility_thresholds" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="staticmethod">
+<dt id="vaws.model.config.Config.read_front_facing_walls">
+<em class="property">static </em><code class="descname">read_front_facing_walls</code><span class="sig-paren">(</span><em>filename</em><span class="sig-paren">)</span><a class="headerlink" href="#vaws.model.config.Config.read_front_facing_walls" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="vaws.model.config.Config.read_heatmap">
+<code class="descname">read_heatmap</code><span class="sig-paren">(</span><em>conf</em>, <em>key</em><span class="sig-paren">)</span><a class="headerlink" href="#vaws.model.config.Config.read_heatmap" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="staticmethod">
+<dt id="vaws.model.config.Config.read_influence_patches">
+<em class="property">static </em><code class="descname">read_influence_patches</code><span class="sig-paren">(</span><em>filename</em><span class="sig-paren">)</span><a class="headerlink" href="#vaws.model.config.Config.read_influence_patches" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="docutils">
+<dt>Args:</dt>
+<dd>filename: influence_patches.csv
+damaged_conn, target_conn, conn_name, conn_infl, (.....)</dd>
+</dl>
+<p>Returns: dictionary</p>
+</dd></dl>
+
+<dl class="staticmethod">
+<dt id="vaws.model.config.Config.read_influences">
+<em class="property">static </em><code class="descname">read_influences</code><span class="sig-paren">(</span><em>filename</em><span class="sig-paren">)</span><a class="headerlink" href="#vaws.model.config.Config.read_influences" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="docutils">
+<dt>Args:</dt>
+<dd>filename: influences.csv
+connection_name, zone1_name, zone1_infl, (.....)</dd>
+</dl>
+<p>Returns: dictionary</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="vaws.model.config.Config.read_main">
+<code class="descname">read_main</code><span class="sig-paren">(</span><em>conf</em>, <em>key</em><span class="sig-paren">)</span><a class="headerlink" href="#vaws.model.config.Config.read_main" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="docutils">
+<dt>Args:</dt>
+<dd>conf: 
+key:</dd>
+</dl>
+<p>Returns:</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="vaws.model.config.Config.read_options">
+<code class="descname">read_options</code><span class="sig-paren">(</span><em>conf</em>, <em>key</em><span class="sig-paren">)</span><a class="headerlink" href="#vaws.model.config.Config.read_options" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="vaws.model.config.Config.read_water_ingress">
+<code class="descname">read_water_ingress</code><span class="sig-paren">(</span><em>conf</em>, <em>key</em><span class="sig-paren">)</span><a class="headerlink" href="#vaws.model.config.Config.read_water_ingress" title="Permalink to this definition">¶</a></dt>
+<dd><p>read water ingress related parameters
+Args:</p>
+<blockquote>
+<div>conf:
+key:</div></blockquote>
+<p>Returns:</p>
+<p>TODO:</p>
+</dd></dl>
+
+<dl class="staticmethod">
+<dt id="vaws.model.config.Config.read_water_ingress_costing_data">
+<em class="property">static </em><code class="descname">read_water_ingress_costing_data</code><span class="sig-paren">(</span><em>filename</em><span class="sig-paren">)</span><a class="headerlink" href="#vaws.model.config.Config.read_water_ingress_costing_data" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="staticmethod">
+<dt id="vaws.model.config.Config.return_centroid">
+<em class="property">static </em><code class="descname">return_centroid</code><span class="sig-paren">(</span><em>row</em><span class="sig-paren">)</span><a class="headerlink" href="#vaws.model.config.Config.return_centroid" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="staticmethod">
+<dt id="vaws.model.config.Config.return_norm_cdf">
+<em class="property">static </em><code class="descname">return_norm_cdf</code><span class="sig-paren">(</span><em>row</em><span class="sig-paren">)</span><a class="headerlink" href="#vaws.model.config.Config.return_norm_cdf" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="docutils">
+<dt>Args:</dt>
+<dd>row:</dd>
+</dl>
+<p>Returns:</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="vaws.model.config.Config.save_config">
+<code class="descname">save_config</code><span class="sig-paren">(</span><em>filename=None</em><span class="sig-paren">)</span><a class="headerlink" href="#vaws.model.config.Config.save_config" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="vaws.model.config.Config.set_connections">
+<code class="descname">set_connections</code><span class="sig-paren">(</span><em>types</em>, <em>list_groups</em><span class="sig-paren">)</span><a class="headerlink" href="#vaws.model.config.Config.set_connections" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="vaws.model.config.Config.set_construction_levels">
+<code class="descname">set_construction_levels</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#vaws.model.config.Config.set_construction_levels" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="vaws.model.config.Config.set_costings">
+<code class="descname">set_costings</code><span class="sig-paren">(</span><em>df_groups</em><span class="sig-paren">)</span><a class="headerlink" href="#vaws.model.config.Config.set_costings" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="vaws.model.config.Config.set_coverages">
+<code class="descname">set_coverages</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#vaws.model.config.Config.set_coverages" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="vaws.model.config.Config.set_debris_types">
+<code class="descname">set_debris_types</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#vaws.model.config.Config.set_debris_types" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="vaws.model.config.Config.set_flight_time_log">
+<code class="descname">set_flight_time_log</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#vaws.model.config.Config.set_flight_time_log" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="vaws.model.config.Config.set_fragility_thresholds">
+<code class="descname">set_fragility_thresholds</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#vaws.model.config.Config.set_fragility_thresholds" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="vaws.model.config.Config.set_groups">
+<code class="descname">set_groups</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#vaws.model.config.Config.set_groups" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="vaws.model.config.Config.set_house">
+<code class="descname">set_house</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#vaws.model.config.Config.set_house" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="vaws.model.config.Config.set_influences_and_influence_patches">
+<code class="descname">set_influences_and_influence_patches</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#vaws.model.config.Config.set_influences_and_influence_patches" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="vaws.model.config.Config.set_output_files">
+<code class="descname">set_output_files</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#vaws.model.config.Config.set_output_files" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="vaws.model.config.Config.set_region_name">
+<code class="descname">set_region_name</code><span class="sig-paren">(</span><em>value</em><span class="sig-paren">)</span><a class="headerlink" href="#vaws.model.config.Config.set_region_name" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="vaws.model.config.Config.set_types">
+<code class="descname">set_types</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#vaws.model.config.Config.set_types" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="vaws.model.config.Config.set_wawter_ingress">
+<code class="descname">set_wawter_ingress</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#vaws.model.config.Config.set_wawter_ingress" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="vaws.model.config.Config.set_wind_dir_index">
+<code class="descname">set_wind_dir_index</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#vaws.model.config.Config.set_wind_dir_index" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="vaws.model.config.Config.set_wind_profiles">
+<code class="descname">set_wind_profiles</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#vaws.model.config.Config.set_wind_profiles" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="vaws.model.config.Config.set_wind_speeds">
+<code class="descname">set_wind_speeds</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#vaws.model.config.Config.set_wind_speeds" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="vaws.model.config.Config.set_zones">
+<code class="descname">set_zones</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#vaws.model.config.Config.set_zones" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="vaws.model.config.Config.wind_dir">
+<code class="descname">wind_dir</code><em class="property"> = ['S', 'SW', 'W', 'NW', 'N', 'NE', 'E', 'SE', 'RANDOM']</em><a class="headerlink" href="#vaws.model.config.Config.wind_dir" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="vaws.model.config.Config.zone_bucket">
+<code class="descname">zone_bucket</code><em class="property"> = ['pressure', 'cpe', 'cpe_str', 'cpe_eave']</em><a class="headerlink" href="#vaws.model.config.Config.zone_bucket" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-vaws.model.connection">
+<span id="vaws-model-connection-module"></span><h2>vaws.model.connection module<a class="headerlink" href="#module-vaws.model.connection" title="Permalink to this headline">¶</a></h2>
+<p>Connection Module -</p>
+<dl class="class">
+<dt id="vaws.model.connection.Connection">
+<em class="property">class </em><code class="descclassname">vaws.model.connection.</code><code class="descname">Connection</code><span class="sig-paren">(</span><em>connection_name=None</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#vaws.model.connection.Connection" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">object</span></code></p>
+<dl class="method">
+<dt id="vaws.model.connection.Connection.check_damage">
+<code class="descname">check_damage</code><span class="sig-paren">(</span><em>wind_speed</em><span class="sig-paren">)</span><a class="headerlink" href="#vaws.model.connection.Connection.check_damage" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="docutils">
+<dt>Args:</dt>
+<dd>wind_speed:</dd>
+</dl>
+<p>Returns:</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="vaws.model.connection.Connection.compute_load">
+<code class="descname">compute_load</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#vaws.model.connection.Connection.compute_load" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns: load</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="vaws.model.connection.Connection.influence_patch">
+<code class="descname">influence_patch</code><a class="headerlink" href="#vaws.model.connection.Connection.influence_patch" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="vaws.model.connection.Connection.influences">
+<code class="descname">influences</code><a class="headerlink" href="#vaws.model.connection.Connection.influences" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="vaws.model.connection.Connection.sample_dead_load">
+<code class="descname">sample_dead_load</code><span class="sig-paren">(</span><em>rnd_state</em><span class="sig-paren">)</span><a class="headerlink" href="#vaws.model.connection.Connection.sample_dead_load" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="docutils">
+<dt>Args:</dt>
+<dd>rnd_state:</dd>
+</dl>
+<p>Returns: sample of dead load following log normal dist.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="vaws.model.connection.Connection.sample_strength">
+<code class="descname">sample_strength</code><span class="sig-paren">(</span><em>mean_factor</em>, <em>cov_factor</em>, <em>rnd_state</em><span class="sig-paren">)</span><a class="headerlink" href="#vaws.model.connection.Connection.sample_strength" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="docutils">
+<dt>Args:</dt>
+<dd>mean_factor: factor adjusting arithmetic mean strength
+cov_factor: factor adjusting arithmetic cov
+rnd_state:</dd>
+</dl>
+<p>Returns: sample of strength following log normal dist.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="vaws.model.connection.Connection.update_influence">
+<code class="descname">update_influence</code><span class="sig-paren">(</span><em>source_connection</em>, <em>influence_coeff</em><span class="sig-paren">)</span><a class="headerlink" href="#vaws.model.connection.Connection.update_influence" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="docutils">
+<dt>Args:</dt>
+<dd>source_connection: source connection (sheeting)
+infl_coeff:</dd>
+</dl>
+<p>Returns: load</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="vaws.model.connection.ConnectionTypeGroup">
+<em class="property">class </em><code class="descclassname">vaws.model.connection.</code><code class="descname">ConnectionTypeGroup</code><span class="sig-paren">(</span><em>group_name=None</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#vaws.model.connection.ConnectionTypeGroup" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">object</span></code></p>
+<dl class="method">
+<dt id="vaws.model.connection.ConnectionTypeGroup.check_damage">
+<code class="descname">check_damage</code><span class="sig-paren">(</span><em>wind_speed</em><span class="sig-paren">)</span><a class="headerlink" href="#vaws.model.connection.ConnectionTypeGroup.check_damage" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="docutils">
+<dt>Args:</dt>
+<dd>wind_speed: wind speed</dd>
+</dl>
+<p>Returns:</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="vaws.model.connection.ConnectionTypeGroup.compute_damaged_area">
+<code class="descname">compute_damaged_area</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#vaws.model.connection.ConnectionTypeGroup.compute_damaged_area" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns: prop_damaged_group, prop_damaged_area</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="vaws.model.connection.ConnectionTypeGroup.connection_by_grid">
+<code class="descname">connection_by_grid</code><a class="headerlink" href="#vaws.model.connection.ConnectionTypeGroup.connection_by_grid" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="vaws.model.connection.ConnectionTypeGroup.connections">
+<code class="descname">connections</code><a class="headerlink" href="#vaws.model.connection.ConnectionTypeGroup.connections" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="vaws.model.connection.ConnectionTypeGroup.damage_grid">
+<code class="descname">damage_grid</code><a class="headerlink" href="#vaws.model.connection.ConnectionTypeGroup.damage_grid" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="vaws.model.connection.ConnectionTypeGroup.grid_idx_by_dist_dir">
+<code class="descname">grid_idx_by_dist_dir</code><em class="property"> = {'col': 0, 'row': 1}</em><a class="headerlink" href="#vaws.model.connection.ConnectionTypeGroup.grid_idx_by_dist_dir" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="vaws.model.connection.ConnectionTypeGroup.update_influence">
+<code class="descname">update_influence</code><span class="sig-paren">(</span><em>house_inst</em><span class="sig-paren">)</span><a class="headerlink" href="#vaws.model.connection.ConnectionTypeGroup.update_influence" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="docutils">
+<dt>Args:</dt>
+<dd>house_connections:</dd>
+</dl>
+<p>Returns:</p>
+<dl class="docutils">
+<dt>Notes:</dt>
+<dd>influence_patch will be applied regardless of patch_dist
+influence coeff will be distributed only if patch_dist == 0
+dist_dir == &#8216;col&#8217;: coeff will be distributed over the same char.
+dist_dir == &#8216;row&#8217;: coeff will be distributed over the same number
+row: chr, col: number</dd>
+</dl>
+</dd></dl>
+
+<dl class="staticmethod">
+<dt id="vaws.model.connection.ConnectionTypeGroup.update_influence_by_patch">
+<em class="property">static </em><code class="descname">update_influence_by_patch</code><span class="sig-paren">(</span><em>damaged_connection</em>, <em>house_inst</em><span class="sig-paren">)</span><a class="headerlink" href="#vaws.model.connection.ConnectionTypeGroup.update_influence_by_patch" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="docutils">
+<dt>Args:</dt>
+<dd>damaged_connection: damaged_connection</dd>
+</dl>
+<p>Returns:</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="vaws.model.connection.Influence">
+<em class="property">class </em><code class="descclassname">vaws.model.connection.</code><code class="descname">Influence</code><span class="sig-paren">(</span><em>name=None</em>, <em>coeff=None</em><span class="sig-paren">)</span><a class="headerlink" href="#vaws.model.connection.Influence" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">object</span></code></p>
+<dl class="attribute">
+<dt id="vaws.model.connection.Influence.source">
+<code class="descname">source</code><a class="headerlink" href="#vaws.model.connection.Influence.source" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-vaws.model.coverage">
+<span id="vaws-model-coverage-module"></span><h2>vaws.model.coverage module<a class="headerlink" href="#module-vaws.model.coverage" title="Permalink to this headline">¶</a></h2>
+<p>Coverage Module</p>
+<dl class="class">
+<dt id="vaws.model.coverage.Coverage">
+<em class="property">class </em><code class="descclassname">vaws.model.coverage.</code><code class="descname">Coverage</code><span class="sig-paren">(</span><em>coverage_name=None</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#vaws.model.coverage.Coverage" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#vaws.model.zone.Zone" title="vaws.model.zone.Zone"><code class="xref py py-class docutils literal"><span class="pre">vaws.model.zone.Zone</span></code></a></p>
+<dl class="attribute">
+<dt id="vaws.model.coverage.Coverage.breached_area">
+<code class="descname">breached_area</code><a class="headerlink" href="#vaws.model.coverage.Coverage.breached_area" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="vaws.model.coverage.Coverage.check_damage">
+<code class="descname">check_damage</code><span class="sig-paren">(</span><em>qz</em>, <em>cpi</em>, <em>wind_speed</em><span class="sig-paren">)</span><a class="headerlink" href="#vaws.model.coverage.Coverage.check_damage" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="vaws.model.coverage.Coverage.sample_strength">
+<code class="descname">sample_strength</code><span class="sig-paren">(</span><em>rnd_state</em><span class="sig-paren">)</span><a class="headerlink" href="#vaws.model.coverage.Coverage.sample_strength" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-vaws.model.curve">
+<span id="vaws-model-curve-module"></span><h2>vaws.model.curve module<a class="headerlink" href="#module-vaws.model.curve" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="vaws.model.curve.fit_fragility_curves">
+<code class="descclassname">vaws.model.curve.</code><code class="descname">fit_fragility_curves</code><span class="sig-paren">(</span><em>cfg</em>, <em>df_dmg_idx</em><span class="sig-paren">)</span><a class="headerlink" href="#vaws.model.curve.fit_fragility_curves" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="docutils">
+<dt>Args:</dt>
+<dd>cfg:
+df_dmg_idx:</dd>
+</dl>
+<p>Returns:</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="vaws.model.curve.fit_vulnerability_curve">
+<code class="descclassname">vaws.model.curve.</code><code class="descname">fit_vulnerability_curve</code><span class="sig-paren">(</span><em>cfg</em>, <em>df_dmg_idx</em><span class="sig-paren">)</span><a class="headerlink" href="#vaws.model.curve.fit_vulnerability_curve" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="docutils">
+<dt>Args:</dt>
+<dd>cfg:
+df_dmg_idx:</dd>
+</dl>
+<p>Returns:</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="vaws.model.curve.vulnerability_lognorm">
+<code class="descclassname">vaws.model.curve.</code><code class="descname">vulnerability_lognorm</code><span class="sig-paren">(</span><em>x</em>, <em>med</em>, <em>std</em><span class="sig-paren">)</span><a class="headerlink" href="#vaws.model.curve.vulnerability_lognorm" title="Permalink to this definition">¶</a></dt>
+<dd><p>vulnerability curve with cumulative lognormal function</p>
+<dl class="docutils">
+<dt>Args:</dt>
+<dd>med, std: exp(mean of log x) and standard deviation of log x
+x: 3sec gust wind speed at 10m height</dd>
+</dl>
+<p>Returns: lognorm.flag(x, std, loc=0, scale=med)</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="vaws.model.curve.vulnerability_weibull">
+<code class="descclassname">vaws.model.curve.</code><code class="descname">vulnerability_weibull</code><span class="sig-paren">(</span><em>x</em>, <em>alpha_</em>, <em>beta_</em><span class="sig-paren">)</span><a class="headerlink" href="#vaws.model.curve.vulnerability_weibull" title="Permalink to this definition">¶</a></dt>
+<dd><p>vulnerability curve with Weibull function</p>
+<dl class="docutils">
+<dt>Args:</dt>
+<dd>_alpha, _beta: parameters for vulnerability curve
+x: 3sec gust wind speed at 10m height</dd>
+</dl>
+<p>Returns: weibull_min.cdf(x, shape, loc=0, scale)</p>
+<dl class="docutils">
+<dt>weibull_min.pdf = c/s * (x/s)**(c-1) * exp(-(x/s)**c)</dt>
+<dd>c: shape, s: scale, loc=0</dd>
+</dl>
+<p>weibull_min.cdf = 1 - exp(-(x/s)**c)</p>
+<p>while Australian wind vulnerability is defined as</p>
+<blockquote>
+<div>DI = 1 - exp(-(x/exp(beta))**(1/alpha))</div></blockquote>
+<p>therefore:</p>
+<blockquote>
+<div>s = exp(beta)
+c = 1/alpha</div></blockquote>
+</dd></dl>
+
+<dl class="function">
+<dt id="vaws.model.curve.vulnerability_weibull_pdf">
+<code class="descclassname">vaws.model.curve.</code><code class="descname">vulnerability_weibull_pdf</code><span class="sig-paren">(</span><em>x</em>, <em>alpha_</em>, <em>beta_</em><span class="sig-paren">)</span><a class="headerlink" href="#vaws.model.curve.vulnerability_weibull_pdf" title="Permalink to this definition">¶</a></dt>
+<dd><p>vulnerability curve with Weibull function</p>
+<dl class="docutils">
+<dt>Args:</dt>
+<dd>_alpha, _beta: parameters for vulnerability curve
+x: 3sec gust wind speed at 10m height</dd>
+</dl>
+<p>Returns: weibull_min.pdf(x, shape, loc=0, scale)</p>
+<dl class="docutils">
+<dt>weibull_min.pdf = c/s * (x/s)**(c-1) * exp(-(x/s)**c)</dt>
+<dd>c: shape, s: scale, loc=0</dd>
+</dl>
+<p>weibull_min.cdf = 1 - exp(-(x/s)**c)</p>
+<p>while Australian wind vulnerability is defined as</p>
+<blockquote>
+<div>DI = 1 - exp(-(x/exp(beta))**(1/alpha))</div></blockquote>
+<p>therefore:</p>
+<blockquote>
+<div>s = exp(beta)
+c = 1/alpha</div></blockquote>
+</dd></dl>
+
+</div>
+<div class="section" id="module-vaws.model.damage_costing">
+<span id="vaws-model-damage-costing-module"></span><h2>vaws.model.damage_costing module<a class="headerlink" href="#module-vaws.model.damage_costing" title="Permalink to this headline">¶</a></h2>
+<dl class="docutils">
+<dt>Damage Costing Module - costing profiles for a &#8220;type of damage&#8221;</dt>
+<dd><ul class="first last simple">
+<li>loaded from the database</li>
+<li>imported from house</li>
+<li>referenced by damage module to cost damages</li>
+</ul>
+</dd>
+</dl>
+<dl class="class">
+<dt id="vaws.model.damage_costing.Costing">
+<em class="property">class </em><code class="descclassname">vaws.model.damage_costing.</code><code class="descname">Costing</code><span class="sig-paren">(</span><em>costing_name=None</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#vaws.model.damage_costing.Costing" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">object</span></code></p>
+<dl class="method">
+<dt id="vaws.model.damage_costing.Costing.assign_costing_function">
+<code class="descname">assign_costing_function</code><span class="sig-paren">(</span><em>key</em><span class="sig-paren">)</span><a class="headerlink" href="#vaws.model.damage_costing.Costing.assign_costing_function" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="vaws.model.damage_costing.Costing.compute_cost">
+<code class="descname">compute_cost</code><span class="sig-paren">(</span><em>x</em><span class="sig-paren">)</span><a class="headerlink" href="#vaws.model.damage_costing.Costing.compute_cost" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="vaws.model.damage_costing.Costing.dic_costing">
+<code class="descname">dic_costing</code><em class="property"> = {1: 'type1', 2: 'type2'}</em><a class="headerlink" href="#vaws.model.damage_costing.Costing.dic_costing" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="staticmethod">
+<dt id="vaws.model.damage_costing.Costing.type1">
+<em class="property">static </em><code class="descname">type1</code><span class="sig-paren">(</span><em>x</em>, <em>c1</em>, <em>c2</em>, <em>c3</em><span class="sig-paren">)</span><a class="headerlink" href="#vaws.model.damage_costing.Costing.type1" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="docutils">
+<dt>Args:</dt>
+<dd>x: damage ratio between 0 and 1
+c1: coefficients
+c2:
+c3:</dd>
+</dl>
+<p>Returns: c1*x**2 + c2*x + c3</p>
+</dd></dl>
+
+<dl class="staticmethod">
+<dt id="vaws.model.damage_costing.Costing.type2">
+<em class="property">static </em><code class="descname">type2</code><span class="sig-paren">(</span><em>x</em>, <em>c1</em>, <em>c2</em>, <em>c3</em><span class="sig-paren">)</span><a class="headerlink" href="#vaws.model.damage_costing.Costing.type2" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="docutils">
+<dt>Args:</dt>
+<dd>x: damage ratio between 0 and 1
+c1: coefficients
+c2:
+c3:</dd>
+</dl>
+<p>Returns: c1*x**c2</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="vaws.model.damage_costing.WaterIngressCosting">
+<em class="property">class </em><code class="descclassname">vaws.model.damage_costing.</code><code class="descname">WaterIngressCosting</code><span class="sig-paren">(</span><em>costing_name=None</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#vaws.model.damage_costing.WaterIngressCosting" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">object</span></code></p>
+<dl class="method">
+<dt id="vaws.model.damage_costing.WaterIngressCosting.assign_costing_function">
+<code class="descname">assign_costing_function</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#vaws.model.damage_costing.WaterIngressCosting.assign_costing_function" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="vaws.model.damage_costing.WaterIngressCosting.compute_cost">
+<code class="descname">compute_cost</code><span class="sig-paren">(</span><em>damage_index</em><span class="sig-paren">)</span><a class="headerlink" href="#vaws.model.damage_costing.WaterIngressCosting.compute_cost" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="vaws.model.damage_costing.WaterIngressCosting.dic_costing">
+<code class="descname">dic_costing</code><em class="property"> = {1: 'type1', 2: 'type2'}</em><a class="headerlink" href="#vaws.model.damage_costing.WaterIngressCosting.dic_costing" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="function">
+<dt id="vaws.model.damage_costing.compute_water_ingress_given_damage">
+<code class="descclassname">vaws.model.damage_costing.</code><code class="descname">compute_water_ingress_given_damage</code><span class="sig-paren">(</span><em>damage_index</em>, <em>wind_speed</em>, <em>water_ingress</em><span class="sig-paren">)</span><a class="headerlink" href="#vaws.model.damage_costing.compute_water_ingress_given_damage" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="docutils">
+<dt>Args:</dt>
+<dd>damage_index:
+wind_speed:
+water_ingress: pd.DataFrame</dd>
+</dl>
+<p>Returns:</p>
+</dd></dl>
+
+</div>
+<div class="section" id="module-vaws.model.debris">
+<span id="vaws-model-debris-module"></span><h2>vaws.model.debris module<a class="headerlink" href="#module-vaws.model.debris" title="Permalink to this headline">¶</a></h2>
+<dl class="docutils">
+<dt>Debris Module - adapted from JDH Consulting and Martin&#8217;s work</dt>
+<dd><ul class="first last simple">
+<li><dl class="first docutils">
+<dt>given sim:wind_speed, sim:wind_dir,</dt>
+<dd>scen:h:target_height, scen:h:target_width,
+scen:building_spacing, scen:debris_angle, scen:debris_radius,
+scen:flighttime_mean, scen:flighttime_stddev</dd>
+</dl>
+</li>
+<li>generate sources of debris.</li>
+<li>generate debris items from those sources.</li>
+<li>track items and sample target collisions.</li>
+<li>handle collisions (impact)</li>
+</ul>
+</dd>
+</dl>
+<dl class="class">
+<dt id="vaws.model.debris.Debris">
+<em class="property">class </em><code class="descclassname">vaws.model.debris.</code><code class="descname">Debris</code><span class="sig-paren">(</span><em>cfg</em><span class="sig-paren">)</span><a class="headerlink" href="#vaws.model.debris.Debris" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">object</span></code></p>
+<dl class="attribute">
+<dt id="vaws.model.debris.Debris.angle_by_idx">
+<code class="descname">angle_by_idx</code><em class="property"> = {0: 90.0, 1: 45.0, 2: 0.0, 3: -45.0, 4: 90.0, 5: 45.0, 6: 0.0, 7: -45.0}</em><a class="headerlink" href="#vaws.model.debris.Debris.angle_by_idx" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="vaws.model.debris.Debris.check_debris_impact">
+<code class="descname">check_debris_impact</code><span class="sig-paren">(</span><em>frontal_area</em>, <em>item_momentum</em><span class="sig-paren">)</span><a class="headerlink" href="#vaws.model.debris.Debris.check_debris_impact" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="docutils">
+<dt>Args:</dt>
+<dd>frontal_area:
+item_momentum:</dd>
+<dt>Returns:</dt>
+<dd>self.breached</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="vaws.model.debris.Debris.compute_debris_momentum">
+<code class="descname">compute_debris_momentum</code><span class="sig-paren">(</span><em>cdav</em>, <em>frontal_area</em>, <em>flight_distance</em>, <em>mass</em>, <em>wind_speed</em>, <em>rnd_state</em><span class="sig-paren">)</span><a class="headerlink" href="#vaws.model.debris.Debris.compute_debris_momentum" title="Permalink to this definition">¶</a></dt>
+<dd><p>calculate momentum of debris object</p>
+<dl class="docutils">
+<dt>Args:</dt>
+<dd>cdav: average drag coefficient
+frontal_area:
+flight_distance:
+mass:
+wind_speed:
+rnd_state:</dd>
+</dl>
+<p>Returns: momentum of debris object</p>
+<dl class="docutils">
+<dt>Notes:</dt>
+<dd><p class="first">The ratio of horizontal velocity of the windborne debris object
+to the wind gust velocity is related to the horizontal distance
+travelled, x as below</p>
+<p>um/vs approx.= 1-exp(-b*sqrt(x))</p>
+<dl class="docutils">
+<dt>where um: horizontal velocity of the debris object</dt>
+<dd>vs: local gust wind speed
+x: horizontal distance travelled
+b: a parameter, sqrt(rho*CD*A/m)</dd>
+</dl>
+<p class="last">The ratio is assumed to follow a beta distribution with mean, and</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="vaws.model.debris.Debris.compute_flight_distance">
+<code class="descname">compute_flight_distance</code><span class="sig-paren">(</span><em>debris_type_str</em>, <em>flight_time</em>, <em>frontal_area</em>, <em>mass</em>, <em>wind_speed</em>, <em>flag_poly=2</em><span class="sig-paren">)</span><a class="headerlink" href="#vaws.model.debris.Debris.compute_flight_distance" title="Permalink to this definition">¶</a></dt>
+<dd><p>calculate flight distance based on the methodology in Appendix of
+Lin and Vanmarcke (2008)</p>
+<dl class="docutils">
+<dt>Args:</dt>
+<dd>debris_type_str:
+flight_time:
+frontal_area:
+mass:
+wind_speed:
+flag_poly:</dd>
+</dl>
+<p>Returns:</p>
+<dl class="docutils">
+<dt>Notes:</dt>
+<dd>The coefficients of fifth order polynomials are from</dd>
+</dl>
+<p>Lin and Vanmarcke (2008), while quadratic form are proposed by Martin.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="vaws.model.debris.Debris.coverages">
+<code class="descname">coverages</code><a class="headerlink" href="#vaws.model.debris.Debris.coverages" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="staticmethod">
+<dt id="vaws.model.debris.Debris.create_sources">
+<em class="property">static </em><code class="descname">create_sources</code><span class="sig-paren">(</span><em>radius</em>, <em>angle</em>, <em>bldg_spacing</em>, <em>flag_staggered</em>, <em>restrict_y_cord=False</em><span class="sig-paren">)</span><a class="headerlink" href="#vaws.model.debris.Debris.create_sources" title="Permalink to this definition">¶</a></dt>
+<dd><p>define a debris generation region for a building
+Args:</p>
+<blockquote>
+<div><blockquote>
+<div>radius:
+angle: (in degree)
+bldg_spacing:
+flag_staggered:
+restrict_y_cord:</div></blockquote>
+<p># FIXME !! NO VALUE is assigned to restrict_yord</p>
+</div></blockquote>
+<p>Returns:</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="vaws.model.debris.Debris.flight_distance_coeff">
+<code class="descname">flight_distance_coeff</code><em class="property"> = {2: {'Compact': [0.011, 0.206], 'Rod': [0.2376, 0.0723], 'Sheet': [0.3456, 0.072]}, 5: {'Compact': [0.405, -0.036, -0.052, 0.008], 'Rod': [0.4005, -0.16, 0.036, -0.0032], 'Sheet': [0.456, -0.148, 0.024, -0.0014]}}</em><a class="headerlink" href="#vaws.model.debris.Debris.flight_distance_coeff" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="vaws.model.debris.Debris.flight_distance_power">
+<code class="descname">flight_distance_power</code><em class="property"> = {2: [1, 2], 5: [2, 3, 4, 5]}</em><a class="headerlink" href="#vaws.model.debris.Debris.flight_distance_power" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="vaws.model.debris.Debris.footprint">
+<code class="descname">footprint</code><a class="headerlink" href="#vaws.model.debris.Debris.footprint" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="vaws.model.debris.Debris.g_const">
+<code class="descname">g_const</code><em class="property"> = 9.81</em><a class="headerlink" href="#vaws.model.debris.Debris.g_const" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="vaws.model.debris.Debris.generate_debris_item">
+<code class="descname">generate_debris_item</code><span class="sig-paren">(</span><em>wind_speed</em>, <em>source</em>, <em>debris_type_str</em><span class="sig-paren">)</span><a class="headerlink" href="#vaws.model.debris.Debris.generate_debris_item" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="docutils">
+<dt>Args:</dt>
+<dd>wind_speed:
+source:
+debris_type_str:</dd>
+</dl>
+<p>Returns:</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="vaws.model.debris.Debris.no_items_mean">
+<code class="descname">no_items_mean</code><a class="headerlink" href="#vaws.model.debris.Debris.no_items_mean" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="vaws.model.debris.Debris.rho_air">
+<code class="descname">rho_air</code><em class="property"> = 1.2</em><a class="headerlink" href="#vaws.model.debris.Debris.rho_air" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="vaws.model.debris.Debris.rnd_state">
+<code class="descname">rnd_state</code><a class="headerlink" href="#vaws.model.debris.Debris.rnd_state" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="vaws.model.debris.Debris.run">
+<code class="descname">run</code><span class="sig-paren">(</span><em>wind_speed</em><span class="sig-paren">)</span><a class="headerlink" href="#vaws.model.debris.Debris.run" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="docutils">
+<dt>Args:</dt>
+<dd>wind_speed:</dd>
+</dl>
+<p>Returns:</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-vaws.model.house">
+<span id="vaws-model-house-module"></span><h2>vaws.model.house module<a class="headerlink" href="#module-vaws.model.house" title="Permalink to this headline">¶</a></h2>
+<dl class="docutils">
+<dt>House Module - reference storage for House type information.</dt>
+<dd><ul class="first last simple">
+<li>loaded from database</li>
+<li>imported from &#8216;../data/houses/subfolder&#8217; (so we need python constr)</li>
+</ul>
+</dd>
+</dl>
+<dl class="class">
+<dt id="vaws.model.house.House">
+<em class="property">class </em><code class="descclassname">vaws.model.house.</code><code class="descname">House</code><span class="sig-paren">(</span><em>cfg</em>, <em>rnd_state</em><span class="sig-paren">)</span><a class="headerlink" href="#vaws.model.house.House" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">object</span></code></p>
+<dl class="method">
+<dt id="vaws.model.house.House.assign_costing">
+<code class="descname">assign_costing</code><span class="sig-paren">(</span><em>key</em><span class="sig-paren">)</span><a class="headerlink" href="#vaws.model.house.House.assign_costing" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="docutils">
+<dt>Args:</dt>
+<dd>key:</dd>
+</dl>
+<p>Returns:</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="vaws.model.house.House.assign_cpi">
+<code class="descname">assign_cpi</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#vaws.model.house.House.assign_cpi" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="vaws.model.house.House.assign_windward">
+<code class="descname">assign_windward</code><span class="sig-paren">(</span><em>wall_name</em><span class="sig-paren">)</span><a class="headerlink" href="#vaws.model.house.House.assign_windward" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="vaws.model.house.House.link_connection_to_influence">
+<code class="descname">link_connection_to_influence</code><span class="sig-paren">(</span><em>_connection</em><span class="sig-paren">)</span><a class="headerlink" href="#vaws.model.house.House.link_connection_to_influence" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="vaws.model.house.House.read_house_data">
+<code class="descname">read_house_data</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#vaws.model.house.House.read_house_data" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="vaws.model.house.House.set_connection_property">
+<code class="descname">set_connection_property</code><span class="sig-paren">(</span><em>_connection</em><span class="sig-paren">)</span><a class="headerlink" href="#vaws.model.house.House.set_connection_property" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="docutils">
+<dt>Args:</dt>
+<dd>_connection: instance of Connection class</dd>
+</dl>
+<p>Returns:</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="vaws.model.house.House.set_connections">
+<code class="descname">set_connections</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#vaws.model.house.House.set_connections" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="vaws.model.house.House.set_construction_level">
+<code class="descname">set_construction_level</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#vaws.model.house.House.set_construction_level" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns: construction_level, str_mean_factor, str_cov_factor</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="vaws.model.house.House.set_coverages">
+<code class="descname">set_coverages</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#vaws.model.house.House.set_coverages" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="vaws.model.house.House.set_debris">
+<code class="descname">set_debris</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#vaws.model.house.House.set_debris" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="vaws.model.house.House.set_house_wind_params">
+<code class="descname">set_house_wind_params</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#vaws.model.house.House.set_house_wind_params" title="Permalink to this definition">¶</a></dt>
+<dd><p>will be constant through wind steps
+Returns:</p>
+<blockquote>
+<div>wind_orientation,
+construction_level, str_mean_factor, str_cov_factor,
+profile, mzcat</div></blockquote>
+</dd></dl>
+
+<dl class="method">
+<dt id="vaws.model.house.House.set_wind_orientation">
+<code class="descname">set_wind_orientation</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#vaws.model.house.House.set_wind_orientation" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="vaws.model.house.House.set_wind_profile">
+<code class="descname">set_wind_profile</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#vaws.model.house.House.set_wind_profile" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns: profile, mzcat</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="vaws.model.house.House.set_zones">
+<code class="descname">set_zones</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#vaws.model.house.House.set_zones" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-vaws.model.house_damage">
+<span id="vaws-model-house-damage-module"></span><h2>vaws.model.house_damage module<a class="headerlink" href="#module-vaws.model.house_damage" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="vaws.model.house_damage.HouseDamage">
+<em class="property">class </em><code class="descclassname">vaws.model.house_damage.</code><code class="descname">HouseDamage</code><span class="sig-paren">(</span><em>cfg</em>, <em>seed</em><span class="sig-paren">)</span><a class="headerlink" href="#vaws.model.house_damage.HouseDamage" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">object</span></code></p>
+<dl class="method">
+<dt id="vaws.model.house_damage.HouseDamage.apply_damage_factoring">
+<code class="descname">apply_damage_factoring</code><span class="sig-paren">(</span><em>area_by_group</em><span class="sig-paren">)</span><a class="headerlink" href="#vaws.model.house_damage.HouseDamage.apply_damage_factoring" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="vaws.model.house_damage.HouseDamage.check_house_collapse">
+<code class="descname">check_house_collapse</code><span class="sig-paren">(</span><em>wind_speed</em><span class="sig-paren">)</span><a class="headerlink" href="#vaws.model.house_damage.HouseDamage.check_house_collapse" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="docutils">
+<dt>Args:</dt>
+<dd>wind_speed:</dd>
+</dl>
+<p>Returns: collapse of house</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="vaws.model.house_damage.HouseDamage.check_internal_pressurisation">
+<code class="descname">check_internal_pressurisation</code><span class="sig-paren">(</span><em>wind_speed</em><span class="sig-paren">)</span><a class="headerlink" href="#vaws.model.house_damage.HouseDamage.check_internal_pressurisation" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="docutils">
+<dt>Args:</dt>
+<dd>wind_speed:</dd>
+<dt>Returns:</dt>
+<dd>self.cpi
+self.cpi_wind_speed</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="vaws.model.house_damage.HouseDamage.compute_area_by_group">
+<code class="descname">compute_area_by_group</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#vaws.model.house_damage.HouseDamage.compute_area_by_group" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="vaws.model.house_damage.HouseDamage.compute_area_by_scenario">
+<code class="descname">compute_area_by_scenario</code><span class="sig-paren">(</span><em>revised_area</em>, <em>total_area_by_group</em><span class="sig-paren">)</span><a class="headerlink" href="#vaws.model.house_damage.HouseDamage.compute_area_by_scenario" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="vaws.model.house_damage.HouseDamage.compute_damage_index">
+<code class="descname">compute_damage_index</code><span class="sig-paren">(</span><em>wind_speed</em><span class="sig-paren">)</span><a class="headerlink" href="#vaws.model.house_damage.HouseDamage.compute_damage_index" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="docutils">
+<dt>Args:</dt>
+<dd>wind_speed:</dd>
+<dt>Returns:</dt>
+<dd>damage_index: repair cost / replacement cost</dd>
+</dl>
+<p>Note:</p>
+<blockquote>
+<div><ol class="arabic simple">
+<li>compute sum of damaged area by group</li>
+<li>revised damage area by group by applying damage factoring</li>
+<li>calculate sum of revised damaged area by damage scenario</li>
+<li>apply costing modules</li>
+</ol>
+</div></blockquote>
+</dd></dl>
+
+<dl class="method">
+<dt id="vaws.model.house_damage.HouseDamage.compute_qz_ms">
+<code class="descname">compute_qz_ms</code><span class="sig-paren">(</span><em>wind_speed</em><span class="sig-paren">)</span><a class="headerlink" href="#vaws.model.house_damage.HouseDamage.compute_qz_ms" title="Permalink to this definition">¶</a></dt>
+<dd><p>calculate qz, velocity pressure given wind velocity
+qz = 0.6*10-3*(Mz,cat*V)**2
+Args:</p>
+<blockquote>
+<div>wind_speed: wind velocity (m/s)</div></blockquote>
+<dl class="docutils">
+<dt>Returns:</dt>
+<dd>qz
+update ms</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="vaws.model.house_damage.HouseDamage.compute_water_ingress_cost">
+<code class="descname">compute_water_ingress_cost</code><span class="sig-paren">(</span><em>prop_area_by_scenario</em>, <em>wind_speed</em><span class="sig-paren">)</span><a class="headerlink" href="#vaws.model.house_damage.HouseDamage.compute_water_ingress_cost" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="vaws.model.house_damage.HouseDamage.fill_bucket">
+<code class="descname">fill_bucket</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#vaws.model.house_damage.HouseDamage.fill_bucket" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="vaws.model.house_damage.HouseDamage.init_bucket">
+<code class="descname">init_bucket</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#vaws.model.house_damage.HouseDamage.init_bucket" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="vaws.model.house_damage.HouseDamage.run_simulation">
+<code class="descname">run_simulation</code><span class="sig-paren">(</span><em>wind_speed</em><span class="sig-paren">)</span><a class="headerlink" href="#vaws.model.house_damage.HouseDamage.run_simulation" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-vaws.model.main">
+<span id="vaws-model-main-module"></span><h2>vaws.model.main module<a class="headerlink" href="#module-vaws.model.main" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="vaws.model.main.init_bucket">
+<code class="descclassname">vaws.model.main.</code><code class="descname">init_bucket</code><span class="sig-paren">(</span><em>cfg</em><span class="sig-paren">)</span><a class="headerlink" href="#vaws.model.main.init_bucket" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="vaws.model.main.main">
+<code class="descclassname">vaws.model.main.</code><code class="descname">main</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#vaws.model.main.main" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="vaws.model.main.process_commandline">
+<code class="descclassname">vaws.model.main.</code><code class="descname">process_commandline</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#vaws.model.main.process_commandline" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="vaws.model.main.save_results_to_files">
+<code class="descclassname">vaws.model.main.</code><code class="descname">save_results_to_files</code><span class="sig-paren">(</span><em>cfg</em>, <em>bucket</em><span class="sig-paren">)</span><a class="headerlink" href="#vaws.model.main.save_results_to_files" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="docutils">
+<dt>Args:</dt>
+<dd>cfg:
+bucket:</dd>
+</dl>
+<p>Returns:</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="vaws.model.main.set_logger">
+<code class="descclassname">vaws.model.main.</code><code class="descname">set_logger</code><span class="sig-paren">(</span><em>path_cfg</em>, <em>logging_level=None</em><span class="sig-paren">)</span><a class="headerlink" href="#vaws.model.main.set_logger" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="docutils">
+<dt>Args:</dt>
+<dd>path_cfg: path of configuration file 
+logging_level: Level of messages that will be logged</dd>
+</dl>
+<p>Returns:</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="vaws.model.main.simulate_wind_damage_to_houses">
+<code class="descclassname">vaws.model.main.</code><code class="descname">simulate_wind_damage_to_houses</code><span class="sig-paren">(</span><em>cfg</em>, <em>call_back=None</em><span class="sig-paren">)</span><a class="headerlink" href="#vaws.model.main.simulate_wind_damage_to_houses" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="docutils">
+<dt>Args:</dt>
+<dd>cfg: instance of Config class
+call_back: used by gui</dd>
+</dl>
+<p>Returns:</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="vaws.model.main.update_bucket">
+<code class="descclassname">vaws.model.main.</code><code class="descname">update_bucket</code><span class="sig-paren">(</span><em>cfg</em>, <em>bucket</em>, <em>results_by_speed</em>, <em>ispeed</em><span class="sig-paren">)</span><a class="headerlink" href="#vaws.model.main.update_bucket" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</div>
+<div class="section" id="module-vaws.model.output">
+<span id="vaws-model-output-module"></span><h2>vaws.model.output module<a class="headerlink" href="#module-vaws.model.output" title="Permalink to this headline">¶</a></h2>
+<p>output.py - output module, postprocess and plot display engine</p>
+<dl class="function">
+<dt id="vaws.model.output.draw_influence">
+<code class="descclassname">vaws.model.output.</code><code class="descname">draw_influence</code><span class="sig-paren">(</span><em>cfg</em>, <em>infl_dic</em>, <em>dic_ax</em>, <em>conn_name</em><span class="sig-paren">)</span><a class="headerlink" href="#vaws.model.output.draw_influence" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="vaws.model.output.plot_heatmap">
+<code class="descclassname">vaws.model.output.</code><code class="descname">plot_heatmap</code><span class="sig-paren">(</span><em>grouped</em>, <em>values</em>, <em>vmin</em>, <em>vmax</em>, <em>vstep</em>, <em>xlim_max</em>, <em>ylim_max</em>, <em>file_name=None</em><span class="sig-paren">)</span><a class="headerlink" href="#vaws.model.output.plot_heatmap" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="docutils">
+<dt>Args:</dt>
+<dd>grouped: pd.DataFrame (x_coord, y_coord, width, height)
+values: np.array(N,1)
+vmin: min. of scale in color bar
+vmax: max. of scale in color bar
+vstep: no. of scales in color bar
+file_name: file to save</dd>
+</dl>
+<p>Returns:</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="vaws.model.output.plot_influence">
+<code class="descclassname">vaws.model.output.</code><code class="descname">plot_influence</code><span class="sig-paren">(</span><em>cfg</em>, <em>conn_name</em>, <em>file_name=None</em><span class="sig-paren">)</span><a class="headerlink" href="#vaws.model.output.plot_influence" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="vaws.model.output.set_axis_etc">
+<code class="descclassname">vaws.model.output.</code><code class="descname">set_axis_etc</code><span class="sig-paren">(</span><em>ax</em>, <em>xlim_max</em>, <em>ylim_max</em><span class="sig-paren">)</span><a class="headerlink" href="#vaws.model.output.set_axis_etc" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</div>
+<div class="section" id="module-vaws.model.stats">
+<span id="vaws-model-stats-module"></span><h2>vaws.model.stats module<a class="headerlink" href="#module-vaws.model.stats" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="vaws.model.stats.calc_big_a_b_values">
+<code class="descclassname">vaws.model.stats.</code><code class="descname">calc_big_a_b_values</code><span class="sig-paren">(</span><em>shape_k</em><span class="sig-paren">)</span><a class="headerlink" href="#vaws.model.stats.calc_big_a_b_values" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="docutils">
+<dt>Args:</dt>
+<dd><p class="first">shape_k: parameter k of GEV III (JHD)
+CDF(x) = exp{-[1-k(x-u)/a]**(1/k)}</p>
+<p class="last">m = u + a*A, s = a * B
+where m: mean, s: std, u: location factor, a:scale factor
+A = (1/k)[1-Gamma(1+k)]
+B = (1/k)*sqrt[Gamma(1+2k)-Gamma(1+k)^2]</p>
+</dd>
+</dl>
+<p>Returns: A, B</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="vaws.model.stats.calc_parameters_gev">
+<code class="descclassname">vaws.model.stats.</code><code class="descname">calc_parameters_gev</code><span class="sig-paren">(</span><em>mean_est</em>, <em>cov_est</em>, <em>big_a</em>, <em>big_b</em><span class="sig-paren">)</span><a class="headerlink" href="#vaws.model.stats.calc_parameters_gev" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="docutils">
+<dt>Args:</dt>
+<dd><p class="first">mean_est: estimated mean (can be negative)
+cov_est: cov
+big_a: A value
+big_b: B value</p>
+<p>CDF(x) = exp{-[1-k(x-u)/a]**(1/k)}
+where m = u+a*A, s = a*B, cov = s/m</p>
+<p class="last">a = m*cov/B, u = m-a*A</p>
+</dd>
+</dl>
+<p>Returns:</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="vaws.model.stats.compute_arithmetic_mean_stddev">
+<code class="descclassname">vaws.model.stats.</code><code class="descname">compute_arithmetic_mean_stddev</code><span class="sig-paren">(</span><em>m</em>, <em>stddev</em><span class="sig-paren">)</span><a class="headerlink" href="#vaws.model.stats.compute_arithmetic_mean_stddev" title="Permalink to this definition">¶</a></dt>
+<dd><p>compute arithmetic mean and std of x</p>
+<dl class="docutils">
+<dt>Args:</dt>
+<dd>m: mean of log x
+stddev: std of log x</dd>
+</dl>
+<p>Returns: arithmetic mean, std of x</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="vaws.model.stats.compute_logarithmic_mean_stddev">
+<code class="descclassname">vaws.model.stats.</code><code class="descname">compute_logarithmic_mean_stddev</code><span class="sig-paren">(</span><em>m</em>, <em>stddev</em><span class="sig-paren">)</span><a class="headerlink" href="#vaws.model.stats.compute_logarithmic_mean_stddev" title="Permalink to this definition">¶</a></dt>
+<dd><p>compute mean of log x with mean and std. of x
+Args:</p>
+<blockquote>
+<div><p>m: arithmetic mean of x
+stddev: arithmetic standard deviation of x</p>
+<p>mu = 2*log(m) - 0.5*log(v + m**2)
+std = sqrt(log(V/m**2 +1))</p>
+<p>if m is zero, then return -999, 0.0</p>
+</div></blockquote>
+<p>Returns: mean and std of log x</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="vaws.model.stats.sample_gev">
+<code class="descclassname">vaws.model.stats.</code><code class="descname">sample_gev</code><span class="sig-paren">(</span><em>mean_est</em>, <em>cov_est</em>, <em>big_a</em>, <em>big_b</em>, <em>shape_k</em>, <em>rnd_state=None</em><span class="sig-paren">)</span><a class="headerlink" href="#vaws.model.stats.sample_gev" title="Permalink to this definition">¶</a></dt>
+<dd><p>JHD F(u) = exp{-[1-k(U-u)/a]**(1/k)}
+where a: scale factor, u: location factor
+k &lt; 0: Type II (Frechet), k &gt; 0: Type III (Weibull)</p>
+<p>scipy.stats.genextreme.rvs(c, loc=0, scale=1, size=1, random_state=None)
+c: shape (or k)</p>
+<dl class="docutils">
+<dt>Args:</dt>
+<dd>mean_est:
+big_a:
+big_b:
+cov_est:
+shape_k:
+rnd_state:</dd>
+</dl>
+<p>Returns: random sample from the extreme value distribution Type III</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="vaws.model.stats.sample_lognorm_given_mean_stddev">
+<code class="descclassname">vaws.model.stats.</code><code class="descname">sample_lognorm_given_mean_stddev</code><span class="sig-paren">(</span><em>m</em>, <em>stddev</em>, <em>rnd_state</em><span class="sig-paren">)</span><a class="headerlink" href="#vaws.model.stats.sample_lognorm_given_mean_stddev" title="Permalink to this definition">¶</a></dt>
+<dd><p>generate rv following lognorm dist
+Args:</p>
+<blockquote>
+<div>m: mean of x
+stddev: std of x
+rnd_state
+size: size of rv (default: 1)</div></blockquote>
+<p>Returns:</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="vaws.model.stats.sample_lognormal">
+<code class="descclassname">vaws.model.stats.</code><code class="descname">sample_lognormal</code><span class="sig-paren">(</span><em>mu_lnx</em>, <em>std_lnx</em>, <em>rnd_state</em><span class="sig-paren">)</span><a class="headerlink" href="#vaws.model.stats.sample_lognormal" title="Permalink to this definition">¶</a></dt>
+<dd><p>draw a sample from a lognormal distribution with mu, std of logarithmic x
+If std is zero, just return exp(mu_lnx)</p>
+<dl class="docutils">
+<dt>Args:</dt>
+<dd>mu_lnx: mean of log x
+std_lnx: std of log x
+rnd_state: numpy.random.RandomState</dd>
+</dl>
+<p>Returns:</p>
+</dd></dl>
+
+</div>
+<div class="section" id="module-vaws.model.version">
+<span id="vaws-model-version-module"></span><h2>vaws.model.version module<a class="headerlink" href="#module-vaws.model.version" title="Permalink to this headline">¶</a></h2>
+<p>Single point of truth for version information</p>
+</div>
+<div class="section" id="module-vaws.model.zone">
+<span id="vaws-model-zone-module"></span><h2>vaws.model.zone module<a class="headerlink" href="#module-vaws.model.zone" title="Permalink to this headline">¶</a></h2>
+<dl class="docutils">
+<dt>Zone Module - reference storage</dt>
+<dd><ul class="first last simple">
+<li>loaded from database.</li>
+<li>imported from &#8216;../data/houses/subfolder/zones.csv&#8217;</li>
+<li>holds zone area and CPE means.</li>
+<li>holds runtime sampled CPE per zone.</li>
+<li>calculates Cpe pressure load from wind pressure.</li>
+</ul>
+</dd>
+</dl>
+<dl class="class">
+<dt id="vaws.model.zone.Zone">
+<em class="property">class </em><code class="descclassname">vaws.model.zone.</code><code class="descname">Zone</code><span class="sig-paren">(</span><em>zone_name=None</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#vaws.model.zone.Zone" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">object</span></code></p>
+<dl class="method">
+<dt id="vaws.model.zone.Zone.calc_diff_shielding">
+<code class="descname">calc_diff_shielding</code><span class="sig-paren">(</span><em>ms</em>, <em>building_spacing</em>, <em>flag_diff_shielding</em>, <em>wind_dir_index</em><span class="sig-paren">)</span><a class="headerlink" href="#vaws.model.zone.Zone.calc_diff_shielding" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="vaws.model.zone.Zone.calc_zone_pressure">
+<code class="descname">calc_zone_pressure</code><span class="sig-paren">(</span><em>wind_dir_index</em>, <em>cpi</em>, <em>qz</em>, <em>ms</em>, <em>building_spacing</em>, <em>flag_diff_shielding=False</em><span class="sig-paren">)</span><a class="headerlink" href="#vaws.model.zone.Zone.calc_zone_pressure" title="Permalink to this definition">¶</a></dt>
+<dd><p>Determine wind pressure loads (Cpe) on each zone (to be distributed onto
+connections)</p>
+<dl class="docutils">
+<dt>Args:</dt>
+<dd>wind_dir_index:
+cpi: internal pressure coeff
+qz:
+ms:
+building_spacing:
+flag_diff_shielding: flag for differential shielding (default: False)</dd>
+<dt>Returns:</dt>
+<dd>pressure : zone pressure</dd>
+</dl>
+</dd></dl>
+
+<dl class="staticmethod">
+<dt id="vaws.model.zone.Zone.get_grid_from_zone_location">
+<em class="property">static </em><code class="descname">get_grid_from_zone_location</code><span class="sig-paren">(</span><em>_zone_name</em><span class="sig-paren">)</span><a class="headerlink" href="#vaws.model.zone.Zone.get_grid_from_zone_location" title="Permalink to this definition">¶</a></dt>
+<dd><p>Extract 0 based grid refs from string location (eg &#8216;A10&#8217; to 0, 9)</p>
+</dd></dl>
+
+<dl class="staticmethod">
+<dt id="vaws.model.zone.Zone.get_zone_location_from_grid">
+<em class="property">static </em><code class="descname">get_zone_location_from_grid</code><span class="sig-paren">(</span><em>_zone_grid</em><span class="sig-paren">)</span><a class="headerlink" href="#vaws.model.zone.Zone.get_zone_location_from_grid" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create a string location (eg &#8216;A10&#8217;) from zero based grid refs (col=0,
+row=9)</p>
+<dl class="docutils">
+<dt>Args:</dt>
+<dd>_zone_grid: tuple</dd>
+</dl>
+<p>Returns: string location</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="vaws.model.zone.Zone.sample_cpe">
+<code class="descname">sample_cpe</code><span class="sig-paren">(</span><em>wind_dir_index</em>, <em>cpe_cov</em>, <em>cpe_k</em>, <em>big_a</em>, <em>big_b</em>, <em>cpe_str_cov</em>, <em>cpe_str_k</em>, <em>big_a_str</em>, <em>big_b_str</em>, <em>rnd_state</em><span class="sig-paren">)</span><a class="headerlink" href="#vaws.model.zone.Zone.sample_cpe" title="Permalink to this definition">¶</a></dt>
+<dd><p>Sample external Zone Pressures for sheeting, structure and eaves Cpe,
+based on TypeIII General Extreme Value distribution. Prepare effective
+zone areas for load calculations.</p>
+<dl class="docutils">
+<dt>Args:</dt>
+<dd>wind_dir_index: 0 to 7
+cpe_cov: cov of dist. of CPE for sheeting and batten
+cpe_k: shape parameter of dist. of CPE
+big_a:
+big_b:
+cpe_str_cov: cov. of dist of CPE for rafter
+cpe_str_k
+big_a_str:
+big_b_str:
+rnd_state: default None</dd>
+</dl>
+<p>Returns: cpe, cpe_str, cpe_eave</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="function">
+<dt id="vaws.model.zone.num2str">
+<code class="descclassname">vaws.model.zone.</code><code class="descname">num2str</code><span class="sig-paren">(</span><em>n</em><span class="sig-paren">)</span><a class="headerlink" href="#vaws.model.zone.num2str" title="Permalink to this definition">¶</a></dt>
+<dd><p>n: number
+return string</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="vaws.model.zone.str2num">
+<code class="descclassname">vaws.model.zone.</code><code class="descname">str2num</code><span class="sig-paren">(</span><em>s</em><span class="sig-paren">)</span><a class="headerlink" href="#vaws.model.zone.str2num" title="Permalink to this definition">¶</a></dt>
+<dd><p>s: string
+return number</p>
+</dd></dl>
+
+</div>
+<div class="section" id="module-vaws.model">
+<span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-vaws.model" title="Permalink to this headline">¶</a></h2>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">vaws.model package</a><ul>
+<li><a class="reference internal" href="#module-vaws.model.config">vaws.model.config module</a></li>
+<li><a class="reference internal" href="#module-vaws.model.connection">vaws.model.connection module</a></li>
+<li><a class="reference internal" href="#module-vaws.model.coverage">vaws.model.coverage module</a></li>
+<li><a class="reference internal" href="#module-vaws.model.curve">vaws.model.curve module</a></li>
+<li><a class="reference internal" href="#module-vaws.model.damage_costing">vaws.model.damage_costing module</a></li>
+<li><a class="reference internal" href="#module-vaws.model.debris">vaws.model.debris module</a></li>
+<li><a class="reference internal" href="#module-vaws.model.house">vaws.model.house module</a></li>
+<li><a class="reference internal" href="#module-vaws.model.house_damage">vaws.model.house_damage module</a></li>
+<li><a class="reference internal" href="#module-vaws.model.main">vaws.model.main module</a></li>
+<li><a class="reference internal" href="#module-vaws.model.output">vaws.model.output module</a></li>
+<li><a class="reference internal" href="#module-vaws.model.stats">vaws.model.stats module</a></li>
+<li><a class="reference internal" href="#module-vaws.model.version">vaws.model.version module</a></li>
+<li><a class="reference internal" href="#module-vaws.model.zone">vaws.model.zone module</a></li>
+<li><a class="reference internal" href="#module-vaws.model">Module contents</a></li>
+</ul>
+</li>
+</ul>
+
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="_sources/vaws.model.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">VAWS 2.0 documentation</a> &#187;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2017, Geoscience Australia.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.5.1.
+    </div>
+  </body>
+</html>
