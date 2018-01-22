@@ -49,11 +49,11 @@ vaws.gui.windsim_rc module
     :undoc-members:
     :show-inheritance:
 
+..
+    Module contents
+    ---------------
 
-Module contents
----------------
-
-.. automodule:: vaws.gui
-    :members:
-    :undoc-members:
-    :show-inheritance:
+    .. automodule:: vaws.gui
+        :members:
+        :undoc-members:
+        :show-inheritance:

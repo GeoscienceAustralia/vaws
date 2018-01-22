@@ -58,8 +58,8 @@
   <div class="section" id="input-data">
 <span id="input"></span><h1>Input Data<a class="headerlink" href="#input-data" title="Permalink to this headline">¶</a></h1>
 <p>The input data for a scenario consists of a configuration file and a large number of files located in three different directories. This chapter provides details of input data using the template of default scenario, which can be downloaded from  <a class="reference external" href="https://github.com/GeoscienceAustralia/vaws/blob/master/scenarios/default">https://github.com/GeoscienceAustralia/vaws/blob/master/scenarios/default</a>. The folder structure of the default scenario is shown <a class="reference internal" href="#folder-structure"><span class="std std-numref">Listing 1</span></a>, which consists of a configuration file (default.cfg) and input directory with three sub-directories (debris, gust_envelope_profiles, and house).</p>
-<div class="literal-block-wrapper docutils container" id="id20">
-<span id="folder-structure"></span><div class="code-block-caption"><span class="caption-number">Listing 1 </span><span class="caption-text">Folder structure</span><a class="headerlink" href="#id20" title="Permalink to this code">¶</a></div>
+<div class="literal-block-wrapper docutils container" id="id21">
+<span id="folder-structure"></span><div class="code-block-caption"><span class="caption-number">Listing 1 </span><span class="caption-text">Folder structure</span><a class="headerlink" href="#id21" title="Permalink to this code">¶</a></div>
 <div class="highlight-none"><div class="highlight"><pre><span></span> default
  +-- default.cfg
  +-- input
@@ -96,11 +96,11 @@
 </div>
 </div>
 <div class="section" id="configuration-file">
-<h2>Configuration file<a class="headerlink" href="#configuration-file" title="Permalink to this headline">¶</a></h2>
+<span id="id1"></span><h2>Configuration file<a class="headerlink" href="#configuration-file" title="Permalink to this headline">¶</a></h2>
 <p>Each simulation requires a configuration file where basic parameter values for the simulation are provided. The configuration file can be created either by editing the template configuration file using a text editor or through GUI.</p>
 <p>The configuration file consists of a number of sections, among which <em>main</em> and <em>options</em> are mandatory while others are optional. An example configuration file is shown in <a class="reference internal" href="#default-cfg"><span class="std std-numref">Listing 2</span></a>.</p>
-<div class="literal-block-wrapper docutils container" id="id21">
-<span id="default-cfg"></span><div class="code-block-caption"><span class="caption-number">Listing 2 </span><span class="caption-text">Example configuration file: default.cfg</span><a class="headerlink" href="#id21" title="Permalink to this code">¶</a></div>
+<div class="literal-block-wrapper docutils container" id="id22">
+<span id="default-cfg"></span><div class="code-block-caption"><span class="caption-number">Listing 2 </span><span class="caption-text">Example configuration file: default.cfg</span><a class="headerlink" href="#id22" title="Permalink to this code">¶</a></div>
 <div class="highlight-none"><div class="highlight"><pre><span></span> [main]
  no_models = 10
  house_name = Group 4 House
@@ -154,8 +154,8 @@
 <div class="section" id="main-section">
 <h3>Main section<a class="headerlink" href="#main-section" title="Permalink to this headline">¶</a></h3>
 <p>Parameters of the main section are listed in <a class="reference internal" href="#section-main-table"><span class="std std-numref">Table 1</span></a>. In the GUI window, they are displayed in the Scenario tab as box shown in <a class="reference internal" href="#section-main-fig"><span class="std std-numref">Fig. 2</span></a>.</p>
-<table border="1" class="docutils" id="id22">
-<span id="section-main-table"></span><caption><span class="caption-number">Table 1 </span><span class="caption-text">Parameters of the main section</span><a class="headerlink" href="#id22" title="Permalink to this table">¶</a></caption>
+<table border="1" class="docutils" id="id23">
+<span id="section-main-table"></span><caption><span class="caption-number">Table 1 </span><span class="caption-text">Parameters of the main section</span><a class="headerlink" href="#id23" title="Permalink to this table">¶</a></caption>
 <colgroup>
 <col width="33%" />
 <col width="33%" />
@@ -206,7 +206,7 @@
 </tr>
 </tbody>
 </table>
-<div class="figure align-center" id="id23">
+<div class="figure align-center" id="id24">
 <span id="section-main-fig"></span><a class="reference internal image-reference" href="_images/section_main.png"><img alt="_images/section_main.png" src="_images/section_main.png" style="width: 80%;" /></a>
 <p class="caption"><span class="caption-number">Fig. 2 </span><span class="caption-text">Parameters of main section in the Scenario tab</span></p>
 </div>
@@ -214,8 +214,8 @@
 <div class="section" id="options-section">
 <h3>Options section<a class="headerlink" href="#options-section" title="Permalink to this headline">¶</a></h3>
 <p>Parameters of the Options section are listed in <a class="reference internal" href="#section-options-table"><span class="std std-numref">Table 2</span></a>. Note that all the parameter values of the option section should be chosen between <cite>True (or 1)</cite> or <cite>False (or 0)</cite>. In the GUI window, they are displayed in the Debris, Water, Construction, and Options tab as listed in the <a class="reference internal" href="#section-options-table"><span class="std std-numref">Table 2</span></a>.</p>
-<table border="1" class="colwidths-given docutils" id="id24">
-<span id="section-options-table"></span><caption><span class="caption-number">Table 2 </span><span class="caption-text">Parameters of options section</span><a class="headerlink" href="#id24" title="Permalink to this table">¶</a></caption>
+<table border="1" class="colwidths-given docutils" id="id25">
+<span id="section-options-table"></span><caption><span class="caption-number">Table 2 </span><span class="caption-text">Parameters of options section</span><a class="headerlink" href="#id25" title="Permalink to this table">¶</a></caption>
 <colgroup>
 <col width="56%" />
 <col width="22%" />
@@ -254,8 +254,8 @@
 <div class="section" id="debris-section">
 <h3>Debris section<a class="headerlink" href="#debris-section" title="Permalink to this headline">¶</a></h3>
 <p>Parameters of the debris section are listed in <a class="reference internal" href="#section-debris-table"><span class="std std-numref">Table 3</span></a>. Note that debris section is only required if <cite>debris</cite> is set to be <cite>True</cite> in the options. In the GUI window, they are displayed in the Debris tab as box shown in <a class="reference internal" href="#section-debris-fig"><span class="std std-numref">Fig. 3</span></a>.</p>
-<table border="1" class="colwidths-given docutils" id="id25">
-<span id="section-debris-table"></span><caption><span class="caption-number">Table 3 </span><span class="caption-text">Parameters of debris section</span><a class="headerlink" href="#id25" title="Permalink to this table">¶</a></caption>
+<table border="1" class="colwidths-given docutils" id="id26">
+<span id="section-debris-table"></span><caption><span class="caption-number">Table 3 </span><span class="caption-text">Parameters of debris section</span><a class="headerlink" href="#id26" title="Permalink to this table">¶</a></caption>
 <colgroup>
 <col width="26%" />
 <col width="26%" />
@@ -282,7 +282,7 @@
 </tr>
 <tr class="row-odd"><td>debris_angle</td>
 <td>Angle</td>
-<td>angle (in degree) of debris sources</td>
+<td>included angle (in degree) of the sector in which debris sources exist</td>
 </tr>
 <tr class="row-even"><td>source_items</td>
 <td>Source items</td>
@@ -302,7 +302,7 @@
 </tr>
 </tbody>
 </table>
-<div class="figure align-center" id="id26">
+<div class="figure align-center" id="id27">
 <span id="section-debris-fig"></span><a class="reference internal image-reference" href="_images/section_debris.png"><img alt="_images/section_debris.png" src="_images/section_debris.png" style="width: 80%;" /></a>
 <p class="caption"><span class="caption-number">Fig. 3 </span><span class="caption-text">Parameters of debris section in Debris tab</span></p>
 </div>
@@ -310,8 +310,8 @@
 <div class="section" id="construction-levels-section">
 <h3>Construction_levels section<a class="headerlink" href="#construction-levels-section" title="Permalink to this headline">¶</a></h3>
 <p>Parameters of the construction_levels section are listed in <a class="reference internal" href="#section-construction-levels-table"><span class="std std-numref">Table 4</span></a>. In the GUI window, they are dispalyed in the Construction tab as box shown in <a class="reference internal" href="#section-construction-levels-fig"><span class="std std-numref">Fig. 4</span></a>.</p>
-<table border="1" class="docutils" id="id27">
-<span id="section-construction-levels-table"></span><caption><span class="caption-number">Table 4 </span><span class="caption-text">Parameters of construction_level section</span><a class="headerlink" href="#id27" title="Permalink to this table">¶</a></caption>
+<table border="1" class="docutils" id="id28">
+<span id="section-construction-levels-table"></span><caption><span class="caption-number">Table 4 </span><span class="caption-text">Parameters of construction_level section</span><a class="headerlink" href="#id28" title="Permalink to this table">¶</a></caption>
 <colgroup>
 <col width="33%" />
 <col width="33%" />
@@ -342,16 +342,16 @@
 </tr>
 </tbody>
 </table>
-<div class="figure align-center" id="id28">
+<div class="figure align-center" id="id29">
 <span id="section-construction-levels-fig"></span><a class="reference internal image-reference" href="_images/section_construction_levels.png"><img alt="_images/section_construction_levels.png" src="_images/section_construction_levels.png" style="width: 80%;" /></a>
 <p class="caption"><span class="caption-number">Fig. 4 </span><span class="caption-text">Parameters of construction_levels section in Construction tab</span></p>
 </div>
 </div>
 <div class="section" id="water-ingress-section">
 <h3>Water_ingress section<a class="headerlink" href="#water-ingress-section" title="Permalink to this headline">¶</a></h3>
-<p>Parameters of the water_ingress section are listed in <a class="reference internal" href="#section-water-ingress-table"><span class="std std-numref">Table 5</span></a>. In the GUI window, they are displayed in the Water tab as box shown in <a class="reference internal" href="#section-water-ingress-fig"><span class="std std-numref">Fig. 6</span></a>. The thresholds define a lower limit of envelope damage index above which the relevant water ingress vs wind speed ? is applied. The speeds at 0% water ingress and speeds at 100% water ingress define cumulative normal distribution used to relate percentage water ingress to wind speed as shown in <a class="reference internal" href="#water-ingress-fig"><span class="std std-numref">Fig. 5</span></a>.</p>
-<table border="1" class="docutils" id="id29">
-<span id="section-water-ingress-table"></span><caption><span class="caption-number">Table 5 </span><span class="caption-text">Parameters of water_ingress section</span><a class="headerlink" href="#id29" title="Permalink to this table">¶</a></caption>
+<p>Parameters of the water_ingress section are listed in <a class="reference internal" href="#section-water-ingress-table"><span class="std std-numref">Table 5</span></a>. In the GUI window, they are displayed in the Water tab as box shown in <a class="reference internal" href="#section-water-ingress-fig"><span class="std std-numref">Fig. 6</span></a>. The thresholds define a lower limit of envelope damage index above which the relevant water ingress vs wind speed curve is applied. The speeds at 0% water ingress and speeds at 100% water ingress define cumulative normal distribution used to relate percentage water ingress to wind speed as shown in <a class="reference internal" href="#water-ingress-fig"><span class="std std-numref">Fig. 5</span></a>.</p>
+<table border="1" class="docutils" id="id30">
+<span id="section-water-ingress-table"></span><caption><span class="caption-number">Table 5 </span><span class="caption-text">Parameters of water_ingress section</span><a class="headerlink" href="#id30" title="Permalink to this table">¶</a></caption>
 <colgroup>
 <col width="33%" />
 <col width="33%" />
@@ -378,11 +378,11 @@
 </tr>
 </tbody>
 </table>
-<div class="figure align-center" id="id30">
+<div class="figure align-center" id="id31">
 <span id="water-ingress-fig"></span><a class="reference internal image-reference" href="_images/water_ingress.png"><img alt="_images/water_ingress.png" src="_images/water_ingress.png" style="width: 80%;" /></a>
 <p class="caption"><span class="caption-number">Fig. 5 </span><span class="caption-text">Water ingress vs. wind speed for different ranges of damage index</span></p>
 </div>
-<div class="figure align-center" id="id31">
+<div class="figure align-center" id="id32">
 <span id="section-water-ingress-fig"></span><a class="reference internal image-reference" href="_images/section_water_ingress.png"><img alt="_images/section_water_ingress.png" src="_images/section_water_ingress.png" style="width: 80%;" /></a>
 <p class="caption"><span class="caption-number">Fig. 6 </span><span class="caption-text">Parameters of water_ingress section in Water tab</span></p>
 </div>
@@ -393,8 +393,8 @@
 <div class="math" id="equation-fragility_eq">
 <span class="eqno">(1)<a class="headerlink" href="#equation-fragility_eq" title="Permalink to this equation">¶</a></span>\[P\left(DS \geq ds\right | x ) = \frac {\sum_{i=1}^N\left[DI_{i|x} \geq t_{ds}\right]}{N}\]</div>
 <p>where <span class="math">\(N\)</span>: number of models, <span class="math">\(DI_{i|x}\)</span>: damage index of <span class="math">\(i\)</span> th model at the wind speed <span class="math">\(x\)</span>, and <span class="math">\(t_{ds}\)</span>: threshold for damage state <span class="math">\(ds\)</span>.</p>
-<table border="1" class="colwidths-given docutils" id="id32">
-<span id="section-fragility-thresholds-table"></span><caption><span class="caption-number">Table 6 </span><span class="caption-text">Parameters of fragility_thresholds section</span><a class="headerlink" href="#id32" title="Permalink to this table">¶</a></caption>
+<table border="1" class="colwidths-given docutils" id="id33">
+<span id="section-fragility-thresholds-table"></span><caption><span class="caption-number">Table 6 </span><span class="caption-text">Parameters of fragility_thresholds section</span><a class="headerlink" href="#id33" title="Permalink to this table">¶</a></caption>
 <colgroup>
 <col width="26%" />
 <col width="26%" />
@@ -417,7 +417,7 @@
 </tr>
 </tbody>
 </table>
-<div class="figure align-center" id="id33">
+<div class="figure align-center" id="id34">
 <span id="section-fragility-thresholds-fig"></span><a class="reference internal image-reference" href="_images/section_fragility_thresholds.png"><img alt="_images/section_fragility_thresholds.png" src="_images/section_fragility_thresholds.png" style="width: 80%;" /></a>
 <p class="caption"><span class="caption-number">Fig. 7 </span><span class="caption-text">Parameters of fragility_thresholds section in Options tab</span></p>
 </div>
@@ -425,8 +425,8 @@
 <div class="section" id="heatmap">
 <h3>Heatmap<a class="headerlink" href="#heatmap" title="Permalink to this headline">¶</a></h3>
 <p>Parameters of the heatmap section are listed in <a class="reference internal" href="#section-heatmap-table"><span class="std std-numref">Table 7</span></a>. In the GUI window, they are displayed in the Options tab as box shown in <a class="reference internal" href="#section-heatmap-fig"><span class="std std-numref">Fig. 8</span></a></p>
-<table border="1" class="colwidths-given docutils" id="id34">
-<span id="section-heatmap-table"></span><caption><span class="caption-number">Table 7 </span><span class="caption-text">Parameters of heatmap section</span><a class="headerlink" href="#id34" title="Permalink to this table">¶</a></caption>
+<table border="1" class="colwidths-given docutils" id="id35">
+<span id="section-heatmap-table"></span><caption><span class="caption-number">Table 7 </span><span class="caption-text">Parameters of heatmap section</span><a class="headerlink" href="#id35" title="Permalink to this table">¶</a></caption>
 <colgroup>
 <col width="17%" />
 <col width="17%" />
@@ -453,18 +453,18 @@
 </tr>
 </tbody>
 </table>
-<div class="figure align-center" id="id35">
+<div class="figure align-center" id="id36">
 <span id="section-heatmap-fig"></span><a class="reference internal image-reference" href="_images/section_heatmap.png"><img alt="_images/section_heatmap.png" src="_images/section_heatmap.png" style="width: 80%;" /></a>
 <p class="caption"><span class="caption-number">Fig. 8 </span><span class="caption-text">Parameters of heatmap section in Options tab</span></p>
 </div>
 </div>
 </div>
 <div class="section" id="input-file-under-debris-directory">
-<h2>Input file under <cite>debris</cite> directory<a class="headerlink" href="#input-file-under-debris-directory" title="Permalink to this headline">¶</a></h2>
+<span id="debris-csv-section"></span><h2>Input file under <cite>debris</cite> directory<a class="headerlink" href="#input-file-under-debris-directory" title="Permalink to this headline">¶</a></h2>
 <p>In the debris directory, <cite>debris.csv</cite> is located where parameter values related to windborne debris are defined. Three types of windborne debris are modelled, as listed in <a class="reference internal" href="#debris-types-table"><span class="std std-numref">Table 8</span></a>, which include <em>Compact</em>, <em>Rod</em>, and <em>Sheet</em>. Parameter values for each debris type needs to be defined by unique region name, and the defined region name should be referenced in the configuration file.</p>
 <p>An example <cite>debris.csv</cite> is shown in <a class="reference internal" href="#debris-csv"><span class="std std-numref">Listing 3</span></a>, in which debris parameters are defined for both <cite>Capital_city</cite> and <cite>Tropical_town</cite>. Note that <cite>Capital_city</cite> is referenced in the example configuration file <a class="reference internal" href="#default-cfg"><span class="std std-numref">Listing 2</span></a>.</p>
-<div class="literal-block-wrapper docutils container" id="id36">
-<span id="debris-csv"></span><div class="code-block-caption"><span class="caption-number">Listing 3 </span><span class="caption-text">Example debris.csv</span><a class="headerlink" href="#id36" title="Permalink to this code">¶</a></div>
+<div class="literal-block-wrapper docutils container" id="id37">
+<span id="debris-csv"></span><div class="code-block-caption"><span class="caption-number">Listing 3 </span><span class="caption-text">Example debris.csv</span><a class="headerlink" href="#id37" title="Permalink to this code">¶</a></div>
 <div class="highlight-none"><div class="highlight"><pre><span></span> Region name,Capital_city,Tropical_town
  Compact_ratio,20,15
  Compact_mass_mean,0.1,0.1
@@ -487,8 +487,8 @@
 </pre></div>
 </div>
 </div>
-<table border="1" class="colwidths-given docutils" id="id37">
-<span id="debris-types-table"></span><caption><span class="caption-number">Table 8 </span><span class="caption-text">Debris types</span><a class="headerlink" href="#id37" title="Permalink to this table">¶</a></caption>
+<table border="1" class="colwidths-given docutils" id="id38">
+<span id="debris-types-table"></span><caption><span class="caption-number">Table 8 </span><span class="caption-text">Debris types</span><a class="headerlink" href="#id38" title="Permalink to this table">¶</a></caption>
 <colgroup>
 <col width="21%" />
 <col width="79%" />
@@ -511,8 +511,8 @@
 </tbody>
 </table>
 <p>The parameter values should be provided for each of the debris types as set out in <a class="reference internal" href="#debris-item-table"><span class="std std-numref">Table 9</span></a>.</p>
-<table border="1" class="colwidths-given docutils" id="id38">
-<span id="debris-item-table"></span><caption><span class="caption-number">Table 9 </span><span class="caption-text">Parameters for each debris item</span><a class="headerlink" href="#id38" title="Permalink to this table">¶</a></caption>
+<table border="1" class="colwidths-given docutils" id="id39">
+<span id="debris-item-table"></span><caption><span class="caption-number">Table 9 </span><span class="caption-text">Parameters for each debris item</span><a class="headerlink" href="#id39" title="Permalink to this table">¶</a></caption>
 <colgroup>
 <col width="21%" />
 <col width="79%" />
@@ -545,12 +545,12 @@
 </table>
 </div>
 <div class="section" id="input-files-under-gust-envelope-profiles-directory">
-<h2>Input files under <cite>gust_envelope_profiles</cite> directory<a class="headerlink" href="#input-files-under-gust-envelope-profiles-directory" title="Permalink to this headline">¶</a></h2>
+<span id="envelope-profiles-section"></span><h2>Input files under <cite>gust_envelope_profiles</cite> directory<a class="headerlink" href="#input-files-under-gust-envelope-profiles-directory" title="Permalink to this headline">¶</a></h2>
 <p>The gust envelope profiles are defined under <cite>gust_envelope_profiles</cite> directory. In the configuration file, file name of the gust envelope profile needs to be referenced as shown in <a class="reference internal" href="#default-cfg"><span class="std std-numref">Listing 2</span></a>.</p>
 <p>Example files are provided in the <a class="reference external" href="https://github.com/GeoscienceAustralia/vaws/blob/master/scenarios/default/input/gust_envelope_profiles">default sceanrio</a>  with respect to Australian wind design categories: cyclonic_terrain_cat2.csv, cyclonic_terrain_cat2.5.csv, cyclonic_terrain_cat3.csv, and non_cyclonic.csv</p>
 <p>An example of gust envelope profile is provided in <a class="reference internal" href="#gust-envelope-profile"><span class="std std-numref">Listing 4</span></a>, and the corresponding plot is shown in <a class="reference internal" href="#wind-profile-fig"><span class="std std-numref">Fig. 9</span></a>.</p>
-<div class="literal-block-wrapper docutils container" id="id39">
-<span id="gust-envelope-profile"></span><div class="code-block-caption"><span class="caption-number">Listing 4 </span><span class="caption-text">Example of gust_envelope_profile</span><a class="headerlink" href="#id39" title="Permalink to this code">¶</a></div>
+<div class="literal-block-wrapper docutils container" id="id40">
+<span id="gust-envelope-profile"></span><div class="code-block-caption"><span class="caption-number">Listing 4 </span><span class="caption-text">Example of gust_envelope_profile</span><a class="headerlink" href="#id40" title="Permalink to this code">¶</a></div>
 <div class="highlight-none"><div class="highlight"><pre><span></span> # Terrain Category 2
  3,0.908,0.896,0.894,0.933,0.884,0.903,0.886,0.902,0.859,0.927
  5,0.995,0.980,0.946,0.986,0.962,1.010,0.978,0.970,0.945,0.990
@@ -566,7 +566,7 @@
 </div>
 </div>
 <p>The first row is header, and heights (in metre) are listed in the first column. Profile values along the heights are listed from the second column with comma separation. One wind profile (one column) will be randomly selected for each run of the simulation.</p>
-<div class="figure align-center" id="id40">
+<div class="figure align-center" id="id41">
 <span id="wind-profile-fig"></span><a class="reference internal image-reference" href="_images/wind_profile.png"><img alt="_images/wind_profile.png" src="_images/wind_profile.png" style="width: 80%;" /></a>
 <p class="caption"><span class="caption-number">Fig. 9 </span><span class="caption-text">Wind gust envelope profile along height.</span></p>
 </div>
@@ -576,9 +576,9 @@
 <p>In the house directory, a large number of files are located which are required to set parameter values of the model. The simulation model is assumed to consist of connections and zones. The connections are grouped into a number of connection types, and the connection types are further grouped into connection groups.</p>
 <div class="section" id="house-data-csv">
 <h3>house_data.csv<a class="headerlink" href="#house-data-csv" title="Permalink to this headline">¶</a></h3>
-<p>This file defines parameter values for the model such as replacement cost and dimensions. An example is shown in <a class="reference internal" href="#id1"><span class="std std-numref">Listing 5</span></a>, and description of each of the parameter values are provided in <a class="reference internal" href="#house-data-table"><span class="std std-numref">Table 10</span></a>.</p>
-<div class="literal-block-wrapper docutils container" id="id41">
-<span id="id1"></span><div class="code-block-caption"><span class="caption-number">Listing 5 </span><span class="caption-text">Example house_data.csv</span><a class="headerlink" href="#id41" title="Permalink to this code">¶</a></div>
+<p>This file defines parameter values for the model such as replacement cost and dimensions. An example is shown in <a class="reference internal" href="#id2"><span class="std std-numref">Listing 5</span></a>, and description of each of the parameter values are provided in <a class="reference internal" href="#house-data-table"><span class="std std-numref">Table 10</span></a>.</p>
+<div class="literal-block-wrapper docutils container" id="id42">
+<span id="id2"></span><div class="code-block-caption"><span class="caption-number">Listing 5 </span><span class="caption-text">Example house_data.csv</span><a class="headerlink" href="#id42" title="Permalink to this code">¶</a></div>
 <div class="highlight-none"><div class="highlight"><pre><span></span> replace_cost,3220.93
  height,4.5
  length,0.9
@@ -590,8 +590,8 @@
 </pre></div>
 </div>
 </div>
-<table border="1" class="colwidths-given docutils" id="id42">
-<span id="house-data-table"></span><caption><span class="caption-number">Table 10 </span><span class="caption-text">Parameters in the house_data.csv</span><a class="headerlink" href="#id42" title="Permalink to this table">¶</a></caption>
+<table border="1" class="colwidths-given docutils" id="id43">
+<span id="house-data-table"></span><caption><span class="caption-number">Table 10 </span><span class="caption-text">Parameters in the house_data.csv</span><a class="headerlink" href="#id43" title="Permalink to this table">¶</a></caption>
 <colgroup>
 <col width="19%" />
 <col width="10%" />
@@ -640,10 +640,10 @@
 </table>
 </div>
 <div class="section" id="conn-groups-csv">
-<h3>conn_groups.csv<a class="headerlink" href="#conn-groups-csv" title="Permalink to this headline">¶</a></h3>
-<p>The model is assumed to consist of a number of connection groups. This file defines connection groups and parameter values of the each connection group. An example is shown in <a class="reference internal" href="#id2"><span class="std std-numref">Listing 6</span></a>, and description of each of the parameter values are provided in <a class="reference internal" href="#conn-groups-table"><span class="std std-numref">Table 11</span></a>.</p>
-<div class="literal-block-wrapper docutils container" id="id43">
-<span id="id2"></span><div class="code-block-caption"><span class="caption-number">Listing 6 </span><span class="caption-text">Example conn_groups.csv</span><a class="headerlink" href="#id43" title="Permalink to this code">¶</a></div>
+<span id="conn-groups-csv-section"></span><h3>conn_groups.csv<a class="headerlink" href="#conn-groups-csv" title="Permalink to this headline">¶</a></h3>
+<p>The model is assumed to consist of a number of connection groups. This file defines connection groups and parameter values of the each connection group. An example is shown in <a class="reference internal" href="#id3"><span class="std std-numref">Listing 6</span></a>, and description of each of the parameter values are provided in <a class="reference internal" href="#conn-groups-table"><span class="std std-numref">Table 11</span></a>.</p>
+<div class="literal-block-wrapper docutils container" id="id44">
+<span id="id3"></span><div class="code-block-caption"><span class="caption-number">Listing 6 </span><span class="caption-text">Example conn_groups.csv</span><a class="headerlink" href="#id44" title="Permalink to this code">¶</a></div>
 <div class="highlight-none"><div class="highlight"><pre><span></span> group_name,dist_order,dist_dir,damage_scenario,trigger_collapse_at,patch_dist
  sheeting,1,col,Loss of roof sheeting,0.0,1
  batten,2,row,Loss of roof sheeting &amp; purlins,0.0,1
@@ -651,8 +651,8 @@
 </pre></div>
 </div>
 </div>
-<table border="1" class="docutils" id="id44">
-<span id="conn-groups-table"></span><caption><span class="caption-number">Table 11 </span><span class="caption-text">Parameters in the conn_groups.csv</span><a class="headerlink" href="#id44" title="Permalink to this table">¶</a></caption>
+<table border="1" class="docutils" id="id45">
+<span id="conn-groups-table"></span><caption><span class="caption-number">Table 11 </span><span class="caption-text">Parameters in the conn_groups.csv</span><a class="headerlink" href="#id45" title="Permalink to this table">¶</a></caption>
 <colgroup>
 <col width="33%" />
 <col width="33%" />
@@ -693,10 +693,10 @@
 </table>
 </div>
 <div class="section" id="conn-types-csv">
-<h3>conn_types.csv<a class="headerlink" href="#conn-types-csv" title="Permalink to this headline">¶</a></h3>
-<p>A connection group may consists of a number of connection types which have different parameter values for strength, dead load, and costing area. This file defines connection types and parameter values of the each connection type. An example is shown in <a class="reference internal" href="#id3"><span class="std std-numref">Listing 7</span></a>, and description of each of the parameter values are provided in <a class="reference internal" href="#conn-types-table"><span class="std std-numref">Table 12</span></a>.</p>
-<div class="literal-block-wrapper docutils container" id="id45">
-<span id="id3"></span><div class="code-block-caption"><span class="caption-number">Listing 7 </span><span class="caption-text">Example conn_types.csv</span><a class="headerlink" href="#id45" title="Permalink to this code">¶</a></div>
+<span id="conn-types-csv-section"></span><h3>conn_types.csv<a class="headerlink" href="#conn-types-csv" title="Permalink to this headline">¶</a></h3>
+<p>A connection group may consists of a number of connection types which have different parameter values for strength, dead load, and costing area. This file defines connection types and parameter values of the each connection type. An example is shown in <a class="reference internal" href="#id4"><span class="std std-numref">Listing 7</span></a>, and description of each of the parameter values are provided in <a class="reference internal" href="#conn-types-table"><span class="std std-numref">Table 12</span></a>.</p>
+<div class="literal-block-wrapper docutils container" id="id46">
+<span id="id4"></span><div class="code-block-caption"><span class="caption-number">Listing 7 </span><span class="caption-text">Example conn_types.csv</span><a class="headerlink" href="#id46" title="Permalink to this code">¶</a></div>
 <div class="highlight-none"><div class="highlight"><pre><span></span> type_name,strength_mean,strength_std,dead_load_mean,dead_load_std,group_name,costing_area
  sheetinggable,1.54,0.16334,0.02025,0.0246,sheeting,0.405
  sheetingeave,4.62,0.28292,0.02025,0.0246,sheeting,0.405
@@ -717,8 +717,8 @@
 </pre></div>
 </div>
 </div>
-<table border="1" class="colwidths-given docutils" id="id46">
-<span id="conn-types-table"></span><caption><span class="caption-number">Table 12 </span><span class="caption-text">Parameters in the conn_types.csv</span><a class="headerlink" href="#id46" title="Permalink to this table">¶</a></caption>
+<table border="1" class="colwidths-given docutils" id="id47">
+<span id="conn-types-table"></span><caption><span class="caption-number">Table 12 </span><span class="caption-text">Parameters in the conn_types.csv</span><a class="headerlink" href="#id47" title="Permalink to this table">¶</a></caption>
 <colgroup>
 <col width="20%" />
 <col width="18%" />
@@ -763,10 +763,10 @@
 </table>
 </div>
 <div class="section" id="connections-csv">
-<h3>connections.csv<a class="headerlink" href="#connections-csv" title="Permalink to this headline">¶</a></h3>
-<p>This file defines connections and parameter values of the each connection. An example is shown in <a class="reference internal" href="#id4"><span class="std std-numref">Listing 8</span></a>, and description of each of the parameter values are provided in <a class="reference internal" href="#connections-table"><span class="std std-numref">Table 13</span></a>.</p>
-<div class="literal-block-wrapper docutils container" id="id47">
-<span id="id4"></span><div class="code-block-caption"><span class="caption-number">Listing 8 </span><span class="caption-text">Example connections.csv</span><a class="headerlink" href="#id47" title="Permalink to this code">¶</a></div>
+<span id="connections-csv-section"></span><h3>connections.csv<a class="headerlink" href="#connections-csv" title="Permalink to this headline">¶</a></h3>
+<p>This file defines connections and parameter values of the each connection. An example is shown in <a class="reference internal" href="#id5"><span class="std std-numref">Listing 8</span></a>, and description of each of the parameter values are provided in <a class="reference internal" href="#connections-table"><span class="std std-numref">Table 13</span></a>.</p>
+<div class="literal-block-wrapper docutils container" id="id48">
+<span id="id5"></span><div class="code-block-caption"><span class="caption-number">Listing 8 </span><span class="caption-text">Example connections.csv</span><a class="headerlink" href="#id48" title="Permalink to this code">¶</a></div>
 <div class="highlight-none"><div class="highlight"><pre><span></span> conn_name,type_name,zone_loc,section,coords
  1,sheetingcorner,A1,1,0,0,0.2,0,0.2,0.5,0,0.5
  2,sheetinggable,A2,1,0,0.5,0.2,0.5,0.2,1,0,1
@@ -776,8 +776,8 @@
 </pre></div>
 </div>
 </div>
-<table border="1" class="colwidths-given docutils" id="id48">
-<span id="connections-table"></span><caption><span class="caption-number">Table 13 </span><span class="caption-text">Parameters in the connections.csv</span><a class="headerlink" href="#id48" title="Permalink to this table">¶</a></caption>
+<table border="1" class="colwidths-given docutils" id="id49">
+<span id="connections-table"></span><caption><span class="caption-number">Table 13 </span><span class="caption-text">Parameters in the connections.csv</span><a class="headerlink" href="#id49" title="Permalink to this table">¶</a></caption>
 <colgroup>
 <col width="20%" />
 <col width="18%" />
@@ -814,10 +814,10 @@
 </table>
 </div>
 <div class="section" id="zones-csv">
-<h3>zones.csv<a class="headerlink" href="#zones-csv" title="Permalink to this headline">¶</a></h3>
-<p>This file defines zones and parameter values of the each zone. An example is shown in <a class="reference internal" href="#id5"><span class="std std-numref">Listing 9</span></a>, and description of each of the parameter values are provided in <a class="reference internal" href="#zones-table"><span class="std std-numref">Table 14</span></a>.</p>
-<div class="literal-block-wrapper docutils container" id="id49">
-<span id="id5"></span><div class="code-block-caption"><span class="caption-number">Listing 9 </span><span class="caption-text">Example zones.csv</span><a class="headerlink" href="#id49" title="Permalink to this code">¶</a></div>
+<span id="zones-csv-section"></span><h3>zones.csv<a class="headerlink" href="#zones-csv" title="Permalink to this headline">¶</a></h3>
+<p>This file defines zones and parameter values of the each zone. An example is shown in <a class="reference internal" href="#id6"><span class="std std-numref">Listing 9</span></a>, and description of each of the parameter values are provided in <a class="reference internal" href="#zones-table"><span class="std std-numref">Table 14</span></a>.</p>
+<div class="literal-block-wrapper docutils container" id="id50">
+<span id="id6"></span><div class="code-block-caption"><span class="caption-number">Listing 9 </span><span class="caption-text">Example zones.csv</span><a class="headerlink" href="#id50" title="Permalink to this code">¶</a></div>
 <div class="highlight-none"><div class="highlight"><pre><span></span> name,area,cpi_alpha,wall_dir,coords,
  A1,0.2025,0,0,0,0,0.2,0,0.2,0.5,0,0.5
  A2,0.405,0.5,0,0,0.5,0.2,0.5,0.2,1,0,1
@@ -827,8 +827,8 @@
 </pre></div>
 </div>
 </div>
-<table border="1" class="colwidths-given docutils" id="id50">
-<span id="zones-table"></span><caption><span class="caption-number">Table 14 </span><span class="caption-text">Parameters in the zones.csv</span><a class="headerlink" href="#id50" title="Permalink to this table">¶</a></caption>
+<table border="1" class="colwidths-given docutils" id="id51">
+<span id="zones-table"></span><caption><span class="caption-number">Table 14 </span><span class="caption-text">Parameters in the zones.csv</span><a class="headerlink" href="#id51" title="Permalink to this table">¶</a></caption>
 <colgroup>
 <col width="20%" />
 <col width="18%" />
@@ -862,9 +862,9 @@
 </div>
 <div class="section" id="zones-cpe-mean-csv">
 <h3>zones_cpe_mean.csv<a class="headerlink" href="#zones-cpe-mean-csv" title="Permalink to this headline">¶</a></h3>
-<p>This file defines mean cladding Cpe of each zone with regard to the eight wind directions. An example is shown in <a class="reference internal" href="#id6"><span class="std std-numref">Listing 10</span></a>, and description of each of the parameter values are provided in <a class="reference internal" href="#zones-cpe-mean-table"><span class="std std-numref">Table 15</span></a>.</p>
-<div class="literal-block-wrapper docutils container" id="id51">
-<span id="id6"></span><div class="code-block-caption"><span class="caption-number">Listing 10 </span><span class="caption-text">Example zones_cpe_mean.csv</span><a class="headerlink" href="#id51" title="Permalink to this code">¶</a></div>
+<p>This file defines mean cladding Cpe of each zone with regard to the eight wind directions. An example is shown in <a class="reference internal" href="#id7"><span class="std std-numref">Listing 10</span></a>, and description of each of the parameter values are provided in <a class="reference internal" href="#zones-cpe-mean-table"><span class="std std-numref">Table 15</span></a>.</p>
+<div class="literal-block-wrapper docutils container" id="id52">
+<span id="id7"></span><div class="code-block-caption"><span class="caption-number">Listing 10 </span><span class="caption-text">Example zones_cpe_mean.csv</span><a class="headerlink" href="#id52" title="Permalink to this code">¶</a></div>
 <div class="highlight-none"><div class="highlight"><pre><span></span> name,S,SW,W,NW,N,NE,E,SE
  A1,-1.2,-1.2,-1.2,-1.2,-1.2,-1.2,-1.2,-1.2
  A2,-1.2,-1.2,-1.2,-1.2,-1.2,-1.2,-1.2,-1.2
@@ -883,8 +883,8 @@
 </pre></div>
 </div>
 </div>
-<table border="1" class="colwidths-given docutils" id="id52">
-<span id="zones-cpe-mean-table"></span><caption><span class="caption-number">Table 15 </span><span class="caption-text">Parameters in the zones_cpe_mean.csv</span><a class="headerlink" href="#id52" title="Permalink to this table">¶</a></caption>
+<table border="1" class="colwidths-given docutils" id="id53">
+<span id="zones-cpe-mean-table"></span><caption><span class="caption-number">Table 15 </span><span class="caption-text">Parameters in the zones_cpe_mean.csv</span><a class="headerlink" href="#id53" title="Permalink to this table">¶</a></caption>
 <colgroup>
 <col width="20%" />
 <col width="18%" />
@@ -938,9 +938,9 @@
 </div>
 <div class="section" id="zones-cpe-str-mean-csv">
 <h3>zones_cpe_str_mean.csv<a class="headerlink" href="#zones-cpe-str-mean-csv" title="Permalink to this headline">¶</a></h3>
-<p>Like zones_cpe_mean.csv, mean Cpe values for zones associated with structural component (e.g., rafter) need to be provided in zones_cpe_str_mean.csv. An example is shown in <a class="reference internal" href="#id7"><span class="std std-numref">Listing 11</span></a>.</p>
-<div class="literal-block-wrapper docutils container" id="id53">
-<span id="id7"></span><div class="code-block-caption"><span class="caption-number">Listing 11 </span><span class="caption-text">Example zones_cpe_str_mean.csv</span><a class="headerlink" href="#id53" title="Permalink to this code">¶</a></div>
+<p>Like zones_cpe_mean.csv, mean Cpe values for zones associated with structural component (e.g., rafter) need to be provided in zones_cpe_str_mean.csv. An example is shown in <a class="reference internal" href="#id8"><span class="std std-numref">Listing 11</span></a>.</p>
+<div class="literal-block-wrapper docutils container" id="id54">
+<span id="id8"></span><div class="code-block-caption"><span class="caption-number">Listing 11 </span><span class="caption-text">Example zones_cpe_str_mean.csv</span><a class="headerlink" href="#id54" title="Permalink to this code">¶</a></div>
 <div class="highlight-none"><div class="highlight"><pre><span></span> name,S,SW,W,NW,N,NE,E,SE
  A1,0,0,0,0,0,0,0,0
  A2,0,0,0,0,0,0,0,0
@@ -962,9 +962,9 @@
 </div>
 <div class="section" id="zones-cpe-eave-mean-csv">
 <h3>zones_cpe_eave_mean.csv<a class="headerlink" href="#zones-cpe-eave-mean-csv" title="Permalink to this headline">¶</a></h3>
-<p>Like zones_cpe_mean.csv, mean Cpe values for zones at eave need to be provided in zones_cpe_eave_mean.csv. An example is shown in <a class="reference internal" href="#id8"><span class="std std-numref">Listing 12</span></a>.</p>
-<div class="literal-block-wrapper docutils container" id="id54">
-<span id="id8"></span><div class="code-block-caption"><span class="caption-number">Listing 12 </span><span class="caption-text">Example zones_cpe_eave_mean.csv</span><a class="headerlink" href="#id54" title="Permalink to this code">¶</a></div>
+<p>Like zones_cpe_mean.csv, mean Cpe values for zones at eave need to be provided in zones_cpe_eave_mean.csv. An example is shown in <a class="reference internal" href="#id9"><span class="std std-numref">Listing 12</span></a>.</p>
+<div class="literal-block-wrapper docutils container" id="id55">
+<span id="id9"></span><div class="code-block-caption"><span class="caption-number">Listing 12 </span><span class="caption-text">Example zones_cpe_eave_mean.csv</span><a class="headerlink" href="#id55" title="Permalink to this code">¶</a></div>
 <div class="highlight-none"><div class="highlight"><pre><span></span> name,S,SW,W,NW,N,NE,E,SE
  A1,0.7,0.7,0.7,0.7,0.7,0.7,0.7,0.7
  A2,0.35,0.35,0.35,0.35,0.35,0.35,0.35,0.35
@@ -986,9 +986,9 @@
 </div>
 <div class="section" id="zones-edge-csv">
 <h3>zones_edge.csv<a class="headerlink" href="#zones-edge-csv" title="Permalink to this headline">¶</a></h3>
-<p>In zones_edge.csv, for each of the eight direction, 1 is provided for zone within the region of a roof edge, otherwise 0. Zones in the edge region are considered to be subjected to differential shielding if enabled by user. An example is shown in <a class="reference internal" href="#id9"><span class="std std-numref">Listing 13</span></a>.</p>
-<div class="literal-block-wrapper docutils container" id="id55">
-<span id="id9"></span><div class="code-block-caption"><span class="caption-number">Listing 13 </span><span class="caption-text">Example zones_edge.csv</span><a class="headerlink" href="#id55" title="Permalink to this code">¶</a></div>
+<p>In zones_edge.csv, for each of the eight direction, 1 is provided for zone within the region of a roof edge, otherwise 0. Zones in the edge region are considered to be subjected to differential shielding if enabled by user. An example is shown in <a class="reference internal" href="#id10"><span class="std std-numref">Listing 13</span></a>.</p>
+<div class="literal-block-wrapper docutils container" id="id56">
+<span id="id10"></span><div class="code-block-caption"><span class="caption-number">Listing 13 </span><span class="caption-text">Example zones_edge.csv</span><a class="headerlink" href="#id56" title="Permalink to this code">¶</a></div>
 <div class="highlight-none"><div class="highlight"><pre><span></span> name,S,SW,W,NW,N,NE,E,SE
  A1,1,1,1,0,0,0,0,0
  A2,1,1,1,0,0,0,0,0
@@ -1010,9 +1010,9 @@
 </div>
 <div class="section" id="coverages-csv">
 <h3>coverages.csv<a class="headerlink" href="#coverages-csv" title="Permalink to this headline">¶</a></h3>
-<p>This file defines coverages making up the wall part of the envelope of the model. An example is shown in <a class="reference internal" href="#id10"><span class="std std-numref">Listing 14</span></a>, and description of each of the parameter values are provided in <a class="reference internal" href="#coverages-table"><span class="std std-numref">Table 16</span></a>. The wall name is defined in <a class="reference internal" href="#id19"><span class="std std-numref">Listing 23</span></a>.</p>
-<div class="literal-block-wrapper docutils container" id="id56">
-<span id="id10"></span><div class="code-block-caption"><span class="caption-number">Listing 14 </span><span class="caption-text">Example coverages.csv</span><a class="headerlink" href="#id56" title="Permalink to this code">¶</a></div>
+<p>This file defines coverages making up the wall part of the envelope of the model. An example is shown in <a class="reference internal" href="#id11"><span class="std std-numref">Listing 14</span></a>, and description of each of the parameter values are provided in <a class="reference internal" href="#coverages-table"><span class="std std-numref">Table 16</span></a>. The wall name is defined in <a class="reference internal" href="#id20"><span class="std std-numref">Listing 23</span></a>.</p>
+<div class="literal-block-wrapper docutils container" id="id57">
+<span id="id11"></span><div class="code-block-caption"><span class="caption-number">Listing 14 </span><span class="caption-text">Example coverages.csv</span><a class="headerlink" href="#id57" title="Permalink to this code">¶</a></div>
 <div class="highlight-none"><div class="highlight"><pre><span></span> name,description,wall_name,area,coverage_type
  1,window,1,3.6,Glass_annealed_6mm
  2,door,1,1.8,Timber_door
@@ -1021,8 +1021,8 @@
 </pre></div>
 </div>
 </div>
-<table border="1" class="colwidths-given docutils" id="id57">
-<span id="coverages-table"></span><caption><span class="caption-number">Table 16 </span><span class="caption-text">Parameters in tge coverages.csv</span><a class="headerlink" href="#id57" title="Permalink to this table">¶</a></caption>
+<table border="1" class="colwidths-given docutils" id="id58">
+<span id="coverages-table"></span><caption><span class="caption-number">Table 16 </span><span class="caption-text">Parameters in tge coverages.csv</span><a class="headerlink" href="#id58" title="Permalink to this table">¶</a></caption>
 <colgroup>
 <col width="20%" />
 <col width="18%" />
@@ -1060,17 +1060,17 @@
 </div>
 <div class="section" id="coverage-types-csv">
 <h3>coverage_types.csv<a class="headerlink" href="#coverage-types-csv" title="Permalink to this headline">¶</a></h3>
-<p>This file defines types of coverages referenced in the <a class="reference internal" href="#id10"><span class="std std-numref">Listing 14</span></a>. An example is shown in <a class="reference internal" href="#id11"><span class="std std-numref">Listing 15</span></a>, and description of each of the parameter values are provided in <a class="reference internal" href="#coverage-types-table"><span class="std std-numref">Table 17</span></a>.</p>
-<div class="literal-block-wrapper docutils container" id="id58">
-<span id="id11"></span><div class="code-block-caption"><span class="caption-number">Listing 15 </span><span class="caption-text">Example coverage_types.csv</span><a class="headerlink" href="#id58" title="Permalink to this code">¶</a></div>
+<p>This file defines types of coverages referenced in the <a class="reference internal" href="#id11"><span class="std std-numref">Listing 14</span></a>. An example is shown in <a class="reference internal" href="#id12"><span class="std std-numref">Listing 15</span></a>, and description of each of the parameter values are provided in <a class="reference internal" href="#coverage-types-table"><span class="std std-numref">Table 17</span></a>.</p>
+<div class="literal-block-wrapper docutils container" id="id59">
+<span id="id12"></span><div class="code-block-caption"><span class="caption-number">Listing 15 </span><span class="caption-text">Example coverage_types.csv</span><a class="headerlink" href="#id59" title="Permalink to this code">¶</a></div>
 <div class="highlight-none"><div class="highlight"><pre><span></span> name,failure_momentum_mean,failure_momentum_std,failure_strength_in_mean,failure_strength_in_std,failure_strength_out_mean,failure_strength_out_std
  Glass_annealed_6mm,0.05,0.0,100,0.0,-100,0.0
  Timber_door,142.2,28.44,100,0.0,-100,0.0
 </pre></div>
 </div>
 </div>
-<table border="1" class="colwidths-given docutils" id="id59">
-<span id="coverage-types-table"></span><caption><span class="caption-number">Table 17 </span><span class="caption-text">Parameters in the coverage_types.csv</span><a class="headerlink" href="#id59" title="Permalink to this table">¶</a></caption>
+<table border="1" class="colwidths-given docutils" id="id60">
+<span id="coverage-types-table"></span><caption><span class="caption-number">Table 17 </span><span class="caption-text">Parameters in the coverage_types.csv</span><a class="headerlink" href="#id60" title="Permalink to this table">¶</a></caption>
 <colgroup>
 <col width="20%" />
 <col width="18%" />
@@ -1116,9 +1116,9 @@
 </div>
 <div class="section" id="coverages-cpe-csv">
 <h3>coverages_cpe.csv<a class="headerlink" href="#coverages-cpe-csv" title="Permalink to this headline">¶</a></h3>
-<p>Like zones_cpe_mean.csv, mean Cpe values for coverages are provided in coverages_cpe.csv. An example is shown in <a class="reference internal" href="#id12"><span class="std std-numref">Listing 16</span></a>.</p>
-<div class="literal-block-wrapper docutils container" id="id60">
-<span id="id12"></span><div class="code-block-caption"><span class="caption-number">Listing 16 </span><span class="caption-text">Example coverages_cpe.csv</span><a class="headerlink" href="#id60" title="Permalink to this code">¶</a></div>
+<p>Like zones_cpe_mean.csv, mean Cpe values for coverages are provided in coverages_cpe.csv. An example is shown in <a class="reference internal" href="#id13"><span class="std std-numref">Listing 16</span></a>.</p>
+<div class="literal-block-wrapper docutils container" id="id61">
+<span id="id13"></span><div class="code-block-caption"><span class="caption-number">Listing 16 </span><span class="caption-text">Example coverages_cpe.csv</span><a class="headerlink" href="#id61" title="Permalink to this code">¶</a></div>
 <div class="highlight-none"><div class="highlight"><pre><span></span> ID,S,SW,W,NW,N,NE,E,SE
  1,2.4,2.4,2.4,2.4,2.4,2.4,2.4,2.4
  2,1.69,1.69,1.69,1.69,1.69,1.69,1.69,1.69
@@ -1132,9 +1132,9 @@
 </div>
 <div class="section" id="influences-csv">
 <h3>influences.csv<a class="headerlink" href="#influences-csv" title="Permalink to this headline">¶</a></h3>
-<p>This file defines influence coefficients relating a connection with either another connection(s) or zone(s). The wind load acting on a connection can be computed as the sum of the product of influence coefficient and either wind load on zone or load on another connection. An example is shown in <a class="reference internal" href="#id13"><span class="std std-numref">Listing 17</span></a>, and description of each of the parameter values are provided in <a class="reference internal" href="#influences-table"><span class="std std-numref">Table 18</span></a>. In this example, connection 1 is related to the zone A1 with coefficient 1.0, and connection 61 is related to the connection 1 with coefficient 1.0. Similarly, connection 121 is related to the zone A13 with coefficient 0.81 and the zone A14 with coefficient 0.19.</p>
-<div class="literal-block-wrapper docutils container" id="id61">
-<span id="id13"></span><div class="code-block-caption"><span class="caption-number">Listing 17 </span><span class="caption-text">Example influences.csv</span><a class="headerlink" href="#id61" title="Permalink to this code">¶</a></div>
+<p>This file defines influence coefficients relating a connection with either another connection(s) or zone(s). The wind load acting on a connection can be computed as the sum of the product of influence coefficient and either wind load on zone or load on another connection. An example is shown in <a class="reference internal" href="#id14"><span class="std std-numref">Listing 17</span></a>, and description of each of the parameter values are provided in <a class="reference internal" href="#influences-table"><span class="std std-numref">Table 18</span></a>. In this example, connection 1 is related to the zone A1 with coefficient 1.0, and connection 61 is related to the connection 1 with coefficient 1.0. Similarly, connection 121 is related to the zone A13 with coefficient 0.81 and the zone A14 with coefficient 0.19.</p>
+<div class="literal-block-wrapper docutils container" id="id62">
+<span id="id14"></span><div class="code-block-caption"><span class="caption-number">Listing 17 </span><span class="caption-text">Example influences.csv</span><a class="headerlink" href="#id62" title="Permalink to this code">¶</a></div>
 <div class="highlight-none"><div class="highlight"><pre><span></span> Connection,Zone,Coefficent
  1,A1,1.0
  2,A2,1.0
@@ -1145,8 +1145,8 @@
 </pre></div>
 </div>
 </div>
-<table border="1" class="colwidths-given docutils" id="id62">
-<span id="influences-table"></span><caption><span class="caption-number">Table 18 </span><span class="caption-text">Parameters in the influences.csv</span><a class="headerlink" href="#id62" title="Permalink to this table">¶</a></caption>
+<table border="1" class="colwidths-given docutils" id="id63">
+<span id="influences-table"></span><caption><span class="caption-number">Table 18 </span><span class="caption-text">Parameters in the influences.csv</span><a class="headerlink" href="#id63" title="Permalink to this table">¶</a></caption>
 <colgroup>
 <col width="25%" />
 <col width="75%" />
@@ -1171,9 +1171,9 @@
 </div>
 <div class="section" id="influence-patches-csv">
 <h3>influence_patches.csv<a class="headerlink" href="#influence-patches-csv" title="Permalink to this headline">¶</a></h3>
-<p>This file defines influence coefficients of connections when associated connection is failed. An example is shown in <a class="reference internal" href="#id14"><span class="std std-numref">Listing 18</span></a>, and description of each of the parameter values are provided in <a class="reference internal" href="#influence-patches-table"><span class="std std-numref">Table 19</span></a>. In the example, when connection 121 is failed, influence coefficients of connection 121, 122, 123 are re-defined.</p>
-<div class="literal-block-wrapper docutils container" id="id63">
-<span id="id14"></span><div class="code-block-caption"><span class="caption-number">Listing 18 </span><span class="caption-text">Example influence_patches.csv</span><a class="headerlink" href="#id63" title="Permalink to this code">¶</a></div>
+<p>This file defines influence coefficients of connections when associated connection is failed. An example is shown in <a class="reference internal" href="#id15"><span class="std std-numref">Listing 18</span></a>, and description of each of the parameter values are provided in <a class="reference internal" href="#influence-patches-table"><span class="std std-numref">Table 19</span></a>. In the example, when connection 121 is failed, influence coefficients of connection 121, 122, 123 are re-defined.</p>
+<div class="literal-block-wrapper docutils container" id="id64">
+<span id="id15"></span><div class="code-block-caption"><span class="caption-number">Listing 18 </span><span class="caption-text">Example influence_patches.csv</span><a class="headerlink" href="#id64" title="Permalink to this code">¶</a></div>
 <div class="highlight-none"><div class="highlight"><pre><span></span> Damaged connection,Connection,Zone,Coefficient
  121,121,A13,0,A14,0
  121,122,A13,1,A14,0
@@ -1184,8 +1184,8 @@
 </pre></div>
 </div>
 </div>
-<table border="1" class="colwidths-given docutils" id="id64">
-<span id="influence-patches-table"></span><caption><span class="caption-number">Table 19 </span><span class="caption-text">Parameters in the influence_patches.csv</span><a class="headerlink" href="#id64" title="Permalink to this table">¶</a></caption>
+<table border="1" class="colwidths-given docutils" id="id65">
+<span id="influence-patches-table"></span><caption><span class="caption-number">Table 19 </span><span class="caption-text">Parameters in the influence_patches.csv</span><a class="headerlink" href="#id65" title="Permalink to this table">¶</a></caption>
 <colgroup>
 <col width="25%" />
 <col width="75%" />
@@ -1212,16 +1212,16 @@
 </table>
 </div>
 <div class="section" id="damage-costing-data-csv">
-<h3>damage_costing_data.csv<a class="headerlink" href="#damage-costing-data-csv" title="Permalink to this headline">¶</a></h3>
-<p>This file defines damage scenarios referenced in <a class="reference internal" href="#id2"><span class="std std-numref">Listing 6</span></a>. An example is shown in <a class="reference internal" href="#id15"><span class="std std-numref">Listing 19</span></a>, and description of each of the parameter values are provided in <a class="reference internal" href="#damage-costing-data-table"><span class="std std-numref">Table 20</span></a>. The damage cost for each damage scenario <span class="math">\(C\)</span> is calculated as</p>
+<span id="damage-costing-data-csv-section"></span><h3>damage_costing_data.csv<a class="headerlink" href="#damage-costing-data-csv" title="Permalink to this headline">¶</a></h3>
+<p>This file defines damage scenarios referenced in <a class="reference internal" href="#id3"><span class="std std-numref">Listing 6</span></a>. An example is shown in <a class="reference internal" href="#id16"><span class="std std-numref">Listing 19</span></a>, and description of each of the parameter values are provided in <a class="reference internal" href="#damage-costing-data-table"><span class="std std-numref">Table 20</span></a>. The damage cost for each damage scenario <span class="math">\(C\)</span> is calculated as</p>
 <div class="math" id="equation-damage_costing">
 <span class="eqno">(2)<a class="headerlink" href="#equation-damage_costing" title="Permalink to this equation">¶</a></span>\[C = x \times \left( A \times C_\text{env} \times R_\text{env} + C_\text{int} \times R_\text{int}\right)\]</div>
 <p>where <span class="math">\(x\)</span>: proportion of damaged area (<span class="math">\(0 \leq x \leq 1\)</span>), <span class="math">\(A\)</span>: surface area, <span class="math">\(C_\text{env}\)</span>: costing function for envelope, <span class="math">\(R_\text{env}\)</span>: repair rate for envelope, <span class="math">\(C_\text{int}\)</span>: costing function for internal, and <span class="math">\(R_\text{int}\)</span>: repair rate for internal. Two types of costing functions are defined as:</p>
 <div class="math" id="equation-costing_function_types">
 <span class="eqno">(3)<a class="headerlink" href="#equation-costing_function_types" title="Permalink to this equation">¶</a></span>\[\begin{split}f_1 &amp;= c_1 \times x^2 + c_2 \times x + c_3 \\
 f_2 &amp;= c_1 \times x^{c_2}\end{split}\]</div>
-<div class="literal-block-wrapper docutils container" id="id65">
-<span id="id15"></span><div class="code-block-caption"><span class="caption-number">Listing 19 </span><span class="caption-text">Example damage_costing_data.csv</span><a class="headerlink" href="#id65" title="Permalink to this code">¶</a></div>
+<div class="literal-block-wrapper docutils container" id="id66">
+<span id="id16"></span><div class="code-block-caption"><span class="caption-number">Listing 19 </span><span class="caption-text">Example damage_costing_data.csv</span><a class="headerlink" href="#id66" title="Permalink to this code">¶</a></div>
 <div class="highlight-none"><div class="highlight"><pre><span></span> name,surface_area,envelope_repair_rate,envelope_factor_formula_type,envelope_coeff1,envelope_coeff2,envelope_coeff3,internal_repair_rate,internal_factor_formula_type,internal_coeff1,internal_coeff2,internal_coeff3,water_ingress_order
  Loss of roof sheeting,116,72.4,1,0.3105,-0.8943,1.6015,0,1,0,0,0,6
  Loss of roof sheeting &amp; purlins,116,184.23,1,0.3105,-0.8943,1.6015,0,1,0,0,0,7
@@ -1229,8 +1229,8 @@ f_2 &amp;= c_1 \times x^{c_2}\end{split}\]</div>
 </pre></div>
 </div>
 </div>
-<table border="1" class="colwidths-given docutils" id="id66">
-<span id="damage-costing-data-table"></span><caption><span class="caption-number">Table 20 </span><span class="caption-text">Parameters in the damage_costing_data.csv</span><a class="headerlink" href="#id66" title="Permalink to this table">¶</a></caption>
+<table border="1" class="colwidths-given docutils" id="id67">
+<span id="damage-costing-data-table"></span><caption><span class="caption-number">Table 20 </span><span class="caption-text">Parameters in the damage_costing_data.csv</span><a class="headerlink" href="#id67" title="Permalink to this table">¶</a></caption>
 <colgroup>
 <col width="25%" />
 <col width="75%" />
@@ -1285,9 +1285,9 @@ f_2 &amp;= c_1 \times x^{c_2}\end{split}\]</div>
 </div>
 <div class="section" id="damage-factorings-csv">
 <h3>damage_factorings.csv<a class="headerlink" href="#damage-factorings-csv" title="Permalink to this headline">¶</a></h3>
-<p>This file defines a hierarchy of costings, where each row has a parent and child connection type group. When costing the parent group, all child costings will be factored out of the parent. This mechanism avoids double counting of repair costs. An example is shown in <a class="reference internal" href="#id16"><span class="std std-numref">Listing 20</span></a>.</p>
-<div class="literal-block-wrapper docutils container" id="id67">
-<span id="id16"></span><div class="code-block-caption"><span class="caption-number">Listing 20 </span><span class="caption-text">Example damage_factorings.csv</span><a class="headerlink" href="#id67" title="Permalink to this code">¶</a></div>
+<p>This file defines a hierarchy of costings, where each row has a parent and child connection type group. When costing the parent group, all child costings will be factored out of the parent. This mechanism avoids double counting of repair costs. An example is shown in <a class="reference internal" href="#id17"><span class="std std-numref">Listing 20</span></a>.</p>
+<div class="literal-block-wrapper docutils container" id="id68">
+<span id="id17"></span><div class="code-block-caption"><span class="caption-number">Listing 20 </span><span class="caption-text">Example damage_factorings.csv</span><a class="headerlink" href="#id68" title="Permalink to this code">¶</a></div>
 <div class="highlight-none"><div class="highlight"><pre><span></span> ParentGroup,FactorByGroup
  batten,rafter
  sheeting,rafter
@@ -1298,12 +1298,12 @@ f_2 &amp;= c_1 \times x^{c_2}\end{split}\]</div>
 </div>
 <div class="section" id="water-ingress-costing-data-csv">
 <h3>water_ingress_costing_data.csv<a class="headerlink" href="#water-ingress-costing-data-csv" title="Permalink to this headline">¶</a></h3>
-<p>This file contains costing information of damage induced by water ingress for various scenarios of structural damage. Each row contains coefficients that are used by costing functions.  An example is shown in <a class="reference internal" href="#id17"><span class="std std-numref">Listing 21</span></a>, and description of each of the parameter values are provided in <a class="reference internal" href="#water-ingress-costing-data-table"><span class="std std-numref">Table 21</span></a>. The water ingress cost <span class="math">\(WC\)</span> is calculated as</p>
+<p>This file contains costing information of damage induced by water ingress for various scenarios of structural damage. Each row contains coefficients that are used by costing functions.  An example is shown in <a class="reference internal" href="#id18"><span class="std std-numref">Listing 21</span></a>, and description of each of the parameter values are provided in <a class="reference internal" href="#water-ingress-costing-data-table"><span class="std std-numref">Table 21</span></a>. The water ingress cost <span class="math">\(WC\)</span> is calculated as</p>
 <div class="math" id="equation-water_ingress">
-<span class="eqno">(4)<a class="headerlink" href="#equation-water_ingress" title="Permalink to this equation">¶</a></span>\[WC = x \times B \times C\]</div>
+<span class="eqno">(4)<a class="headerlink" href="#equation-water_ingress" title="Permalink to this equation">¶</a></span>\[WC = B(x) \times C\]</div>
 <p>where <span class="math">\(x\)</span>: envelope damage index prior to water ingress (<span class="math">\(0 \leq x \leq 1\)</span>), <span class="math">\(B\)</span>: base cost, and <span class="math">\(C\)</span>: costing function. Like the damage costing functions, two types of costing functions are defined as <a class="reference internal" href="#equation-costing_function_types">(3)</a>.</p>
-<div class="literal-block-wrapper docutils container" id="id68">
-<span id="id17"></span><div class="code-block-caption"><span class="caption-number">Listing 21 </span><span class="caption-text">Example water_ingress_costing_data.csv</span><a class="headerlink" href="#id68" title="Permalink to this code">¶</a></div>
+<div class="literal-block-wrapper docutils container" id="id69">
+<span id="id18"></span><div class="code-block-caption"><span class="caption-number">Listing 21 </span><span class="caption-text">Example water_ingress_costing_data.csv</span><a class="headerlink" href="#id69" title="Permalink to this code">¶</a></div>
 <div class="highlight-none"><div class="highlight"><pre><span></span> name,water_ingress,base_cost,formula_type,coeff1,coeff2,coeff3
  Loss of roof sheeting,0,0,1,0,0,1
  Loss of roof sheeting,5,2989.97,1,0,0,1
@@ -1314,8 +1314,8 @@ f_2 &amp;= c_1 \times x^{c_2}\end{split}\]</div>
 </pre></div>
 </div>
 </div>
-<table border="1" class="docutils" id="id69">
-<span id="water-ingress-costing-data-table"></span><caption><span class="caption-number">Table 21 </span><span class="caption-text">Parameters in the water_ingress_costing_data.csv</span><a class="headerlink" href="#id69" title="Permalink to this table">¶</a></caption>
+<table border="1" class="docutils" id="id70">
+<span id="water-ingress-costing-data-table"></span><caption><span class="caption-number">Table 21 </span><span class="caption-text">Parameters in the water_ingress_costing_data.csv</span><a class="headerlink" href="#id70" title="Permalink to this table">¶</a></caption>
 <colgroup>
 <col width="50%" />
 <col width="50%" />
@@ -1352,9 +1352,9 @@ f_2 &amp;= c_1 \times x^{c_2}\end{split}\]</div>
 </div>
 <div class="section" id="footprint-csv">
 <h3>footprint.csv<a class="headerlink" href="#footprint-csv" title="Permalink to this headline">¶</a></h3>
-<p>This file contains information about footprint of the model. Each row contains x and y coordinates of the vertices of the footprint. An example is shown in <a class="reference internal" href="#id18"><span class="std std-numref">Listing 22</span></a>.</p>
-<div class="literal-block-wrapper docutils container" id="id70">
-<span id="id18"></span><div class="code-block-caption"><span class="caption-number">Listing 22 </span><span class="caption-text">Example footprint.csv</span><a class="headerlink" href="#id70" title="Permalink to this code">¶</a></div>
+<p>This file contains information about footprint of the model. Each row contains x and y coordinates of the vertices of the footprint. An example is shown in <a class="reference internal" href="#id19"><span class="std std-numref">Listing 22</span></a>.</p>
+<div class="literal-block-wrapper docutils container" id="id71">
+<span id="id19"></span><div class="code-block-caption"><span class="caption-number">Listing 22 </span><span class="caption-text">Example footprint.csv</span><a class="headerlink" href="#id71" title="Permalink to this code">¶</a></div>
 <div class="highlight-none"><div class="highlight"><pre><span></span> footprint_coord
  -6.5, 4.0
  6.5, 4.0
@@ -1366,9 +1366,9 @@ f_2 &amp;= c_1 \times x^{c_2}\end{split}\]</div>
 </div>
 <div class="section" id="front-facing-walls-csv">
 <h3>front_facing_walls.csv<a class="headerlink" href="#front-facing-walls-csv" title="Permalink to this headline">¶</a></h3>
-<p>This file contains wall information with respect to the eight wind direction. Each row contains wall name(s) for a wind direction. An example is shown in <a class="reference internal" href="#id19"><span class="std std-numref">Listing 23</span></a>.</p>
-<div class="literal-block-wrapper docutils container" id="id71">
-<span id="id19"></span><div class="code-block-caption"><span class="caption-number">Listing 23 </span><span class="caption-text">Example front_facing_walls.csv</span><a class="headerlink" href="#id71" title="Permalink to this code">¶</a></div>
+<p>This file contains wall information with respect to the eight wind direction. Each row contains wall name(s) for a wind direction. An example is shown in <a class="reference internal" href="#id20"><span class="std std-numref">Listing 23</span></a>.</p>
+<div class="literal-block-wrapper docutils container" id="id72">
+<span id="id20"></span><div class="code-block-caption"><span class="caption-number">Listing 23 </span><span class="caption-text">Example front_facing_walls.csv</span><a class="headerlink" href="#id72" title="Permalink to this code">¶</a></div>
 <div class="highlight-none"><div class="highlight"><pre><span></span> wind_dir,wall_name
  S,1
  SW,1,3

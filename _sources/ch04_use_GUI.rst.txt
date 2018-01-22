@@ -1,68 +1,261 @@
 .. _use_of_the_GUI:
 
+..
+  # with overline, for parts
+  * with overline, for chapters
+  =, for sections
+  -, for subsections
+  ^, for subsubsections
+  ", for paragraphs
+
 **************
 Use of the GUI
 **************
 
+This chapter provides an overview of the GUI and instructions on how to run simulations using the GUI.
 
 
-Overall logic
-=============
+Structure
+=========
 
-The VAWS tool takes a component-based approach to modelling building vulnerability. It is based on the premise that overall building damage is strongly related to the failure of key connections.
+The main window is logically separated into distinct areas of functionality as shown as :numref:`main_window_by_function_fig`.
 
-The tool generates a building model by randomly selecting parameter values from predetermined probability distributions using a Monte Carlo process. Values include component and connection strengths, external pressure coefficients, shielding coefficients, wind speed profile, building orientation, debris damage parameters, and component masses.
+.. _main_window_by_function_fig:
+.. figure:: _static/image/main_window_by_function.png
+    :align: center
+    :width: 80 %
 
-Then, for progressive gust wind speed increments, it calculates the forces in all critical connections using influence coefficients, assesses which connections have failed and translates these into a damage scenario and costs the repair. Using the repair cost and the full replacement cost, it calculates a damage index for each wind speed.
-
-Key features
-============
-
-* Component-based approach:
-
-  A house is modelled consisting of a large number of components, and overall damage is estimated based on damage of each of the components.
-
-* Uncertainty captured through a Monte-Carlo process:
-
-  Various uncertainties affecting house performance are modelled through a monte-carlo process.
-
-* Inclusion of debris and water ingress induced damages:
-
-  In addition to the damage to the connections by wind loads, debris and water ingress induced damages are modelled.
-
-* Internal pressurisation:
-
-  Internal pressure coefficients are calculated at each wind speed following the procedures of AS/NZS 1170.2 (Standards Australia, 2011) using the modelled envelope failures to determine envelope permeability.
+    Program main window consisting of five areas by functionality as shown as dotted box
 
 
-Key uncertainties
-=================
+Top
+---
 
-The Monte Carlo process capture a range of variability in both wind loading and component parameters. The parameter values are sampled for each model and kept the same through the wind steps.
+At the top of the main window, tool bar with buttons is located. The file menu and action corresponding to each of the buttons is set out in the :numref:`toolbar_table`.
 
-- Wind direction
+.. tabularcolumns:: |p{1.0cm}|p{4.0cm}|p{7.5cm}|
+.. _toolbar_table:
+.. csv-table:: Buttons in the toolbar
+    :header: Button, Menu, "Action"
 
-  For each house, its orientation with respect to the wind is chosen from the eight cardinal directions either randomly, or by the user.
+    .. figure:: _static/image/filenew.png, File -> New, Create a new scenario with default setting
+    .. figure:: _static/image/fileopen.png, File -> Open Scenario, Open an existing configuration file
+    .. figure:: _static/image/filesave.png, File -> Save, Save current scenario
+    .. figure:: _static/image/filesaveas.png, File -> Save As, Save current scenario to a new configuration file
+    .. figure:: _static/image/forward.png, Simulator -> Run, Run the scenario
+    .. figure:: _static/image/filequit.png, Simulator -> Stop, Stop the simulation when in progress
+    .. figure:: _static/image/home2.png, Model -> House Info, Show the current house information including wall coverages
 
-- Gust wind profile
+Top left
+--------
 
-  Variation in the profile of wind speed with height is captured by the random sampling of a profile from a suite of user-provided profiles.
+The top left panel contains simulation settings across five tabs: Scenario, Debris, Construction, Water, and Options, where parameter values for a simulation can be set. The details of each of the tab can be found in :ref:`3.1 <configuration_file>`.
 
-- Pressure coefficients for zone and coverage
+There are three test button across the tabs.
 
-  Pressure coefficients for different zones of the house surfaces envelope are randomly chosen from a Type III (Weibull) extreme value distribution with specified means for different zones of the house envelope, and specified coefficients of variation for different load effects.
+The Test button in the Debris tab demonstrates debris generation function at a selected wind speed. Once the wind speed is determined, then a window showing debris traces from sources are displayed as shown as :numref:`test_debris_fig`. The vulnerability curve used in the test function is selected from the curves shown in :numref:`test_debris_vul_fig`, whereas other parameter values can be changed through the GUI.
 
-- Construction level
+.. _test_debris_fig:
+.. figure:: _static/image/test_debris.png
+    :align: center
+    :width: 80 %
 
-  Multiple construction levels can be defined with mean and cov factors which will be used to adjust the mean and cov of distribution of connection strength.
+    Test of debris generation function: debris generated at 50 m/s in region of Capcital_city
 
-- Strength and dead load
+.. _test_debris_vul_fig:
+.. figure:: _static/image/test_debris_vul.png
+    :align: center
+    :width: 80 %
 
-  Connection strengths and dead loads for generated houses are sampled from lognormal probability distributions.
+    Vulnerability curves implemented in the debris test function
 
-Caveats and limitations
-=======================
 
-VAWS has been designed primarily as a tool for assessing vulnerability of houses to wind hazard. The simulation outcomes should be interpreted as vulnerability of a group of similar houses on average, even though an individual house is modelled. In other words, the tool is not capable of predicting performance of each individual house for a specific wind event.
+The Test button in the Construction tab shows distribution of connection strength of the selected connection type. Example of sampled strength of batten type is shown in :numref:`test_construction_fig`.
+
+.. _test_construction_fig:
+.. figure:: _static/image/test_construction.png
+    :align: center
+    :width: 80 %
+
+    Distribution of sampled strength of the selected connection type
+
+The Test button in the Water tab shows relationship between percentage of water ingress vs. wind speed for a range of damage index as shown in :numref:`test_water_ingress_fig`.
+
+.. _test_water_ingress_fig:
+.. figure:: _static/image/test_water_ingress.png
+    :align: center
+    :width: 80 %
+
+    Relationship between percentage of water ingress vs. wind speed
+
+
+Bottom left
+-----------
+
+The bottom left panel contains data browser of house and global data. This panel contains two tabs at the top: House and Global. The House tab has five tabs at the bottom: Connections, Types, Groups, Zones, and Damage, as shown in :numref:`house_tab_fig`. :numref:`house_table` sets out corresponding input file and section for each of the tabs.
+
+.. tabularcolumns:: |p{2.0cm}|p{4.0cm}|p{7.5cm}|
+.. _house_table:
+.. csv-table:: House data
+    :header: Tab name, Input file, Section
+
+    Connections, connections.csv, :ref:`3.4.4 <connections.csv_section>`
+    Types, conn_types.csv, :ref:`3.4.3 <conn_types.csv_section>`
+    Groups, conn_groups.csv, :ref:`3.4.2 <conn_groups.csv_section>`
+    Zones, zones.csv, :ref:`3.4.5 <zones.csv_section>`
+    Damage, damage_costing_data.csv, :ref:`3.4.15 <damage_costing_data.csv_section>`
+
+.. _house_tab_fig:
+.. figure:: _static/image/house_tab.png
+    :align: center
+    :width: 80 %
+
+    House data tab showing connections information
+
+The Global tab has two tabs at the bottom: Boundary Profile and Debris, as shown in :numref:`global_tab_fig`. In the Boundary Profile tab, gust envelope profiles of selected wind profiles is displayed. Details about the gust envelop profiles can be found in :ref:`3.3 <envelope_profiles_section>`. In the Debris tab, parameter values for debris model listed in the debris.csv (:ref:`3.1.3 <debris.csv_section>`) is displayed. Note that the contents of both tabs are to be changed dynamically upon different selection of wind profile file (Wind Profiles) and debris region (Region).
+
+.. _global_tab_fig:
+.. figure:: _static/image/global_tab.png
+    :align: center
+    :width: 80 %
+
+    Global data tab showing boundary profiles information
+
+Bottom right
+------------
+
+The bottom right panel shows input data of influence coefficients and simulation results. This panel consists of five tabs: Influences, Patches, Results, Damages, and Curves, among which Results, Damages, and Curves are empty until a simulation is completed.
+
+Influences tab
+^^^^^^^^^^^^^^
+Once connection id is set by the slider at the top, then the selected connection (coloured in skyblue) and its associated either zone or connection (coloured in orange) with influence coefficient are shown as :numref:`influences_fig`.
+
+.. _influences_fig:
+.. figure:: _static/image/influences.png
+    :align: center
+    :width: 80 %
+
+    Display of influence coefficient of connection id 27, which is 1.0 with Zone C3.
+
+Patches tab
+^^^^^^^^^^^
+The Patches tab shows the influence coefficient of connection when associated connection is failed. Once failed connection (coloured in gray) and connection id (coloured in skyblue) are set, then associated either zone or connection (coloured in orange) with influence coefficient is shown as :numref:`patches_fig`.
+
+.. _patches_fig:
+.. figure:: _static/image/patches.png
+    :align: center
+    :width: 80 %
+
+    Display of influence coefficient of connection 125 when connection 124 is failed.
+
+Results tab
+^^^^^^^^^^^
+
+The Results tab shows the results of simulation in four sub-windows: Zones, Connections, Type Strengths, and Type Damage.
+
+The Zones window shows sampled Cpe values for each of the zones for each realisation of the simulation models as shown as :numref:`results_zones_fig`. The first string at the *House* column refers to model index, and the string before and after slash refer to wind direction and construction quality level, respectively.
+
+.. _results_zones_fig:
+.. figure:: _static/image/results_zones.png
+    :align: center
+    :width: 80 %
+
+    Display of Cpe values for each zone
+
+Likewise, the Connections window shows the results of each connections such as sampled strength and dead load as shown as :numref:`results_connections_fig`.
+
+.. _results_connections_fig:
+.. figure:: _static/image/results_connections.png
+    :align: center
+    :width: 80 %
+
+    Display of strength, dead load, and failure wind speed for each connection
+
+The Type Strengths window show distribution of connection strength by connection type as shown as :numref:`results_type_strength_fig`.
+
+.. _results_type_strength_fig:
+.. figure:: _static/image/results_type_strength.png
+    :align: center
+    :width: 80 %
+
+    Display of distribution of sampled connection strength by connection type
+
+The Type Damage window shows distribution of speeds at which connection fails by connection type as shown as :numref:`results_type_damage_fig`.
+
+.. _results_type_damage_fig:
+.. figure:: _static/image/results_type_damage.png
+    :align: center
+    :width: 80 %
+
+    Display of distribution of failure wind speed by connection type
+
+Damages tab
+^^^^^^^^^^^
+
+The Damages tab shows heatmap by connection type group such as Sheeting, Batten, and Rafter as shown in :numref:`damages_heatmap_fig`. The heatmap averaged across models is shown by default, and heatmap for individual model can be displayed by moving the slide at the top.
+
+.. _damages_heatmap_fig:
+.. figure:: _static/image/damages_heatmap.png
+    :align: center
+    :width: 80 %
+
+    Heatmap of failure wind speed averaged across models for batten group
+
+
+Curves tab
+^^^^^^^^^^
+
+The Curves tab shows curves in four sub-windows: Vulnerability, Fragility, Water Ingress, and Debris. The Vulnerability window shows a scatter plot of damage indices at each wind speed along with two fitted vulnerability curves, one of which is fitted to cumulative lognormal distribution function and the other one is to cumulative Weibull distribution function. An example plot is shown in :numref:`curves_vulnerability_fig`.
+
+
+.. _curves_vulnerability_fig:
+.. figure:: _static/image/curves_vulnerability.png
+    :align: center
+    :width: 80 %
+
+    Plot in the Vulnerability window
+
+The Fragility window shows fragility curves for discrete damage states, which are fitted to cumulative lognormal distribution function, as shown in :numref:`curves_fragility_fig`.
+
+.. _curves_fragility_fig:
+.. figure:: _static/image/curves_fragility.png
+    :align: center
+    :width: 80 %
+
+    Plot in the Fragility window
+
+The Water Ingress window shows a scatter plot of the costing associated with water ingress along wind speed, as shown in :numref:`curves_water_ingress_fig`.
+
+.. _curves_water_ingress_fig:
+.. figure:: _static/image/curves_water_ingress.png
+    :align: center
+    :width: 80 %
+
+    Plot in the Water Ingress window
+
+The	Debris window shows 1) number of generated debris items, 2) number of impacted debris items, and 3) proportion of model breached by debris along the range of wind speed, as shown in :numref:`curves_debris_fig`.
+
+.. _curves_debris_fig:
+.. figure:: _static/image/curves_debris.png
+    :align: center
+    :width: 80 %
+
+    Plot in the Debris window
+
+Bottom
+------
+
+At the bottom of the main window, configuration file name and status of current simulation are displayed as shown in :numref:`bottom_status_fig`.
+
+.. _bottom_status_fig:
+.. figure:: _static/image/bottom_status.png
+    :align: center
+    :width: 80 %
+
+    Display of configuration file and status of simulation
+
+Running simulations
+===================
+
 
 

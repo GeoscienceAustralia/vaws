@@ -38,7 +38,7 @@ The program is built around the following high level sequence:
 
       - assign the increment in the mean damage index from the previous wind step as an input to the debris generation model (:py:attr:`.Debris.no_items_mean`)
       - calculate free stream wind pressure (qz), optionally applying a regional shielding factor (:py:meth:`.HouseDamage.compute_qz_ms`)
-      - calculate zone pressures from qz (:py:meth:`.Zone.calc_zone_pressure`)
+      - calculate zone pressures (:py:meth:`.Zone.calc_zone_pressure`)
       - check damage of envelope coverages by wind load (:py:meth:`.Coverage.check_damage`)
       - calculate connection loads (:py:meth:`.Connection.compute_load`)
       - check damage of each connection by connection group (:py:meth:`.ConnectionTypeGroup.check_damage`)
@@ -46,8 +46,8 @@ The program is built around the following high level sequence:
       - update influence by connection group (:py:meth:`.ConnectionTypeGroup.update_influence`)
       - check for total house collapse event (:py:meth:`.HouseDamage.check_house_collapse`)
       - compute damage index of the model (:py:meth:`.HouseDamage.compute_damage_index`)
-      - compute damage index of the model (:py:meth:`.HouseDamage.compute_damage_index`)
       - generate debris and update Cpi in case of internal pressurisation event (:py:meth:`.HouseDamage.check_internal_pressurisation`)
+
     - calculate increment in mean damage index of the group of models (:py:func:`.update_bucket`)
 
 3. Fit fragility and vulnerability curves and save outputs (:py:func:`.save_results_to_files`)
@@ -56,21 +56,32 @@ The program is built around the following high level sequence:
 Detailed logic
 ==============
 
+This section provides detailed descriptions of each module.
 
 
--. Generate debris and check any breach by debris
--. Update cpi in case of internal pressurization event
+House module
+------------
+
+wind direction
+^^^^^^^^^^^^^^
+sample wind direction (:py:meth:`.House.set_wind_orientation`)
 
 
--. determine footprint and coverages given the wind direction
--. sample cpe and calculate pressure
--. sample construction quality level and determine factors applied to mean and cov of strength
--. sample connection strength and dead load
+construction quality level
+^^^^^^^^^^^^^^^^^^^^^^^^^^
+    * sample wind profile (:py:meth:`.House.set_wind_profile`)
+    * sample construction quality level (:py:meth:`.House.set_construction_level`)
+    * set up coverages given the wind direction (:py:meth:`.House.set_coverages`)
+    * set up connections (:py:meth:`.House.set_connections`)
+    * set up zones (:py:meth:`.House.set_zones`)
+    * set up debris generation model (:py:meth:`.House.set_debris`)
+
+
 
 Debris damage module
 --------------------
 
-The methdology of modelling damage from wind-borne debris implemented in the code is described in the [JDH2010d_] and [JDH2010d_]. The debris damage module consists of four parts: 1) debris generation, 2) debris trajectory, 3) debris impact, and 4) debris damage costing.
+The methdology of modelling damage from wind-borne debris implemented in the code is described in the [JDH2010d]_ and [JDH2010d]_. The debris damage module consists of four parts: 1) debris generation, 2) debris trajectory, 3) debris impact, and 4) debris damage costing.
 
 Debris generation
 ^^^^^^^^^^^^^^^^^
@@ -163,3 +174,18 @@ ix. cost damage
 2. Translate percentage into repair cost via damage scenarios.
 3. cost damage from water ingress if required
 4. calculate damage index
+
+
+Cpi
+---
+
+-. Generate debris and check any breach by debris
+-. Update cpi in case of internal pressurization event
+
+
+
+
+-. determine footprint and coverages given the wind direction
+-. sample cpe and calculate pressure
+-. sample construction quality level and determine factors applied to mean and cov of strength
+-. sample connection strength and dead load
