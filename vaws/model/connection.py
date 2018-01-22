@@ -1,5 +1,6 @@
-"""
-    Connection Module -
+"""Connection module
+
+    This module contains Connection class, ConnectionTypeGroup class, and Influence class.
 
 """
 
@@ -85,7 +86,7 @@ class Connection(object):
         self._influence_patch = _dic
 
     def sample_strength(self, mean_factor, cov_factor, rnd_state):
-        """
+        """Return a sampled strength from lognormal distribution
 
         Args:
             mean_factor: factor adjusting arithmetic mean strength

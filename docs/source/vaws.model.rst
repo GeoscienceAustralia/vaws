@@ -105,11 +105,11 @@ vaws.model.zone module
     :undoc-members:
     :show-inheritance:
 
+..
+    Module contents
+    ---------------
 
-Module contents
----------------
-
-.. automodule:: vaws.model
-    :members:
-    :undoc-members:
-    :show-inheritance:
+    .. automodule:: vaws.model
+        :members:
+        :undoc-members:
+        :show-inheritance:

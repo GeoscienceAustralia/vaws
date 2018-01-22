@@ -1,3 +1,9 @@
+"""Curve module
+
+    This module contains functions related to fragility and vulnerability curves.
+
+"""
+
 import logging
 import warnings
 
@@ -14,7 +20,7 @@ def fit_vulnerability_curve(cfg, df_dmg_idx):
         cfg:
         df_dmg_idx:
 
-    Returns:
+    Returns: dict of fitted_curve
 
     """
     # array changed to vector
@@ -51,7 +57,7 @@ def fit_fragility_curves(cfg, df_dmg_idx):
         cfg:
         df_dmg_idx:
 
-    Returns:
+    Returns: dict with keys of damage state
 
     """
 
@@ -77,32 +83,30 @@ def fit_fragility_curves(cfg, df_dmg_idx):
 
 
 def vulnerability_weibull(x, alpha_, beta_):
-    """
-
-    vulnerability curve with Weibull function
+    """Return vulnerability in Weibull CDF
 
     Args:
-        _alpha, _beta: parameters for vulnerability curve
         x: 3sec gust wind speed at 10m height
+        _alpha: parameter value used in defining vulnerability curve
+        _beta: ditto
 
     Returns: weibull_min.cdf(x, shape, loc=0, scale)
 
-    Notes
-    ----
+    Note:
 
-    weibull_min.pdf = c/s * (x/s)**(c-1) * exp(-(x/s)**c)
-        c: shape, s: scale, loc=0
+        weibull_min.pdf = c/s * (x/s)**(c-1) * exp(-(x/s)**c)
+            c: shape, s: scale, loc=0
 
-    weibull_min.cdf = 1 - exp(-(x/s)**c)
+        weibull_min.cdf = 1 - exp(-(x/s)**c)
 
-    while Australian wind vulnerability is defined as
+        while Australian wind vulnerability is defined as
 
-        DI = 1 - exp(-(x/exp(beta))**(1/alpha))
+            DI = 1 - exp(-(x/exp(beta))**(1/alpha))
 
-    therefore:
+        therefore:
 
-        s = exp(beta)
-        c = 1/alpha
+            s = exp(beta)
+            c = 1/alpha
 
     """
     # convert alpha and beta to shape and scale respectively
@@ -113,33 +117,14 @@ def vulnerability_weibull(x, alpha_, beta_):
 
 
 def vulnerability_weibull_pdf(x, alpha_, beta_):
-    """
-
-    vulnerability curve with Weibull function
+    """Return PDF of vulnerability curve in Weibull
 
     Args:
-        _alpha, _beta: parameters for vulnerability curve
         x: 3sec gust wind speed at 10m height
+        alpha_: parameter value used in defining vulnerability curve
+        beta_: ditto
 
-    Returns: weibull_min.pdf(x, shape, loc=0, scale)
-
-    Notes
-    ----
-
-    weibull_min.pdf = c/s * (x/s)**(c-1) * exp(-(x/s)**c)
-        c: shape, s: scale, loc=0
-
-    weibull_min.cdf = 1 - exp(-(x/s)**c)
-
-    while Australian wind vulnerability is defined as
-
-        DI = 1 - exp(-(x/exp(beta))**(1/alpha))
-
-    therefore:
-
-        s = exp(beta)
-        c = 1/alpha
-
+    Returns: weibull_min.cdf(x, shape, loc=0, scale)
     """
     # convert alpha and beta to shape and scale respectively
     shape_ = 1 / alpha_
@@ -149,15 +134,14 @@ def vulnerability_weibull_pdf(x, alpha_, beta_):
 
 
 def vulnerability_lognorm(x, med, std):
-    """
-
-    vulnerability curve with cumulative lognormal function
+    """Return vulnerability in lognormal CDF
 
     Args:
-        med, std: exp(mean of log x) and standard deviation of log x
         x: 3sec gust wind speed at 10m height
+        med: exp(mean of log x)
+        std: standard deviation of log x
 
-    Returns: lognorm.flag(x, std, loc=0, scale=med)
+    Returns: lognorm.cdf(x, std, loc=0, scale=med)
 
     """
 

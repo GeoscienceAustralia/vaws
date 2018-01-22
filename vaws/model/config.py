@@ -1,11 +1,48 @@
-"""
-    Configuration module - user input to model run (file or gui)
+"""Config module
 
-    Note: regional shielding may be indirectly disabled by setting
-    'regional_shielding_factor' to 1.0
-    Note: differential shielding may be indirectly disabled by setting
-    'building_spacing' to 0
+    This module defines basic parameter values for simulation.
+
+    Attributes:
+
+        OUTPUT_DIR: "output"
+        INPUT_DIR: "input"
+        DEBRIS_DATA: "input/debris"
+        GUST_PROFILES_DATA: "input/gust_envelope_profiles"
+        HOUSE_DATAL: "input/house"
+
+        FILE_HOUSE_DATA: 'house_data.csv'
+        FILE_CONN_GROUPS: 'conn_groups.csv'
+        FILE_CONN_TYPES: 'conn_types.csv'
+        FILE_CONNECTIONS: 'connections.csv'
+        FILE_ZONES: 'zones.csv'
+
+        FILE_COVERAGE_TYPES: 'coverage_types.csv'
+        FILE_COVERAGES: 'coverages.csv'
+        FILE_COVERAGES_CPE: 'coverages_cpe.csv'
+
+        FILE_INFLUENCES: 'influences.csv'
+        FILE_INFLUENCE_PATCHES: 'influence_patches.csv'
+
+        FILE_DAMAGE_COSTING_DATA: 'damage_costing_data.csv'
+        FILE_DAMAGE_FACTORINGS: 'damage_factorings.csv'
+        FILE_WATER_INGRESS_COSTING_DATA: 'water_ingress_costing_data.csv'
+
+        FILE_FOOTPRINT: 'footprint.csv'
+        FILE_FRONT_FACING_WALLS: 'front_facing_walls.csv'
+
+        # debris data
+        FILE_DEBRIS: 'debris.csv'
+
+        # results
+        FILE_RESULTS: 'results.h5'
+        FILE_CURVE: 'results_curve.csv'
+
+
+    Note:
+        * regional shielding may be indirectly disabled by setting 'regional_shielding_factor' to 1.0
+        * differential shielding may be indirectly disabled by setting 'building_spacing' to 0
 """
+
 import os
 import sys
 import logging
@@ -58,7 +95,43 @@ FILE_CURVE = 'results_curve.csv'
 
 
 class Config(object):
+    """ Config class to set configuration for simulation
 
+    Attributes:
+
+        wind_dir (list):
+        wind_dir (list):
+        debris_types_keys (list):
+        debris_types_atts (list):
+        dominant_opening_ratio_thresholds (list):
+        cpi_table_for_dominant_opening (dict):
+
+        # model dependent attributes
+        house_bucket = (list):
+
+        att_non_float = (list):
+
+        house_damage_bucket = (list):
+
+        debris_bucket = (list):
+
+        # model and wind dependent attributes
+        list_components = (list):
+
+        group_bucket = (list):
+
+        connection_bucket (list):
+
+        zone_bucket (list):
+
+        coverage_bucket (list):
+
+        dic_obj_for_fitting (dict):
+
+        att_time_invariant (list):
+
+
+    """
     # lookup table mapping (0-7) to wind direction (8: random)
     wind_dir = ['S', 'SW', 'W', 'NW', 'N', 'NE', 'E', 'SE', 'RANDOM']
     debris_types_keys = ['Rod', 'Compact', 'Sheet']
@@ -103,7 +176,11 @@ class Config(object):
                           'collapse']
 
     def __init__(self, cfg_file=None):
+        """ Initialise instance of Config class
 
+        Args:
+            cfg_file:
+        """
         self.cfg_file = cfg_file
 
         self.house_name = None  # only used for gui display may be deleted later
@@ -780,12 +857,12 @@ class Config(object):
 
     @staticmethod
     def read_damage_factorings(filename):
-        """
+        """Read damage factorings
 
         Args:
             filename: damage_factorings.csv
-            connection_name, zone1_name, zone1_infl, (.....)
-        Returns: dictionary
+
+        Returns: dict
 
         """
         _dic = {}
@@ -799,12 +876,12 @@ class Config(object):
 
     @staticmethod
     def read_influences(filename):
-        """
+        """Read influence coefficients
 
         Args:
             filename: influences.csv
-            connection_name, zone1_name, zone1_infl, (.....)
-        Returns: dictionary
+
+        Returns: dict
 
         """
         _dic = {}
@@ -832,12 +909,12 @@ class Config(object):
 
     @staticmethod
     def read_influence_patches(filename):
-        """
+        """Read influence patches
 
         Args:
             filename: influence_patches.csv
-            damaged_conn, target_conn, conn_name, conn_infl, (.....)
-        Returns: dictionary
+
+        Returns: dict
 
         """
         _dic = {}

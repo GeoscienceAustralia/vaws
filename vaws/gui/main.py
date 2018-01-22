@@ -933,11 +933,11 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
                 else:
                     load_desc = 'collapse'
 
-                # conn_parent = QTreeWidgetItem(parent, ['{}_{}'.format(value['type_name'], _id),
-                #                                        '{:.3}'.format(capacity if capacity > 0 else 'NA'),
-                #                                        '{:.3}'.format(strength),
-                #                                        '{:.3}'.format(dead_load),
-                #                                        '{}'.format(load_desc)])
+                conn_parent = QTreeWidgetItem(parent, ['{}_{}'.format(value['type_name'], _id),
+                                                       '{:.3}'.format(capacity if capacity > 0 else 'NA'),
+                                                       '{:.3}'.format(strength),
+                                                       '{:.3}'.format(dead_load),
+                                                       '{}'.format(load_desc)])
 
                 # TODO for infl_dict in damage_report.get('infls', {}):
                 #     QTreeWidgetItem(conn_parent, ['%.3f(%s) = %.3f(i) * %.3f(area) * %.3f(pz)' % (infl_dict['load'],

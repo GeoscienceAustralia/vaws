@@ -6,9 +6,10 @@ vaws package
     vaws.gui
     vaws.model
 
-Module contents
----------------
+..
+    Module contents
+    ---------------
 
-.. automodule:: vaws
-    :members:
-    :show-inheritance:
+    .. automodule:: vaws
+        :members:
+        :show-inheritance:

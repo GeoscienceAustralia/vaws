@@ -104,15 +104,17 @@ In case new version of the code is available, you may update the code. The conda
 Running through GUI
 -------------------
 
+.. _run_code:
+
 To run the code, the conda environment *vaws_env* should be activated first as :ref:`2.1.1 step 3 <activate_environment>`. And then enter the following command in the terminal.
 
   .. code-block:: bash
 
     vaws
 
-The default scenario will be loaded as shown in :numref:`main_window`.
+The default scenario will be loaded as shown in :numref:`main_window_fig`.
 
-.. _main_window:
+.. _main_window_fig:
 .. figure:: _static/image/main_window.png
     :align: center
     :width: 80 %
@@ -123,7 +125,7 @@ The default scenario will be loaded as shown in :numref:`main_window`.
 Instructions for developers
 ===========================
 
-The development of the code is tracked using the git version control system. The source code is at git@github.com:GeoscienceAustralia/vaws.git.
+The development of the code is tracked using the git version control system. The source code is at `https://github.com/GeoscienceAustralia/vaws <https://github.com/GeoscienceAustralia/vaws>`_.
 
 Installation
 ------------

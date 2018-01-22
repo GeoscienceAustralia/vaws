@@ -9,7 +9,7 @@ VAWS: Vulnerability and Adaptation to Wind Simulation
 .. toctree::
    :hidden:
 
-    ch00_toc_figures
+   ch00_toc_figures
 
 .. toctree::
    :maxdepth: 2
@@ -21,6 +21,11 @@ VAWS: Vulnerability and Adaptation to Wind Simulation
    ch05_logic
    glossary
    bibliography
+
+.. toctree::
+   :hidden:
+
+   vaws
 
 .. only:: html
 

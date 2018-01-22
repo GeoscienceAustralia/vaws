@@ -43,6 +43,8 @@ The input data for a scenario consists of a configuration file and a large numbe
             +-- footprint.csv
             +-- front_facing_walls.csv
 
+.. _configuration_file:
+
 Configuration file
 ==================
 
@@ -153,6 +155,7 @@ Debris section
 
 Parameters of the debris section are listed in :numref:`section_debris_table`. Note that debris section is only required if `debris` is set to be `True` in the options. In the GUI window, they are displayed in the Debris tab as box shown in :numref:`section_debris_fig`.
 
+.. tabularcolumns:: |p{3.5cm}|p{3.5cm}|p{7.5cm}|
 .. _section_debris_table:
 .. csv-table:: Parameters of debris section
     :header: Name, Name in GUI, "Description"
@@ -161,7 +164,7 @@ Parameters of the debris section are listed in :numref:`section_debris_table`. N
     region_name, Region, one of the region names defined in the :numref:`debris.csv`. Each region has different debris source characteristics.
     building_spacing, Building spacing, distance between debris sources (m)
     debris_radius, Radius, radius (in metre) of debris sources from the modelled house
-    debris_angle, Angle, angle (in degree) of debris sources
+    debris_angle, Angle, included angle (in degree) of the sector in which debris sources exist
     source_items, Source items, number of debris items per debris sources
     flight_time_mean, Flight time mean, mean flight time of debris items
     flight_time_stddev, Flight time std, standard deviation of flight time of debris items
@@ -201,7 +204,7 @@ Parameters of the construction_levels section are listed in :numref:`section_con
 Water_ingress section
 ---------------------
 
-Parameters of the water_ingress section are listed in :numref:`section_water_ingress_table`. In the GUI window, they are displayed in the Water tab as box shown in :numref:`section_water_ingress_fig`. The thresholds define a lower limit of envelope damage index above which the relevant water ingress vs wind speed ? is applied. The speeds at 0% water ingress and speeds at 100% water ingress define cumulative normal distribution used to relate percentage water ingress to wind speed as shown in :numref:`water_ingress_fig`.
+Parameters of the water_ingress section are listed in :numref:`section_water_ingress_table`. In the GUI window, they are displayed in the Water tab as box shown in :numref:`section_water_ingress_fig`. The thresholds define a lower limit of envelope damage index above which the relevant water ingress vs wind speed curve is applied. The speeds at 0% water ingress and speeds at 100% water ingress define cumulative normal distribution used to relate percentage water ingress to wind speed as shown in :numref:`water_ingress_fig`.
 
 .. tabularcolumns:: |p{3.0cm}|p{3.0cm}|p{8.5cm}|
 .. _section_water_ingress_table:
@@ -281,6 +284,8 @@ Parameters of the heatmap section are listed in :numref:`section_heatmap_table`.
     Parameters of heatmap section in Options tab
 
 
+.. _debris.csv_section:
+
 Input file under `debris` directory
 ====================================
 
@@ -337,6 +342,8 @@ The parameter values should be provided for each of the debris types as set out 
     frontal_area_stddev, "standard deviation of frontal area (:math:`\text{m}^2`)"
     cdav, "average drag coefficient"
 
+
+.. _envelope_profiles_section:
 
 Input files under `gust_envelope_profiles` directory
 ====================================================
@@ -410,6 +417,8 @@ This file defines parameter values for the model such as replacement cost and di
     cpe_str_cov, float, "cov of Cpe for rafters and eaves"
     cpe_str_k, float, "shape factor of Cpe for rafters and eaves"
 
+.. _conn_groups.csv_section:
+
 conn_groups.csv
 ---------------
 
@@ -436,6 +445,8 @@ The model is assumed to consist of a number of connection groups. This file defi
     damage_scenario, string, "damage scenario name defined in damage_costing_data.csv"
     trigger_collapse_at, float, "proportion of damaged connections of the group at which a model is deemed to be collapsed. 0 if ignored"
     patch_dist, integer, "1 if influence patch is applied when connection is damaged otherwise 0"
+
+.. _conn_types.csv_section:
 
 conn_types.csv
 --------------
@@ -478,6 +489,8 @@ A connection group may consists of a number of connection types which have diffe
     costing_area, float, "costing area (:math:`\text{m}^2`)"
 
 
+.. _connections.csv_section:
+
 connections.csv
 ---------------
 
@@ -494,6 +507,7 @@ This file defines connections and parameter values of the each connection. An ex
     4,sheetinggable,A4,1,0,1.5,0.2,1.5,0.2,2,0,2
     5,sheetinggable,A5,1,0,2,0.2,2,0.2,2.5,0,2.5
 
+.. tabularcolumns:: |p{2.0cm}|p{1.0cm}|p{12.5cm}|
 .. _connections_table:
 .. csv-table:: Parameters in the connections.csv
     :header: Name, Type, "Description"
@@ -504,6 +518,8 @@ This file defines connections and parameter values of the each connection. An ex
     zone_loc, integer, "zone name corresponding to connection location"
     section, integer, "index of section in which damage distribution occurs"
     coords, float, "comma separated values of x, y coordinates for plotting purpose. Provide 4 sets of x, y coordinates for a rectangular shape."
+
+.. _zones.csv_section:
 
 zones.csv
 ---------
@@ -522,6 +538,7 @@ This file defines zones and parameter values of the each zone. An example is sho
     A5,0.405,1,0,0,2,0.2,2,0.2,2.5,0,2.5
 
 
+.. tabularcolumns:: |p{2.0cm}|p{1.0cm}|p{12.5cm}|
 .. _zones_table:
 .. csv-table:: Parameters in the zones.csv
     :header: Name, Type, "Description"
@@ -781,6 +798,8 @@ This file defines influence coefficients of connections when associated connecti
     Coefficient, "new influence coefficient value"
 
 
+.. _damage_costing_data.csv_section:
+
 damage_costing_data.csv
 -----------------------
 
@@ -854,7 +873,7 @@ This file contains costing information of damage induced by water ingress for va
 .. math::
     :label: water_ingress
 
-    WC = x \times B \times C
+    WC = B(x) \times C
 
 where :math:`x`: envelope damage index prior to water ingress (:math:`0 \leq x \leq 1`), :math:`B`: base cost, and :math:`C`: costing function. Like the damage costing functions, two types of costing functions are defined as :eq:`costing_function_types`.
 

@@ -1,7 +1,7 @@
-"""
-    House Module - reference storage for House type information.
-        - loaded from database
-        - imported from '../data/houses/subfolder' (so we need python constr)
+"""House module
+
+    This module contains House class.
+
 """
 
 import copy
@@ -62,7 +62,9 @@ class House(object):
         self.read_house_data()
 
         # house is consisting of connections, coverages, and zones
-        self.set_house_wind_params()
+        self.set_wind_orientation()
+        self.set_construction_level()
+        self.set_wind_profile()
         self.set_coverages()
         self.set_zones()
         self.set_connections()
@@ -311,21 +313,6 @@ class House(object):
             logging.debug('cpi for bldg without dominant opening: {}'.format(cpi))
 
         return cpi
-
-    def set_house_wind_params(self):
-        """
-        will be constant through wind steps
-        Returns:
-            wind_orientation,
-            construction_level, str_mean_factor, str_cov_factor,
-            profile, mzcat
-
-        """
-        self.set_wind_orientation()
-
-        self.set_construction_level()
-
-        self.set_wind_profile()
 
     def set_wind_orientation(self):
         # set wind_orientation

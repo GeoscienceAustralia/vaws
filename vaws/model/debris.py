@@ -85,10 +85,10 @@ class Debris(object):
                  dN = f * (dD/dV) * dV
 
         Args:
-            value:
+            value (float) :
 
         Returns:
-
+            set no_items_mean
         """
         assert isinstance(value, Number)
 

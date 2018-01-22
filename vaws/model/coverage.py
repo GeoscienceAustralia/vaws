@@ -1,5 +1,7 @@
-"""
-    Coverage Module
+"""Coverage Module
+
+    This module contains Coverage class.
+
 """
 
 import logging
