@@ -97,8 +97,9 @@ class Connection(object):
 
         """
         mu, std = compute_arithmetic_mean_stddev(*self.lognormal_strength)
+
         mu *= mean_factor
-        std *= cov_factor
+        std *= cov_factor * mean_factor
 
         self.strength = sample_lognorm_given_mean_stddev(mu, std, rnd_state)
 
@@ -484,12 +485,13 @@ class ConnectionTypeGroup(object):
                 logging.error('target connection {} is not found'
                               'when {} is damaged'.format(_name, damaged_connection.name))
             else:
-                target_connection.influences = _dic
-                house_inst.link_connection_to_influence(target_connection)
-
-                logging.debug(
-                    'Influence of connection {} is updated by connection {}'
-                    .format(_name, damaged_connection.name))
+                if target_connection.damaged == 0 or (
+                                target_connection.damaged == 1 and damaged_connection.name == _name):
+                    target_connection.influences = _dic
+                    house_inst.link_connection_to_influence(target_connection)
+                    logging.debug(
+                        'Influence of connection {} is updated by connection {}'
+                        .format(_name, damaged_connection.name))
 
 
 class Influence(object):

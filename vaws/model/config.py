@@ -227,6 +227,7 @@ class Config(object):
         self.debris_sources = None
         self.debris_regions = None
         self.debris_types = {}
+        self.debris_types_ratio = []
         self.footprint = None
 
         # house data
@@ -969,7 +970,7 @@ class Config(object):
     def set_debris_types(self):
 
         _debris_region = self.debris_regions[self.region_name]
-
+        self.debris_types_ratio = []
         for key in self.__class__.debris_types_keys:
 
             self.debris_types[key] = {}
@@ -983,6 +984,8 @@ class Config(object):
                     self.debris_types[key]['{}_std'.format(item)] = std_lnx
                 else:
                     self.debris_types[key][item] = _debris_region['{}_{}'.format(key, item)]
+
+            self.debris_types_ratio.append(self.debris_types[key]['ratio']/100.0)
 
     def set_wind_dir_index(self):
         try:

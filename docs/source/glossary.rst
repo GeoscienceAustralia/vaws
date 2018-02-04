@@ -9,6 +9,45 @@
 ..  glossary::
     :sorted:
 
+    |Cpe|
+        external pressure coefficient
+
+    influence coefficient
+        coefficient relating a connection to either zone or connection with regard to load distribution
+
+    |Cpi|
+        internal pressure coefficient
+
+    |qz|
+        free stream wind pressure
+
+    patch
+        Fragility "implies easily damaged or broken, but is often used to
+
+    connection
+        Fragility "implies easily damaged or broken, but is often used to
+
+    connection type group
+        Fragility "implies easily damaged or broken, but is often used to
+
+    connection type
+        Fragility "implies easily damaged or broken, but is often used to
+
+    coverage
+        Fragility "implies easily damaged or broken, but is often used to
+
+    zone
+        Fragility "implies easily damaged or broken, but is often used to
+
+    debris
+        Fragility "implies easily damaged or broken, but is often used to
+
+    damage index
+        Fragility "implies easily damaged or broken, but is often used to
+
+    wind profile
+        Fragility "implies easily damaged or broken, but is often used to
+
     fragility
         Fragility "implies easily damaged or broken, but is often used to
         describe the probability of a stated level of damage for a specific
@@ -35,3 +74,8 @@
         as a function of environmental excitation.
         It has several synonyms: vulnerability curves, damage functions,
         loss functions.
+
+
+.. |Cpe| replace:: :math:`C_{pe}`
+.. |Cpi| replace:: :math:`C_{pi}`
+.. |qz| replace:: :math:`q_{z}`

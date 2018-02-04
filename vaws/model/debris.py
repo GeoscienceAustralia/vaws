@@ -40,6 +40,8 @@ class Debris(object):
                     2: 0.0, 6: 0.0,  # E, W
                     3: -45.0, 7: -45.0}  # SE, NW
 
+    amplification_factor = 5.0
+
     def __init__(self, cfg):
 
         self.cfg = cfg
@@ -61,11 +63,12 @@ class Debris(object):
         self._no_items_mean = None  # mean value for poisson dist
 
         self.debris_items = []  # container of items over wind steps
+        self.debris_momentums = []
 
         # vary over wind speeds
         self.no_items = 0  # total number of debris items generated
         self.no_touched = 0
-        # self.breached = 0  # only due to window breakage
+        self.sampled_impacts = 0
         self.damaged_area = 0.0  # total damaged area by debris items
 
     @property
@@ -174,25 +177,27 @@ class Debris(object):
         """
 
         self.no_touched = 0
+        self.debris_momentums = []
 
         # sample a poisson for each source
         no_items_by_source = self.rnd_state.poisson(
             self.no_items_mean, size=len(self.cfg.debris_sources))
 
         self.no_items = no_items_by_source.sum()
-        logging.debug('no_item_by_source at speed {:.3f}: {}, {}'.format(
+        logging.debug('no_item_by_source at speed {:.3f}: {} sampled with {}'.format(
             wind_speed, self.no_items, self.no_items_mean))
 
         # loop through sources
         for no_item, source in zip(no_items_by_source, self.cfg.debris_sources):
 
             list_debris = self.rnd_state.choice(self.cfg.debris_types_keys,
-                                                size=no_item, replace=True)
+                                                size=no_item, replace=True,
+                                                p=self.cfg.debris_types_ratio)
 
             # logging.debug('source: {}, list_debris: {}'.format(source, list_debris))
 
-            for _debris_type in list_debris:
-                self.generate_debris_item(wind_speed, source, _debris_type)
+            for debris_type in list_debris:
+                self.generate_debris_item(wind_speed, source, debris_type)
 
     def generate_debris_item(self, wind_speed, source, debris_type_str):
         """
@@ -254,13 +259,12 @@ class Debris(object):
                                                          frontal_area,
                                                          flight_distance,
                                                          mass,
-                                                         wind_speed,
-                                                         self.rnd_state)
+                                                         wind_speed)
 
             self.check_debris_impact(frontal_area, item_momentum)
 
-            logging.debug('debris impact from {}, {}'.format(
-                pt_debris.x, pt_debris.y))
+        logging.debug('debris impact from {}, {}'.format(
+            pt_debris.x, pt_debris.y))
 
     def check_debris_impact(self, frontal_area, item_momentum):
         """
@@ -294,7 +298,10 @@ class Debris(object):
                 _coverage.breached_area = _coverage.area
                 _coverage.breached = 1
             else:
-                _coverage.breached_area = min(frontal_area, _coverage.area)
+                _coverage.breached_area = min(
+                    #frontal_area * self.__class__.amplification_factor,
+                    1.0,
+                    _coverage.area)
 
             logging.debug('coverage {} breached by debris b/c {:.3f} < {:.3f} -> area: {:.3f}'.format(
                 _coverage.name, _capacity, item_momentum, _coverage.breached_area))
@@ -353,7 +360,7 @@ class Debris(object):
             return convert_to_dim * less_dis
 
     def compute_debris_momentum(self, cdav, frontal_area, flight_distance, mass,
-                                wind_speed, rnd_state):
+                                wind_speed):
         """
         calculate momentum of debris object
 
@@ -363,7 +370,6 @@ class Debris(object):
             flight_distance:
             mass:
             wind_speed:
-            rnd_state:
 
         Returns: momentum of debris object
 
@@ -405,7 +411,7 @@ class Debris(object):
         beta_b = dispersion * (1.0 - _mean)
 
         # momentum of object: mass*vs = mass*vs*(um/vs)
-        return mass * wind_speed * rnd_state.beta(beta_a, beta_b)
+        return mass * wind_speed * self.rnd_state.beta(beta_a, beta_b)
 
     @staticmethod
     def create_sources(radius, angle, bldg_spacing, flag_staggered,

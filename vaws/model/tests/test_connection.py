@@ -162,8 +162,262 @@ class MyTestCase(unittest.TestCase):
             #self.assertAlmostEqual(_type.capacity,
             #                      ref_capacity[id_type], places=1)
 
+
+class MyTestCaseConnectionGroup(unittest.TestCase):
+    @classmethod
+    def setUpClass(cls):
+        path = os.sep.join(__file__.split(os.sep)[:-1])
+        cfg_file = os.path.join(path, 'test_scenarios',
+                                'test_scenario16',
+                                'test_scenario16.cfg')
+        cls.cfg = Config(cfg_file=cfg_file)
+
+    def assert_influence_coeff(self, _dic, house_inst):
+
+        for key0, value0 in _dic.iteritems():
+            for key1, value1 in value0.iteritems():
+                code_value = house_inst.connections[key0].influences[key1].coeff
+                try:
+                    self.assertEqual(code_value, value1)
+                except AssertionError:
+                    print('infl for {}:{} should be {} not {}'.format(
+                        key0, key1, value1, code_value))
+
+    def test_update_influence_by_patch1(self):
+
+        rnd_state = np.random.RandomState(1)
+        house = House(self.cfg, rnd_state=rnd_state)
+
+        init_dic = {121: {'A13': 0.81, 'A14': 0.19},
+                    122: {'A13': 0.75, 'A14': 0.75},
+                    123: {'A13': 0.19, 'A14': 0.81}}
+
+        self.assert_influence_coeff(init_dic, house)
+
+        # connection 121 failed
+        failed = house.groups['rafter0'].connections[121]
+        failed.damaged = 1
+        house.groups['rafter0'].update_influence_by_patch(failed,
+                                                          house)
+
+        _dic = {121: {'A13': 0.0, 'A14': 0.0},
+                122: {'A13': 1.0, 'A14': 0.0},
+                123: {'A13': 1.0, 'A14': 1.0}}
+
+        self.assert_influence_coeff(_dic, house)
+
+        # connection 122 failed after 121
+        failed = house.groups['rafter0'].connections[122]
+        failed.damaged = 1
+        house.groups['rafter0'].update_influence_by_patch(failed,
+                                                          house)
+
+        assert house.connections[121].damaged == 1.0
+        assert house.connections[122].damaged == 1.0
+
+        _dic = {121: {'A13': 0.0, 'A14': 0.0},
+                122: {'A13': 0.0, 'A14': 0.0},
+                123: {'A13': 0.0, 'A14': 1.0}}
+
+        self.assert_influence_coeff(_dic, house)
+
+    def test_update_influence_by_patch2(self):
+
+        rnd_state = np.random.RandomState(1)
+        house = House(self.cfg, rnd_state=rnd_state)
+
+        init_dic = {121: {'A13': 0.81, 'A14': 0.19},
+                    122: {'A13': 0.75, 'A14': 0.75},
+                    123: {'A13': 0.19, 'A14': 0.81}}
+
+        self.assert_influence_coeff(init_dic, house)
+
+        # connection 122 failed
+        failed = house.groups['rafter0'].connections[122]
+        failed.damaged = 1
+        house.groups['rafter0'].update_influence_by_patch(failed,
+                                                          house)
+
+        _dic = {121: {'A13': 1.0, 'A14': 0.0},
+                122: {'A13': 0.0, 'A14': 0.0},
+                123: {'A13': 0.0, 'A14': 1.0}}
+
+        self.assert_influence_coeff(_dic, house)
+
+        # connection 121 failed after 122
+        failed = house.groups['rafter0'].connections[121]
+        failed.damaged = 1
+        house.groups['rafter0'].update_influence_by_patch(failed,
+                                                          house)
+
+        assert house.connections[121].damaged == 1.0
+        assert house.connections[122].damaged == 1.0
+
+        _dic = {121: {'A13': 0.0, 'A14': 0.0},
+                122: {'A13': 0.0, 'A14': 0.0},
+                123: {'A13': 1.0, 'A14': 1.0}}
+
+        self.assert_influence_coeff(_dic, house)
+
+    def test_update_influence_for_connection1(self):
+
+        rnd_state = np.random.RandomState(1)
+        house = House(self.cfg, rnd_state=rnd_state)
+
+        init_dic = {1: {'A1': 1.0},
+                    2: {'A2': 1.0},
+                    3: {'A3': 1.0},
+                    4: {'A4': 1.0},
+                    5: {'A5': 1.0},
+                    6: {'A6': 1.0}}
+
+        self.assert_influence_coeff(init_dic, house)
+
+        # connection 1 failed
+        failed = house.connections[1]
+        failed.damaged = 1
+        target = house.connections[2]
+        target.update_influence(failed, influence_coeff=1.0)
+
+        _dic = {2: {'A2': 1.0, 'A1': 1.0},
+                3: {'A3': 1.0},
+                4: {'A4': 1.0},
+                5: {'A5': 1.0},
+                6: {'A6': 1.0}}
+
+        self.assert_influence_coeff(_dic, house)
+
+        # connection 2 failed after connection 1
+        failed = house.connections[2]
+        failed.damaged = 1
+        target = house.connections[3]
+        target.update_influence(failed, influence_coeff=1.0)
+
+        _dic = {3: {'A2': 1.0, 'A1': 1.0, 'A3': 1.0},
+                4: {'A4': 1.0},
+                5: {'A5': 1.0},
+                6: {'A6': 1.0}}
+
+        self.assert_influence_coeff(_dic, house)
+
+    def test_update_influence_for_connection2(self):
+
+        rnd_state = np.random.RandomState(1)
+        house = House(self.cfg, rnd_state=rnd_state)
+
+        init_dic = {1: {'A1': 1.0},
+                    2: {'A2': 1.0},
+                    3: {'A3': 1.0},
+                    4: {'A4': 1.0},
+                    5: {'A5': 1.0},
+                    6: {'A6': 1.0}}
+
+        self.assert_influence_coeff(init_dic, house)
+
+        # connection 2 failed
+        failed = house.connections[2]
+        failed.damaged = 1
+        target = house.connections[1]
+        target.update_influence(failed, influence_coeff=0.5)
+
+        target = house.connections[3]
+        target.update_influence(failed, influence_coeff=0.5)
+
+        _dic = {1: {'A2': 0.5, 'A1': 1.0},
+                3: {'A3': 1.0, 'A2': 0.5},
+                4: {'A4': 1.0},
+                5: {'A5': 1.0},
+                6: {'A6': 1.0}}
+
+        self.assert_influence_coeff(_dic, house)
+
+        # connection 3 failed after connection 2
+        failed = house.connections[3]
+        failed.damaged = 1
+        target = house.connections[1]
+        target.update_influence(failed, influence_coeff=0.5)
+
+        target = house.connections[4]
+        target.update_influence(failed, influence_coeff=0.5)
+
+        _dic = {1: {'A2': 0.75, 'A1': 1.0, 'A3': 0.5},
+                4: {'A4': 1.0, 'A3': 0.5, 'A2': 0.25},
+                5: {'A5': 1.0},
+                6: {'A6': 1.0}}
+
+        self.assert_influence_coeff(_dic, house)
+
+    def test_update_influence_for_group1(self):
+        """corresponding to test_update_influence_for_connection1, but uses
+        group level update_influence
+        """
+
+        rnd_state = np.random.RandomState(1)
+        house = House(self.cfg, rnd_state=rnd_state)
+
+        # sheeting1 group connection 1 failed
+        _group = house.groups['sheeting1']
+        _group.damage_grid[0, 0] = 1
+        _group.damaged = [0]
+
+        _group.update_influence(house)
+
+        _dic = {2: {'A2': 1.0, 'A1': 1.0},
+                3: {'A3': 1.0},
+                4: {'A4': 1.0}}
+
+        self.assert_influence_coeff(_dic, house)
+
+        # connection 2 failed after connection 1
+        _group.damage_grid[0, 1] = 1
+        _group.damaged = [0]
+        _group.update_influence(house)
+
+        _dic = {3: {'A2': 1.0, 'A1': 1.0, 'A3': 1.0}}
+
+        self.assert_influence_coeff(_dic, house)
+
+    def test_update_influence_for_group2(self):
+        """corresponding to test_update_influence_by_patch1, but uses
+        group level update_influence
+        """
+
+        rnd_state = np.random.RandomState(1)
+        house = House(self.cfg, rnd_state=rnd_state)
+
+        init_dic = {121: {'A13': 0.81, 'A14': 0.19},
+                    122: {'A13': 0.75, 'A14': 0.75},
+                    123: {'A13': 0.19, 'A14': 0.81}}
+
+        self.assert_influence_coeff(init_dic, house)
+
+
+        # connection 121 failed
+        _group = house.groups['rafter0']
+        _group.damage_grid[0, 0] = 1
+        _group.damaged = [0]
+        _group.connections[121].damaged = 1.0
+        _group.update_influence(house)
+
+        _dic = {121: {'A13': 0.0, 'A14': 0.0},
+                122: {'A13': 1.0, 'A14': 0.0},
+                123: {'A13': 1.0, 'A14': 1.0}}
+
+        self.assert_influence_coeff(_dic, house)
+
+        # connection 122 failed after 121
+        _group.damage_grid[0, 4] = 1
+        _group.damaged = [0]
+        _group.connections[122].damaged = 1.0
+        _group.update_influence(house)
+
+        _dic = {121: {'A13': 0.0, 'A14': 0.0},
+                122: {'A13': 0.0, 'A14': 0.0},
+                123: {'A13': 0.0, 'A14': 1.0}}
+
+        self.assert_influence_coeff(_dic, house)
+
 if __name__ == '__main__':
     unittest.main()
-
-# suite = unittest.TestLoader().loadTestsFromTestCase(MyTestCase)
-# unittest.TextTestRunner(verbosity=2).run(suite)
+    # suite = unittest.TestLoader().loadTestsFromTestCase(MyTestCaseConnectionGroup)
+    # unittest.TextTestRunner(verbosity=2).run(suite)

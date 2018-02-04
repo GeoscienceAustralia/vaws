@@ -67,8 +67,16 @@ The Test button in the Debris tab demonstrates debris generation function at a s
     :align: center
     :width: 80 %
 
-    Vulnerability curves implemented in the debris test function
+    Vulnerability curves implemented in the debris test function using the parameter values listed in :numref:`vul_parameters_table`.
 
+.. tabularcolumns:: |p{4.0cm}|p{4.0cm}|p{4.0cm}|
+.. _vul_parameters_table:
+.. csv-table:: Parameter values for vulnerability curves :eq:`cdf_weibull_oz` used in the debris test
+    :header: name, |alpha|, |beta|
+    :widths: 30, 30, 30
+
+    Capital_city, 0.1585, 3.8909
+    Tropical_town, 0.1030, 4.1825
 
 The Test button in the Construction tab shows distribution of connection strength of the selected connection type. Example of sampled strength of batten type is shown in :numref:`test_construction_fig`.
 
@@ -79,14 +87,14 @@ The Test button in the Construction tab shows distribution of connection strengt
 
     Distribution of sampled strength of the selected connection type
 
-The Test button in the Water tab shows relationship between percentage of water ingress vs. wind speed for a range of damage index as shown in :numref:`test_water_ingress_fig`.
+The Test button in the Water tab shows relationship between percentage of water ingress and wind speed for a range of damage index as shown in :numref:`test_water_ingress_fig`.
 
 .. _test_water_ingress_fig:
 .. figure:: _static/image/test_water_ingress.png
     :align: center
     :width: 80 %
 
-    Relationship between percentage of water ingress vs. wind speed
+    Relationship between percentage of water ingress and wind speed
 
 
 Bottom left
@@ -205,7 +213,23 @@ The Damages tab shows heatmap by connection type group such as Sheeting, Batten,
 Curves tab
 ^^^^^^^^^^
 
-The Curves tab shows curves in four sub-windows: Vulnerability, Fragility, Water Ingress, and Debris. The Vulnerability window shows a scatter plot of damage indices at each wind speed along with two fitted vulnerability curves, one of which is fitted to cumulative lognormal distribution function and the other one is to cumulative Weibull distribution function. An example plot is shown in :numref:`curves_vulnerability_fig`.
+The Curves tab shows curves in four sub-windows: Vulnerability, Fragility, Water Ingress, and Debris. The Vulnerability window shows a scatter plot of damage indices at each wind speed along with two fitted vulnerability curves, one of which is fitted to cumulative lognormal distribution function as :eq:`cdf_lognormal` and the other one is to cumulative Weibull distribution function as :eq:`cdf_weibull_oz`. The estimated parameter values are displayed at the top.
+
+
+.. math::
+    :label: cdf_lognormal
+
+    F_X(x; m, \sigma) = \Phi\left( \frac{\ln (x / m)} \sigma \right)
+
+where :math:`\Phi`: the cumulative distribution function of the standard normal distribution, :math:`m`: median, and :math:`\sigma`: logarithmic standard deviation.
+
+.. math::
+    :label: cdf_weibull_oz
+
+    F(x; \alpha, \beta) = 1- \exp\left[-\left(\frac{x}{e^\beta}\right)^\frac{1}{\alpha}\right]
+
+
+An example plot is shown in :numref:`curves_vulnerability_fig`.
 
 
 .. _curves_vulnerability_fig:
@@ -258,4 +282,6 @@ Running simulations
 ===================
 
 
+.. |alpha| replace:: :math:`\alpha`
+.. |beta| replace:: :math:`\beta`
 

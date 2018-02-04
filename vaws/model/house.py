@@ -275,7 +275,7 @@ class House(object):
             area_else = breached_area_by_wall.sum() - max_breached.iloc[0]
             if area_else:
                 ratio = max_breached.iloc[0] / area_else
-                row = (self.cfg.dominant_opening_ratio_thresholds < ratio).sum()
+                row = (self.cfg.dominant_opening_ratio_thresholds <= ratio).sum()
             else:
                 row = 4
 
@@ -299,7 +299,7 @@ class House(object):
         elif len(max_breached) == len(breached_area_by_wall):  # all equal openings
             if max_breached.iloc[0]:
                 cpi = -0.3
-            else:
+            else:  # in case no opening
                 cpi = 0.0
 
             logging.debug('cpi for bldg without dominant opening: {}'.format(cpi))

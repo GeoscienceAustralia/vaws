@@ -150,6 +150,8 @@ Parameters of the Options section are listed in :numref:`section_options_table`.
     construction_levels, 'Enabled' tick box in the Construction tab, if True then construction level will be sampled.
     save_heatmaps, 'Save heatmaps' tick box in the Options tab, if True then heatmap plot of each model will be saved.
 
+.. _debris_section:
+
 Debris section
 --------------
 
@@ -848,6 +850,7 @@ where :math:`x`: proportion of damaged area (:math:`0 \leq x \leq 1`), :math:`A`
     internal_coeff3, :math:`c_3` in costing function for internal
     water_ingress_order, order in applying cost induced by water ingress
 
+.. _damage_factorings.csv_section:
 
 damage_factorings.csv
 ---------------------
@@ -865,6 +868,8 @@ This file defines a hierarchy of costings, where each row has a parent and child
     sheeting,batten
 
 
+.. _water_ingress_costing_data.csv_section:
+
 water_ingress_costing_data.csv
 ------------------------------
 
@@ -873,7 +878,7 @@ This file contains costing information of damage induced by water ingress for va
 .. math::
     :label: water_ingress
 
-    WC = B(x) \times C
+    WC = B \times C(x)
 
 where :math:`x`: envelope damage index prior to water ingress (:math:`0 \leq x \leq 1`), :math:`B`: base cost, and :math:`C`: costing function. Like the damage costing functions, two types of costing functions are defined as :eq:`costing_function_types`.
 

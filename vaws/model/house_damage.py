@@ -248,7 +248,15 @@ class HouseDamage(object):
 
         if self.di_except_water < 1.0 and self.cfg.flags['water_ingress']:
 
-            self.compute_water_ingress_cost(prop_area_by_scenario, wind_speed)
+            water_ingress_perc = 100.0 * compute_water_ingress_given_damage(
+                self.di_except_water, wind_speed,
+                self.cfg.water_ingress)
+
+            damage_name = self.determine_scenario_for_water_ingress_costing(
+                prop_area_by_scenario)
+
+            self.compute_water_ingress_cost(damage_name, water_ingress_perc)
+
             _di = (self.repair_cost + self.water_ingress_cost) / self.house.replace_cost
             self.di = min(_di, 1.0)
 
@@ -260,29 +268,32 @@ class HouseDamage(object):
             wind_speed, self.repair_cost, self.water_ingress_cost,
             self.di_except_water, self.di))
 
-    def compute_water_ingress_cost(self, prop_area_by_scenario, wind_speed):
+    def compute_water_ingress_cost(self, damage_name, water_ingress_perc):
         # compute water ingress
-        water_ingress_perc = 100.0 * compute_water_ingress_given_damage(
-            self.di_except_water, wind_speed,
-            self.cfg.water_ingress)
 
+        # finding index close to water ingress threshold
+        _df = self.cfg.water_ingress_costings[damage_name]
+        idx = argsort(abs(_df.index - water_ingress_perc))[0]
+
+        self.water_ingress_cost = \
+            _df['costing'].values[idx].compute_cost(self.di_except_water)
+
+    def determine_scenario_for_water_ingress_costing(self,
+                                                     prop_area_by_scenario):
         # determine damage scenario
         damage_name = 'WI only'  # default
         for _name in self.cfg.damage_order_by_water_ingress:
             try:
                 prop_area_by_scenario[_name]
             except KeyError:
-                logging.warning('{} is not defined in the costing'.format(_name))
+                logging.warning(
+                    '{} is not defined in the costing'.format(_name))
             else:
                 if prop_area_by_scenario[_name]:
                     damage_name = _name
                     break
 
-        # finding index close to water ingress threshold
-        _df = self.cfg.water_ingress_costings[damage_name]
-        idx = argsort(abs(_df.index - water_ingress_perc))[0]
-        self.water_ingress_cost = \
-            _df['costing'].values[idx].compute_cost(self.di_except_water)
+        return damage_name
 
     def apply_damage_factoring(self, area_by_group):
         revised = copy.deepcopy(area_by_group)

@@ -2,12 +2,14 @@
 import unittest
 import pandas as pd
 import os
+import StringIO
 import numpy as np
 import matplotlib.pyplot as plt
 
 from vaws.model.damage_costing import Costing, WaterIngressCosting, \
     compute_water_ingress_given_damage
 from vaws.model.config import Config
+from vaws.model.house_damage import HouseDamage
 
 
 class MyTestCase(unittest.TestCase):
@@ -104,6 +106,37 @@ class WaterIngressTestCase(unittest.TestCase):
         plt.pause(1.0)
         plt.close()
 
+    def test_determine_scenario_for_water_ingress_costing(self):
+
+        damage_order = ['Loss of roof structure', 'Loss of roof sheeting',
+                        'Loss of roof sheeting & purlins']
+        self.assertEqual(self.cfg.damage_order_by_water_ingress,
+                         damage_order)
+
+        repair_cost_by_group = StringIO.StringIO("""sheeting,batten,rafter,expected
+        0.0,0.0,0.0,WI only
+        0.2,0.0,0.0,Loss of roof sheeting
+        0.0,0.2,0.0,Loss of roof sheeting & purlins
+        0.0,0.0,0.2,Loss of roof structure
+        0.2,0.2,0.0,Loss of roof sheeting
+        0.0,0.2,0.2,Loss of roof structure
+        0.2,0.0,0.2,Loss of roof structure
+        """)
+
+        df = pd.read_csv(repair_cost_by_group)
+
+        house_damage = HouseDamage(cfg=self.cfg, seed=1)
+
+        for _, row in df.iterrows():
+            prop_area_by_scenario = {'Loss of roof sheeting': row['sheeting'],
+                                     'Loss of roof sheeting & purlins': row['batten'],
+                                     'Loss of roof structure': row['rafter']}
+            est = house_damage.determine_scenario_for_water_ingress_costing(prop_area_by_scenario)
+            try:
+                self.assertEqual(est, row['expected'])
+            except AssertionError:
+                print('scenario should be {} not {}'.format(row, est))
+
     def test_water_costs(self):
 
         # thresholds = [0, 5.0, 18.0, 37.0, 67.0, 100.0]
@@ -140,7 +173,7 @@ class WaterIngressTestCase(unittest.TestCase):
         for _name, _df in dic_.iteritems():
 
             wi_array = [0, 5.0, 18.0, 37.0, 67.0, 100.0]
-            di_array = np.arange(0.0, 1.1, 0.1)
+            di_array = np.arange(0.01, 1.01, 0.01)
             a = np.zeros((len(wi_array), len(di_array)))
 
             # _df = self.cfg.dic_water_ingress_costings[name]
@@ -153,7 +186,7 @@ class WaterIngressTestCase(unittest.TestCase):
             plt.figure()
             for j in range(a.shape[0]):
                 plt.plot(di_array, a[j, :],
-                         label='WI={:.0f}'.format(wi_array[j]))
+                         label='WI={:.0f}%'.format(wi_array[j]))
 
             plt.legend()
             plt.xlabel('Damage index')
@@ -161,7 +194,7 @@ class WaterIngressTestCase(unittest.TestCase):
             plt.title(_name)
             plt.grid(1)
             plt.pause(1.0)
-            #plt.savefig('./wi_costing_{}'.format(_name))
+            # plt.savefig('./wi_costing_{}'.format(_name), dpi=200)
             plt.close()
 
 if __name__ == '__main__':
