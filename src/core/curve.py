@@ -6,7 +6,11 @@ from scipy.optimize.minpack import leastsq
  
 # --------------------------------------------------------------
 def single_exponential_given_V(A, x_arr):
-    return ( 1 - numpy.exp( -numpy.exp( (numpy.log(x_arr) - A[0]) / A[1] ) ) )
+    if x_arr >= 0:
+        value = numpy.power(x_arr/numpy.exp(A[0]), 1/A[1])
+    else:
+        value = 0.0
+    return 1 - numpy.exp(-value)
 
 # --------------------------------------------------------------
 def objective(A, x_arr, obs_arr):

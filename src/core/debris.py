@@ -264,7 +264,7 @@ class DebrisManager(object):
         for wall in self.front_facing_walls:
             A += wall.area
         self.result_scores.sort()
-                
+
         # Loop through coverages rolling dice until all impacts have been 'drained'
         for wall in self.front_facing_walls:
             for cov in wall.coverages:
@@ -281,7 +281,7 @@ class DebrisManager(object):
                     mean_num_impacts = Nv * (q/A) * (1 - Cum_Ed)
                     if mean_num_impacts > 0:
                         sampled_impacts = engine.poisson(mean_num_impacts)
-                        cov.result_num_impacts += sampled_impacts  
+                        cov.result_num_impacts += sampled_impacts
                         if cov.result_num_impacts > 0:
                             cov.result_intact = False
                 
@@ -312,6 +312,9 @@ class DebrisManager(object):
 if __name__ == '__main__':
     import unittest
     import house
+    import numpy as np
+    import matplotlib.pyplot as plt
+
     database.configure()
     class MyTestCase(unittest.TestCase):
         def test_debris_types(self):
@@ -344,7 +347,63 @@ if __name__ == '__main__':
             mgr = DebrisManager(h, r)
             mgr.set_wind_direction_index(1)
             mgr.run(v, True)
-            mgr.render(v)
+            # mgr.render(v)
+
+        def test_run(self):
+
+            h = house.queryHouseWithName('Group 4 House')
+            r = qryDebrisRegionByName('Capital_city')
+
+            wind_speeds = np.arange(40.0, 120.0, (120-40)/59.0)
+            mgr = DebrisManager(h, r,
+                                wind_min=40.0,
+                                wind_max=120.0,
+                                wind_steps=60,
+                                staggered_sources=False,
+                                debris_radius=100.0,
+                                debris_angle=45.0,
+                                debris_extension=0,
+                                building_spacing=20.0,
+                                source_items=100,
+                                flighttime_mean=2.0,
+                                flighttime_stddev=0.8)
+
+            mgr.set_wind_direction_index(1)
+
+            result_dmgperc = []
+            result_nv = []
+            result_num_items = []
+
+            for wind_speed in wind_speeds:
+                mgr.run(wind_speed, False)
+                result_nv.append(mgr.result_nv)
+                result_dmgperc.append(mgr.result_dmgperc)
+                result_num_items.append(mgr.result_num_items)
+
+            plt.figure()
+            plt.plot(wind_speeds, result_nv, wind_speeds, np.cumsum(result_nv))
+            plt.xlabel('Wind speed (m/s)')
+            plt.ylabel('No of debris touched')
+            plt.grid(1)
+            plt.savefig('nv.png')
+            plt.close()
+
+            plt.figure()
+            plt.plot(wind_speeds, result_dmgperc)
+            plt.xlabel('Wind speed (m/s)')
+            plt.ylabel('Prop. damaged area')
+            plt.ylim([0, 1])
+            plt.grid(1)
+            plt.savefig('dmgperce.png')
+            plt.close()
+
+            plt.figure()
+            plt.plot(wind_speeds, result_num_items, wind_speeds, np.cumsum(result_num_items))
+            plt.xlabel('Wind speed (m/s)')
+            plt.ylabel('No. of debris supply')
+            plt.grid(1)
+            plt.savefig('supply.png')
+            plt.close()
 
     suite = unittest.TestLoader().loadTestsFromTestCase(MyTestCase)
     unittest.TextTestRunner(verbosity=2).run(suite)
