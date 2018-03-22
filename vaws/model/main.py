@@ -183,23 +183,24 @@ def save_results_to_files(cfg, bucket):
                 for item, value in chunk.iteritems():
                     _subgroup.create_dataset(str(item), data=value)
 
-    # plot fragility and vulnerability curves
+        # fragility curves
+        if cfg.no_models > 1:
+            frag_counted = fit_fragility_curves(cfg, bucket['house_damage']['di'])
 
-    if cfg.no_models > 1:
-        frag_counted = fit_fragility_curves(cfg, bucket['house_damage']['di'])
-        if frag_counted:
-            pd.DataFrame.from_dict(frag_counted).transpose().to_csv(
-                cfg.file_curve)
-        else:
-            with open(cfg.file_curve, 'w') as fid:
-                fid.write(', error, param1, param2\n')
+            if frag_counted:
+                _group = hf.create_group('fragility')
+                for key, value in frag_counted.iteritems():
+                    for sub_key, sub_value in value.iteritems():
+                        _group.create_dataset('{}/{}'.format(key, sub_key),
+                                              data=sub_value)
 
-    fitted_curve = fit_vulnerability_curve(cfg, bucket['house_damage']['di'])
-    if not os.path.isfile(cfg.file_curve):
-        with open(cfg.file_curve, 'w') as fid:
-            fid.write(', error, param1, param2\n')
-    with open(cfg.file_curve, 'a') as f:
-        pd.DataFrame.from_dict(fitted_curve).transpose().to_csv(f, header=None)
+        # vulnerability curves
+        fitted_curve = fit_vulnerability_curve(cfg, bucket['house_damage']['di'])
+
+        _group = hf.create_group('vulnearbility')
+        for key, value in fitted_curve.iteritems():
+            for sub_key, sub_value in value.iteritems():
+                _group.create_dataset('{}/{}'.format(key, sub_key), data=sub_value)
 
     if cfg.flags['save_heatmaps']:
 
@@ -221,6 +222,20 @@ def save_results_to_files(cfg, bucket):
                              xlim_max=cfg.house['length'],
                              ylim_max=cfg.house['width'],
                              file_name=file_name)
+
+
+def make_filetype_aware_handler(handler_class):
+    class DontRepeatFiletypeHandler(handler_class):
+
+        def __init__(self, *args, **kwds):
+            super(DontRepeatFiletypeHandler, self).__init__(*args, **kwds)
+            self.previous_types = set()
+
+        def emit(self, record):
+            if not record.file_type in self.previous_types:
+                self.previous_types.add(record.file_type)
+                super(DontRepeatFiletypeHandler, self).emit(record)
+    return DontRepeatFiletypeHandler
 
 
 def set_logger(path_cfg, logging_level=None):

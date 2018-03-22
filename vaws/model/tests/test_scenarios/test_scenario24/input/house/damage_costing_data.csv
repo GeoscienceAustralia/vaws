@@ -1,0 +1,9 @@
+name,surface_area,envelope_repair_rate,envelope_factor_formula_type,envelope_coeff1,envelope_coeff2,envelope_coeff3,internal_repair_rate,internal_factor_formula_type,internal_coeff1,internal_coeff2,internal_coeff3,water_ingress_order
+Loss of roof sheeting,86.18,72.4,1,0.3105,-0.8943,1.6015,0,1,0,0,0,6
+Loss of roof sheeting & purlins,86.18,184.23,1,0.3105,-0.8943,1.6015,0,1,0,0,0,7
+Loss of roof structure,86.18,317,1,0.3105,-0.8943,1.6015,4911.65,1,-0.4902,1.4896,0.0036,3
+Wall debris damage,102.42,375.37,1,0.8862,-1.6957,1.8535,0,1,0,0,0,4
+Loss of wall cladding,102.42,243.72,2,1.0514,-0.2271,0,0,1,0,0,0,5
+Wall collapse,102.42,527.16,1,0.7204,-1.465,1.7809,52017.11,1,-0.4902,1.4896,0.0036,1
+Wall racking,102.42,478.26,1,0.717,-1.427,1.7478,46434.84,1,-0.47,1.4712,0.0022,2
+Loss of guttering,86.18,23.6,1,0.3105,-0.8943,1.6015,0,1,0,0,0,0

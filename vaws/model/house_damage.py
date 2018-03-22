@@ -27,7 +27,7 @@ class HouseDamage(object):
         self.ms = None
         self.cpi = 0.0
         self.collapse = False
-        self.breached = False
+        self.window_breached_by_debris = False
         self.repair_cost = 0.0
         self.water_ingress_cost = 0.0
         self.di = None
@@ -63,7 +63,6 @@ class HouseDamage(object):
 
             # check damage by connection type group
             for _group in self.house.groups.itervalues():
-
                 _group.check_damage(wind_speed)
                 _group.compute_damaged_area()
 
@@ -73,10 +72,16 @@ class HouseDamage(object):
                     _group.update_influence(self.house)
 
             self.check_house_collapse(wind_speed)
-            self.compute_damage_index(wind_speed)
 
             # cpi is computed here for the next step
             self.check_internal_pressurisation(wind_speed)
+
+            if self.house.coverages is not None:
+                self.house.coverages['breached_area'] = \
+                    self.house.coverages['coverage'].apply(
+                        lambda x: x.breached_area)
+
+            self.compute_damage_index(wind_speed)
 
             self.fill_bucket()
 
@@ -173,10 +178,12 @@ class HouseDamage(object):
 
         # area of breached coverages
         if self.house.coverages is not None:
-            self.cpi = self.house.assign_cpi()
+            self.cpi = self.house.compute_damaged_area_and_assign_cpi()
 
-            if self.house.debris.damaged_area:
-                self.breached = True
+            if self.cfg.flags['debris']:
+                window_breach = array([x.breached for x in self.house.debris.coverages.itervalues()]).sum()
+                if window_breach:
+                    self.window_breached_by_debris = True
 
     def check_house_collapse(self, wind_speed):
         """
@@ -341,7 +348,7 @@ class HouseDamage(object):
 
         # include DEBRIS when debris is ON
         if self.cfg.coverages_area:
-            area_by_group['debris'] = self.house.debris.damaged_area
+            area_by_group['debris'] = self.house.coverages['breached_area'].sum()
             total_area_by_group['debris'] = self.cfg.coverages_area
 
         return area_by_group, total_area_by_group

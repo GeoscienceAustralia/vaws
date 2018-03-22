@@ -43,6 +43,8 @@
         * differential shielding may be indirectly disabled by setting 'building_spacing' to 0
 """
 
+from __future__ import division, print_function
+
 import os
 import sys
 import logging
@@ -143,6 +145,7 @@ class Config(object):
          2: {'windward': 0.7, 'leeward': 1.0, 'side1': 1.0, 'side2': 1.0},
          3: {'windward': 0.85, 'leeward': 1.0, 'side1': 1.0, 'side2': 1.0},
          4: {'windward': 1.0, 'leeward': 1.0, 'side1': 1.0, 'side2': 1.0}}
+    flags_pressure = ['cpe_str', 'cpe']
 
     # model dependent attributes
     house_bucket = ['profile', 'wind_orientation', 'construction_level',
@@ -152,7 +155,7 @@ class Config(object):
 
     house_damage_bucket = ['qz', 'ms', 'cpi', 'collapse', 'di',
                            'di_except_water', 'repair_cost',
-                           'water_ingress_cost', 'breached']
+                           'water_ingress_cost', 'window_breached_by_debris']
 
     debris_bucket = ['no_items', 'no_touched', 'damaged_area']
 
@@ -163,7 +166,7 @@ class Config(object):
 
     connection_bucket = ['damaged', 'capacity', 'load', 'strength', 'dead_load']
 
-    zone_bucket = ['pressure', 'cpe', 'cpe_str', 'cpe_eave']
+    zone_bucket = ['pressure_cpe', 'pressure_cpe_str', 'cpe', 'cpe_str', 'cpe_eave']
 
     coverage_bucket = ['strength_negative', 'strength_positive', 'load',
                        'breached', 'breached_area', 'capacity']
@@ -217,6 +220,7 @@ class Config(object):
         self.region_name = None
         self.staggered_sources = None
         self.source_items = 0
+        self.boundary_radius = 0.0
         self.building_spacing = None
         self.debris_radius = 0.0
         self.debris_angle = 0.0
@@ -310,9 +314,9 @@ class Config(object):
         self.set_flight_time_log()  # flight_time_log_mu, flight_time_log_std
 
         self.set_house()
-        df_groups, list_groups = self.set_groups()
+        df_groups = self.set_groups()
         df_types = self.set_types()
-        self.set_connections(df_types, list_groups)
+        self.set_connections(df_types, df_groups)
         self.set_zones()
         self.set_coverages()
 
@@ -444,7 +448,8 @@ class Config(object):
         except (IOError, TypeError) as msg:
             logging.warning('{}'.format(msg))
         else:
-            self.coverages['cpe_mean'] = pd.Series(coverages_cpe_mean)
+            if coverages_cpe_mean:
+                self.coverages['cpe_mean'] = pd.Series(coverages_cpe_mean)
 
         _file = os.path.join(self.path_house_data, FILE_FRONT_FACING_WALLS)
         try:
@@ -463,6 +468,7 @@ class Config(object):
 
         self.staggered_sources = conf.getboolean(key, 'staggered_sources')
         self.source_items = conf.getint(key, 'source_items')
+        self.boundary_radius = conf.getfloat(key, 'boundary_radius')
         for item in ['building_spacing', 'debris_radius', 'debris_angle',
                      'flight_time_mean', 'flight_time_stddev']:
             setattr(self, item, conf.getfloat(key, item))
@@ -574,8 +580,7 @@ class Config(object):
         else:
             self.groups = df_groups.to_dict('index')
             df_groups.sort_values(by='dist_order', inplace=True)
-            list_groups = df_groups.index.tolist()
-        return df_groups, list_groups
+        return df_groups
 
     def set_types(self):
 
@@ -598,21 +603,24 @@ class Config(object):
             self.types = df_types.to_dict('index')
         return df_types
 
-    def set_connections(self, types, list_groups):
+    def set_connections(self, types, df_groups):
         # connections
         _file = os.path.join(self.path_house_data, FILE_CONNECTIONS)
         try:
-            _connections = self.read_file_connections(_file, types)
+            dump = self.read_file_connections(_file)
         except IOError as msg:
             logging.error('{}'.format(msg))
         else:
-            self.connections = _connections
+            self.connections = self.process_read_file_connections(dump, types)
             self.list_connections = self.connections.index.tolist()
 
             self.damage_grid_by_sub_group = self.connections.groupby('sub_group')['grid_max'].apply(
                 lambda x: x.unique()[0]).to_dict()
+            list_groups = df_groups.index.tolist()
             self.connections['group_idx'] = self.connections['group_name'].apply(
                 lambda x: list_groups.index(x))
+            self.connections['flag_pressure'] = self.connections['group_name'].apply(
+                lambda x: df_groups.loc[x, 'flag_pressure'])
             self.list_groups = self.connections['sub_group'].unique().tolist()
 
     def set_influences_and_influence_patches(self):
@@ -734,7 +742,7 @@ class Config(object):
             return []
 
     @classmethod
-    def read_file_connections(cls, file_connections, types):
+    def read_file_connections(cls, file_connections):
 
         dump = []
         with open(file_connections, 'rU') as f:
@@ -757,6 +765,10 @@ class Config(object):
 
                     dump.append(tmp)
 
+        return dump
+
+    @classmethod
+    def process_read_file_connections(cls, dump, types):
         _df = pd.DataFrame(dump, columns=['conn_name', 'type_name', 'zone_loc',
                                           'section', 'coords'])
         _df['conn_name'] = _df['conn_name'].astype(int)
@@ -765,6 +777,11 @@ class Config(object):
         _df['centroid'] = _df.apply(cls.return_centroid, axis=1)
 
         _df['group_name'] = types.loc[_df['type_name'], 'group_name'].values
+
+        if _df['group_name'].isnull().sum():
+            logging.error('type_name in connections.csv is inconsistent with '
+                          'conn_types.csv')
+
         _df['sub_group'] = _df.apply(
             lambda row: row['group_name'] + row['section'], axis=1)
         _df['costing_area'] = _df['type_name'].apply(
@@ -985,7 +1002,7 @@ class Config(object):
                 else:
                     self.debris_types[key][item] = _debris_region['{}_{}'.format(key, item)]
 
-            self.debris_types_ratio.append(self.debris_types[key]['ratio']/100.0)
+            self.debris_types_ratio.append(self.debris_types[key]['ratio'] / 100)
 
     def set_wind_dir_index(self):
         try:

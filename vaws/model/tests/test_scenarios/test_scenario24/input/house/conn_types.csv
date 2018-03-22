@@ -1,0 +1,14 @@
+type_name,strength_mean,strength_std,dead_load_mean,dead_load_std,group_name,costing_area
+sheetingcorner,4.62,0.69,0.015,0.001,sheeting,0.36
+sheetingeave,4.62,0.69,0.015,0.001,sheeting,0.36
+sheetingridge,4.62,0.69,0.0215,0.001,sheeting,0.513
+sheeting,4.62,0.69,0.034,0.001,sheeting,0.81
+batten,4,1.26,0.027,0.001,batten,0.81
+battenridge,4,1.26,0.027,0.001,batten,0.513
+batteneave,4,1.26,0.027,0.001,batten,0.36
+battenend,4,1.26,0.027,0.001,batten,0.81
+raftertopplate,19.5,5.85,0.96,0.01,rafter,2.709
+rafterridge,16.5,4.95,0.3,0.01,rafter,4.158
+raftercollartie,2.4,0.48,0.36,0.01,rafter,2.079
+rafterridgecollared,16.5,4.95,0.08,0.01,rafter,1.62
+raftertopplatecollared,19.5,5.85,0.96,0.01,rafter,1.899

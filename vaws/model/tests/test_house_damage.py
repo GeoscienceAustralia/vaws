@@ -517,8 +517,7 @@ dmg_ratio_debris,dmg_ratio_wallcladding,dmg_ratio_wallcollapse,loss_ratio
 
         for _, item in ref_dat.iterrows():
 
-            self.house_damage.house.debris.damaged_area = item[
-                                                              'dmg_ratio_debris'] * self.cfg.coverages_area
+            self.house_damage.house.coverages.loc[0, 'breached_area'] = item['dmg_ratio_debris'] * self.cfg.coverages_area
 
             # assign damage area
             for group_name, group in self.house_damage.house.groups.iteritems():
@@ -540,5 +539,5 @@ dmg_ratio_debris,dmg_ratio_wallcladding,dmg_ratio_wallcollapse,loss_ratio
 
 if __name__ == '__main__':
     unittest.main()
-    # suite = unittest.TestLoader().loadTestsFromTestCase(TestHouseDamage2)
-    # unittest.TextTestRunner(verbosity=2).run(suite)
+    #suite = unittest.TestLoader().loadTestsFromTestCase(TestHouseDamage2)
+    #unittest.TextTestRunner(verbosity=2).run(suite)

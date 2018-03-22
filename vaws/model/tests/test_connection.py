@@ -87,7 +87,7 @@ class MyTestCase(unittest.TestCase):
         # load = influence.pz * influence.coeff * influence.area + dead_load
         self.assertAlmostEqual(_conn.influences['A1'].source.area, 0.2025,
                                places=4)
-        self.assertAlmostEqual(_conn.influences['A1'].source.pressure, -0.7485,
+        self.assertAlmostEqual(_conn.influences['A1'].source.pressure_cpe, -0.7485,
                                places=4)
         self.assertAlmostEqual(_conn.load, -0.1414, places=4)
 
@@ -117,7 +117,7 @@ class MyTestCase(unittest.TestCase):
                                      building_spacing)
             ref_value = qz * (_zone.cpe_mean[0] + _zone.cpe_str_mean[0]
                               - _zone.cpe_eave_mean[0])
-            self.assertAlmostEqual(_zone.pressure, ref_value, places=4)
+            self.assertAlmostEqual(_zone.pressure_cpe, ref_value, places=4)
 
         # compute dead_load and strength using constant values
         for _conn in house.connections.itervalues():

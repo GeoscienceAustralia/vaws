@@ -3,7 +3,7 @@
     This module contains functions related to fragility and vulnerability curves.
 
 """
-
+from __future__ import division, print_function
 import logging
 import warnings
 
@@ -64,8 +64,7 @@ def fit_fragility_curves(cfg, df_dmg_idx):
     # calculate damage probability
     frag_counted = OrderedDict()
     for state, value in cfg.fragility.iterrows():
-        counted = (df_dmg_idx > value['threshold']).sum(axis=1) / \
-            float(cfg.no_models)
+        counted = (df_dmg_idx > value['threshold']).sum(axis=1) / cfg.no_models
 
         try:
             popt, pcov = curve_fit(vulnerability_lognorm, cfg.speeds, counted)

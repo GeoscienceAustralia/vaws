@@ -56,7 +56,8 @@ class MyTestCase(unittest.TestCase):
                                      ms=1.0,
                                      building_spacing=0)
 
-        self.assertAlmostEqual(self.zone.pressure, -0.1276, places=4)
+        self.assertAlmostEqual(self.zone.pressure_cpe, -0.0888, places=4)
+        self.assertAlmostEqual(self.zone.pressure_cpe_str, -0.0388, places=4)
 
     # def test_num2str(self):
     #     self.assertEqual(num2str(1), 'A')

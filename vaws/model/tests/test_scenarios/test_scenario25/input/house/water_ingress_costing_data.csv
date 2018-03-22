@@ -1,0 +1,49 @@
+name,water_ingress,base_cost,formula_type,coeff1,coeff2,coeff3
+Loss of roof sheeting,0,0,1,0,0,1
+Loss of roof sheeting,5,1764.08,1,0,0,1
+Loss of roof sheeting,18,6350.7,1,0,0,1
+Loss of roof sheeting,37,13054.21,1,0,0,1
+Loss of roof sheeting,67,23638.7,1,0,0,1
+Loss of roof sheeting,100,35281.64,1,0,0,1
+Loss of roof sheeting & purlins,0,0,1,0,0,1
+Loss of roof sheeting & purlins,5,1764.08,1,0,0,1
+Loss of roof sheeting & purlins,18,6350.7,1,0,0,1
+Loss of roof sheeting & purlins,37,13054.21,1,0,0,1
+Loss of roof sheeting & purlins,67,23638.7,1,0,0,1
+Loss of roof sheeting & purlins,100,35281.64,1,0,0,1
+Loss of roof structure,0,0,1,0,0,1
+Loss of roof structure,5,1378.03,2,0.9894,-0.0177,0
+Loss of roof structure,18,4960.93,2,0.9832,-0.0561,0
+Loss of roof structure,37,10542.04,2,0.9817,-0.0632,0
+Loss of roof structure,67,19552.71,1,0.2974,-0.5077,1.212
+Loss of roof structure,100,29464.45,1,0.0968,-0.2941,1.1967
+Wall debris damage,0,0,1,0,0,1
+Wall debris damage,5,1593.47,1,0,0,1
+Wall debris damage,18,5736.49,2,0.9921,-0.0125,0
+Wall debris damage,37,11791.67,2,0.9867,-0.0251,0
+Wall debris damage,67,21352.48,2,0.9948,-0.032,0
+Wall debris damage,100,31869.38,1,0.0596,-0.1638,1.1032
+Loss of wall cladding,0,0,1,0,0,1
+Loss of wall cladding,5,1593.47,2,0.9973,-0.0039,0
+Loss of wall cladding,18,5736.49,2,0.9884,-0.0214,0
+Loss of wall cladding,37,11791.67,1,0.1126,-0.2059,1.0921
+Loss of wall cladding,67,21932.57,1,0.0384,-0.1096,1.0702
+Loss of wall cladding,100,33575.51,1,0.0251,-0.0716,1.0458
+Wall collapse,0,0,1,0,0,1
+Wall collapse,5,89.67,2,0.9384,-0.22,0
+Wall collapse,18,455.89,2,0.7259,-0.7127,0
+Wall collapse,37,1112.69,2,0.7621,-0.8668,0
+Wall collapse,67,2149.75,1,15.202,-25.532,11.4
+Wall collapse,100,5626.98,1,3.8128,-9.3262,6.5114
+Wall racking,0,0,1,0,0,1
+Wall racking,5,89.67,2,0.9384,-0.22,0
+Wall racking,18,455.89,2,0.7227,-0.7233,0
+Wall racking,37,1112.69,2,0.7772,-0.87,0
+Wall racking,67,2149.75,1,14.677,-25.043,11.407
+Wall racking,100,6231.72,1,3.3952,-8.2766,5.8799
+WI only,0,0,1,0,0,1
+WI only,5,1764.08,1,0,0,1
+WI only,18,6350.7,1,0,0,1
+WI only,37,13054.21,1,0,0,1
+WI only,67,23638.7,1,0,0,1
+WI only,100,35281.64,1,0,0,1

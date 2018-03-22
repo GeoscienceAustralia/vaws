@@ -13,6 +13,9 @@ from stats import sample_gev
 
 
 class Zone(object):
+
+    flags_pressure = ['cpe', 'cpe_str']
+
     def __init__(self, zone_name=None, **kwargs):
         """
         Args:
@@ -52,7 +55,8 @@ class Zone(object):
         self.cpe = None
         self.cpe_str = None
         self.cpe_eave = None
-        self.pressure = None
+        self.pressure_cpe = 0.0
+        self.pressure_cpe_str = 0.0
 
     def sample_cpe(self, wind_dir_index, cpe_cov, cpe_k, big_a, big_b,
                    cpe_str_cov, cpe_str_k, big_a_str, big_b_str, rnd_state):
@@ -110,13 +114,11 @@ class Zone(object):
                                                        flag_diff_shielding,
                                                        wind_dir_index)
 
-        # either cpe or cpe_str should be zero, and cpe_eave is counted once
-        try:
-            assert self.cpe * self.cpe_str == 0.0
-        except AssertionError:
-            logging.warning('Either cpe or cpe_str should be zero for {}'.format(self.name))
-        self.pressure = qz * (self.cpe + self.cpe_str - self.cpi_alpha * cpi
-                              - self.cpe_eave) * self.diff_shielding
+        for item in self.__class__.flags_pressure:
+            value = qz * (
+                getattr(self, item) - self.cpi_alpha * cpi - self.cpe_eave
+                ) * self.diff_shielding
+            setattr(self, 'pressure_{}'.format(item), value)
 
     def calc_diff_shielding(self, ms, building_spacing, flag_diff_shielding,
                             wind_dir_index):

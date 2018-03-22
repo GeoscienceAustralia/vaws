@@ -117,7 +117,7 @@ def compute_logarithmic_mean_stddev(m, stddev):
     assert stddev >= 0.0
 
     if m:
-        mu = 2 * log(m) - 0.5 * log(stddev**2.0 + m**2.0)
+        mu = 2.0 * log(m) - 0.5 * log(stddev**2.0 + m**2.0)
         std = sqrt(log(stddev**2.0 / m**2.0 + 1))
     else:
         mu = -999

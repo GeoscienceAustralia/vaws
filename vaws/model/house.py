@@ -5,7 +5,7 @@
 """
 
 import copy
-from numpy import array, interp
+from numpy import array, interp, zeros_like
 from numpy.random import RandomState
 import logging
 from shapely.geometry import Polygon
@@ -196,21 +196,23 @@ class House(object):
             self.footprint = Polygon(points)
 
             self.debris.footprint = self.footprint, self.wind_orientation
-
             self.debris.rnd_state = self.rnd_state
-
             self.debris.coverages = self.coverages
+            self.debris.boundary = self.cfg.boundary_radius
 
     def set_coverages(self):
 
         if self.cfg.coverages is not None:
 
-            self.coverages = self.cfg.coverages.copy()
+            df_coverages = self.cfg.coverages.copy()
 
-            self.coverages['direction'] = self.coverages['wall_name'].apply(
+            df_coverages['direction'] = df_coverages['wall_name'].apply(
                 self.assign_windward)
 
-            for _name, item in self.coverages.iterrows():
+            self.coverages = df_coverages[['direction', 'wall_name']].copy()
+            self.coverages['breached_area'] = zeros_like(self.coverages.direction)
+
+            for _name, item in df_coverages.iterrows():
 
                 _coverage = Coverage(coverage_name=_name, **item)
 
@@ -255,12 +257,12 @@ class House(object):
         elif wall_name in side2:
             return 'side2'
 
-    def assign_cpi(self):
+    def compute_damaged_area_and_assign_cpi(self):
 
-        self.coverages['breached_area'] = \
-            self.coverages['coverage'].apply(lambda x: x.breached_area)
+        # self.coverages['breached_area'] = \
+        #     self.coverages['coverage'].apply(lambda x: x.breached_area)
 
-        self.debris.damaged_area = self.coverages['breached_area'].sum()
+        # self.debris.damaged_area = self.coverages['breached_area'].sum()
 
         breached_area_by_wall = \
             self.coverages.groupby('direction')['breached_area'].sum()

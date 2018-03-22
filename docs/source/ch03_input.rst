@@ -78,6 +78,7 @@ The configuration file consists of a number of sections, among which *main* and 
     region_name = Capital_city
     staggered_sources = False
     source_items = 250
+    boundary_radius = 24.0
     building_spacing = 20.0
     debris_radius = 200
     debris_angle = 45

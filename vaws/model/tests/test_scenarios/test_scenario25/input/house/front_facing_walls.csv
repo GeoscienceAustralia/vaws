@@ -1,0 +1,9 @@
+wind_dir,wall_name,
+S,1,
+SW,1,2
+W,2,
+NW,2,3
+N,3,
+NE,3,4
+E,4,
+SE,1,4

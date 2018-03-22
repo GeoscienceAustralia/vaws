@@ -3,6 +3,7 @@
     This module contains Connection class, ConnectionTypeGroup class, and Influence class.
 
 """
+from __future__ import division, print_function
 
 from numpy import where, ones
 import logging
@@ -10,6 +11,30 @@ import logging
 from vaws.model.zone import Zone
 from vaws.model.stats import compute_arithmetic_mean_stddev, sample_lognormal, \
     sample_lognorm_given_mean_stddev
+
+
+def compute_load_by_zone(flag_pressure, dic_influences):
+
+    load = 0.0
+
+    for _inf in dic_influences.itervalues():
+
+        if isinstance(_inf.source, Zone):
+            _pressure = getattr(_inf.source, 'pressure_{}'.format(flag_pressure))
+            load += _inf.coeff * _inf.source.area * _pressure
+
+            logging.debug(
+                'load by {}: {:.2f} * {:.3f} * {:.3f}'.format(
+                    _inf.source.name, _inf.coeff, _inf.source.area, _pressure))
+
+        else:
+            _load_by_zone = compute_load_by_zone(flag_pressure, _inf.source.influences)
+            load += _inf.coeff * _load_by_zone
+            logging.debug(
+                'load by {}: {:.2f} * {:.3f}'.format(
+                    _inf.source.name, _inf.coeff, _load_by_zone))
+
+    return load
 
 
 class Connection(object):
@@ -27,6 +52,7 @@ class Connection(object):
         self.zone_loc = None
         self.group_name = None
         self.sub_group = None
+        self.flag_pressure = None
         self.section = None
         self.grid = None
         self.grid_raw = None
@@ -39,6 +65,7 @@ class Connection(object):
         default_attr = {'type_name': self.type_name,
                         'zone_loc': self.zone_loc,
                         'group_name': self.group_name,
+                        'flag_pressure': self.flag_pressure,
                         'sub_group': self.sub_group,
                         'section': self.section,
                         'grid': self.grid,
@@ -126,26 +153,9 @@ class Connection(object):
 
         if not self.damaged:
 
-            for _inf in self.influences.itervalues():
+            logging.debug('computing load at conn: {}'.format(self.name))
 
-                try:
-                    # by zones
-                    temp = _inf.coeff * _inf.source.area * _inf.source.pressure
-
-                    logging.debug(
-                        'load at conn {} by {}: {:.2f} * {:.3f} * {:.3f}'.format(
-                            self.name, _inf.source.name, _inf.coeff,
-                            _inf.source.area, _inf.source.pressure))
-
-                except AttributeError:
-                    # by connections
-                    temp = _inf.coeff * _inf.source.load
-
-                    logging.debug(
-                        'load at conn {} by {}: {:.2f} * {:.3f}'.format(
-                            self.name, _inf.source.name, _inf.coeff, _inf.source.load))
-
-                self.load += temp
+            self.load = compute_load_by_zone(self.flag_pressure, self.influences)
 
             logging.debug('dead load: {:.3f}'.format(self.dead_load))
 
@@ -304,7 +314,7 @@ class ConnectionTypeGroup(object):
                 self.damaged_area += _connection.costing_area * _connection.damaged
 
             try:
-                self.prop_damaged = float(num_damaged) / self.no_connections
+                self.prop_damaged = num_damaged / self.no_connections
             except ZeroDivisionError:
                 self.prop_damaged = 0.0
 

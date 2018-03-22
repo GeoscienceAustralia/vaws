@@ -22,6 +22,7 @@ from numpy import ones, where, float32, mean, nanmean, empty, array, \
     count_nonzero, nan, append, ones_like, nan_to_num, newaxis, zeros
 
 import pandas as pd
+import h5py
 from vaws.model.house import House
 from vaws.gui.house import HouseViewer
 from vaws.model.curve import vulnerability_lognorm, vulnerability_weibull, \
@@ -278,45 +279,46 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
         for col in _array.T:
             plot_wind_event_damage(self.ui.mplvuln, self.cfg.speeds, col)
 
-        df_fitted_curves = pd.read_csv(self.cfg.file_curve, index_col=0)
-        try:
-            param_1 = df_fitted_curves.at['weibull', 'param1']
-            param_2 = df_fitted_curves.at['weibull', 'param2']
-        except KeyError:
-            pass
-        else:
+        with h5py.File(self.cfg.file_results, "r") as f:
             try:
-                y = vulnerability_weibull(self.cfg.speeds, param_1, param_2)
-            except KeyError as msg:
-                logging.warning('weibull vulnerability: {}'.format(msg))
+                param1 = f['vulnearbility']['weibull']['param1'].value
+                param2 = f['vulnearbility']['weibull']['param2'].value
+            except KeyError:
+                pass
             else:
-                plot_fitted_curve(self.ui.mplvuln,
-                                  self.cfg.speeds,
-                                  y,
-                                  col='r',
-                                  label="Weibull")
+                try:
+                    y = vulnerability_weibull(self.cfg.speeds, param1, param2)
+                except KeyError as msg:
+                    logging.warning(msg)
+                else:
+                    plot_fitted_curve(self.ui.mplvuln,
+                                      self.cfg.speeds,
+                                      y,
+                                      col='r',
+                                      label="Weibull")
 
-            self.ui.wb_coeff_1.setText('{:.3f}'.format(param_1))
-            self.ui.wb_coeff_2.setText('{:.3f}'.format(param_2))
+                    self.ui.wb_coeff_1.setText('{:.3f}'.format(param1))
+                    self.ui.wb_coeff_2.setText('{:.3f}'.format(param2))
 
-        df_fitted_curves = pd.read_csv(self.cfg.file_curve, index_col=0)
-
-        try:
-            ln_param_1 = df_fitted_curves.at['lognorm', 'param1']
-            ln_param_2 = df_fitted_curves.at['lognorm', 'param2']
-        except KeyError:
-            pass
-        else:
             try:
-                y = vulnerability_lognorm(self.cfg.speeds, ln_param_1, ln_param_2)
-            except KeyError as msg:
-                logging.warning('lognormal vulnerability: {}'.format(msg))
+                param1 = f['vulnearbility']['lognorm']['param1'].value
+                param2 = f['vulnearbility']['lognorm']['param2'].value
+            except KeyError:
+                pass
             else:
-                plot_fitted_curve(self.ui.mplvuln,
-                                  self.cfg.speeds,
-                                  y,
-                                  col='b',
-                                  label="Lognormal")
+                try:
+                    y = vulnerability_lognorm(self.cfg.speeds, param1, param2)
+                except KeyError as msg:
+                    logging.warning(msg)
+                else:
+                    plot_fitted_curve(self.ui.mplvuln,
+                                      self.cfg.speeds,
+                                      y,
+                                      col='b',
+                                      label="Lognormal")
+
+                    self.ui.ln_coeff_1.setText('{:.3f}'.format(param1))
+                    self.ui.ln_coeff_2.setText('{:.3f}'.format(param2))
 
             self.ui.mplvuln.axes.legend(loc=2,
                                         fancybox=True,
@@ -325,31 +327,26 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
 
             self.ui.mplvuln.axes.figure.canvas.draw()
 
-            self.ui.ln_coeff_1.setText('{:.3f}'.format(ln_param_1))
-            self.ui.ln_coeff_2.setText('{:.3f}'.format(ln_param_2))
-
     def updateFragCurve(self, _array):
         plot_fragility_show(self.ui.mplfrag, self.cfg.no_models,
                             self.cfg.speeds[0], self.cfg.speeds[-1])
 
-        df_fitted_curves = pd.read_csv(self.cfg.file_curve, index_col=0)
-
         self.ui.mplfrag.axes.hold(True)
         self.ui.mplfrag.axes.plot(self.cfg.speeds, _array, 'k+', 0.3)
 
-        for ds, value in self.cfg.fragility.iterrows():
-            try:
-                y = vulnerability_lognorm(self.cfg.speeds,
-                                          df_fitted_curves.at[ds, 'param1'],
-                                          df_fitted_curves.at[ds, 'param2'])
-            except KeyError:
-                pass
-                #logging.warning('fragility {}'.format(msg))
-            else:
-                plot_fitted_curve(self.ui.mplfrag,
-                                  self.cfg.speeds, y,
-                                  col=value['color'],
-                                  label=ds)
+        with h5py.File(self.cfg.file_results, "r") as f:
+
+            for ds, value in self.cfg.fragility.iterrows():
+                try:
+                    param1 = f['fragility'][ds]['param1'].value
+                    param2 = f['fragility'][ds]['param2'].value
+                except KeyError as msg:
+                    logging.warning(msg)
+                else:
+                    y = vulnerability_lognorm(self.cfg.speeds, param1, param2)
+
+                    plot_fitted_curve(self.ui.mplfrag, self.cfg.speeds, y,
+                                      col=value['color'], label=ds)
 
         self.ui.mplfrag.axes.legend(loc=2,
                                     fancybox=True,
@@ -776,7 +773,7 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
         self.ui.breaches_plot.axes.figure.clf()
         # we'll have three seperate y axis running at different scales
 
-        breaches = bucket['house_damage']['breached'].sum(axis=1) / self.cfg.no_models
+        breaches = bucket['house_damage']['window_breached_by_debris'].sum(axis=1) / self.cfg.no_models
         nv_means = bucket['debris']['no_touched'].mean(axis=1)
         num_means = bucket['debris']['no_items'].mean(axis=1)
 

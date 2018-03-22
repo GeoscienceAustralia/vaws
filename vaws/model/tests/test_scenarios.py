@@ -46,6 +46,13 @@ def simulation(house_damage, conn_capacity, wind_speeds, list_connections):
         for _connection in house_damage.house.connections.itervalues():
             _connection.compute_load()
 
+        if house_damage.house.coverages is not None:
+            for _, _ps in house_damage.house.coverages.iterrows():
+                _ps['coverage'].check_damage(house_damage.qz, house_damage.cpi, wind_speed)
+
+            house_damage.house.coverages['breached_area'] = \
+                house_damage.house.coverages['coverage'].apply(lambda x: x.breached_area)
+
         # check damage by connection type group
         for _group in house_damage.house.groups.itervalues():
 
@@ -94,8 +101,12 @@ def simulation_incl_coverages(house_damage, wind_speeds):
                                      house_damage.qz,
                                      ms,
                                      building_spacing)
+
         for _, _ps in house_damage.house.coverages.iterrows():
             _ps['coverage'].check_damage(house_damage.qz, house_damage.cpi, wind_speed)
+
+        house_damage.house.coverages['breached_area'] = \
+            house_damage.house.coverages['coverage'].apply(lambda x: x.breached_area)
 
         for _connection in house_damage.house.connections.itervalues():
             _connection.compute_load()
@@ -1306,7 +1317,50 @@ class TestScenario23c(unittest.TestCase):
                 print('coverage #{} fails at {} not {}'.format(
                     _id, _coverage.capacity, coverage_capacity2[_id]))
 
+
+class TestScenario26(unittest.TestCase):
+    """
+    to test different strength for inward and outward direction
+
+    """
+    @classmethod
+    def setUpClass(cls):
+
+        path = os.sep.join(__file__.split(os.sep)[:-1])
+
+        cfg = Config(cfg_file=os.path.join(
+            path, 'test_scenarios', 'test_scenario26', 'test_scenario26.cfg'))
+
+        cfg.wind_dir_index = 1
+        cls.house_damage = HouseDamage(cfg, seed=0)
+
+        # set up logging
+        file_logger = os.path.join(cfg.path_output, 'log_test26.txt')
+        logging.basicConfig(filename=file_logger,
+                            filemode='w',
+                            level=logging.DEBUG,
+                            format='%(levelname)s %(message)s')
+
+    def test_capacity(self):
+
+        conn_capacity = {40.0: [10],
+                         41.0: [11],
+                         42.0: [4, 12],
+                         43.0: [5],
+                         44.0: [6],
+                         50.0: [31, 35],
+                         57.0: [1, 13],
+                         58.0: [2, 14],
+                         59.0: [3, 15],
+                         76.0: [7],
+                         77.0: [8],
+                         78.0: [9]}
+
+        simulation(self.house_damage, conn_capacity,
+                   wind_speeds=np.arange(40.0, 120, 1.0),
+                   list_connections=range(1, 35))
+
 if __name__ == '__main__':
-    suite = unittest.TestLoader().loadTestsFromTestCase(TestScenario23c)
+    suite = unittest.TestLoader().loadTestsFromTestCase(TestScenario26)
     unittest.TextTestRunner(verbosity=2).run(suite)
     #unittest.main(verbosity=2)

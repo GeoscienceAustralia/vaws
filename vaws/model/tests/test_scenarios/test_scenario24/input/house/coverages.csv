@@ -1,0 +1,11 @@
+name,description,wall_name,area,coverage_type
+1,door,1,1.89,Timber_door
+2,window,1,2.16,Glass_annealed_6mm
+3,window,2,2.16,Glass_annealed_6mm
+4,window,2,2.16,Glass_annealed_6mm
+5,window,3,2.16,Glass_annealed_6mm
+6,door,3,1.89,Timber_door
+7,wall_1,1,15.39,Brick_veneer
+8,wall_2,2,24.48,Brick_veneer
+9,wall_3,3,15.39,Brick_veneer
+10,wall_4,4,28.8,Brick_veneer

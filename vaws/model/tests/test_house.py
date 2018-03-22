@@ -280,7 +280,10 @@ class TestHouseCoverage(unittest.TestCase):
             for k, v in data.iteritems():
                 house.coverages.loc[k, 'coverage'].breached_area = v
 
-            _cpi = house.assign_cpi()
+            house.coverages['breached_area'] = \
+                house.coverages['coverage'].apply(lambda x: x.breached_area)
+
+            _cpi = house.compute_damaged_area_and_assign_cpi()
 
             try:
                 self.assertEqual(_cpi, expected_cpi[key])
@@ -327,7 +330,10 @@ class TestHouseCoverage(unittest.TestCase):
             for k, v in data.iteritems():
                 house.coverages.loc[k, 'coverage'].breached_area = v
 
-            _cpi = house.assign_cpi()
+            house.coverages['breached_area'] = \
+                house.coverages['coverage'].apply(lambda x: x.breached_area)
+
+            _cpi = house.compute_damaged_area_and_assign_cpi()
 
             try:
                 self.assertEqual(_cpi, item[-1])
@@ -337,6 +343,6 @@ class TestHouseCoverage(unittest.TestCase):
                 print('cpi should be {}, but {}'.format(item[-1], _cpi))
 
 if __name__ == '__main__':
-    unittest.main()
-    # suite = unittest.TestLoader().loadTestsFromTestCase(TestHouseCoverage)
-    # unittest.TextTestRunner(verbosity=2).run(suite)
+    # unittest.main()
+    suite = unittest.TestLoader().loadTestsFromTestCase(TestHouseCoverage)
+    unittest.TextTestRunner(verbosity=2).run(suite)
