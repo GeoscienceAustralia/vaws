@@ -7,8 +7,7 @@ import numpy as np
 import filecmp
 import pandas as pd
 
-from vaws.model.house_damage import HouseDamage
-# import model.database as database
+from vaws.model.house import House
 from vaws.model.config import Config
 # from model import zone
 # from model import engine
@@ -73,7 +72,7 @@ def consistency_house_cpi(path_reference, path_output):
 
 
 def consistency_house_damage(path_reference, path_output):
-    # filename = 'house_damage.csv'
+    # filename = 'house.csv'
     filename = 'dmg_pct_by_conn_type.csv'
     file1 = os.path.join(path_reference, filename)
     file2 = os.path.join(path_output, filename)
@@ -300,13 +299,13 @@ class TestHouseDamage(unittest.TestCase):
         cfg = Config(cfg_file=os.path.join(
             path, 'test_scenarios', 'test_sheeting_batten', 'test_sheeting_batten.cfg'))
 
-        cls.house_damage = HouseDamage(cfg, seed=1)
+        cls.house = House(cfg, seed=1)
 
     def test_distribute_damage_by_row(self):
 
         # each time check whether the sum of effective area is the same
         ref_area = {}
-        for _, _zone in self.house_damage.house.zones.items():
+        for _, _zone in self.house.zones.items():
             ref_area.setdefault(_zone.name[0], []).append(_zone.area)
             ref_area.setdefault(_zone.name[1], []).append(_zone.area)
 
@@ -314,14 +313,14 @@ class TestHouseDamage(unittest.TestCase):
             ref_area[key] = np.array(value).sum()
 
         # # iteration over wind speed list
-        for id_speed, wind_speed in enumerate(self.house_damage.cfg.speeds):
+        for id_speed, wind_speed in enumerate(self.house.cfg.speeds):
 
             # simulate sampled house
-            self.house_damage.run_simulation(wind_speed)
+            self.house.run_simulation(wind_speed)
 
             # check effective area
             area = {}
-            for _, _zone in self.house_damage.house.zones.items():
+            for _, _zone in self.house.zones.items():
                 area.setdefault(_zone.name[0], []).append(_zone.area)
                 area.setdefault(_zone.name[1], []).append(_zone.area)
 

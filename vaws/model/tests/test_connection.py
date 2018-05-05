@@ -17,11 +17,10 @@ class MyTestCase(unittest.TestCase):
 
     def test_compute_prop_damaged(self):
 
-        rnd_state = np.random.RandomState(1)
-        house = House(self.cfg, rnd_state=rnd_state)
+        house = House(self.cfg, 1)
         group = house.groups['sheeting0']  # sheeting
 
-        for _conn in house.connections.itervalues():
+        for _, _conn in house.connections.items():
             self.assertEqual(_conn.damaged, False)
 
         # 1: sheeting gable(1): 2 - 5
@@ -48,8 +47,7 @@ class MyTestCase(unittest.TestCase):
 
     def test_compute_load(self):
 
-        rnd_state = np.random.RandomState(1)
-        house = House(self.cfg, rnd_state)
+        house = House(self.cfg, 1)
 
         # compute zone pressures
         wind_dir_index = 3
@@ -93,8 +91,7 @@ class MyTestCase(unittest.TestCase):
 
     def test_check_damage(self):
 
-        rnd_state = np.random.RandomState(1)
-        house = House(self.cfg, rnd_state)
+        house = House(self.cfg, 1)
 
         # compute zone pressures
         mzcat = 0.9235
@@ -124,9 +121,9 @@ class MyTestCase(unittest.TestCase):
             _conn.lognormal_dead_load = _conn.lognormal_dead_load[0], 0.0
             _conn.lognormal_strength = _conn.lognormal_strength[0], 0.0
 
-            _conn.sample_dead_load(rnd_state)
+            _conn.sample_dead_load(house.rnd_state)
             _conn.sample_strength(mean_factor=1.0, cov_factor=0.0,
-                                  rnd_state=rnd_state)
+                                  rnd_state=house.rnd_state)
             _conn.compute_load()
 
             self.assertAlmostEqual(_conn.dead_load,
@@ -185,8 +182,7 @@ class MyTestCaseConnectionGroup(unittest.TestCase):
 
     def test_update_influence_by_patch1(self):
 
-        rnd_state = np.random.RandomState(1)
-        house = House(self.cfg, rnd_state=rnd_state)
+        house = House(self.cfg, 1)
 
         init_dic = {121: {'A13': 0.81, 'A14': 0.19},
                     122: {'A13': 0.75, 'A14': 0.75},
@@ -223,8 +219,7 @@ class MyTestCaseConnectionGroup(unittest.TestCase):
 
     def test_update_influence_by_patch2(self):
 
-        rnd_state = np.random.RandomState(1)
-        house = House(self.cfg, rnd_state=rnd_state)
+        house = House(self.cfg, 1)
 
         init_dic = {121: {'A13': 0.81, 'A14': 0.19},
                     122: {'A13': 0.75, 'A14': 0.75},
@@ -262,7 +257,7 @@ class MyTestCaseConnectionGroup(unittest.TestCase):
     def test_update_influence_for_connection1(self):
 
         rnd_state = np.random.RandomState(1)
-        house = House(self.cfg, rnd_state=rnd_state)
+        house = House(self.cfg, 1)
 
         init_dic = {1: {'A1': 1.0},
                     2: {'A2': 1.0},
@@ -302,8 +297,7 @@ class MyTestCaseConnectionGroup(unittest.TestCase):
 
     def test_update_influence_for_connection2(self):
 
-        rnd_state = np.random.RandomState(1)
-        house = House(self.cfg, rnd_state=rnd_state)
+        house = House(self.cfg, 1)
 
         init_dic = {1: {'A1': 1.0},
                     2: {'A2': 1.0},
@@ -352,8 +346,7 @@ class MyTestCaseConnectionGroup(unittest.TestCase):
         group level update_influence
         """
 
-        rnd_state = np.random.RandomState(1)
-        house = House(self.cfg, rnd_state=rnd_state)
+        house = House(self.cfg, 1)
 
         # sheeting1 group connection 1 failed
         _group = house.groups['sheeting1']
@@ -382,8 +375,7 @@ class MyTestCaseConnectionGroup(unittest.TestCase):
         group level update_influence
         """
 
-        rnd_state = np.random.RandomState(1)
-        house = House(self.cfg, rnd_state=rnd_state)
+        house = House(self.cfg, 1)
 
         init_dic = {121: {'A13': 0.81, 'A14': 0.19},
                     122: {'A13': 0.75, 'A14': 0.75},

@@ -57,10 +57,10 @@ vaws.model.house module
     :undoc-members:
     :show-inheritance:
 
-vaws.model.house_damage module
+vaws.model.house module
 ------------------------------
 
-.. automodule:: vaws.model.house_damage
+.. automodule:: vaws.model.house
     :members:
     :undoc-members:
     :show-inheritance:

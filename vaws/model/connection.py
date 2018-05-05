@@ -17,7 +17,7 @@ def compute_load_by_zone(flag_pressure, dic_influences):
 
     load = 0.0
 
-    for _inf in dic_influences.itervalues():
+    for _, _inf in dic_influences.items():
 
         if isinstance(_inf.source, Zone):
             _pressure = getattr(_inf.source, 'pressure_{}'.format(flag_pressure))

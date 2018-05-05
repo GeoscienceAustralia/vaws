@@ -36,17 +36,17 @@ The program is built around the following high level sequence:
 
     - simulate damage for each model
 
-      - calculate free stream wind pressure (qz), optionally applying a regional shielding factor (:py:meth:`.HouseDamage.compute_qz_ms`)
+      - calculate free stream wind pressure (qz), optionally applying a regional shielding factor (:py:meth:`.House.compute_qz_ms`)
       - calculate zone pressures (:py:meth:`.Zone.calc_zone_pressure`)
       - check damage of envelope coverages by wind load (:py:meth:`.Coverage.check_damage`)
       - calculate connection loads (:py:meth:`.Connection.compute_load`)
       - check damage of each connection by connection group (:py:meth:`.ConnectionTypeGroup.check_damage`)
       - check damage and compute damaged area by connection group (:py:meth:`.ConnectionTypeGroup.compute_damaged_area`)
       - update influence by connection group (:py:meth:`.ConnectionTypeGroup.update_influence`)
-      - check for total house collapse event (:py:meth:`.HouseDamage.check_house_collapse`)
-      - compute damage index of the model (:py:meth:`.HouseDamage.compute_damage_index`)
+      - check for total house collapse event (:py:meth:`.House.check_house_collapse`)
+      - compute damage index of the model (:py:meth:`.House.compute_damage_index`)
 
-      - generate debris and update Cpi in case of internal pressurisation event (:py:meth:`.HouseDamage.check_internal_pressurisation`)
+      - generate debris and update Cpi in case of internal pressurisation event (:py:meth:`.House.check_internal_pressurisation`)
 
     - calculate increment in mean damage index of the group of models (:py:func:`.update_bucket`)
 
@@ -330,11 +330,11 @@ The damage cost induced by water ingress is estimated over the following three s
 
 The amount of water ingress is estimated based on the relationship between water ingress and wind speed, which is listed in :numref:`section_water_ingress_table`. The estimated damage index prior to water ingress is used to choose the right curve as shown in :numref:`water_ingress_fig`.
 
-2) determine damage scenario (:py:meth:`.HouseDamage.determine_scenario_for_water_ingress_costing`)
+2) determine damage scenario (:py:meth:`.House.determine_scenario_for_water_ingress_costing`)
 
 The damage scenario for water ingress is determined based on the order of damage scenario as listed in :numref:`damage_costing_data_table`. One damage scenario is selected by the order among the damage scenarios with which damage area of connection associated is greater than zero. When the damage index is zero (or no connection damage yet), then damage scenario of 'WI only' is used.
 
-3) calculate cost for water ingress damage (:py:meth:`.HouseDamage.compute_water_ingress_cost`)
+3) calculate cost for water ingress damage (:py:meth:`.House.compute_water_ingress_cost`)
 
 The cost for water ingress damage is estimated using the data provided in :ref:`3.4.17 <water_ingress_costing_data.csv_section>`. The example plot for the scenario of *loss of roof sheeting* is shown in :numref:`water_ingress_cost_fig`. The cost for water ingress damage is estimated using the curve for water ingress closest to the estimated amount of water ingress.
 
@@ -388,13 +388,13 @@ Calculate damage index
 
 The damage index is calculated over the following steps:
 
-1) calculate sum of damaged area by connection group (:py:meth:`.HouseDamage.compute_area_by_group`)
+1) calculate sum of damaged area by connection group (:py:meth:`.House.compute_area_by_group`)
 
-2) Apply damage factoring (:py:meth:`.HouseDamage.apply_damage_factoring`)
+2) Apply damage factoring (:py:meth:`.House.apply_damage_factoring`)
 
 In order to avoid double counting of repair cost, damage cost associated with child group(s) will be factored out of damage cost of the parent group as explained in :ref:`3.4.16 <damage_factorings.csv_section>`.
 
-3) Calculate sum of damaged area by damage scenario (:py:meth:`.HouseDamage.compute_area_by_scenario`)
+3) Calculate sum of damaged area by damage scenario (:py:meth:`.House.compute_area_by_scenario`)
 
 A damage scenario is assigned to each connection type group as explained in :ref:`3.4.2 <conn_groups.csv_section>`.
 

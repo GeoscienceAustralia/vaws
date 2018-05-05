@@ -410,7 +410,7 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
     def updateConnectionTypeTable(self):
         # load up connection types grid
         setupTable(self.ui.connectionsTypes, self.cfg.types)
-        for irow, (index, ctype) in enumerate(self.cfg.types.items()()):
+        for irow, (index, ctype) in enumerate(self.cfg.types.items()):
             self.ui.connectionsTypes.setItem(
                 irow, 0, QTableWidgetItem(index))
             self.ui.connectionsTypes.setItem(
@@ -430,7 +430,7 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
     def updateZonesTable(self):
         setupTable(self.ui.zones, self.cfg.zones)
 
-        for irow, (index, z) in enumerate(self.cfg.zones.items()()):
+        for irow, (index, z) in enumerate(self.cfg.zones.items()):
             self.ui.zones.setItem(
                 irow, 0, QTableWidgetItem(index))
             self.ui.zones.setItem(
@@ -450,7 +450,7 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
     
     def updateConnectionGroupTable(self):
         setupTable(self.ui.connGroups, self.cfg.groups)
-        for irow, (index, ctg) in enumerate(self.cfg.groups.items()()):
+        for irow, (index, ctg) in enumerate(self.cfg.groups.items()):
             self.ui.connGroups.setItem(irow, 0, QTableWidgetItem(index))
             self.ui.connGroups.setItem(irow, 1, QTableWidgetItem('{:d}'.format(ctg['dist_order'])))
             self.ui.connGroups.setItem(irow, 2, QTableWidgetItem(ctg['dist_dir']))
@@ -473,7 +473,7 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
     def updateDamageTable(self):
         # load up damage scenarios grid
         setupTable(self.ui.damageScenarios, self.cfg.costings)
-        for irow, (name, _inst) in enumerate(self.cfg.costings.items()()):
+        for irow, (name, _inst) in enumerate(self.cfg.costings.items()):
             self.ui.damageScenarios.setItem(irow, 0, QTableWidgetItem(name))
             self.ui.damageScenarios.setItem(irow, 1, QTableWidgetItem(
                 '{:.3f}'.format(_inst.surface_area)))
@@ -571,8 +571,8 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
                     unicode('Simulation complete in {:0.3f}'.format(run_time)))
 
                 self.results_dict = bucket
-                self.updateVulnCurve(bucket['house_damage']['di'])
-                self.updateFragCurve(bucket['house_damage']['di'])
+                self.updateVulnCurve(bucket['house']['di'])
+                self.updateFragCurve(bucket['house']['di'])
                 self.updateHouseResultsTable(bucket)
                 self.updateConnectionTable_with_results(bucket)
                 self.updateConnectionTypePlots(bucket)
@@ -752,7 +752,7 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
     def updateWaterIngressPlot(self, bucket):
         self.statusBar().showMessage('Plotting Water Ingress')
 
-        _array = bucket['house_damage']['water_ingress_cost']
+        _array = bucket['house']['water_ingress_cost']
         wi_means = _array.mean(axis=1)
 
         self.ui.wateringress_plot.axes.hold(True)
@@ -773,7 +773,7 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
         self.ui.breaches_plot.axes.figure.clf()
         # we'll have three seperate y axis running at different scales
 
-        breaches = bucket['house_damage']['window_breached_by_debris'].sum(axis=1) / self.cfg.no_models
+        breaches = bucket['house']['window_breached_by_debris'].sum(axis=1) / self.cfg.no_models
         nv_means = bucket['debris']['no_touched'].mean(axis=1)
         num_means = bucket['debris']['no_items'].mean(axis=1)
 
@@ -884,7 +884,7 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
         self.statusBar().showMessage('Updating Zone Results')
         self.ui.zoneResults.clear()
 
-        wind_dir = [bucket['house']['wind_orientation'][i]
+        wind_dir = [bucket['house']['wind_dir_index'][i]
                     for i in range(self.cfg.no_models)]
         construction_level = [bucket['house']['construction_level'][i]
                               for i in range(self.cfg.no_models)]
@@ -1191,7 +1191,7 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
             float(x) for x in unicode(self.ui.waterSpeed1.text()).split(',')]
 
         # house / groups section
-        # for irow, (index, ctg) in enumerate(self.cfg.groups.items()()):
+        # for irow, (index, ctg) in enumerate(self.cfg.groups.items()):
         #     cellWidget = self.ui.connGroups.cellWidget(irow, 4)
         #     new_cfg.flags['conn_type_group_{}'.format(index)] = True \
         #         if cellWidget.checkState() == Qt.Checked else False

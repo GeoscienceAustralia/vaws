@@ -9,7 +9,7 @@ import matplotlib.pyplot as plt
 from vaws.model.damage_costing import Costing, WaterIngressCosting, \
     compute_water_ingress_given_damage
 from vaws.model.config import Config
-from vaws.model.house_damage import HouseDamage
+from vaws.model.house import House
 
 
 class MyTestCase(unittest.TestCase):
@@ -125,13 +125,13 @@ class WaterIngressTestCase(unittest.TestCase):
 
         df = pd.read_csv(repair_cost_by_group)
 
-        house_damage = HouseDamage(cfg=self.cfg, seed=1)
+        house = House(cfg=self.cfg, seed=1)
 
         for _, row in df.iterrows():
             prop_area_by_scenario = {'Loss of roof sheeting': row['sheeting'],
                                      'Loss of roof sheeting & purlins': row['batten'],
                                      'Loss of roof structure': row['rafter']}
-            est = house_damage.determine_scenario_for_water_ingress_costing(prop_area_by_scenario)
+            est = house.determine_scenario_for_water_ingress_costing(prop_area_by_scenario)
             try:
                 self.assertEqual(est, row['expected'])
             except AssertionError:

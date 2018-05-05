@@ -105,7 +105,7 @@ class Config(object):
 
         att_non_float = (list):
 
-        house_damage_bucket = (list):
+        house_bucket = (list):
 
         debris_bucket = (list):
 
@@ -149,15 +149,19 @@ class Config(object):
     g_const = 9.81  # acceleration of gravity
 
     # model dependent attributes
+
     house_bucket = ['profile_index', 'wind_dir_index', 'construction_level',
-                    'terrain_height_multiplier', 'shielding_multiplier',
-                    'str_mean_factor', 'str_cov_factor']
-
-    att_non_float = ['construction_level']
-
-    house_damage_bucket = ['qz', 'cpi', 'collapse', 'di',
+                           'terrain_height_multiplier', 'shielding_multiplier',
+                           'str_mean_factor', 'str_cov_factor', 'qz', 'cpi', 'collapse', 'di',
                            'di_except_water', 'repair_cost',
                            'water_ingress_cost', 'window_breached_by_debris']
+
+    att_non_float = ['construction_level']
+    att_time_invariant = ['strength', 'strength_negative', 'strength_positive',
+                          'dead_load', 'cpe', 'cpe_str', 'cpe_eave', 'capacity',
+                          'collapse', 'profile_index', 'wind_dir_index', 'construction_level',
+                           'terrain_height_multiplier', 'shielding_multiplier',
+                           'str_mean_factor', 'str_cov_factor']
 
     debris_bucket = ['no_items', 'no_touched', 'damaged_area']
 
@@ -176,9 +180,6 @@ class Config(object):
     dic_obj_for_fitting = {'weibull': 'vulnerability_weibull',
                            'lognorm': 'vulnerability_lognorm'}
 
-    att_time_invariant = ['strength', 'strength_negative', 'strength_positive',
-                          'dead_load', 'cpe', 'cpe_str', 'cpe_eave', 'capacity',
-                          'collapse']
 
     def __init__(self, cfg_file=None):
         """ Initialise instance of Config class

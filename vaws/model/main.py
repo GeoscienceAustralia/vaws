@@ -3,12 +3,11 @@ import os
 import time
 import logging
 
-import pandas as pd
 import h5py
-from numpy import zeros, array, string_
+import numpy as np
 from optparse import OptionParser
 
-from vaws.model.house_damage import HouseDamage
+from vaws.model.house import House
 from vaws.model.config import Config
 from vaws.model.curve import fit_fragility_curves, fit_vulnerability_curve
 from vaws.model.output import plot_heatmap
@@ -34,21 +33,21 @@ def simulate_wind_damage_to_houses(cfg, call_back=None):
 
     logging.info('Starting simulation in serial')
 
-    # generate instances of house_damage
-    list_house_damage = [HouseDamage(cfg, i + cfg.random_seed)
+    # generate instances of house
+    list_house_damage = [House(cfg, i + cfg.random_seed)
                          for i in range(cfg.no_models)]
 
     for ispeed, wind_speed in enumerate(cfg.speeds):
 
         results_by_speed = []
 
-        for ihouse, house_damage in enumerate(list_house_damage):
+        for ihouse, house in enumerate(list_house_damage):
 
             logging.info('model {}'.format(ihouse))
 
-            house_damage.house.debris.damage_incr = damage_incr
+            house.debris.damage_incr = damage_incr
 
-            result = house_damage.run_simulation(wind_speed)
+            result = house.run_simulation(wind_speed)
 
             results_by_speed.append(result)
 
@@ -75,22 +74,20 @@ def simulate_wind_damage_to_houses(cfg, call_back=None):
 
 def init_bucket(cfg):
 
-    bucket = {item: {} for item in ['house', 'house_damage', 'debris']}
+    bucket = {item: {} for item in ['house', 'debris']}
 
-    for att in cfg.house_bucket:
-        if att in cfg.att_non_float:
-            bucket['house'][att] = zeros(shape=(1, cfg.no_models), dtype=str)
-        else:
-            bucket['house'][att] = zeros(shape=(1, cfg.no_models), dtype=float)
-
-    for item in ['house_damage', 'debris']:
+    for item in ['house', 'debris']:
         bucket[item] = {}
         for att in getattr(cfg, '{}_bucket'.format(item)):
             if att in cfg.att_time_invariant:
-                bucket[item][att] = zeros(
-                    shape=(1, cfg.no_models), dtype=float)
+                if att in cfg.att_non_float:
+                    bucket[item][att] = np.zeros(shape=(1, cfg.no_models),
+                                                    dtype=str)
+                else:
+                    bucket[item][att] = np.zeros(shape=(1, cfg.no_models),
+                                                    dtype=float)
             else:
-                bucket[item][att] = zeros(
+                bucket[item][att] = np.zeros(
                     shape=(cfg.wind_speed_steps, cfg.no_models), dtype=float)
 
     # components: group, connection, zone
@@ -101,10 +98,10 @@ def init_bucket(cfg):
             try:
                 for item in getattr(cfg, 'list_{}s'.format(comp)):
                     if att in cfg.att_time_invariant:
-                        bucket[comp][att][item] = zeros(
+                        bucket[comp][att][item] = np.zeros(
                             shape=(1, cfg.no_models), dtype=float)
                     else:
-                        bucket[comp][att][item] = zeros(
+                        bucket[comp][att][item] = np.zeros(
                             shape=(cfg.wind_speed_steps, cfg.no_models), dtype=float)
             except TypeError:
                 pass
@@ -113,7 +110,7 @@ def init_bucket(cfg):
 
 def update_bucket(cfg, bucket, results_by_speed, ispeed):
 
-    for item in ['house_damage', 'debris']:
+    for item in ['house', 'debris']:
         for att in getattr(cfg, '{}_bucket'.format(item)):
             if att not in cfg.att_time_invariant:
                 bucket[item][att][ispeed] = [x[item][att] for x in results_by_speed]
@@ -129,8 +126,8 @@ def update_bucket(cfg, bucket, results_by_speed, ispeed):
     damage_incr = 0.0  # default value
 
     if ispeed:
-        damage_incr = (bucket['house_damage']['di'][ispeed].mean(axis=0) -
-                       bucket['house_damage']['di'][ispeed - 1].mean(axis=0))
+        damage_incr = (bucket['house']['di'][ispeed].mean(axis=0) -
+                       bucket['house']['di'][ispeed - 1].mean(axis=0))
 
         if damage_incr < 0:
             logging.warning('damage increment is less than zero')
@@ -139,10 +136,7 @@ def update_bucket(cfg, bucket, results_by_speed, ispeed):
         if ispeed == cfg.wind_speed_steps - 1:
 
             # doing nothing but save house attributes
-            for att in cfg.house_bucket:
-                bucket['house'][att] = [x['house'][att] for x in results_by_speed]
-
-            for item in ['house_damage', 'debris']:
+            for item in ['house', 'debris']:
                 for att in getattr(cfg, '{}_bucket'.format(item)):
                     if att in cfg.att_time_invariant:
                         bucket[item][att] = [x[item][att] for x in results_by_speed]
@@ -170,7 +164,7 @@ def save_results_to_files(cfg, bucket):
 
     # file_house
     with h5py.File(cfg.file_results, 'w') as hf:
-        for item in ['house', 'house_damage', 'debris']:
+        for item in ['house', 'debris']:
             _group = hf.create_group(item)
             for att, value in bucket[item].items():
                 _group.create_dataset(att, data=value)
@@ -185,7 +179,7 @@ def save_results_to_files(cfg, bucket):
 
         # fragility curves
         if cfg.no_models > 1:
-            frag_counted = fit_fragility_curves(cfg, bucket['house_damage']['di'])
+            frag_counted = fit_fragility_curves(cfg, bucket['house']['di'])
 
             if frag_counted:
                 _group = hf.create_group('fragility')
@@ -195,7 +189,7 @@ def save_results_to_files(cfg, bucket):
                                               data=sub_value)
 
         # vulnerability curves
-        fitted_curve = fit_vulnerability_curve(cfg, bucket['house_damage']['di'])
+        fitted_curve = fit_vulnerability_curve(cfg, bucket['house']['di'])
 
         _group = hf.create_group('vulnearbility')
         for key, value in fitted_curve.items():
@@ -208,7 +202,7 @@ def save_results_to_files(cfg, bucket):
 
             for id_sim in range(cfg.no_models):
 
-                value = array([bucket['connection']['capacity'][i][id_sim]
+                value = np.array([bucket['connection']['capacity'][i][id_sim]
                                for i in grouped.index])
 
                 file_name = os.path.join(cfg.path_output,
