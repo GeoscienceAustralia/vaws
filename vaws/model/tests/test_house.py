@@ -25,7 +25,7 @@ class MyTestCase(unittest.TestCase):
         self.assertAlmostEqual(self.house.big_a, 0.48649, places=4)
         self.assertAlmostEqual(self.house.big_b, 1.14457, places=4)
 
-        assert self.house.wind_orientation == 3
+        assert self.house.wind_dir_index == 3
 
         if self.house.construction_level == 'low':
             self.assertAlmostEqual(self.house.str_mean_factor, 0.9)
@@ -48,7 +48,7 @@ class MyTestCase(unittest.TestCase):
                        'mean_factor': 1.1,
                        'probability': 0.1})])
         tmp = []
-        for i in xrange(1000):
+        for i in range(1000):
             self.house.set_construction_level()
             tmp.append(self.house.construction_level)
 
@@ -74,9 +74,9 @@ class MyTestCase(unittest.TestCase):
         [30, 1.245, 1.188, 1.177, 1.178, 1.192, 1.199, 1.179, 1.165, 1.127, 1.203]])
 
         heights = data[:, 0]
-        value = data[:, self.house.profile]
+        value = data[:, self.house.profile_index]
         _mzcat = np.interp([4.5], heights, value)[0]
-        self.assertAlmostEqual(_mzcat, self.house.mzcat, places=4)
+        self.assertAlmostEqual(_mzcat, self.house.terrain_height_multiplier, places=4)
 
     def test_set_house_components(self):
 
@@ -110,7 +110,7 @@ class MyTestCase(unittest.TestCase):
             55: 'E1', 56: 'E2', 57: 'E3', 58: 'E4', 59: 'E5', 60: 'E6',
         }
 
-        for id_conn, _conn in self.house.connections.iteritems():
+        for id_conn, _conn in self.house.connections.items():
 
             _zone_name = conn_zone_loc_map[id_conn]
 
@@ -125,16 +125,16 @@ class MyTestCase(unittest.TestCase):
             'D1': (3, 0), 'D2': (3, 1), 'D3': (3, 2), 'D4': (3, 3), 'D5': (3, 4), 'D6': (3, 5),
             'E1': (4, 0), 'E2': (4, 1), 'E3': (4, 2), 'E4': (4, 3), 'E5': (4, 4), 'E6': (4, 5)}
 
-        for _grid, _zone in self.house.zone_by_grid.iteritems():
+        for _grid, _zone in self.house.zone_by_grid.items():
             self.assertEqual(_grid, zone_loc_to_grid_map[_zone.name])
             self.assertEqual(_grid, _zone.grid)
         '''
 
-        for _name, _zone in self.house.zones.iteritems():
+        for _name, _zone in self.house.zones.items():
             self.assertEqual(_name, _zone.name)
 
         # influence zone
-        for id_conn, _conn in self.house.connections.iteritems():
+        for id_conn, _conn in self.house.connections.items():
 
             if _conn.group_name == 'sheeting':
                 for _inf in _conn.influences.itervalues():
@@ -152,10 +152,10 @@ class MyTestCase(unittest.TestCase):
         self.assertEqual(self.house.groups['sheeting0'].dist_order, 1)
 
         # check identity
-        # for id_type, _type in self.house.groups['sheeting'].types.iteritems():
+        # for id_type, _type in self.house.groups['sheeting'].types.items():
         #     self.assertEqual(self.house.types[id_type], _type)
 
-        # for id_conn, _conn in self.house.types['sheeting0'].connections.iteritems():
+        # for id_conn, _conn in self.house.types['sheeting0'].connections.items():
         #     self.assertEqual(self.house.connections[id_conn], _conn)
 
     # def test_factors_costing(self):
@@ -171,7 +171,7 @@ class MyTestCase(unittest.TestCase):
     #                'sheeting': ['rafter', 'batten'],
     #                'batten': ['rafter']}
     #
-    #     for _id, values in house.factors_costing.iteritems():
+    #     for _id, values in house.factors_costing.items():
     #         for _id_upper in values:
     #
     #             _group_name = house.groups[_id].name
@@ -189,6 +189,19 @@ class MyTestCase(unittest.TestCase):
         self.assertEqual({'sheeting', 'batten'}, _groups)
         self.assertEqual(set(range(1, 61)), _conns)
 
+    def test_set_shielding_multiplier(self):
+
+        self.house.cfg.regional_shielding_factor = 0.85
+        _list = []
+        for i in range(1000):
+            self.house.set_shielding_multiplier()
+            _list.append(self.house.shielding_multiplier)
+
+        result = Counter(_list)
+        ref_dic = {0.85: 0.63, 0.95: 0.15, 1.0: 0.22}
+        for key, value in ref_dic.items():
+            self.assertAlmostEqual(value, result[key] / 1000.0, places=1)
+
 
 class TestHouseCoverage(unittest.TestCase):
 
@@ -204,7 +217,7 @@ class TestHouseCoverage(unittest.TestCase):
     def test_assign_windward(self):
 
         # wind direction: NW
-        assert self.house.wind_orientation == 0
+        assert self.house.wind_dir_index == 0
 
         self.house.cfg.front_facing_walls = {'E': [7],
                                              'NE': [5, 7],
@@ -216,7 +229,7 @@ class TestHouseCoverage(unittest.TestCase):
                                              'SE': [1, 7]}
 
         # wind direction: S
-        self.house.wind_orientation = 0
+        self.house.wind_dir_index = 0
 
         ref = {1: 'windward',
                3: 'side1',
@@ -228,7 +241,7 @@ class TestHouseCoverage(unittest.TestCase):
                              self.house.assign_windward(wall_name))
 
         # wind direction: E
-        self.house.wind_orientation = 2
+        self.house.wind_dir_index = 2
 
         ref = {3: 'windward',
                1: 'side2',
@@ -239,7 +252,7 @@ class TestHouseCoverage(unittest.TestCase):
             self.assertEqual(ref[wall_name],
                              self.house.assign_windward(wall_name))
 
-        self.house.wind_orientation = 3
+        self.house.wind_dir_index = 3
 
         ref = {3: 'windward',
                5: 'windward',
@@ -273,11 +286,11 @@ class TestHouseCoverage(unittest.TestCase):
         cfg = Config(self.cfg_file)
         cfg.coverages.area = np.array(8 * [10.0])
 
-        for key, data in test_data.iteritems():
+        for key, data in test_data.items():
 
             house = House(cfg, self.rnd_state)
 
-            for k, v in data.iteritems():
+            for k, v in data.items():
                 house.coverages.loc[k, 'coverage'].breached_area = v
 
             house.coverages['breached_area'] = \
@@ -327,7 +340,7 @@ class TestHouseCoverage(unittest.TestCase):
 
             data = {i: x for (i, x) in enumerate(item[:-1], 1)}
 
-            for k, v in data.iteritems():
+            for k, v in data.items():
                 house.coverages.loc[k, 'coverage'].breached_area = v
 
             house.coverages['breached_area'] = \

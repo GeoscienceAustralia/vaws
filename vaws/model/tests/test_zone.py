@@ -7,7 +7,7 @@ from vaws.model.zone import Zone, str2num
 class MyTestCase(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
-        cls.zone = Zone(zone_name='N12')
+        cls.zone = Zone(name='N12')
 
         cls.zone.area = 0.2025
         cls.zone.cpi_alpha = 0.0
@@ -27,8 +27,8 @@ class MyTestCase(unittest.TestCase):
         # self.assertEquals(self.zone.get_zone_location_from_grid((col, row)),
         #                  self.zone.name)
 
-    def test_is_wall(self):
-        self.assertEqual(self.zone.is_wall_zone, False)
+    # def test_is_wall(self):
+    #     self.assertEqual(self.zone.is_wall_zone, False)
 
     def test_calc_zone_pressures(self):
         self.zone.sample_cpe(wind_dir_index=3,

@@ -269,7 +269,7 @@ dmg_ratio_sheeting,dmg_ratio_batten,dmg_ratio_rafter,loss_ratio
         for _, item in ref_dat.iterrows():
 
             # assign damage area
-            for group_name, group in self.house_damage.house.groups.iteritems():
+            for group_name, group in self.house_damage.house.groups.items():
                 group.damaged_area = item['dmg_ratio_{}'.format(
                     group.name)] * group.costing_area
 
@@ -520,7 +520,7 @@ dmg_ratio_debris,dmg_ratio_wallcladding,dmg_ratio_wallcollapse,loss_ratio
             self.house_damage.house.coverages.loc[0, 'breached_area'] = item['dmg_ratio_debris'] * self.cfg.coverages_area
 
             # assign damage area
-            for group_name, group in self.house_damage.house.groups.iteritems():
+            for group_name, group in self.house_damage.house.groups.items():
 
                 if group.name in ['wallcladding', 'wallcollapse']:
                     group.damaged_area = item['dmg_ratio_{}'.format(

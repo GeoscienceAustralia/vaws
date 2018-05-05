@@ -16,14 +16,14 @@ class Zone(object):
 
     flags_pressure = ['cpe', 'cpe_str']
 
-    def __init__(self, zone_name=None, **kwargs):
+    def __init__(self, name=None, **kwargs):
         """
         Args:
-            zone_name
+            name
         """
 
-        assert isinstance(zone_name, str)
-        self.name = zone_name
+        assert isinstance(name, str)
+        self.name = name
 
         self.area = None
         self.cpi_alpha = None
@@ -41,15 +41,8 @@ class Zone(object):
                             is_roof_edge=self.is_roof_edge)
 
         default_attr.update(kwargs)
-        for key, value in default_attr.iteritems():
+        for key, value in default_attr.items():
             setattr(self, key, value)
-
-        # FIXME
-        # should be a better way to identify wall zone
-        if len(self.name) > 3 and self.name[0] == 'W':
-            self.is_wall_zone = True
-        else:
-            self.is_wall_zone = False
 
         self.diff_shielding = None
         self.cpe = None
@@ -57,6 +50,13 @@ class Zone(object):
         self.cpe_eave = None
         self.pressure_cpe = 0.0
         self.pressure_cpe_str = 0.0
+
+    def __str__(self):
+        return 'Zone(name={}, area={:.2f}, cpi_alpha={:.2f})'.format(
+            self.name, self.area, self.cpi_alpha)
+
+    def __repr__(self):
+        return 'Zone(name={})'.format(self.name)
 
     def sample_cpe(self, wind_dir_index, cpe_cov, cpe_k, big_a, big_b,
                    cpe_str_cov, cpe_str_k, big_a_str, big_b_str, rnd_state):
@@ -86,7 +86,7 @@ class Zone(object):
                               cpe_cov, big_a, big_b, cpe_k, rnd_state)
 
         self.cpe_str = sample_gev(self.cpe_str_mean[wind_dir_index],
-                                  cpe_str_cov, big_a_str, big_b_str, cpe_k, rnd_state)
+                                  cpe_str_cov, big_a_str, big_b_str, cpe_str_k, rnd_state)
 
         self.cpe_eave = sample_gev(self.cpe_eave_mean[wind_dir_index],
                                    cpe_str_cov, big_a_str, big_b_str, cpe_str_k, rnd_state)

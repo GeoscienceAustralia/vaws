@@ -39,14 +39,14 @@ def compute_load_by_zone(flag_pressure, dic_influences):
 
 class Connection(object):
 
-    def __init__(self, connection_name=None, **kwargs):
+    def __init__(self, name=None, **kwargs):
         """
 
         Args:
-            connection_name:
+            name:
         """
 
-        self.name = connection_name
+        self.name = name
 
         self.type_name = None
         self.zone_loc = None
@@ -78,7 +78,7 @@ class Connection(object):
                         }
 
         default_attr.update(kwargs)
-        for key, value in default_attr.iteritems():
+        for key, value in default_attr.items():
             setattr(self, key, value)
 
         self._influences = None
@@ -99,7 +99,7 @@ class Connection(object):
         assert isinstance(_dic, dict)
 
         self._influences = {}
-        for key, value in _dic.iteritems():
+        for key, value in _dic.items():
             self._influences[key] = Influence(name=key,
                                               coeff=value)
 
@@ -194,7 +194,7 @@ class Connection(object):
         """
 
         # looking at influences
-        for _id, _influence in source_connection.influences.iteritems():
+        for _id, _influence in source_connection.influences.items():
 
             # update influence coeff
             updated_coeff = influence_coeff * _influence.coeff
@@ -215,14 +215,14 @@ class ConnectionTypeGroup(object):
 
     grid_idx_by_dist_dir = {'col': 0, 'row': 1}
 
-    def __init__(self, group_name=None, **kwargs):
+    def __init__(self, name=None, **kwargs):
         """
 
         Args:
             inst: instance of database.ConnectionTypeGroup
         """
 
-        self.name = group_name
+        self.name = name
 
         self.dist_order = None
         self.dist_dir = None
@@ -237,7 +237,7 @@ class ConnectionTypeGroup(object):
                         'patch_dist': self.patch_dist}
 
         default_attr.update(kwargs)
-        for key, value in default_attr.iteritems():
+        for key, value in default_attr.items():
             setattr(self, key, value)
 
         self.no_connections = 0
@@ -250,7 +250,9 @@ class ConnectionTypeGroup(object):
         self._damage_grid = None  # column (chr), row (num)
         # negative: no connection, 0: Intact,  1: Failed
 
+        self.damaged_previous = []
         self.damaged = None
+        self.flag_damaged = False
         self.damaged_area = 0.0
         self.prop_damaged = 0.0
 
@@ -262,8 +264,8 @@ class ConnectionTypeGroup(object):
     def connections(self, _dic):
         assert isinstance(_dic, dict)
 
-        for key, value in _dic.iteritems():
-            _connection = Connection(connection_name=key, **value)
+        for key, value in _dic.items():
+            _connection = Connection(name=key, **value)
             self._connections[key] = _connection
             self.costing_area += _connection.costing_area
             self.no_connections += 1
@@ -309,7 +311,7 @@ class ConnectionTypeGroup(object):
             num_damaged = 0
             self.damaged_area = 0.0
 
-            for _connection in self.connections.itervalues():
+            for _, _connection in self.connections.items():
                 num_damaged += _connection.damaged
                 self.damaged_area += _connection.costing_area * _connection.damaged
 
@@ -331,6 +333,8 @@ class ConnectionTypeGroup(object):
         """
 
         self.damaged = []
+        self.flag_damaged = False
+
         for _connection in self.connections.itervalues():
 
             # _connection.compute_load()
@@ -345,6 +349,11 @@ class ConnectionTypeGroup(object):
                 else:
                     self.damaged.append(_connection.grid[grid_idx])
                     self.damage_grid[_connection.grid] = 1
+
+        if set(self.damaged).difference(set(self.damaged_previous)):
+            self.flag_damaged = True
+
+        self.damaged_previous = self.damaged
 
     def update_influence(self, house_inst):
         """
@@ -487,7 +496,7 @@ class ConnectionTypeGroup(object):
         Returns:
 
         """
-        for _name, _dic in damaged_connection.influence_patch.iteritems():
+        for _name, _dic in damaged_connection.influence_patch.items():
 
             try:
                 target_connection = house_inst.connections[_name]

@@ -52,7 +52,7 @@ class Costing(object):
                             internal_coeff2=None,
                             internal_coeff3=None)
         default_attr.update(kwargs)
-        for key, value in default_attr.iteritems():
+        for key, value in default_attr.items():
             setattr(self, key, value)
 
         for key in ['internal', 'envelope']:
@@ -154,7 +154,7 @@ class WaterIngressCosting(object):
                             coeff2=None,
                             coeff3=None)
         default_attr.update(kwargs)
-        for key, value in default_attr.iteritems():
+        for key, value in default_attr.items():
             setattr(self, key, value)
 
         self.assign_costing_function()

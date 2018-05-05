@@ -313,7 +313,7 @@ rafter,3,col,Loss of roof structure,0,1,0,3
 
         _dic = self.cfg.debris_regions[self.cfg.region_name]
 
-        for key, value in self.cfg.debris_types.iteritems():
+        for key, value in self.cfg.debris_types.items():
 
             self.assertEqual(value['cdav'], self.cfg.debris_types[key]['cdav'])
             self.assertEqual(value['ratio'], _dic['{}_ratio'.format(key)])
@@ -333,7 +333,7 @@ rafter,3,col,Loss of roof structure,0,1,0,3
                'medium': (0.34, 1.0, 0.58),
                'high': (0.33, 1.1, 0.58)}
         keys = ['probability', 'mean_factor', 'cov_factor']
-        for key, values in ref.iteritems():
+        for key, values in ref.items():
             for sub_key, value in zip(keys, values):
                 self.assertEqual(value,
                                  self.cfg.construction_levels[key][sub_key])

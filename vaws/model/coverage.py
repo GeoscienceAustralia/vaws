@@ -13,12 +13,12 @@ from vaws.model.stats import sample_lognormal
 
 class Coverage(Zone):
 
-    def __init__(self, coverage_name=None, **kwargs):
+    def __init__(self, name=None, **kwargs):
 
         try:
-            assert isinstance(coverage_name, str)
+            assert isinstance(name, str)
         except AssertionError:
-            coverage_name = str(coverage_name)
+            name = str(name)
 
         self.area = None
         self.cpe_mean = {}
@@ -52,7 +52,7 @@ class Coverage(Zone):
 
         default_attr.update(kwargs)
 
-        super(Coverage, self).__init__(zone_name=coverage_name, **default_attr)
+        super(Coverage, self).__init__(name=name, **default_attr)
 
         self.strength_negative = None
         self.strength_positive = None
@@ -82,7 +82,19 @@ class Coverage(Zone):
         self._breached_area += value
         self._breached_area = min(self._breached_area, self.area)
 
+    def __str__(self):
+        return 'Coverage(name={}, area={:.2f})'.format(
+            self.name, self.area)
+
+    def __repr__(self):
+        return 'Coverage(name={})'.format(self.name)
+
     def sample_strength(self, rnd_state):
+        """
+
+        :param rnd_state:
+        :return:
+        """
 
         for _type in ['in', 'out']:
             _strength = getattr(self, 'log_failure_strength_{}'.format(_type))
@@ -95,6 +107,13 @@ class Coverage(Zone):
                 self.strength_negative = -1.0 * _value
 
     def check_damage(self, qz, cpi, wind_speed):
+        """
+
+        :param qz:
+        :param cpi:
+        :param wind_speed:
+        :return:
+        """
 
         self.load = 0.0
 

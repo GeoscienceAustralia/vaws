@@ -152,7 +152,7 @@ class WaterIngressTestCase(unittest.TestCase):
         damage_name = 'Loss of roof sheeting'
         _df = self.cfg.water_ingress_costings[damage_name]
 
-        for wi, expected in dic_wi.iteritems():
+        for wi, expected in dic_wi.items():
             idx = np.argsort(np.abs(_df.index - wi))[0]
             self.assertEquals(_df.iloc[idx].name, expected)
 
@@ -170,7 +170,7 @@ class WaterIngressTestCase(unittest.TestCase):
                 axis=1)
             dic_[key] = grouped
 
-        for _name, _df in dic_.iteritems():
+        for _name, _df in dic_.items():
 
             wi_array = [0, 5.0, 18.0, 37.0, 67.0, 100.0]
             di_array = np.arange(0.01, 1.01, 0.01)

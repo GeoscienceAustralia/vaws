@@ -281,6 +281,9 @@ At the bottom of the main window, configuration file name and status of current 
 Running simulations
 ===================
 
+Bottom
+------
+
 
 .. |alpha| replace:: :math:`\alpha`
 .. |beta| replace:: :math:`\beta`

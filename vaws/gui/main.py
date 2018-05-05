@@ -373,7 +373,7 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
 
         for i, key in enumerate(self.cfg.debris_types_keys):
 
-            _list = [(k, v) for k, v in _debris_region.iteritems() if key in k]
+            _list = [(k, v) for k, v in _debris_region.items() if key in k]
 
             _list.sort()
 
@@ -400,7 +400,7 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
             self.ui.boundaryProfile.setItem(
                 irow, 0, QTableWidgetItem('{:.3f}'.format(head_col)))
 
-        for key, _list in self.cfg.wind_profiles.iteritems():
+        for key, _list in self.cfg.wind_profiles.items():
             for irow, value in enumerate(_list):
                 self.ui.boundaryProfile.setItem(
                     irow, key, QTableWidgetItem('{:.3f}'.format(value)))
@@ -410,7 +410,7 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
     def updateConnectionTypeTable(self):
         # load up connection types grid
         setupTable(self.ui.connectionsTypes, self.cfg.types)
-        for irow, (index, ctype) in enumerate(self.cfg.types.iteritems()):
+        for irow, (index, ctype) in enumerate(self.cfg.types.items()()):
             self.ui.connectionsTypes.setItem(
                 irow, 0, QTableWidgetItem(index))
             self.ui.connectionsTypes.setItem(
@@ -430,7 +430,7 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
     def updateZonesTable(self):
         setupTable(self.ui.zones, self.cfg.zones)
 
-        for irow, (index, z) in enumerate(self.cfg.zones.iteritems()):
+        for irow, (index, z) in enumerate(self.cfg.zones.items()()):
             self.ui.zones.setItem(
                 irow, 0, QTableWidgetItem(index))
             self.ui.zones.setItem(
@@ -450,7 +450,7 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
     
     def updateConnectionGroupTable(self):
         setupTable(self.ui.connGroups, self.cfg.groups)
-        for irow, (index, ctg) in enumerate(self.cfg.groups.iteritems()):
+        for irow, (index, ctg) in enumerate(self.cfg.groups.items()()):
             self.ui.connGroups.setItem(irow, 0, QTableWidgetItem(index))
             self.ui.connGroups.setItem(irow, 1, QTableWidgetItem('{:d}'.format(ctg['dist_order'])))
             self.ui.connGroups.setItem(irow, 2, QTableWidgetItem(ctg['dist_dir']))
@@ -473,7 +473,7 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
     def updateDamageTable(self):
         # load up damage scenarios grid
         setupTable(self.ui.damageScenarios, self.cfg.costings)
-        for irow, (name, _inst) in enumerate(self.cfg.costings.iteritems()):
+        for irow, (name, _inst) in enumerate(self.cfg.costings.items()()):
             self.ui.damageScenarios.setItem(irow, 0, QTableWidgetItem(name))
             self.ui.damageScenarios.setItem(irow, 1, QTableWidgetItem(
                 '{:.3f}'.format(_inst.surface_area)))
@@ -619,7 +619,7 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
                         'wallCladding': [self.ui.mplwallcladding, self.ui.tab_26, 5, "WallCladding"],
                         'wallCollapse': [self.ui.mplwallcollapse, self.ui.tab_29, 6, "WallCollapse"]}
 
-        for group_name, widget in group_widget.iteritems():
+        for group_name, widget in group_widget.items():
             tab_index = self.ui.damages_tab.indexOf(widget[1])
             if group_name not in self.cfg.connections['group_name'].values and tab_index >= 0:
                 self.ui.damages_tab.removeTab(tab_index)
@@ -1075,6 +1075,8 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
             self.ui.debrisRadius.setValue(self.cfg.debris_radius)
             self.ui.debrisAngle.setValue(self.cfg.debris_angle)
             self.ui.sourceItems.setValue(self.cfg.source_items)
+            self.ui.debrisBoundary.setText(
+                '{:.3f}'.format(self.cfg.boundary_radius))
             self.ui.flighttimeMean.setText(
                 '{:.3f}'.format(self.cfg.flight_time_mean))
             self.ui.flighttimeStddev.setText(
@@ -1148,6 +1150,8 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
             new_cfg.flight_time_mean = float(self.ui.flighttimeMean.text())
         if self.ui.flighttimeStddev.text():
             new_cfg.flight_time_stddev = float(self.ui.flighttimeStddev.text())
+        if self.ui.debrisBoundary.text():
+            new_cfg.boundary_radius = float(self.ui.debrisBoundary.text())
         new_cfg.staggered_sources = self.ui.staggeredDebrisSources.isChecked()
 
         new_cfg.flags['water_ingress'] = self.ui.waterEnabled.isChecked()
@@ -1187,7 +1191,7 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
             float(x) for x in unicode(self.ui.waterSpeed1.text()).split(',')]
 
         # house / groups section
-        # for irow, (index, ctg) in enumerate(self.cfg.groups.iteritems()):
+        # for irow, (index, ctg) in enumerate(self.cfg.groups.items()()):
         #     cellWidget = self.ui.connGroups.cellWidget(irow, 4)
         #     new_cfg.flags['conn_type_group_{}'.format(index)] = True \
         #         if cellWidget.checkState() == Qt.Checked else False

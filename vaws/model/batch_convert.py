@@ -36,7 +36,7 @@ def change_header(path_, filename, name_string, new_filename):
 
 def change_header_by_dir(path_):
 
-    for old_file, new_file in dic_file_list.iteritems():
+    for old_file, new_file in dic_file_list.items():
         change_header(path_, old_file, dic_string[old_file], new_file)
 
 

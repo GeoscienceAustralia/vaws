@@ -1,4 +1,4 @@
-
+.. _logic:
 ..
   # with overline, for parts
   * with overline, for chapters
@@ -18,25 +18,24 @@ Overall logic
 
 The program is built around the following high level sequence:
 
-1. Create a group of models by random sampling
+1. Create a group of models
 
-  - For each model (:py:class:`.House`)
+  - :ref:`For each model <house_module_section>`
 
-    * sample wind direction (:py:meth:`.House.set_wind_orientation`)
-    * sample wind profile (:py:meth:`.House.set_wind_profile`)
-    * sample construction quality level (:py:meth:`.House.set_construction_level`)
-    * set up coverages given the wind direction (:py:meth:`.House.set_coverages`)
-    * set up connections (:py:meth:`.House.set_connections`)
-    * set up zones (:py:meth:`.House.set_zones`)
-    * set up debris generation model (:py:meth:`.House.set_debris`)
+    * :ref:`sample wind direction <sample_wind_direction_section>`
+    * :ref:`sample wind profile <sample_wind_profile_section>`
+    * :ref:`sample construction quality level <sample_construction_level_section>`
+    * :ref:`set up coverages <set_coverages_section>`
+    * :ref:`set up connections <set_connections_section>`
+    * :ref:`set up zones <set_zones_section>`
+    * :ref:`set up debris model <set_debris_section>`
 
 2. Calculate damage indices of the models over a range of wind speeds
 
   - For each wind speed
 
-    - calculate damage index for each model (:py:meth:`.HouseDamage.run_simulation`)
+    - simulate damage for each model
 
-      - assign the increment in the mean damage index from the previous wind step as an input to the debris generation model (:py:attr:`.Debris.no_items_mean`)
       - calculate free stream wind pressure (qz), optionally applying a regional shielding factor (:py:meth:`.HouseDamage.compute_qz_ms`)
       - calculate zone pressures (:py:meth:`.Zone.calc_zone_pressure`)
       - check damage of envelope coverages by wind load (:py:meth:`.Coverage.check_damage`)
@@ -46,6 +45,7 @@ The program is built around the following high level sequence:
       - update influence by connection group (:py:meth:`.ConnectionTypeGroup.update_influence`)
       - check for total house collapse event (:py:meth:`.HouseDamage.check_house_collapse`)
       - compute damage index of the model (:py:meth:`.HouseDamage.compute_damage_index`)
+
       - generate debris and update Cpi in case of internal pressurisation event (:py:meth:`.HouseDamage.check_internal_pressurisation`)
 
     - calculate increment in mean damage index of the group of models (:py:func:`.update_bucket`)
@@ -58,22 +58,29 @@ Detailed logic
 
 This section provides detailed descriptions of each module.
 
+.. _house_module_section:
 
-House module
-------------
+House module (:py:class:`.House`)
+---------------------------------
 
-wind direction
-^^^^^^^^^^^^^^
+.. _sample_wind_direction_section:
+
+sample wind direction (:py:meth:`.House.set_wind_orientation`)
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 The wind direction is set up at the time of model creation, and kept constant during the simulation over a range of wind speeds. If wind_direction (:numref:`section_main_table`) is 'RANDOM', then wind direction is randomly sampled among the eight directions.
 
-wind profile
-^^^^^^^^^^^^
+.. _sample_wind_profile_section:
 
-A set of gust envelope wind profiles is read from wind_profiles (:numref:`section_main_table`), and one profile is randomly chosen for each model and kept constant during the simulation over a range of wind speeds. And mzcat value at the model height is then calculated by interploation using the sampled profile over height.
+sample wind profile (:py:meth:`.House.set_wind_profile`)
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-construction quality level
-^^^^^^^^^^^^^^^^^^^^^^^^^^
+A set of gust envelope wind profiles is read from wind_profiles (:numref:`section_main_table`), and one profile is randomly chosen for each model and kept constant during the simulation over a range of wind speeds. The mzcat value at the model height is then calculated by interpolation using the sampled profile over height.
+
+.. _sample_construction_level_section:
+
+sample construction quality level (:py:meth:`.House.set_construction_level`)
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 A set of mean and cov factors for connection strength is defined for each construction quality level with likelihood as listed in :numref:`section_construction_levels_table`. Construction level for each model is determined from a random sampling, and the corresponding mean and cov factors are later multiplied to arithmetic mean and standard deviation of strength as :eq:`mean_cov_factors_eq`:
 
@@ -84,6 +91,54 @@ A set of mean and cov factors for connection strength is defined for each constr
     \sigma_{adj} &= \sigma \times f_{\mu} \times f_{\text{cov}}
 
 where :math:`\mu_{adj}` and :math:`\sigma_{adj}`: adjusted mean and standard deviation of connection strength reflecting construction quality level, respectively, :math:`\mu` and :math:`\sigma`: mean and standard deviation of connection strength, :math:`f_{\mu}` and :math:`f_{\text{cov}}`: mean and cov factors for connection strength.
+
+
+.. _set_coverages_section:
+
+set up coverages (:py:meth:`.House.set_coverages`)
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+A set of coverage components(:py:class:`.Coverage`) is defined using the information provided in the input files of :ref:`coverages.csv <coverages.csv_section>`, :ref:`coverage_types.csv <coverage_types.csv_section>` and :ref:`coverages_cpe.csv <coverages_cpe.csv_section>`.
+The Cpe and strength values for each coverage component are sampled when it is defined. The windward direction for each coverage component is assigned from among `windward`, `leeward`, `side1`, or `side2`, which is used in determining the windward direction of dominant opening due to coverage failure.
+
+
+.. _set_zones_section:
+
+set up zones (:py:meth:`.House.set_zones`)
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+A set of zone components(:py:class:`.Zone`) is defined using the information provided in the input files of :ref:`zones.csv <zones.csv_section>`, :ref:`zones_cpe_mean.csv <zones_cpe_mean.csv_section>`, :ref:`zones_cpe_str_mean.csv <zones_cpe_str_mean.csv_section>`, :ref:`zones_cpe_eave_mean.csv <zones_cpe_eave_mean.csv_section>`, and :ref:`zones_edges.csv <zones_edges.csv_section>`. The Cpe value for each zone component is sampled when it is defined.
+
+
+.. _set_connections_section:
+
+set up connections (:py:meth:`.House.set_connections`)
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+A set of connection components(:py:class:`.Connection`) is defined using the information provided in the input files of :ref:`conn_groups.csv <conn_groups.csv_section>`, :ref:`conn_types.csv <conn_types.csv_section>`, :ref:`connections.csv <connections.csv_section>`, :ref:`influences.csv <influences.csv_section>`, and :ref:`influence_patches.csv <influence_patches.csv_section>`. The strength and dead load values for each connection component are sampled and influence and influence patch for each connection are also defined with reference to either zone or another connection components.
+
+A set of connection type group(:py:class:`.ConnectionTypeGroup`) is also defined, and reference is created to relate a connection component to a connection type group. A connection type group is further divided into sub-group by section in order to represent load distribution area within the same group. For instance roof sheetings on a hip roof are divided into a number of sheeting sub-groups to represent areas divided by roof ridge lines.
+
+
+.. _set_debris_section:
+
+set up debris model (:py:meth:`.House.set_debris`)
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+A debris damage model is set up by referencing the wind direction and coverages of the model. Once the wind direction of the model is assigned to the debris model, the footprint for debris impact is created by rotating the model footprint with regard to the wind direction as set out in :numref:`rotation_angle_table` (:py:attr:`.Debris.footprint`). Note that all the debris sources are assumed to be located in the East of the model when debris impact to the model is simulated.
+
+.. _rotation_angle_table:
+.. csv-table:: Rotation angle by wind direction
+    :header: Wind direction, Rotation angle (deg)
+    :widths: 10, 30
+
+    S or N, 90
+    SW or NE, 45
+    E or W, 0
+    SE or NW, -45
+
+
+Also walls and coverage components subject to debris impact are selected based on the wind direction (:py:attr:`.Debris.front_facing_walls`). The boundary for debris impact assessment is also defined with the radius of boundary (:py:attr:`.Debris.boundary`)
 
 regional shielding factor
 ^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -191,7 +246,15 @@ The probability distribution of point of landing of the debris in a horizontal p
 
 where :math:`x` and :math:`y` are the coordinates of the landing position of the debris, :math:`\sigma_x` and :math:`\sigma_y`: standard deviation for the coordinates of the landing position, and :math:`d`: expected flight distance. The value of :math:`\sigma_x` and :math:`\sigma_y` are set to be :math:`d/3` and :math:`d/12`, respectively.
 
-If the line linking the source to the landing point intersects with the footprint of the model, then it can be assumed that an impact has occurred.
+Either if the landing point is within the footprint of the model or if the line linking the source to the landing point intersects with the footprint of the model and the landing point is within the boundary, then it is assumed that an impact has occurred. The criteria of debris impact is illustrated in the :numref:`debris_impact_criteria_fig` where blue line represents debris trajectory with impact while red line represents one without impact.
+
+.. _debris_impact_criteria_fig:
+.. figure:: _static/image/debris_impact.png
+    :align: center
+    :width: 70 %
+
+    Graphical presentation of debris impact criteria
+
 
 Following Lin and Vanmarcke 2008, the ratio of horizontal velocity of the windborne debris object to the wind gust velocity is modelled as a random variable with a Beta distribution as :eq:`beta_dist`.
 
@@ -234,8 +297,8 @@ The momentum :math:`\xi` is calculated using the sampled value of the ratio, :ma
 
     \xi = \left(\frac{u_m}{V_s}\right) \times m \times V_s
 
-debris impact : original method
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+debris impact
+^^^^^^^^^^^^^
 
 Based on the methodology presented in HAZUS and Lin and Vanmacke (2008), the number of impact :math:`N` is assumed to follow a Poisson distribution as :eq:`poisson_eqn`.
 
@@ -245,7 +308,7 @@ Based on the methodology presented in HAZUS and Lin and Vanmacke (2008), the num
     N &\sim \operatorname{Pois}(\lambda) \\
     \lambda &= N_v \cdot q \cdot F_{\xi}(\xi>\xi_d)
 
-where :math:`N_v`: number of impacts at a single wind speed, :math:`q`: proportion of coverage area out of the total area of envelope, :math:`F_{\xi}`: the cumulative distribution of momentum, and :math:`xi_d`: threshold of momentum or energy for damage of the material of the coverage.
+where :math:`N_v`: number of impacts at a single wind speed, :math:`q`: proportion of coverage area out of the total area of envelope, :math:`F_{\xi}`: the cumulative distribution of momentum, and :math:`\xi_d`: threshold of momentum or energy for damage of the material of the coverage.
 
 The probability of damage can be calculated based on the Poisson distribution as :eq:`p_d`.
 
@@ -254,65 +317,7 @@ The probability of damage can be calculated based on the Poisson distribution as
 
     P_D = 1 - P(N=0) = 1-\exp\left[-\lambda\right]
 
-In the original method, :math:`N_v` is estimated from the all debris sources, and for each coverage, :math:`q` and :math:`F_{\xi}(\xi>\xi_d)` are estimated. If the material of the coverage is glass, then :math:`P_D` is computed and compared against a random value sampled from unit uniform distribution to determine whether the coverage is failed or not. For coverage with non-glass material, a random value of number of impact is sampled from the Poisson distribution with :math:`\lambda`, which is regarded as the damaged area assuming that affected area by debris impact is 1.
-
-debris impact : alternative method
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-In the alternative method, instead of using the Poisson distribution, it is possible to check whether impact occurs or not each debris item through simulation.
-For each debris impact, target coverage is determined based on the area proportion. And the momentum of the debris is computed as :eq:`momentum`, and then compared against the capacity of the coverage, which is also sampled from the assumed distribution. Once the momentum is greater than the capacity, then the frontal area of the debris is regarded as damaged area for non-glass coverage, while whole coverage area is for glass one.
-
-The following plots show the differences in results between the two approaches. Note that number of debris items are set to be 20 rather than 100.
-
-1) Simulation using the Tropical_town vulnerability
-
-.. figure:: _static/image/compare_supply_town_1.png
-    :align: center
-    :width: 70 %
-
-    No. of supply using the Tropical_town vulnerability
-
-
-.. figure:: _static/image/compare_impact_town_1.png
-    :align: center
-    :width: 70 %
-
-    No. of impacts (or touched) using the Tropical_town vulnerability
-
-Note that original_sampled represents the number of impacts sampled using the Poisson distribution,which is later used in estimating damaged area.
-
-.. figure:: _static/image/compare_town_1.png
-    :align: center
-    :width: 70 %
-
-    Damaged area using the Tropical_town vulnerability
-
-As explained earlier, the damaged area from the original method is assumed to be 1.0 times number of impacts, which is way larger than estimated frontal area of the debris, which explains the difference.
-
-2) simulation using the Capital_city vulnerability
-
-
-.. figure:: _static/image/compare_supply_city.png
-    :align: center
-    :width: 70 %
-
-    No. of supply using the Capital_city vulnerability
-
-.. figure:: _static/image/compare_impact_city.png
-    :align: center
-    :width: 70 %
-
-    No. of impacts (or touched) using the Capital_city vulnerability
-
-.. figure:: _static/image/compare_city_1.png
-    :align: center
-    :width: 70 %
-
-    Damaged area using the Capital_city vulnerability
-
-
-
-
+:math:`q` and :math:`F_{\xi}(\xi>\xi_d)` are estimated for each coverage. If the material of the coverage is glass, then :math:`P_D` is computed and compared against a random value sampled from unit uniform distribution to determine whether the coverage is damaged or not. For coverage with non-glass material, a random value of number of impact is sampled from the Poisson distribution with :math:`\lambda`, and damaged coverage area is then computed assuming that affected area by debris impact is 1.
 
 .. _water_ingress_section:
 

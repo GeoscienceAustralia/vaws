@@ -48,7 +48,7 @@
          </size>
         </property>
         <property name="currentIndex">
-         <number>0</number>
+         <number>1</number>
         </property>
         <widget class="QWidget" name="scenario_tab">
          <attribute name="title">
@@ -337,7 +337,7 @@
            </layout>
           </item>
           <item row="14" column="1">
-           <widget class="QLineEdit" name="flighttimeMean"/>
+           <widget class="QLineEdit" name="debrisBoundary"/>
           </item>
           <item row="10" column="1">
            <widget class="QComboBox" name="buildingSpacing"/>
@@ -355,7 +355,7 @@
           <item row="14" column="0">
            <widget class="QLabel" name="label_2">
             <property name="text">
-             <string>Flight time mean</string>
+             <string>Boundary</string>
             </property>
             <property name="alignment">
              <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
@@ -482,6 +482,19 @@
           </item>
           <item row="9" column="1">
            <widget class="QComboBox" name="debrisRegion"/>
+          </item>
+          <item row="15" column="0">
+           <widget class="QLabel" name="label_5">
+            <property name="text">
+             <string>Flight time mean</string>
+            </property>
+            <property name="alignment">
+             <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+            </property>
+           </widget>
+          </item>
+          <item row="15" column="1">
+           <widget class="QLineEdit" name="flighttimeMean"/>
           </item>
          </layout>
         </widget>
@@ -2238,7 +2251,7 @@
   <tabstop>debrisRadius</tabstop>
   <tabstop>debrisAngle</tabstop>
   <tabstop>sourceItems</tabstop>
-  <tabstop>flighttimeMean</tabstop>
+  <tabstop>debrisBoundary</tabstop>
   <tabstop>scen_tab</tabstop>
   <tabstop>dataview_tab</tabstop>
   <tabstop>houseinfo_tab</tabstop>

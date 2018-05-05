@@ -5,11 +5,9 @@
 """
 
 import copy
-from numpy import array, interp, zeros_like
-from numpy.random import RandomState
+import numpy as np
 import logging
-from shapely.geometry import Polygon
-from collections import OrderedDict
+import collections
 
 from vaws.model.connection import ConnectionTypeGroup
 from vaws.model.zone import Zone
@@ -23,7 +21,7 @@ class House(object):
     def __init__(self, cfg, rnd_state):
 
         assert isinstance(cfg, Config)
-        assert isinstance(rnd_state, RandomState)
+        assert isinstance(rnd_state, np.random.RandomState)
 
         self.cfg = cfg
         self.rnd_state = rnd_state
@@ -37,60 +35,118 @@ class House(object):
         self.cpe_cov = None
         self.cpe_str_cov = None
         self.cpe_k = None
+        self.cpe_str_k = None
         self.big_a = None
         self.big_b = None
+        self.big_a_str = None
+        self.big_b_str = None
 
         # debris related
         self.debris = None
-        self.footprint = None
 
         # random variables
-        self.wind_orientation = None  # 0 to 7
+        self.wind_dir_index = None  # 0 to 7
         self.construction_level = None
-        self.profile = None
-        self.str_mean_factor = None
-        self.str_cov_factor = None
-        self.mzcat = None
+        self.profile_index = None
+        self.terrain_height_multiplier = None
+        self.shielding_multiplier = None
 
-        self.groups = OrderedDict()  # list of conn type groups
+        self.groups = collections.OrderedDict()  # list of conn type groups
         self.connections = {}  # dict of connections with name
         self.zones = {}  # dict of zones with id
         self.coverages = None  # pd.dataframe of coverages
         # self.zone_by_grid = {}  # dict of zones with zone loc grid in tuple
 
         # init house
-        self.read_house_data()
+        self.set_house_data()
 
         # house is consisting of connections, coverages, and zones
-        self.set_wind_orientation()
-        self.set_construction_level()
-        self.set_wind_profile()
         self.set_coverages()
         self.set_zones()
         self.set_connections()
-        self.set_debris()
 
-    def read_house_data(self):
+    @property
+    def str_mean_factor(self):
+        return self.cfg.construction_levels[
+            self.construction_level]['mean_factor']
 
-        for key, value in self.cfg.house.iteritems():
+    @property
+    def str_cov_factor(self):
+        return self.cfg.construction_levels[
+                self.construction_level]['cov_factor']
+
+    def set_terrain_height_multiplier(self):
+        self.terrain_height_multiplier = np.interp(
+            self.height, self.cfg.profile_heights,
+            self.cfg.wind_profiles[self.profile_index])
+
+    def set_shielding_multiplier(self):
+        """
+        AS4055 (Wind loads for housing) defines the shielding multiplier
+        for full, partial and no shielding as 0.85, 0.95 and 1.0, respectively.
+
+        The following percentages are recommended for the shielding of houses
+        well inside Australian urban areas:
+        Full shielding: 63%, Partial shielding: 15%, No shielding: 22%.
+        """
+        if self.cfg.regional_shielding_factor <= 0.85:
+            idx = (self.cfg.shielding_multiplier_thresholds <=
+                   self.rnd_state.random_integers(0, 100)).sum()
+            self.shielding_multiplier = self.cfg.shielding_multipliers[idx][1]
+        else:
+            self.shielding_multiplier = 1.0
+
+    def set_wind_dir_index(self):
+        if self.cfg.wind_dir_index == 8:
+            self.wind_dir_index = self.rnd_state.random_integers(0, 7)
+        else:
+            self.wind_dir_index = self.cfg.wind_dir_index
+
+    def set_profile_index(self):
+        self.profile_index = self.rnd_state.random_integers(
+            1, len(self.cfg.wind_profiles))
+
+    def set_construction_level(self):
+        """
+
+        Returns: construction_level, str_mean_factor, str_cov_factor
+
+        """
+        rv = self.rnd_state.random_integers(0, 100)
+        key, value, cum_prob = None, None, 0.0
+        for key, value in self.cfg.construction_levels.items():
+            cum_prob += value['probability'] * 100.0
+            if rv <= cum_prob:
+                break
+        self.construction_level = key
+
+    def set_house_data(self):
+
+        for key, value in self.cfg.house.items():
             setattr(self, key, value)
+
+        self.set_wind_dir_index()
+        self.set_construction_level()
+        self.set_profile_index()
+        self.set_terrain_height_multiplier()
+        self.set_shielding_multiplier()
 
     def set_zones(self):
 
-        for _name, item in self.cfg.zones.iteritems():
+        for _name, item in self.cfg.zones.items():
 
-            _zone = Zone(zone_name=_name, **item)
+            _zone = Zone(name=_name, **item)
 
             _zone.sample_cpe(
-                wind_dir_index=self.wind_orientation,
+                wind_dir_index=self.wind_dir_index,
                 cpe_cov=self.cpe_cov,
                 cpe_k=self.cpe_k,
                 big_a=self.big_a,
                 big_b=self.big_b,
                 cpe_str_cov=self.cpe_str_cov,
                 cpe_str_k=self.cpe_str_k,
-                big_a_str=self.big_a,
-                big_b_str=self.big_b,
+                big_a_str=self.big_a_str,
+                big_b_str=self.big_b_str,
                 rnd_state=self.rnd_state)
 
             self.zones[_name] = _zone
@@ -106,7 +162,7 @@ class House(object):
             dic_group = copy.deepcopy(self.cfg.groups[group_name])
             dic_group['sub_group'] = sub_group_name
 
-            _group = ConnectionTypeGroup(group_name=group_name,
+            _group = ConnectionTypeGroup(name=group_name,
                                          **dic_group)
             self.groups[sub_group_name] = _group
 
@@ -115,7 +171,7 @@ class House(object):
             _group.connections = connections_by_sub_group.to_dict('index')
 
             # linking with connections
-            for connection_name, _connection in _group.connections.iteritems():
+            for connection_name, _connection in _group.connections.items():
 
                 self.connections[connection_name] = _connection
                 self.set_connection_property(_connection)
@@ -186,19 +242,15 @@ class House(object):
 
     def set_debris(self):
 
-        self.debris = Debris(self.cfg)
+        coverages_debris = {}
+        if self.coverages is not None and not self.coverages.empty:
+            coverages_debris = self.coverages.loc[
+                self.coverages.direction == 'windward', 'coverage'].to_dict()
 
-        if self.cfg.flags['debris']:
-
-            points = []
-            for item in self.cfg.footprint:
-                points.append((item[0], item[1]))
-            self.footprint = Polygon(points)
-
-            self.debris.footprint = self.footprint, self.wind_orientation
-            self.debris.rnd_state = self.rnd_state
-            self.debris.coverages = self.coverages
-            self.debris.boundary = self.cfg.boundary_radius
+        self.debris = Debris(cfg=self.cfg,
+                             wind_dir_idx=self.wind_dir_index,
+                             rnd_state=self.rnd_state,
+                             coverages=coverages_debris)
 
     def set_coverages(self):
 
@@ -210,14 +262,14 @@ class House(object):
                 self.assign_windward)
 
             self.coverages = df_coverages[['direction', 'wall_name']].copy()
-            self.coverages['breached_area'] = zeros_like(self.coverages.direction)
+            self.coverages['breached_area'] = np.zeros_like(self.coverages.direction)
 
             for _name, item in df_coverages.iterrows():
 
-                _coverage = Coverage(coverage_name=_name, **item)
+                _coverage = Coverage(name=_name, **item)
 
                 _coverage.sample_cpe(
-                    wind_dir_index=self.wind_orientation,
+                    wind_dir_index=self.wind_dir_index,
                     cpe_cov=self.cpe_cov,
                     cpe_k=self.cpe_k,
                     big_a=self.big_a,
@@ -234,18 +286,18 @@ class House(object):
 
     def assign_windward(self, wall_name):
 
-        windward_dir = self.cfg.wind_dir[self.wind_orientation]
+        windward_dir = self.cfg.wind_dir[self.wind_dir_index]
         windward = self.cfg.front_facing_walls[windward_dir]
 
         leeward = self.cfg.front_facing_walls[self.cfg.wind_dir[
-            (self.wind_orientation + 4) % 8]]
+            (self.wind_dir_index + 4) % 8]]
 
         side1, side2 = None, None
         if len(windward_dir) == 1:
             side1 = self.cfg.front_facing_walls[self.cfg.wind_dir[
-                (self.wind_orientation + 2) % 8]]
+                (self.wind_dir_index + 2) % 8]]
             side2 = self.cfg.front_facing_walls[self.cfg.wind_dir[
-                (self.wind_orientation + 6) % 8]]
+                (self.wind_dir_index + 6) % 8]]
 
         # assign windward, leeward, side
         if wall_name in windward:
@@ -291,7 +343,7 @@ class House(object):
                 breached_area = self.coverages.loc[
                     self.coverages['direction'] == direction, 'breached_area']
                 max_area = breached_area[breached_area == breached_area.max()]
-                cpe_array = array([self.coverages.loc[i, 'coverage'].cpe
+                cpe_array = np.array([self.coverages.loc[i, 'coverage'].cpe
                                    for i in max_area.keys()])
                 max_cpe = max(cpe_array.min(), cpe_array.max(), key=abs)
                 cpi *= max_cpe
@@ -316,37 +368,3 @@ class House(object):
 
         return cpi
 
-    def set_wind_orientation(self):
-        # set wind_orientation
-        if self.cfg.wind_dir_index == 8:
-            self.wind_orientation = self.rnd_state.random_integers(0, 7)
-        else:
-            self.wind_orientation = self.cfg.wind_dir_index
-
-    def set_wind_profile(self):
-        """
-
-        Returns: profile, mzcat
-
-        """
-
-        self.profile = self.rnd_state.random_integers(1, len(self.cfg.wind_profiles))
-
-        self.mzcat = interp(self.height, self.cfg.profile_heights,
-                            self.cfg.wind_profiles[self.profile])
-
-    def set_construction_level(self):
-        """
-
-        Returns: construction_level, str_mean_factor, str_cov_factor
-
-        """
-        rv = self.rnd_state.random_integers(0, 100)
-        key, value, cum_prob = None, None, 0.0
-        for key, value in self.cfg.construction_levels.iteritems():
-            cum_prob += value['probability'] * 100.0
-            if rv <= cum_prob:
-                break
-        self.construction_level = key
-        self.str_mean_factor = value['mean_factor']
-        self.str_cov_factor = value['cov_factor']

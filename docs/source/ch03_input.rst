@@ -169,6 +169,7 @@ Parameters of the debris section are listed in :numref:`section_debris_table`. N
     debris_radius, Radius, radius (in metre) of debris sources from the modelled house
     debris_angle, Angle, included angle (in degree) of the sector in which debris sources exist
     source_items, Source items, number of debris items per debris sources
+    boundary_radius, Boundary, radius (in metre) of boundary for debris impact assessment
     flight_time_mean, Flight time mean, mean flight time of debris items
     flight_time_stddev, Flight time std, standard deviation of flight time of debris items
     staggered_sources, Staggered sources, "if True then staggered sources are used. Otherwise, a grid pattern of debris sources are used."
@@ -431,10 +432,10 @@ The model is assumed to consist of a number of connection groups. This file defi
 .. code-block:: none
    :caption: Example conn_groups.csv
 
-    group_name,dist_order,dist_dir,damage_scenario,trigger_collapse_at,patch_dist
-    sheeting,1,col,Loss of roof sheeting,0.0,1
-    batten,2,row,Loss of roof sheeting & purlins,0.0,1
-    rafter,3,col,Loss of roof structure,0.0,1
+    group_name,dist_order,dist_dir,damage_scenario,trigger_collapse_at,patch_dist,flag_pressure
+    sheeting,1,col,Loss of roof sheeting,0.0,1,cpe
+    batten,2,row,Loss of roof sheeting & purlins,0.0,1,cpe
+    rafter,3,col,Loss of roof structure,0.0,1,cpe_str
 
 
 .. tabularcolumns:: |p{3.5cm}|p{1.5cm}|p{9.5cm}|
@@ -448,6 +449,8 @@ The model is assumed to consist of a number of connection groups. This file defi
     damage_scenario, string, "damage scenario name defined in damage_costing_data.csv"
     trigger_collapse_at, float, "proportion of damaged connections of the group at which a model is deemed to be collapsed. 0 if ignored"
     patch_dist, integer, "1 if influence patch is applied when connection is damaged otherwise 0"
+    flag_pressure, string, "type of cpe for pressure calculation; either 'cpe' or 'cpe_str'"
+
 
 .. _conn_types.csv_section:
 
@@ -553,6 +556,8 @@ This file defines zones and parameter values of the each zone. An example is sho
     coords, float, "comma separated list of x, y coordinates for plotting purpose. Provide 4 sets of x, y coordinates for a rectangular shape."
 
 
+.. _zones_cpe_mean.csv_section:
+
 zones_cpe_mean.csv
 ------------------
 
@@ -595,6 +600,8 @@ This file defines mean cladding Cpe of each zone with regard to the eight wind d
     SE, float, "mean cladding Cpe value in South East direction"
 
 
+.. _zones_cpe_str_mean.csv_section:
+
 zones_cpe_str_mean.csv
 ----------------------
 
@@ -621,6 +628,8 @@ Like zones_cpe_mean.csv, mean Cpe values for zones associated with structural co
     A14,-0.4,-0.4,-0.4,-0.4,-0.4,-0.4,-0.4,-0.4
 
 
+.. _zones_cpe_eave_mean.csv_section:
+
 zones_cpe_eave_mean.csv
 -----------------------
 
@@ -646,6 +655,8 @@ Like zones_cpe_mean.csv, mean Cpe values for zones at eave need to be provided i
     A13,0.07,0.07,0.07,0.07,0.07,0.07,0.07,0.07
     A14,-0.02,-0.02,-0.02,-0.02,-0.02,-0.02,-0.02,-0.02
 
+.. _zones_edges.csv_section:
+
 zones_edge.csv
 --------------
 
@@ -670,6 +681,8 @@ In zones_edge.csv, for each of the eight direction, 1 is provided for zone withi
     A12,0,0,1,1,1,0,0,0
     A13,1,1,1,0,0,0,0,0
     A14,0,0,1,1,1,0,0,0
+
+.. _coverages.csv_section:
 
 coverages.csv
 -------------
@@ -697,6 +710,8 @@ This file defines coverages making up the wall part of the envelope of the model
     wall_name, integer, "wall name"
     area, float, "area (:math:`\text{m}^2`)"
     coverage_type, string, "name of coverage type"
+
+.. _coverage_types.csv_section:
 
 coverage_types.csv
 ------------------
@@ -726,6 +741,8 @@ This file defines types of coverages referenced in the :numref:`coverages.csv`. 
     failure_strength_out_std, float, "standard deviation of failure strength outward direction"
 
 
+.. _coverages_cpe.csv_section:
+
 coverages_cpe.csv
 -----------------
 
@@ -744,6 +761,7 @@ Like zones_cpe_mean.csv, mean Cpe values for coverages are provided in coverages
     6,-0.55,-0.55,-0.55,-0.55,-0.55,-0.55,-0.55,-0.55
 
 
+.. _influences.csv_section:
 
 influences.csv
 --------------
@@ -772,6 +790,8 @@ This file defines influence coefficients relating a connection with either anoth
     Zone, "name of either zone or connection associated with the Connection"
     Coefficient, "coefficient value"
 
+
+.. _influence_patches.csv_section:
 
 influence_patches.csv
 ---------------------

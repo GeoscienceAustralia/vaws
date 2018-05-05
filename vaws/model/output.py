@@ -127,7 +127,7 @@ def draw_influence(cfg, infl_dic, dic_ax, conn_name):
                                        fontsize='small', ha='center',
                                        va='center')
     # influences: red
-    for key, value in infl_dic.iteritems():
+    for key, value in infl_dic.items():
 
         face_color, font_weight, font_size = 'orange', 'bold', 'x-small'
         _str = '{}:{}'.format(key, value)
@@ -198,7 +198,7 @@ def plot_influence(cfg, conn_name, file_name=None):
         for group_name in _list_groups:
 
             if group_name == 'zone':
-                for key, value in cfg.zones.iteritems():
+                for key, value in cfg.zones.items():
                     try:
                         p = PatchCollection([value['coords']], facecolors='none')
                     except AttributeError:

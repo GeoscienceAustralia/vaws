@@ -21,6 +21,8 @@ The tool generates a building model by randomly selecting parameter values from 
 
 Then, for progressive gust wind speed increments, it calculates the forces in all critical connections using influence coefficients, assesses which connections have failed and translates these into a damage scenario and costs the repair. Using the repair cost and the full replacement cost, it calculates a damage index for each wind speed.
 
+For more details, see  :ref:`Chapter 5 <logic>`.
+
 Key features
 ============
 
@@ -69,6 +71,6 @@ The Monte Carlo process capture a range of variability in both wind loading and 
 Caveats and limitations
 =======================
 
-VAWS has been designed primarily as a tool for assessing vulnerability of houses to wind hazard. The simulation outcomes should be interpreted as vulnerability of a group of similar houses on average, even though an individual house is modelled. In other words, the tool is not capable of predicting performance of each individual house for a specific wind event.
+VAWS has been designed primarily as a tool for assessing vulnerability of houses to wind hazard. The simulation outcomes should be interpreted as vulnerability of a group of similar houses on average, even though an individual house is modelled. In other words, the tool is not capable of predicting performance of an individual house for a specific wind event.
 
 

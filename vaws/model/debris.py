@@ -13,19 +13,16 @@ Debris Module - adapted from JDH Consulting and Martin's work
 from __future__ import division, print_function
 
 import logging
-import pandas as pd
 
-from numpy import rint, random, array
-from numbers import Number
-from math import pow, radians, tan, sqrt, exp
-from shapely.geometry import Point, Polygon, LineString
-from shapely.affinity import rotate
+import numpy as np
+import math
+import numbers
+from shapely import geometry, affinity
+
+from vaws.model.config import Config
 
 
 class Debris(object):
-
-    rho_air = 1.2  # air density
-    g_const = 9.81  # acceleration of gravity
 
     flight_distance_coeff = {2: {'Compact': [0.011, 0.2060],
                                  'Sheet': [0.3456, 0.072],
@@ -42,29 +39,22 @@ class Debris(object):
                     2: 0.0, 6: 0.0,  # E, W
                     3: -45.0, 7: -45.0}  # SE, NW
 
-    def __init__(self, cfg):
+    def __init__(self, cfg, rnd_state, wind_dir_idx, coverages):
+
+        assert isinstance(cfg, Config)
+        assert isinstance(rnd_state, np.random.RandomState)
+        assert wind_dir_idx in range(8)
+        assert isinstance(coverages, dict)
 
         self.cfg = cfg
+        self.rnd_state = rnd_state
+        self.wind_dir_idx = wind_dir_idx
+        self.coverages = coverages
 
-        # assigned by footprint.setter
-        self._footprint = None
-        self.front_facing_walls = None
-        self._boundary = None
-
-        # assigned by coverages.setter
-        self._coverages = None
-        self.area = None
-        # self.coverage_idx = None
-        # self.coverage_prob = None
-
-        # assigned by rnd_state.setter
-        self._rnd_state = None
-
-        # assigned by no_items_mean.setter
-        self._no_items_mean = None  # mean value for poisson dist
+        self._damage_incr = None
 
         self.debris_items = []  # container of items over wind steps
-        self.debris_momentums = [] # container of momentums in a wind step
+        self.debris_momentums = []  # container of momentums in a wind step
 
         # vary over wind speeds
         self.no_items = 0  # total number of debris items generated
@@ -72,13 +62,17 @@ class Debris(object):
         self.damaged_area = 0.0  # total damaged area by debris items
 
     @property
-    def no_items_mean(self):
-        return self._no_items_mean
+    def damage_incr(self):
+        return self._damage_incr
 
-    @no_items_mean.setter
-    def no_items_mean(self, value):
+    @damage_incr.setter
+    def damage_incr(self, value):
+        assert isinstance(value, numbers.Number)
+        self._damage_incr = value
+
+    @property
+    def mean_no_items(self):
         """
-
         dN = f * dD
         where dN: incr. number of debris items,
               dD: incr in vulnerability (or damage index)
@@ -87,85 +81,42 @@ class Debris(object):
               if we use dD/dV (pdf of vulnerability), then
                  dN = f * (dD/dV) * dV
 
-        Args:
-            value (float) :
+        :getter: Returns this direction's name
+        :setter: Sets this direction's name        Args:
+            value :
 
         Returns:
-            set no_items_mean
-        """
-        assert isinstance(value, Number)
+            setter of mean_no_items
 
-        self._no_items_mean = rint(self.cfg.source_items * value)
+        :return:
+        """
+        return np.rint(self.cfg.source_items * self._damage_incr)
 
     @property
     def footprint(self):
-        return self._footprint
-
-    @footprint.setter
-    def footprint(self, _tuple):
         """
         create house footprint by wind direction
-        Note that debris source model is generated assuming wind blows from E.
+        Note that debris source model is generated assuming wind blows from East.
 
-        Args:
-            _tuple: (polygon_inst, wind_dir_index)
+        :param _tuple: (polygon_inst, wind_dir_index)
 
-        Returns:
-
-            self.footprint
-            self.front_facing_walls
-
+        :return:
+            self.footprint, self.front_facing_walls
         """
-        polygon_inst, wind_dir_idx = _tuple
-        assert isinstance(polygon_inst, Polygon)
-        assert isinstance(wind_dir_idx, int)
-
-        self._footprint = rotate(polygon_inst, self.__class__.angle_by_idx[
-            wind_dir_idx])
-
-        self.front_facing_walls = self.cfg.front_facing_walls[
-            self.cfg.wind_dir[wind_dir_idx]]
+        return affinity.rotate(
+            self.cfg.footprint, self.__class__.angle_by_idx[self.wind_dir_idx])
 
     @property
-    def coverages(self):
-        return self._coverages
-
-    @coverages.setter
-    def coverages(self, _df):
-
-        assert isinstance(_df, pd.DataFrame)
-
-        _tf = _df['wall_name'].isin(self.front_facing_walls)
-        self._coverages = _df.loc[_tf, 'coverage'].to_dict()
-        self.area = sum([x.area for x in self._coverages.itervalues()])
+    def front_facing_walls(self):
+        return self.cfg.front_facing_walls[self.cfg.wind_dir[self.wind_dir_idx]]
 
     @property
-    def rnd_state(self):
-        return self._rnd_state
-
-    @rnd_state.setter
-    def rnd_state(self, value):
-        """
-
-        Args:
-            value:
-
-        Returns:
-
-        """
-
-        assert isinstance(value, random.RandomState)
-        self._rnd_state = value
+    def area(self):
+        return sum([x.area for _, x in self.coverages.items()])
 
     @property
     def boundary(self):
-        return self._boundary
-
-    @boundary.setter
-    def boundary(self, value):
-
-        assert isinstance(value, Number)
-        self._boundary = Point(0, 0).buffer(value)
+        return geometry.Point(0, 0).buffer(self.cfg.boundary_radius)
 
     def run(self, wind_speed):
         """
@@ -182,11 +133,11 @@ class Debris(object):
 
         # sample a poisson for each source
         no_items_by_source = self.rnd_state.poisson(
-            self.no_items_mean, size=len(self.cfg.debris_sources))
+            self.mean_no_items, size=len(self.cfg.debris_sources))
 
         self.no_items = no_items_by_source.sum()
         logging.debug('no_item_by_source at speed {:.3f}: {} sampled with {}'.format(
-            wind_speed, self.no_items, self.no_items_mean))
+            wind_speed, self.no_items, self.mean_no_items))
 
         # loop through sources
         for no_item, source in zip(no_items_by_source, self.cfg.debris_sources):
@@ -227,19 +178,19 @@ class Debris(object):
             mass = self.rnd_state.lognormal(debris['mass_mu'],
                                             debris['mass_std'])
         except ValueError:  # when sigma = 0
-            mass = exp(debris['mass_mu'])
+            mass = math.exp(debris['mass_mu'])
 
         try:
             frontal_area = self.rnd_state.lognormal(debris['frontal_area_mu'],
                                                     debris['frontal_area_std'])
         except ValueError:
-            frontal_area = exp(debris['frontal_area_mu'])
+            frontal_area = math.exp(debris['frontal_area_mu'])
 
         try:
             flight_time = self.rnd_state.lognormal(self.cfg.flight_time_log_mu,
                                                    self.cfg.flight_time_log_std)
         except ValueError:
-            flight_time = exp(self.cfg.flight_time_log_mu)
+            flight_time = math.exp(self.cfg.flight_time_log_mu)
 
         flight_distance = self.compute_flight_distance(debris_type_str,
                                                        flight_time,
@@ -252,16 +203,16 @@ class Debris(object):
 
         # determine landing location for a debris item
         # sigma_x, y are taken from Wehner et al. (2010)
-        sigma_x = flight_distance / 3.0
-        sigma_y = flight_distance / 12.0
-        x, y = self.rnd_state.normal(loc=[0.0, 0.0], scale=[sigma_x, sigma_y])
+        x = self.rnd_state.normal(loc=0.0, scale=flight_distance / 3.0)
+        y = self.rnd_state.normal(loc=0.0, scale=flight_distance / 12.0)
 
         # cov_matrix = [[pow(sigma_x, 2.0), 0.0], [0.0, pow(sigma_y, 2.0)]]
         # x, y = self.rnd_state.multivariate_normal(mean=[0.0, 0.0],
         #                                           cov=cov_matrix)
         # reference point: target house
-        pt_debris = Point(x + source.x - flight_distance, y + source.y)
-        line_debris = LineString([source, pt_debris])
+        pt_debris = geometry.Point(x + source.x - flight_distance,
+                                           y + source.y)
+        line_debris = geometry.LineString([source, pt_debris])
         self.debris_items.append((debris_type_str, line_debris))
 
         if self.footprint.contains(pt_debris) or (
@@ -289,20 +240,20 @@ class Debris(object):
 
         """
 
-        for _id, _coverage in self.coverages.iteritems():
+        for _id, _coverage in self.coverages.items():
 
             try:
                 _capacity = self.rnd_state.lognormal(
                     *_coverage.log_failure_momentum)
             except ValueError:  # when sigma = 0
-                _capacity = exp(_coverage.log_failure_momentum[0])
+                _capacity = math.exp(_coverage.log_failure_momentum[0])
 
             # Complementary CDF of impact momentum
-            ccdf = (self.debris_momentums > array(_capacity)).sum()/self.no_items
+            ccdf = (self.debris_momentums > np.array(_capacity)).sum()/self.no_items
             poisson_rate = self.no_touched * _coverage.area / self.area * ccdf
 
             if _coverage.description == 'window':
-                prob_damage = 1.0 - exp(-1.0*poisson_rate)
+                prob_damage = 1.0 - math.exp(-1.0*poisson_rate)
                 rv = self.rnd_state.rand()
                 if rv < prob_damage:
                     _coverage.breached_area = _coverage.area
@@ -346,25 +297,25 @@ class Debris(object):
             assert flag_poly in self.__class__.flight_distance_power
 
             # dimensionless time
-            t_star = self.__class__.g_const * flight_time / wind_speed
+            t_star = self.cfg.g_const * flight_time / wind_speed
 
             # Tachikawa Number: rho*(V**2)/(2*g*h_m*rho_m)
             # assume h_m * rho_m == mass / frontal_area
-            k_star = self.__class__.rho_air * pow(wind_speed, 2.0) / (
-                2.0 * self.__class__.g_const * mass / frontal_area)
+            k_star = self.cfg.rho_air * math.pow(wind_speed, 2.0) / (
+                2.0 * self.cfg.g_const * mass / frontal_area)
             kt_star = k_star * t_star
 
-            kt_star_powered = array([pow(kt_star, i)
+            kt_star_powered = np.array([math.pow(kt_star, i)
                 for i in self.__class__.flight_distance_power[flag_poly]])
-            coeff = array(self.__class__.flight_distance_coeff[
+            coeff = np.array(self.__class__.flight_distance_coeff[
                               flag_poly][debris_type_str])
             less_dis = (coeff * kt_star_powered).sum()
 
             # dimensionless hor. displacement
             # k*x_star = k*g*x/V**2
             # x = (k*x_star)*(V**2)/(k*g)
-            convert_to_dim = pow(wind_speed, 2.0) / (
-                k_star * self.__class__.g_const)
+            convert_to_dim = math.pow(wind_speed, 2.0) / (
+                k_star * self.cfg.g_const)
 
             return convert_to_dim * less_dis
 
@@ -396,8 +347,8 @@ class Debris(object):
 
         """
         # calculate um/vs, ratio of hor. vel. of debris to local wind speed
-        param_b = sqrt(self.__class__.rho_air * cdav * frontal_area / mass)
-        _mean = 1.0 - exp(-param_b * sqrt(flight_distance))
+        param_b = math.sqrt(self.cfg.rho_air * cdav * frontal_area / mass)
+        _mean = 1.0 - math.exp(-param_b * math.sqrt(flight_distance))
 
         # dispersion here means a + b of Beta(a, b)
         try:
@@ -482,23 +433,23 @@ class Debris(object):
         sources = []
         if flag_staggered:
             while x_cord <= radius:
-                y_cord_max = x_cord * tan(radians(angle) / 2.0)
+                y_cord_max = x_cord * math.tan(math.radians(angle) / 2.0)
 
                 if restrict_y_cord:
                     y_cord_max = min(y_cord_lim, y_cord_max)
 
                 if x_cord / bldg_spacing % 2:
-                    sources.append(Point(x_cord, y_cord))
+                    sources.append(geometry.Point(x_cord, y_cord))
                     y_cord += bldg_spacing
                     while y_cord <= y_cord_max:
-                        sources.append(Point(x_cord, y_cord))
-                        sources.append(Point(x_cord, -y_cord))
+                        sources.append(geometry.Point(x_cord, y_cord))
+                        sources.append(geometry.Point(x_cord, -y_cord))
                         y_cord += bldg_spacing
                 else:
                     y_cord += bldg_spacing / 2.0
                     while y_cord <= y_cord_max:
-                        sources.append(Point(x_cord, y_cord))
-                        sources.append(Point(x_cord, -y_cord))
+                        sources.append(geometry.Point(x_cord, y_cord))
+                        sources.append(geometry.Point(x_cord, -y_cord))
                         y_cord += bldg_spacing
 
                 y_cord = 0.0
@@ -506,16 +457,16 @@ class Debris(object):
 
         else:
             while x_cord <= radius:
-                sources.append(Point(x_cord, y_cord))
-                y_cord_max = x_cord * tan(radians(angle) / 2.0)
+                sources.append(geometry.Point(x_cord, y_cord))
+                y_cord_max = x_cord * math.tan(math.radians(angle) / 2.0)
 
                 if restrict_y_cord:
                     y_cord_max = min(y_cord_max, y_cord_lim)
 
                 while y_cord <= y_cord_max - bldg_spacing:
                     y_cord += bldg_spacing
-                    sources.append(Point(x_cord, y_cord))
-                    sources.append(Point(x_cord, -y_cord))
+                    sources.append(geometry.Point(x_cord, y_cord))
+                    sources.append(geometry.Point(x_cord, -y_cord))
                 y_cord = 0
                 x_cord += bldg_spacing
 

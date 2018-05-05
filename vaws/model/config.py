@@ -35,7 +35,6 @@
 
         # results
         FILE_RESULTS: 'results.h5'
-        FILE_CURVE: 'results_curve.csv'
 
 
     Note:
@@ -52,9 +51,10 @@ import ConfigParser
 import pandas as pd
 
 from collections import OrderedDict, defaultdict
-from numpy import array, linspace, reshape, sign
-from scipy.stats import norm
-from matplotlib.patches import Polygon
+import numpy as np
+from scipy import stats
+from matplotlib import patches
+from shapely import geometry
 
 from vaws.model.stats import compute_logarithmic_mean_stddev, calc_big_a_b_values
 from vaws.model.damage_costing import Costing, WaterIngressCosting
@@ -71,29 +71,21 @@ FILE_HOUSE_DATA = 'house_data.csv'
 FILE_CONN_GROUPS = 'conn_groups.csv'
 FILE_CONN_TYPES = 'conn_types.csv'
 FILE_CONNECTIONS = 'connections.csv'
-
 FILE_ZONES = 'zones.csv'
-
 FILE_COVERAGE_TYPES = 'coverage_types.csv'
 FILE_COVERAGES = 'coverages.csv'
 FILE_COVERAGES_CPE = 'coverages_cpe.csv'
-
 FILE_INFLUENCES = 'influences.csv'
 FILE_INFLUENCE_PATCHES = 'influence_patches.csv'
-
 FILE_DAMAGE_COSTING_DATA = 'damage_costing_data.csv'
 FILE_DAMAGE_FACTORINGS = 'damage_factorings.csv'
 FILE_WATER_INGRESS_COSTING_DATA = 'water_ingress_costing_data.csv'
-
 FILE_FOOTPRINT = 'footprint.csv'
 FILE_FRONT_FACING_WALLS = 'front_facing_walls.csv'
-
-# debris data
 FILE_DEBRIS = 'debris.csv'
 
 # results
 FILE_RESULTS = 'results.h5'
-FILE_CURVE = 'results_curve.csv'
 
 
 class Config(object):
@@ -147,13 +139,23 @@ class Config(object):
          4: {'windward': 1.0, 'leeward': 1.0, 'side1': 1.0, 'side2': 1.0}}
     flags_pressure = ['cpe_str', 'cpe']
 
+    # prob. dist. and shielding categories
+    shielding_multipliers = {0: ('full', 0.85),
+                             1: ('partial', 0.95),
+                             2: ('no', 1.0)}
+    shielding_multiplier_thresholds = np.array([63, 78])
+
+    rho_air = 1.2  # air density
+    g_const = 9.81  # acceleration of gravity
+
     # model dependent attributes
-    house_bucket = ['profile', 'wind_orientation', 'construction_level',
-                    'mzcat', 'str_mean_factor', 'str_cov_factor']
+    house_bucket = ['profile_index', 'wind_dir_index', 'construction_level',
+                    'terrain_height_multiplier', 'shielding_multiplier',
+                    'str_mean_factor', 'str_cov_factor']
 
     att_non_float = ['construction_level']
 
-    house_damage_bucket = ['qz', 'ms', 'cpi', 'collapse', 'di',
+    house_damage_bucket = ['qz', 'cpi', 'collapse', 'di',
                            'di_except_water', 'repair_cost',
                            'water_ingress_cost', 'window_breached_by_debris']
 
@@ -263,7 +265,6 @@ class Config(object):
         self.coverages_area = 0.0
 
         self.file_results = None
-        self.file_curve = None
 
         self.heatmap_vmin = 54.0
         self.heatmap_vmax = 95.0
@@ -290,7 +291,6 @@ class Config(object):
         if not os.path.exists(self.path_output):
             os.makedirs(self.path_output)
         self.file_results = os.path.join(self.path_output, FILE_RESULTS)
-        self.file_curve = os.path.join(self.path_output, FILE_CURVE)
 
     def read_config(self):
 
@@ -372,10 +372,10 @@ class Config(object):
         self.wind_speed_steps = int(
             (self.wind_speed_max - self.wind_speed_min) /
             self.wind_speed_increment) + 1
-        self.speeds = linspace(start=self.wind_speed_min,
-                               stop=self.wind_speed_max,
-                               num=self.wind_speed_steps,
-                               endpoint=True)
+        self.speeds = np.linspace(start=self.wind_speed_min,
+                                  stop=self.wind_speed_max,
+                                  num=self.wind_speed_steps,
+                                  endpoint=True)
 
     def read_water_ingress(self, conf, key):
         """
@@ -399,8 +399,8 @@ class Config(object):
         thresholds = [x for x in self.water_ingress_i_thresholds]
         thresholds.append(1.1)
         self.water_ingress = pd.DataFrame(
-            array([self.water_ingress_i_speed_at_zero_wi,
-                   self.water_ingress_i_speed_at_full_wi]).T,
+            np.array([self.water_ingress_i_speed_at_zero_wi,
+                      self.water_ingress_i_speed_at_full_wi]).T,
             columns=['speed_at_zero_wi', 'speed_at_full_wi'],
             index=thresholds)
         self.water_ingress['wi'] = self.water_ingress.apply(
@@ -477,9 +477,11 @@ class Config(object):
 
         _file = os.path.join(self.path_house_data, FILE_FOOTPRINT)
         try:
-            self.footprint = pd.read_csv(_file, skiprows=1, header=None).values
+            footprint_xy = pd.read_csv(_file, skiprows=1, header=None).values
         except IOError as msg:
             logging.warning('{}'.format(msg))
+        else:
+            self.footprint = geometry.Polygon(footprint_xy)
 
     def set_flight_time_log(self):
         self.flight_time_log_mu, self.flight_time_log_std = \
@@ -547,7 +549,7 @@ class Config(object):
         _mean = (row['speed_at_zero_wi'] + row['speed_at_full_wi']) / 2.0
         _sd = (row['speed_at_full_wi'] - row['speed_at_zero_wi']) / 6.0
 
-        return norm(loc=_mean, scale=_sd).cdf
+        return stats.norm(loc=_mean, scale=_sd).cdf
 
     def set_house(self):
 
@@ -559,7 +561,7 @@ class Config(object):
             logging.error('{}'.format(msg))
         else:
             self.house = {}
-            for k, v in tmp.iteritems():
+            for k, v in tmp.items():
                 try:
                     self.house[k] = float(v)
                 except ValueError:
@@ -656,7 +658,7 @@ class Config(object):
         self.water_ingress_costings = self.read_water_ingress_costing_data(_file)
 
         self.costing_to_group = defaultdict(list)
-        for key, value in df_groups['damage_scenario'].to_dict().iteritems():
+        for key, value in df_groups['damage_scenario'].to_dict().items():
             if value:
                 self.costing_to_group[value].append(key)
 
@@ -695,7 +697,7 @@ class Config(object):
             except IOError as msg:
                 logging.error('{}'.format(msg))
             else:
-                for key, value in self.zones.iteritems():
+                for key, value in self.zones.items():
                     value[item] = _value[key]
 
     @classmethod
@@ -709,15 +711,15 @@ class Config(object):
                 if len(fields) > 3:
                     tmp = [x.strip() for x in fields[:4]]
 
-                    _array = array([float(x) for x in fields[4:]])
+                    _array = np.array([float(x) for x in fields[4:]])
                     if _array.size:
                         try:
-                            _array = reshape(_array, (-1, 2))
+                            _array = np.reshape(_array, (-1, 2))
                         except ValueError:
                             logging.warning(
                                 'Coordinates are incomplete: {}'.format(_array))
                         else:
-                            tmp.append(Polygon(_array))
+                            tmp.append(patches.Polygon(_array))
                     else:
                         tmp.append([])
                     dump.append(tmp)
@@ -751,15 +753,15 @@ class Config(object):
                 fields = line.strip().rstrip(',').split(',')
                 if len(fields) > 3:
                     tmp = [x.strip() for x in fields[:4]]
-                    _array = array([float(x) for x in fields[4:]])
+                    _array = np.array([float(x) for x in fields[4:]])
                     if _array.size:
                         try:
-                            _array = reshape(_array, (-1, 2))
+                            _array = _array.reshape((-1, 2))
                         except ValueError:
                             logging.warning(
                                 'Coordinates are incomplete: {}'.format(_array))
                         else:
-                            tmp.append(Polygon(_array))
+                            tmp.append(patches.Polygon(_array))
                     else:
                         tmp.append([])
 
@@ -867,7 +869,7 @@ class Config(object):
     def get_lognormal_tuple(row, dic_, key):
         _type = row['coverage_type']
         _mean = dic_[_type]['{}_mean'.format(key)]
-        _sign = sign(_mean)
+        _sign = np.sign(_mean)
         _mean = abs(_mean)
         _sd = dic_[_type]['{}_std'.format(key)]
         return pd.Series({'log_{}'.format(key): compute_logarithmic_mean_stddev(_mean, _sd),

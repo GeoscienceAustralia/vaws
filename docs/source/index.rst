@@ -22,11 +22,6 @@ VAWS: Vulnerability and Adaptation to Wind Simulation
    glossary
    bibliography
 
-.. toctree::
-   :hidden:
-
-   vaws
-
 .. only:: html
 
     Indices and tables

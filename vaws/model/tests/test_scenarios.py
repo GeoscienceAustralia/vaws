@@ -7,6 +7,7 @@ import numpy as np
 
 from vaws.model.house_damage import HouseDamage
 from vaws.model.config import Config
+from vaws.model.main import set_logger
 import logging
 
 
@@ -14,7 +15,7 @@ def simulation(house_damage, conn_capacity, wind_speeds, list_connections):
 
     # change it to conn to speed
     conn_capacity2 = {x: -1.0 for x in list_connections}
-    for speed, conn_list in conn_capacity.iteritems():
+    for speed, conn_list in conn_capacity.items():
         for _id in conn_list:
             conn_capacity2.update({_id: speed})
 
@@ -29,9 +30,9 @@ def simulation(house_damage, conn_capacity, wind_speeds, list_connections):
 
         logging.info('wind speed {:.3f}'.format(wind_speed))
 
-        house_damage.compute_qz_ms(wind_speed)
+        house_damage.compute_qz(wind_speed)
 
-        for _zone in house_damage.house.zones.itervalues():
+        for _, _zone in house_damage.house.zones.items():
 
             _zone.cpe = _zone.cpe_mean[wind_dir_index]
             _zone.cpe_str = _zone.cpe_str_mean[wind_dir_index]
@@ -43,7 +44,7 @@ def simulation(house_damage, conn_capacity, wind_speeds, list_connections):
                                      ms,
                                      building_spacing)
 
-        for _connection in house_damage.house.connections.itervalues():
+        for _, _connection in house_damage.house.connections.items():
             _connection.compute_load()
 
         if house_damage.house.coverages is not None:
@@ -54,7 +55,7 @@ def simulation(house_damage, conn_capacity, wind_speeds, list_connections):
                 house_damage.house.coverages['coverage'].apply(lambda x: x.breached_area)
 
         # check damage by connection type group
-        for _group in house_damage.house.groups.itervalues():
+        for _, _group in house_damage.house.groups.items():
 
             _group.check_damage(wind_speed)
 
@@ -65,7 +66,7 @@ def simulation(house_damage, conn_capacity, wind_speeds, list_connections):
         house_damage.compute_damage_index(wind_speed)
 
     # compare with reference capacity
-    for _id, _conn in house_damage.house.connections.iteritems():
+    for _id, _conn in house_damage.house.connections.items():
 
         try:
             np.testing.assert_almost_equal(_conn.capacity,
@@ -80,7 +81,7 @@ def simulation(house_damage, conn_capacity, wind_speeds, list_connections):
 
 def simulation_incl_coverages(house_damage, wind_speeds):
 
-    wind_dir_index = house_damage.house.wind_orientation
+    wind_dir_index = house_damage.house.wind_dir_index
     ms = 1.0
     building_spacing = 0
 
@@ -88,7 +89,7 @@ def simulation_incl_coverages(house_damage, wind_speeds):
 
         logging.info('wind speed {:.3f}'.format(wind_speed))
 
-        house_damage.compute_qz_ms(wind_speed)
+        house_damage.compute_qz(wind_speed)
 
         for _zone in house_damage.house.zones.itervalues():
 
@@ -138,15 +139,6 @@ class TestScenario1(unittest.TestCase):
             path, 'test_scenarios', 'test_scenario1', 'test_scenario1.cfg'))
 
         cls.house_damage = HouseDamage(cfg, seed=0)
-
-        # # set up logging
-        # file_logger = os.path.join(cfg.path_output, 'log_test1.txt')
-        # cls.logger = logging.getLogger('myapp')
-        # hdlr = logging.FileHandler(file_logger, mode='w')
-        # formatter = logging.Formatter('%(asctime)s %(levelname)s %(message)s')
-        # hdlr.setFormatter(formatter)
-        # cls.logger.addHandler(hdlr)
-        # cls.logger.setLevel(logging.INFO)
 
     # @classmethod
     # def tearDown(cls):
@@ -206,21 +198,6 @@ class TestScenario2(unittest.TestCase):
 
         cls.house_damage = HouseDamage(cfg, seed=0)
 
-        # # set up logging
-        # file_logger = os.path.join(cfg.path_output, 'log_test2.txt')
-        # cls.logger = logging.getLogger('myapp')
-        # hdlr = logging.FileHandler(file_logger, mode='w')
-        # formatter = logging.Formatter('%(asctime)s %(levelname)s %(message)s')
-        # hdlr.setFormatter(formatter)
-        # cls.logger.addHandler(hdlr)
-        # cls.logger.setLevel(logging.INFO)
-
-    # @classmethod
-    # def tearDown(cls):
-    #     handlers = cls.logger.handlers[:]
-    #     for handler in handlers:
-    #         handler.close()
-
     def test_damage_sheeting(self):
 
         conn_capacity = {40.0: [10],
@@ -250,13 +227,6 @@ class TestScenario3(unittest.TestCase):
             path, 'test_scenarios', 'test_scenario3', 'test_scenario3.cfg'))
 
         cls.house_damage = HouseDamage(cfg, seed=0)
-
-        # set up logging
-        file_logger = os.path.join(cfg.path_output, 'log_test3.txt')
-        logging.basicConfig(filename=file_logger,
-                            filemode='w',
-                            level=logging.INFO,
-                            format='%(levelname)s %(message)s')
 
     def test_damage_batten(self):
 
@@ -298,13 +268,6 @@ class TestScenario4(unittest.TestCase):
 
         cls.house_damage = HouseDamage(cfg, seed=0)
 
-        # set up logging
-        file_logger = os.path.join(cfg.path_output, 'log_test4.txt')
-        logging.basicConfig(filename=file_logger,
-                            filemode='w',
-                            level=logging.INFO,
-                            format='%(levelname)s %(message)s')
-
     def test_damage_sheeting_batten(self):
 
         # ref data
@@ -340,13 +303,6 @@ class TestScenario5(unittest.TestCase):
             path, 'test_scenarios', 'test_scenario5', 'test_scenario5.cfg'))
 
         cls.house_damage = HouseDamage(cfg, seed=0)
-
-        # set up logging
-        file_logger = os.path.join(cfg.path_output, 'log_test5.txt')
-        logging.basicConfig(filename=file_logger,
-                            filemode='w',
-                            level=logging.INFO,
-                            format='%(levelname)s %(message)s')
 
     def test_damage_sheeting_batten(self):
 
@@ -385,13 +341,6 @@ class TestScenario6(unittest.TestCase):
             path, 'test_scenarios', 'test_scenario6', 'test_scenario6.cfg'))
         cls.house_damage = HouseDamage(cfg, seed=0)
 
-        # set up logging
-        file_logger = os.path.join(cfg.path_output, 'log_test6.txt')
-        logging.basicConfig(filename=file_logger,
-                            filemode='w',
-                            level=logging.INFO,
-                            format='%(levelname)s %(message)s')
-
     def test_damage_sheeting_batten_rafter(self):
 
         conn_capacity = {40.0: [41, 43],
@@ -417,13 +366,6 @@ class TestScenario7(unittest.TestCase):
             path, 'test_scenarios', 'test_scenario7', 'test_scenario7.cfg'))
 
         cls.house_damage = HouseDamage(cfg, seed=0)
-
-        # set up logging
-        file_logger = os.path.join(cfg.path_output, 'log_test7.txt')
-        logging.basicConfig(filename=file_logger,
-                            filemode='w',
-                            level=logging.INFO,
-                            format='%(levelname)s %(message)s')
 
     def test_damage_sheeting(self):
 
@@ -455,13 +397,6 @@ class TestScenario8(unittest.TestCase):
 
         cls.house_damage = HouseDamage(cfg, seed=0)
 
-        # set up logging
-        file_logger = os.path.join(cfg.path_output, 'log_test8.txt')
-        logging.basicConfig(filename=file_logger,
-                            filemode='w',
-                            level=logging.INFO,
-                            format='%(levelname)s %(message)s')
-
     def test_damage_sheeting(self):
 
         # ref data
@@ -491,13 +426,6 @@ class TestScenario9(unittest.TestCase):
             path, 'test_scenarios', 'test_scenario9', 'test_scenario9.cfg'))
 
         cls.house_damage = HouseDamage(cfg, seed=0)
-
-        # set up logging
-        file_logger = os.path.join(cfg.path_output, 'log_test9.txt')
-        logging.basicConfig(filename=file_logger,
-                            filemode='w',
-                            level=logging.INFO,
-                            format='%(levelname)s %(message)s')
 
     def test_damage_sheeting(self):
 
@@ -530,13 +458,6 @@ class TestScenario10(unittest.TestCase):
 
         cls.house_damage = HouseDamage(cfg, seed=0)
 
-        # set up logging
-        file_logger = os.path.join(cfg.path_output, 'log_test10.txt')
-        logging.basicConfig(filename=file_logger,
-                            filemode='w',
-                            level=logging.INFO,
-                            format='%(levelname)s %(message)s')
-
     def test_damage_sheeting(self):
 
         # ref data 9
@@ -563,13 +484,6 @@ class TestScenario11(unittest.TestCase):
             path, 'test_scenarios', 'test_scenario11', 'test_scenario11.cfg'))
 
         cls.house_damage = HouseDamage(cfg, seed=0)
-
-        # set up logging
-        file_logger = os.path.join(cfg.path_output, 'log_test11.txt')
-        logging.basicConfig(filename=file_logger,
-                            filemode='w',
-                            level=logging.INFO,
-                            format='%(levelname)s %(message)s')
 
     def test_damage_batten(self):
 
@@ -600,13 +514,6 @@ class TestScenario12(unittest.TestCase):
             path, 'test_scenarios', 'test_scenario12', 'test_scenario12.cfg'))
 
         cls.house_damage = HouseDamage(cfg, seed=0)
-
-        # set up logging
-        file_logger = os.path.join(cfg.path_output, 'log_test12.txt')
-        logging.basicConfig(filename=file_logger,
-                            filemode='w',
-                            level=logging.INFO,
-                            format='%(levelname)s %(message)s')
 
     def test_damage_batten(self):
 
@@ -639,13 +546,6 @@ class TestScenario13(unittest.TestCase):
 
         cls.house_damage = HouseDamage(cfg, seed=0)
 
-        # set up logging
-        file_logger = os.path.join(cfg.path_output, 'log_test13.txt')
-        logging.basicConfig(filename=file_logger,
-                            filemode='w',
-                            level=logging.INFO,
-                            format='%(levelname)s %(message)s')
-
     def test_damage_batten(self):
 
         # ref data 11
@@ -676,13 +576,6 @@ class TestScenario14(unittest.TestCase):
 
         cls.house_damage = HouseDamage(cfg, seed=0)
 
-        # set up logging
-        file_logger = os.path.join(cfg.path_output, 'log_test14.txt')
-        logging.basicConfig(filename=file_logger,
-                            filemode='w',
-                            level=logging.INFO,
-                            format='%(levelname)s %(message)s')
-
     def test_damage_batten(self):
 
         # ref data 11
@@ -710,13 +603,6 @@ class TestScenario15(unittest.TestCase):
             path, 'test_scenarios', 'test_scenario15', 'test_scenario15.cfg'))
         cls.house_damage = HouseDamage(cfg, seed=0)
 
-        # set up logging
-        file_logger = os.path.join(cfg.path_output, 'log_test15.txt')
-        logging.basicConfig(filename=file_logger,
-                            filemode='w',
-                            level=logging.INFO,
-                            format='%(levelname)s %(message)s')
-
     def test_damage_sheeting_batten_rafter(self):
 
         conn_capacity = {67.0: [25, 27],
@@ -739,13 +625,6 @@ class TestScenario16(unittest.TestCase):
         cfg = Config(cfg_file=os.path.join(
             path, 'test_scenarios', 'test_scenario16', 'test_scenario16.cfg'))
         cls.house_damage = HouseDamage(cfg, seed=0)
-
-        # set up logging
-        file_logger = os.path.join(cfg.path_output, 'log_test16.txt')
-        logging.basicConfig(filename=file_logger,
-                            filemode='w',
-                            level=logging.INFO,
-                            format='%(levelname)s %(message)s')
 
     def test_damage_sheeting_batten_rafter(self):
 
@@ -779,13 +658,6 @@ class TestScenario17(unittest.TestCase):
         cfg = Config(cfg_file=os.path.join(
             path, 'test_scenarios', 'test_scenario17', 'test_scenario17.cfg'))
         cls.house_damage = HouseDamage(cfg, seed=0)
-
-        # set up logging
-        file_logger = os.path.join(cfg.path_output, 'log_test17.txt')
-        logging.basicConfig(filename=file_logger,
-                            filemode='w',
-                            level=logging.INFO,
-                            format='%(levelname)s %(message)s')
 
     def test_damage_sheeting_batten_rafter(self):
 
@@ -831,13 +703,6 @@ class TestScenario18(unittest.TestCase):
             path, 'test_scenarios', 'test_scenario18', 'test_scenario18.cfg'))
         cls.house_damage = HouseDamage(cfg, seed=0)
 
-        # set up logging
-        file_logger = os.path.join(cfg.path_output, 'log_test18.txt')
-        logging.basicConfig(filename=file_logger,
-                            filemode='w',
-                            level=logging.INFO,
-                            format='%(levelname)s %(message)s')
-
     def test_damage_sheeting_batten_rafter(self):
 
         conn_capacity = {56.0: [78],
@@ -873,13 +738,6 @@ class TestScenario19(unittest.TestCase):
             path, 'test_scenarios', 'test_scenario19', 'test_scenario19.cfg'))
         cls.house_damage = HouseDamage(cfg, seed=0)
 
-        # set up logging
-        file_logger = os.path.join(cfg.path_output, 'log_test19.txt')
-        logging.basicConfig(filename=file_logger,
-                            filemode='w',
-                            level=logging.DEBUG,
-                            format='%(levelname)s %(message)s')
-
     def test_damage_coverage(self):
 
         list_connections = range(1, 9)
@@ -893,7 +751,7 @@ class TestScenario19(unittest.TestCase):
 
     # change it to conn to speed
         conn_capacity2 = {x: -1.0 for x in list_connections}
-        for speed, conn_list in conn_capacity.iteritems():
+        for speed, conn_list in conn_capacity.items():
             for _id in conn_list:
                 conn_capacity2.update({_id: speed})
 
@@ -904,7 +762,7 @@ class TestScenario19(unittest.TestCase):
 
             logging.info('wind speed {:.3f}'.format(wind_speed))
 
-            self.house_damage.compute_qz_ms(wind_speed)
+            self.house_damage.compute_qz(wind_speed)
 
             for _, _ps in self.house_damage.house.coverages.iterrows():
                 _ps['coverage'].check_damage(self.house_damage.qz,
@@ -942,13 +800,6 @@ class TestScenario20(unittest.TestCase):
             path, 'test_scenarios', 'test_scenario20', 'test_scenario20.cfg'))
         cls.house_damage = HouseDamage(cfg, seed=0)
 
-        # set up logging
-        file_logger = os.path.join(cfg.path_output, 'log_test20.txt')
-        logging.basicConfig(filename=file_logger,
-                            filemode='w',
-                            level=logging.DEBUG,
-                            format='%(levelname)s %(message)s')
-
     def test_dead_load(self):
 
         conn_capacity = {48.0: [4],
@@ -968,7 +819,7 @@ class TestScenario20(unittest.TestCase):
                    wind_speeds=np.arange(20.0, 60.0, 1.0),
                    list_connections=range(1, 6))
 
-        for _id, _conn in self.house_damage.house.connections.iteritems():
+        for _id, _conn in self.house_damage.house.connections.items():
 
             try:
                 np.testing.assert_almost_equal(_conn.dead_load,
@@ -992,19 +843,12 @@ class TestScenario21(unittest.TestCase):
             path, 'test_scenarios', 'test_scenario21', 'test_scenario21.cfg'))
         cls.house_damage = HouseDamage(cfg, seed=0)
 
-        # set up logging
-        file_logger = os.path.join(cfg.path_output, 'log_test21.txt')
-        logging.basicConfig(filename=file_logger,
-                            filemode='w',
-                            level=logging.DEBUG,
-                            format='%(levelname)s %(message)s')
-
     def test_dead_load(self):
 
-        conn_capacity = {49.0: [10],
-                         52.0: [9, 11],
-                         53.0: [8, 12],
-                         54.0: [7],
+        conn_capacity = {48.0: [10],
+                         51.0: [9, 11],
+                         52.0: [8, 12],
+                         53.0: [7],
                          57.0: range(1, 7)}
 
         dead_load = {1: 0.1,
@@ -1024,7 +868,7 @@ class TestScenario21(unittest.TestCase):
                    wind_speeds=np.arange(20.0, 60.0, 1.0),
                    list_connections=range(1, 12))
 
-        for _id, _conn in self.house_damage.house.connections.iteritems():
+        for _id, _conn in self.house_damage.house.connections.items():
 
             try:
                 np.testing.assert_almost_equal(_conn.dead_load,
@@ -1050,16 +894,9 @@ class TestScenario22a(unittest.TestCase):
 
         cls.house_damage = HouseDamage(cfg, seed=0)
 
-        # set up logging
-        file_logger = os.path.join(cfg.path_output, 'log_test22a.txt')
-        logging.basicConfig(filename=file_logger,
-                            filemode='w',
-                            level=logging.DEBUG,
-                            format='%(levelname)s %(message)s')
-
     def test_directional_strength_wind_direction_S(self):
 
-        assert self.house_damage.house.wind_orientation == 0
+        assert self.house_damage.house.wind_dir_index == 0
         self.house_damage.house.mzcat = 1.0  # profile: 6, height: 4.5
 
         simulation_incl_coverages(self.house_damage,
@@ -1074,7 +911,7 @@ class TestScenario22a(unittest.TestCase):
         list_coverages = range(1, 9)
 
         coverage_capacity2 = {x: -1.0 for x in list_coverages}
-        for speed, coverage_list in coverage_capacity.iteritems():
+        for speed, coverage_list in coverage_capacity.items():
             for _id in coverage_list:
                 coverage_capacity2.update({_id: speed})
 
@@ -1107,16 +944,9 @@ class TestScenario22b(unittest.TestCase):
         cfg.wind_dir_index = 4
         cls.house_damage = HouseDamage(cfg, seed=0)
 
-        # set up logging
-        file_logger = os.path.join(cfg.path_output, 'log_test22b.txt')
-        logging.basicConfig(filename=file_logger,
-                            filemode='w',
-                            level=logging.DEBUG,
-                            format='%(levelname)s %(message)s')
-
     def test_directional_strength_wind_direction_N(self):
 
-        assert self.house_damage.house.wind_orientation == 4
+        assert self.house_damage.house.wind_dir_index == 4
         self.house_damage.house.mzcat = 1.0  # profile: 6, height: 4.5
 
         simulation_incl_coverages(self.house_damage,
@@ -1129,7 +959,7 @@ class TestScenario22b(unittest.TestCase):
         list_coverages = range(1, 9)
 
         coverage_capacity2 = {x: -1.0 for x in list_coverages}
-        for speed, coverage_list in coverage_capacity.iteritems():
+        for speed, coverage_list in coverage_capacity.items():
             for _id in coverage_list:
                 coverage_capacity2.update({_id: speed})
 
@@ -1162,16 +992,9 @@ class TestScenario23a(unittest.TestCase):
         cfg.wind_dir_index = 0
         cls.house_damage = HouseDamage(cfg, seed=0)
 
-        # set up logging
-        file_logger = os.path.join(cfg.path_output, 'log_test23a.txt')
-        logging.basicConfig(filename=file_logger,
-                            filemode='w',
-                            level=logging.DEBUG,
-                            format='%(levelname)s %(message)s')
-
     def test_directional_strength_wind_direction_S(self):
 
-        assert self.house_damage.house.wind_orientation == 0
+        assert self.house_damage.house.wind_dir_index == 0
         self.house_damage.house.mzcat = 1.0  # profile: 6, height: 4.5
 
         simulation_incl_coverages(self.house_damage,
@@ -1186,7 +1009,7 @@ class TestScenario23a(unittest.TestCase):
         list_coverages = range(1, 9)
 
         coverage_capacity2 = {x: -1.0 for x in list_coverages}
-        for speed, coverage_list in coverage_capacity.iteritems():
+        for speed, coverage_list in coverage_capacity.items():
             for _id in coverage_list:
                 coverage_capacity2.update({_id: speed})
 
@@ -1219,16 +1042,9 @@ class TestScenario23b(unittest.TestCase):
         cfg.wind_dir_index = 1
         cls.house_damage = HouseDamage(cfg, seed=0)
 
-        # set up logging
-        file_logger = os.path.join(cfg.path_output, 'log_test23b.txt')
-        logging.basicConfig(filename=file_logger,
-                            filemode='w',
-                            level=logging.DEBUG,
-                            format='%(levelname)s %(message)s')
-
     def test_directional_strength_wind_direction_SE(self):
 
-        assert self.house_damage.house.wind_orientation == 1
+        assert self.house_damage.house.wind_dir_index == 1
         self.house_damage.house.mzcat = 1.0  # profile: 6, height: 4.5
 
         simulation_incl_coverages(self.house_damage,
@@ -1242,7 +1058,7 @@ class TestScenario23b(unittest.TestCase):
         list_coverages = range(1, 9)
 
         coverage_capacity2 = {x: -1.0 for x in list_coverages}
-        for speed, coverage_list in coverage_capacity.iteritems():
+        for speed, coverage_list in coverage_capacity.items():
             for _id in coverage_list:
                 coverage_capacity2.update({_id: speed})
 
@@ -1276,16 +1092,9 @@ class TestScenario23c(unittest.TestCase):
         cfg.wind_dir_index = 2
         cls.house_damage = HouseDamage(cfg, seed=0)
 
-        # set up logging
-        file_logger = os.path.join(cfg.path_output, 'log_test23c.txt')
-        logging.basicConfig(filename=file_logger,
-                            filemode='w',
-                            level=logging.DEBUG,
-                            format='%(levelname)s %(message)s')
-
     def test_directional_strength_wind_direction_E(self):
 
-        assert self.house_damage.house.wind_orientation == 2
+        assert self.house_damage.house.wind_dir_index == 2
         self.house_damage.house.mzcat = 1.0  # profile: 6, height: 4.5
 
         simulation_incl_coverages(self.house_damage,
@@ -1300,7 +1109,7 @@ class TestScenario23c(unittest.TestCase):
         list_coverages = range(1, 9)
 
         coverage_capacity2 = {x: -1.0 for x in list_coverages}
-        for speed, coverage_list in coverage_capacity.iteritems():
+        for speed, coverage_list in coverage_capacity.items():
             for _id in coverage_list:
                 coverage_capacity2.update({_id: speed})
 
@@ -1327,27 +1136,23 @@ class TestScenario26(unittest.TestCase):
     def setUpClass(cls):
 
         path = os.sep.join(__file__.split(os.sep)[:-1])
-
-        cfg = Config(cfg_file=os.path.join(
-            path, 'test_scenarios', 'test_scenario26', 'test_scenario26.cfg'))
-
-        cfg.wind_dir_index = 1
-        cls.house_damage = HouseDamage(cfg, seed=0)
+        cfg_file = os.path.join(
+            path, 'test_scenarios', 'test_scenario26', 'test_scenario26.cfg')
 
         # set up logging
-        file_logger = os.path.join(cfg.path_output, 'log_test26.txt')
-        logging.basicConfig(filename=file_logger,
-                            filemode='w',
-                            level=logging.DEBUG,
-                            format='%(levelname)s %(message)s')
+        # set_logger(os.path.dirname(cfg_file), logging_level='debug')
+
+        cfg = Config(cfg_file=cfg_file)
+
+        cls.house_damage = HouseDamage(cfg, seed=0)
 
     def test_capacity(self):
 
-        conn_capacity = {40.0: [10],
-                         41.0: [11],
-                         42.0: [4, 12],
-                         43.0: [5],
-                         44.0: [6],
+        conn_capacity = {41.0: [10],
+                         42.0: [11],
+                         43.0: [4, 12],
+                         44.0: [5],
+                         45.0: [6],
                          50.0: [31, 35],
                          57.0: [1, 13],
                          58.0: [2, 14],
@@ -1360,7 +1165,41 @@ class TestScenario26(unittest.TestCase):
                    wind_speeds=np.arange(40.0, 120, 1.0),
                    list_connections=range(1, 35))
 
+
+class TestScenario27(unittest.TestCase):
+
+    @classmethod
+    def setUpClass(cls):
+
+        path = os.sep.join(__file__.split(os.sep)[:-1])
+        cfg_file = os.path.join(
+            path, 'test_scenarios', 'test_scenario27', 'test_scenario27.cfg')
+
+        # set up logging
+        # set_logger(os.path.dirname(cfg_file), logging_level='debug')
+
+        cfg = Config(cfg_file=cfg_file)
+
+        cls.house_damage = HouseDamage(cfg, seed=0)
+
+    def test_capacity(self):
+
+        conn_capacity = {
+                         40.0: [31],
+                         68.0: [32],
+                         83.0: [34],
+                         50.0: [35],
+                         }
+        #self.house_damage.house.mzcat = 0.9
+        # mzcat = 0.9 then 32 fails at 76.0,
+        #                  34 fails at 93.0
+        #                  35 fails at 56.0
+
+        simulation(self.house_damage, conn_capacity,
+                   wind_speeds=np.arange(40.0, 105, 1.0),
+                   list_connections=range(1, 36))
+
 if __name__ == '__main__':
-    suite = unittest.TestLoader().loadTestsFromTestCase(TestScenario26)
-    unittest.TextTestRunner(verbosity=2).run(suite)
-    #unittest.main(verbosity=2)
+    #suite = unittest.TestLoader().loadTestsFromTestCase(TestScenario27)
+    #unittest.TextTestRunner(verbosity=2).run(suite)
+    unittest.main(verbosity=2)

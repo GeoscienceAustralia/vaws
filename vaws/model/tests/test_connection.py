@@ -36,7 +36,7 @@ class MyTestCase(unittest.TestCase):
                    'sheetingcorner': 2, 'sheeting': 16}
         ref_area = {'sheetinggable': 0.405, 'sheetingeave': 0.405,
                     'sheetingcorner': 0.225, 'sheeting': 0.81}
-        # for id_type, _type in group.types.iteritems():
+        # for id_type, _type in group.types.items():
         #     self.assertEqual(_type.no_connections, ref_dic[id_type])
         #     self.assertEqual(_type.costing_area, ref_area[id_type])
 
@@ -145,7 +145,7 @@ class MyTestCase(unittest.TestCase):
         for i in [2, 8, 14, 20, 26]:
             ref_dic[i] = True
 
-        for id_conn, _conn in house.connections.iteritems():
+        for id_conn, _conn in house.connections.items():
             try:
                 self.assertEqual(_conn.damaged, ref_dic[id_conn])
             except AssertionError:
@@ -156,7 +156,7 @@ class MyTestCase(unittest.TestCase):
         #            'sheetingcorner': 0.0, 'sheeting': 0.25}
         # ref_capacity = {'sheetinggable': 75.0, 'sheetingeave': 9999,
         #                'sheetingcorner': 9999, 'sheeting': 75.0}
-        # for id_type, _type in group.types.iteritems():
+        # for id_type, _type in group.types.items():
             #self.assertAlmostEqual(_type.prop_damaged_type,
             #                       ref_prop[id_type], places=3)
             #self.assertAlmostEqual(_type.capacity,
@@ -174,8 +174,8 @@ class MyTestCaseConnectionGroup(unittest.TestCase):
 
     def assert_influence_coeff(self, _dic, house_inst):
 
-        for key0, value0 in _dic.iteritems():
-            for key1, value1 in value0.iteritems():
+        for key0, value0 in _dic.items():
+            for key1, value1 in value0.items():
                 code_value = house_inst.connections[key0].influences[key1].coeff
                 try:
                     self.assertEqual(code_value, value1)

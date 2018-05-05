@@ -46,7 +46,7 @@ def simulate_wind_damage_to_houses(cfg, call_back=None):
 
             logging.info('model {}'.format(ihouse))
 
-            house_damage.house.debris.no_items_mean = damage_incr
+            house_damage.house.debris.damage_incr = damage_incr
 
             result = house_damage.run_simulation(wind_speed)
 
@@ -119,7 +119,7 @@ def update_bucket(cfg, bucket, results_by_speed, ispeed):
                 bucket[item][att][ispeed] = [x[item][att] for x in results_by_speed]
 
     for comp in cfg.list_components:
-        for att, chunk in bucket[comp].iteritems():
+        for att, chunk in bucket[comp].items():
             if att not in cfg.att_time_invariant:
                 for item in chunk.iterkeys():
                     bucket[comp][att][item][ispeed] = \
@@ -148,7 +148,7 @@ def update_bucket(cfg, bucket, results_by_speed, ispeed):
                         bucket[item][att] = [x[item][att] for x in results_by_speed]
 
             for comp in cfg.list_components:
-                for att, chunk in bucket[comp].iteritems():
+                for att, chunk in bucket[comp].items():
                     if att in cfg.att_time_invariant:
                         for item in chunk.iterkeys():
                             bucket[comp][att][item] = \
@@ -172,15 +172,15 @@ def save_results_to_files(cfg, bucket):
     with h5py.File(cfg.file_results, 'w') as hf:
         for item in ['house', 'house_damage', 'debris']:
             _group = hf.create_group(item)
-            for att, value in bucket[item].iteritems():
+            for att, value in bucket[item].items():
                 _group.create_dataset(att, data=value)
 
         # file_group, file_connection, file_zone
         for comp in cfg.list_components:
             _group = hf.create_group(comp)
-            for att, chunk in bucket[comp].iteritems():
+            for att, chunk in bucket[comp].items():
                 _subgroup = _group.create_group(att)
-                for item, value in chunk.iteritems():
+                for item, value in chunk.items():
                     _subgroup.create_dataset(str(item), data=value)
 
         # fragility curves
@@ -189,8 +189,8 @@ def save_results_to_files(cfg, bucket):
 
             if frag_counted:
                 _group = hf.create_group('fragility')
-                for key, value in frag_counted.iteritems():
-                    for sub_key, sub_value in value.iteritems():
+                for key, value in frag_counted.items():
+                    for sub_key, sub_value in value.items():
                         _group.create_dataset('{}/{}'.format(key, sub_key),
                                               data=sub_value)
 
@@ -198,8 +198,8 @@ def save_results_to_files(cfg, bucket):
         fitted_curve = fit_vulnerability_curve(cfg, bucket['house_damage']['di'])
 
         _group = hf.create_group('vulnearbility')
-        for key, value in fitted_curve.iteritems():
-            for sub_key, sub_value in value.iteritems():
+        for key, value in fitted_curve.items():
+            for sub_key, sub_value in value.items():
                 _group.create_dataset('{}/{}'.format(key, sub_key), data=sub_value)
 
     if cfg.flags['save_heatmaps']:

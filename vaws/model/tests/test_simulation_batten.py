@@ -4,7 +4,7 @@ from __future__ import print_function
 import unittest
 import os
 import numpy as np
-# import filecmp
+import filecmp
 import pandas as pd
 
 from vaws.model.house_damage import HouseDamage
@@ -116,7 +116,7 @@ def consistency_fragilites(path_reference, path_output):
             data2 = pd.read_csv(file2, index_col=0)
             map_dic = {'median': 'Median', 'sigma': 'Beta'}
             for state, value in data2.iterrows():
-                for key, mapped in map_dic.iteritems():
+                for key, mapped in map_dic.items():
                     str_ = state[0].upper() + state[1:] + ' ' + mapped
                     try:
                         ref_value = data1.loc[0, str_]
@@ -170,7 +170,7 @@ def consistency_wateringress(path_reference, path_output):
         if not identical:
             data1 = pd.read_csv(file1)
             data2 = pd.read_csv(file2)
-            for key, value in data2.iteritems():
+            for key, value in data2.items():
                 try:
                     np.testing.assert_almost_equal(value.values,
                                                    data1[key].values,
@@ -306,11 +306,11 @@ class TestHouseDamage(unittest.TestCase):
 
         # each time check whether the sum of effective area is the same
         ref_area = {}
-        for _zone in self.house_damage.house.zones.itervalues():
+        for _, _zone in self.house_damage.house.zones.items():
             ref_area.setdefault(_zone.name[0], []).append(_zone.area)
             ref_area.setdefault(_zone.name[1], []).append(_zone.area)
 
-        for key, value in ref_area.iteritems():
+        for key, value in ref_area.items():
             ref_area[key] = np.array(value).sum()
 
         # # iteration over wind speed list
@@ -321,11 +321,11 @@ class TestHouseDamage(unittest.TestCase):
 
             # check effective area
             area = {}
-            for _zone in self.house_damage.house.zones.itervalues():
+            for _, _zone in self.house_damage.house.zones.items():
                 area.setdefault(_zone.name[0], []).append(_zone.area)
                 area.setdefault(_zone.name[1], []).append(_zone.area)
 
-            for key, value in area.iteritems():
+            for key, value in area.items():
                 sum_area = np.array(value).sum()
                 try:
                     self.assertAlmostEqual(sum_area, ref_area[key])
