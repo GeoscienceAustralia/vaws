@@ -23,8 +23,10 @@ The program is built around the following high level sequence:
   - :ref:`For each model <house_module_section>`
 
     * :ref:`sample wind direction <sample_wind_direction_section>`
-    * :ref:`sample wind profile <sample_wind_profile_section>`
     * :ref:`sample construction quality level <sample_construction_level_section>`
+    * :ref:`sample wind profile <sample_wind_profile_section>`
+    * :ref:`set terrain height multiplier <set_terrain_height_section>`
+    * :ref:`set shielding multiplier <set_shielding_section>`
     * :ref:`set up coverages <set_coverages_section>`
     * :ref:`set up connections <set_connections_section>`
     * :ref:`set up zones <set_zones_section>`
@@ -36,8 +38,9 @@ The program is built around the following high level sequence:
 
     - simulate damage for each model
 
-      - calculate free stream wind pressure (qz), optionally applying a regional shielding factor (:py:meth:`.House.compute_qz_ms`)
-      - calculate zone pressures (:py:meth:`.Zone.calc_zone_pressure`)
+      * :ref:`calculate free stream wind pressure <calculate_qz_section>`
+      * :ref:`calculate zone pressures <calculate_zone_pressure_section>`
+      * :ref:`calculate coverage load and check damage <
       - check damage of envelope coverages by wind load (:py:meth:`.Coverage.check_damage`)
       - calculate connection loads (:py:meth:`.Connection.compute_load`)
       - check damage of each connection by connection group (:py:meth:`.ConnectionTypeGroup.check_damage`)
@@ -65,17 +68,10 @@ House module (:py:class:`.House`)
 
 .. _sample_wind_direction_section:
 
-sample wind direction (:py:meth:`.House.set_wind_orientation`)
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+sample wind direction (:py:meth:`.House.set_wind_dir_index`)
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-The wind direction is set up at the time of model creation, and kept constant during the simulation over a range of wind speeds. If wind_direction (:numref:`section_main_table`) is 'RANDOM', then wind direction is randomly sampled among the eight directions.
-
-.. _sample_wind_profile_section:
-
-sample wind profile (:py:meth:`.House.set_wind_profile`)
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-A set of gust envelope wind profiles is read from wind_profiles (:numref:`section_main_table`), and one profile is randomly chosen for each model and kept constant during the simulation over a range of wind speeds. The mzcat value at the model height is then calculated by interpolation using the sampled profile over height.
+The wind direction is set up at the time of model creation, and kept constant during the simulation over a range of wind speeds. If `wind_direction` (:numref:`section_main_table`) is 'RANDOM', then wind direction is randomly sampled among the eight directions.
 
 .. _sample_construction_level_section:
 
@@ -91,6 +87,44 @@ A set of mean and cov factors for connection strength is defined for each constr
     \sigma_{adj} &= \sigma \times f_{\mu} \times f_{\text{cov}}
 
 where :math:`\mu_{adj}` and :math:`\sigma_{adj}`: adjusted mean and standard deviation of connection strength reflecting construction quality level, respectively, :math:`\mu` and :math:`\sigma`: mean and standard deviation of connection strength, :math:`f_{\mu}` and :math:`f_{\text{cov}}`: mean and cov factors for connection strength.
+
+.. _sample_wind_profile_section:
+
+sample wind profile (:py:meth:`.House.set_profile_index`)
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+A set of gust envelope wind profiles is read from `wind_profiles` (:numref:`section_main_table`). Note that each profile is a normalized profile whose value is normalized to 1 at 10 metres height.
+One profile is randomly chosen for each model and kept constant during the simulation over a range of wind speeds.
+
+.. _set_terrain_height_section:
+
+set terrain height multiplier (:py:meth:`.House.set_terrain_height_multiplier`)
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+The terrain height multiplier (|Mz,cat|) value at the model height is calculated by the interpolation using the sampled profile over height.
+
+
+.. _set_shielding_section:
+
+set shielding multiplier (:py:meth:`.House.set_shielding_multiplier`)
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+The shielding multiplier (|Ms|) value is computed
+
+If the value of `regional_shielding_factor` is greater than 0.85, then |Ms| value is set to be 1.0. Otherwise |Ms| value is sampled from a probability mass function, which has 1.0, 0.85, and 0.95 with likelihood of 0.63, 0.15, and 0.22, respectively. And the sampled value of Ms is used to adjust wind speed as :eq:`regional_shielding_factor_eq`:
+
+.. _shielding_table:
+.. csv-table::
+    :header: Type, |Ms| value, Probability
+    :widths: 10, 20, 20
+
+    Full shielding, 0.85, 63%
+    Partial shielding, 0.95, 15%
+    No shielding, 1.0, 22%
+
+
+
+
 
 
 .. _set_coverages_section:
@@ -140,17 +174,6 @@ A debris damage model is set up by referencing the wind direction and coverages 
 
 Also walls and coverage components subject to debris impact are selected based on the wind direction (:py:attr:`.Debris.front_facing_walls`). The boundary for debris impact assessment is also defined with the radius of boundary (:py:attr:`.Debris.boundary`)
 
-regional shielding factor
-^^^^^^^^^^^^^^^^^^^^^^^^^
-
-If the value of the regional shielding factor is greater than 0.85, then Ms is set to be 1.0, and no adjustment of wind speed is required. When the value is less or equal to 0.85 then Ms is sampled from a probability mass function, which has 1.0, 0.85, and 0.95 with likelihood of 0.63, 0.15, and 0.22, respectively. And the sampled value of Ms is used to adjust wind speed as :eq:`regional_shielding_factor_eq`:
-
-.. math::
-    :label: regional_shielding_factor_eq
-
-    V_{adj} = V \times Ms / R
-
-where :math:`V_{adj}`: adjusted wind speed reflecting the regional shielding factor, :math:`V`: wind speed, :math:`Ms`:, :math:`R`: regional shielding factor.
 
 connection load
 ^^^^^^^^^^^^^^^
@@ -450,6 +473,8 @@ The internal pressure coefficient, |Cpi| is determined based on :numref:`cpi_no_
 Zone module
 -----------
 
+.. _zone_pressure_section:
+
 zone pressure
 ^^^^^^^^^^^^^
 
@@ -467,7 +492,7 @@ where :math:`q_z`:, :math:`C_{pe}`:, :math:`C_{pi}`, :math:`\alpha_{C_{pi}}`, an
 differential shielding
 ^^^^^^^^^^^^^^^^^^^^^^
 
-If the value of diff_shielding is True, then differential shielding effect is considered in calculating zone pressure. The differential shielding is computed as follows:
+If the value of differential_shielding is True, then differential shielding effect is considered in calculating zone pressure. The differential shielding is computed as follows:
 
   .. code-block:: python
 
@@ -524,6 +549,9 @@ vulnerability
 
 .. |Cpe| replace:: :math:`C_{pe}`
 .. |Cpi| replace:: :math:`C_{pi}`
+.. |qz| replace:: :math:`q_{z}`
+.. |Mz,cat| replace:: :math:`M_{z,cat}`
+.. |Ms| replace:: :math:`M_{s}`
 
 ..
   .. literalinclude:: ../../vaws/model/debris.py

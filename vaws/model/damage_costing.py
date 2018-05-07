@@ -40,19 +40,7 @@ class Costing(object):
         self.internal_coeff2 = None
         self.internal_coeff3 = None
 
-        default_attr = dict(surface_area=None,
-                            envelope_repair_rate=None,
-                            envelope_factor_formula_type=None,
-                            envelope_coeff1=None,
-                            envelope_coeff2=None,
-                            envelope_coeff3=None,
-                            internal_repair_rate=None,
-                            internal_factor_formula_type=None,
-                            internal_coeff1=None,
-                            internal_coeff2=None,
-                            internal_coeff3=None)
-        default_attr.update(kwargs)
-        for key, value in default_attr.items():
+        for key, value in kwargs.items():
             setattr(self, key, value)
 
         for key in ['internal', 'envelope']:
@@ -138,7 +126,6 @@ class WaterIngressCosting(object):
 
         assert isinstance(costing_name, str)
         self.name = costing_name
-
         self.cost = None
         self.base_cost = None
         self.water_ingress = None
@@ -147,14 +134,7 @@ class WaterIngressCosting(object):
         self.coeff2 = None
         self.coeff3 = None
 
-        default_attr = dict(name=None,
-                            base_cost=None,
-                            formula_type=None,
-                            coeff1=None,
-                            coeff2=None,
-                            coeff3=None)
-        default_attr.update(kwargs)
-        for key, value in default_attr.items():
+        for key, value in kwargs.items():
             setattr(self, key, value)
 
         self.assign_costing_function()

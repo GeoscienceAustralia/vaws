@@ -14,7 +14,7 @@ from stats import sample_gev
 
 class Zone(object):
 
-    flags_pressure = ['cpe', 'cpe_str']
+    flag_pressure = ['cpe', 'cpe_str']
 
     def __init__(self, name=None, **kwargs):
         """
@@ -22,34 +22,34 @@ class Zone(object):
             name
         """
 
-        assert isinstance(name, str)
-        self.name = name
+        try:
+            assert isinstance(name, str)
+        except AssertionError:
+            name = str(name)
 
+        self.name = name
         self.area = None
         self.cpi_alpha = None
         self.cpe_mean = {}
         self.cpe_str_mean = {}
         self.cpe_eave_mean = {}
         self.is_roof_edge = {}
+        self.wind_dir_index = None
+        self.shielding_multiplier = None
+        self.building_spacing = None
+        self.flag_differential_shielding = None
 
-        default_attr = dict(area=self.area,
-                            cpi_alpha=self.cpi_alpha,
-                            # wall_dir=self.wall_dir,
-                            cpe_mean=self.cpe_mean,
-                            cpe_str_mean=self.cpe_str_mean,
-                            cpe_eave_mean=self.cpe_eave_mean,
-                            is_roof_edge=self.is_roof_edge)
-
-        default_attr.update(kwargs)
-        for key, value in default_attr.items():
+        for key, value in kwargs.items():
             setattr(self, key, value)
 
-        self.diff_shielding = None
+        self.differential_shielding = None
         self.cpe = None
         self.cpe_str = None
         self.cpe_eave = None
         self.pressure_cpe = 0.0
         self.pressure_cpe_str = 0.0
+
+        self.set_differential_shielding()
 
     def __str__(self):
         return 'Zone(name={}, area={:.2f}, cpi_alpha={:.2f})'.format(
@@ -58,7 +58,7 @@ class Zone(object):
     def __repr__(self):
         return 'Zone(name={})'.format(self.name)
 
-    def sample_cpe(self, wind_dir_index, cpe_cov, cpe_k, big_a, big_b,
+    def sample_cpe(self, cpe_cov, cpe_k, big_a, big_b,
                    cpe_str_cov, cpe_str_k, big_a_str, big_b_str, rnd_state):
 
         """
@@ -67,7 +67,6 @@ class Zone(object):
         zone areas for load calculations.
 
         Args:
-            wind_dir_index: 0 to 7
             cpe_cov: cov of dist. of CPE for sheeting and batten
             cpe_k: shape parameter of dist. of CPE
             big_a:
@@ -82,61 +81,70 @@ class Zone(object):
 
         """
 
-        self.cpe = sample_gev(self.cpe_mean[wind_dir_index],
+        self.cpe = sample_gev(self.cpe_mean[self.wind_dir_index],
                               cpe_cov, big_a, big_b, cpe_k, rnd_state)
 
-        self.cpe_str = sample_gev(self.cpe_str_mean[wind_dir_index],
+        self.cpe_str = sample_gev(self.cpe_str_mean[self.wind_dir_index],
                                   cpe_str_cov, big_a_str, big_b_str, cpe_str_k, rnd_state)
 
-        self.cpe_eave = sample_gev(self.cpe_eave_mean[wind_dir_index],
+        self.cpe_eave = sample_gev(self.cpe_eave_mean[self.wind_dir_index],
                                    cpe_str_cov, big_a_str, big_b_str, cpe_str_k, rnd_state)
 
-    def calc_zone_pressure(self, wind_dir_index, cpi, qz, ms, building_spacing,
-                           flag_diff_shielding=False):
+    def calc_zone_pressure(self, cpi, qz):
         """
         Determine wind pressure loads (Cpe) on each zone (to be distributed onto
         connections)
 
         Args:
-            wind_dir_index:
-            cpi: internal pressure coeff
-            qz:
-            ms:
-            building_spacing:
-            flag_diff_shielding: flag for differential shielding (default: False)
+            cpi: internal pressure coefficient
+            qz: free stream wind pressure
 
         Returns:
             pressure : zone pressure
 
         """
 
-        self.diff_shielding = self.calc_diff_shielding(ms, building_spacing,
-                                                       flag_diff_shielding,
-                                                       wind_dir_index)
-
-        for item in self.__class__.flags_pressure:
+        for item in self.__class__.flag_pressure:
             value = qz * (
                 getattr(self, item) - self.cpi_alpha * cpi - self.cpe_eave
-                ) * self.diff_shielding
+                ) * self.differential_shielding
             setattr(self, 'pressure_{}'.format(item), value)
 
-    def calc_diff_shielding(self, ms, building_spacing, flag_diff_shielding,
-                            wind_dir_index):
+    def set_differential_shielding(self):
+        """
+        The following recommendations for differential shielding for buildings
+        deemed to be subject to full shielding are made:
+
+        - For outer suburban situations and country towns:
+            Neglect shielding effects except for the leading edges of upwind
+            roofs. For the latter an implied pressure ratio of Ms2 (equal to
+            0.852 for the full shielding cases, and0.95 for partial shielding
+            cases) can be adopted.
+        - For inner suburban buildings with full shielding:
+            Reduce the shielding multiplier to 0.7 for upwind roof areas,
+            except adjacent to the ridge (implying a pressure reduction factor
+            of 0.49). Retain a nominal value of Ms of 0.85 for all other surfaces.
+        - For inner suburban buildings deemed to have partial shielding:
+            Reduce the shielding multiplier to 0.8 for upwind roof areas,
+            except adjacent to the ridge (implying a pressure reduction factor
+            of 0.64). Retain a nominal value of Ms of 0.95 for all other surfaces.
+
+        """
 
         dsn, dsd = 1.0, 1.0
 
-        if building_spacing > 0 and flag_diff_shielding:
-            front_facing = self.is_roof_edge[wind_dir_index]
-            if building_spacing == 40 and ms >= 1.0 and front_facing == 0:
-                dsd = ms ** 2.0
-            elif building_spacing == 20 and front_facing == 1:
-                dsd = ms ** 2.0
-                if ms <= 0.85:
+        if self.building_spacing > 0 and self.flag_differential_shielding:
+            front_facing = self.is_roof_edge[self.wind_dir_index]
+            if self.building_spacing == 40 and self.shielding_multiplier >= 1.0 and front_facing == 0:
+                dsd = self.shielding_multiplier ** 2.0
+            elif self.building_spacing == 20 and front_facing == 1:
+                dsd = self.shielding_multiplier ** 2.0
+                if self.shielding_multiplier <= 0.85:
                     dsn = 0.7 ** 2.0
                 else:
                     dsn = 0.8 ** 2.0
 
-        return dsn / dsd
+        self.differential_shielding = dsn / dsd
 
     @staticmethod
     def get_zone_location_from_grid(_zone_grid):

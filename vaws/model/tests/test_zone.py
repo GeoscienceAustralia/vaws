@@ -7,16 +7,19 @@ from vaws.model.zone import Zone, str2num
 class MyTestCase(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
-        cls.zone = Zone(name='N12')
+        item = dict(area=0.2025,
+                    cpi_alpha=0.0,
+                    wind_dir_index=0,
+                    shielding_multiplier=1.0,
+                    building_spacing=0,
+                    flag_differential_shielding=False,
+                    cpe_mean={k: -0.1 for k in range(8)},
+                    cpe_str_mean={k: -0.05 for k in range(8)},
+                    cpe_eave_mean={k: 0.0 for k in range(8)},
+                    is_roof_edge={k: 1 for k in range(8)},
+                    )
 
-        cls.zone.area = 0.2025
-        cls.zone.cpi_alpha = 0.0
-
-        for idx in range(8):
-            cls.zone.cpe_mean[idx] = -0.1
-            cls.zone.cpe_str_mean[idx] = -0.05
-            cls.zone.cpe_eave_mean[idx] = 0.0
-            cls.zone.is_roof_edge[idx] = 1
+        cls.zone = Zone(name='N12', **item)
 
         cls.rnd_state = np.random.RandomState(seed=13)
 
@@ -31,8 +34,7 @@ class MyTestCase(unittest.TestCase):
     #     self.assertEqual(self.zone.is_wall_zone, False)
 
     def test_calc_zone_pressures(self):
-        self.zone.sample_cpe(wind_dir_index=3,
-                             cpe_cov=0.12,
+        self.zone.sample_cpe(cpe_cov=0.12,
                              cpe_k=0.1,
                              big_a=0.486,
                              big_b=1.145,
@@ -50,11 +52,7 @@ class MyTestCase(unittest.TestCase):
         mzcat = 0.9235
         qz = 0.6 * 1.0e-3 * (wind_speed * mzcat) ** 2
 
-        self.zone.calc_zone_pressure(wind_dir_index=3,
-                                     cpi=0.0,
-                                     qz=qz,
-                                     ms=1.0,
-                                     building_spacing=0)
+        self.zone.calc_zone_pressure(cpi=0.0, qz=qz)
 
         self.assertAlmostEqual(self.zone.pressure_cpe, -0.0888, places=4)
         self.assertAlmostEqual(self.zone.pressure_cpe_str, -0.0388, places=4)

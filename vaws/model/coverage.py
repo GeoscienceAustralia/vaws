@@ -29,30 +29,18 @@ class Coverage(Zone):
         self.sign_failure_strength_out = None
         self.log_failure_momentum = None
         self.wall_name = None
+        self.wind_dir_index = None
+        self.shielding_multiplier = None
+        self.building_spacing = None
+        self.flag_differential_shielding = None
+
+        super(Coverage, self).__init__(name=name, **kwargs)
 
         # default value for coverage
         self.cpi_alpha = 1.0
         self.cpe_str_mean = {i: 0 for i in range(8)}
         self.cpe_eave_mean = {i: 0 for i in range(8)}
         self.is_roof_edge = {i: 0 for i in range(8)}
-
-        default_attr = dict(area=self.area,
-                            cpe_mean=self.cpe_mean,
-                            coverage_type=self.coverage_type,
-                            log_failure_strength_in=self.log_failure_strength_in,
-                            log_failure_strength_out=self.log_failure_strength_out,
-                            sign_failure_strength_in=self.sign_failure_strength_in,
-                            sign_failure_strength_out=self.sign_failure_strength_out,
-                            log_failure_momentum=self.log_failure_momentum,
-                            wall_name=self.wall_name,
-                            cpi_alpha=self.cpi_alpha,
-                            cpe_str_mean=self.cpe_str_mean,
-                            cpe_eave_mean=self.cpe_eave_mean,
-                            is_roof_edge=self.is_roof_edge)
-
-        default_attr.update(kwargs)
-
-        super(Coverage, self).__init__(name=name, **default_attr)
 
         self.strength_negative = None
         self.strength_positive = None

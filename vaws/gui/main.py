@@ -1109,7 +1109,7 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
                 ', '.join(self.cfg.fragility_i_states))
             self.ui.fragilityThresholds.setText(
                 ', '.join([str(x) for x in self.cfg.fragility_i_thresholds]))
-            self.ui.diffShielding.setChecked(self.cfg.flags.get('diff_shielding'))
+            self.ui.diffShielding.setChecked(self.cfg.flags.get('differential_shielding'))
 
             self.ui.redV.setValue(self.cfg.heatmap_vmin)
             self.ui.blueV.setValue(self.cfg.heatmap_vmax)
@@ -1155,7 +1155,7 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
         new_cfg.staggered_sources = self.ui.staggeredDebrisSources.isChecked()
 
         new_cfg.flags['water_ingress'] = self.ui.waterEnabled.isChecked()
-        new_cfg.flags['diff_shielding'] = self.ui.diffShielding.isChecked()
+        new_cfg.flags['differential_shielding'] = self.ui.diffShielding.isChecked()
         new_cfg.flags['debris'] = self.ui.debris.isChecked()
 
         # option section

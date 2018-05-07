@@ -84,13 +84,8 @@ class House(object):
             self.compute_qz(wind_speed)
 
             # load = qz * (Cpe + Cpi) * A + dead_load
-            for _, _zone in self.zones.items():
-                _zone.calc_zone_pressure(self.wind_dir_index,
-                                         self.cpi,
-                                         self.qz,
-                                         self.shielding_multiplier,
-                                         self.cfg.building_spacing,
-                                         self.cfg.flags['diff_shielding'])
+            for _zone in self.zones.itervalues():
+                _zone.calc_zone_pressure(self.cpi, self.qz)
 
             if self.coverages is not None:
                 for _, _ps in self.coverages.iterrows():
@@ -402,15 +397,22 @@ class House(object):
         AS4055 (Wind loads for housing) defines the shielding multiplier
         for full, partial and no shielding as 0.85, 0.95 and 1.0, respectively.
 
-        The following percentages are recommended for the shielding of houses
-        well inside Australian urban areas:
-        Full shielding: 63%, Partial shielding: 15%, No shielding: 22%.
+        Based on the JDH report, the following percentages are recommended for
+        the shielding of houses well inside Australian urban areas:
+
+            Full shielding: 63%,
+            Partial shielding: 15%,
+            No shielding: 22%.
+
+        Note that regional shielding factor is less or equal to 0.85, then
+        it model buildings are considered to be in Australian urban area.
+
         """
-        if self.cfg.regional_shielding_factor <= 0.85:
+        if self.cfg.regional_shielding_factor <= 0.85:  # urban area
             idx = (self.cfg.shielding_multiplier_thresholds <=
                    self.rnd_state.random_integers(0, 100)).sum()
             self.shielding_multiplier = self.cfg.shielding_multipliers[idx][1]
-        else:
+        else:  #
             self.shielding_multiplier = 1.0
 
     def set_wind_dir_index(self):
@@ -452,10 +454,15 @@ class House(object):
 
         for _name, item in self.cfg.zones.items():
 
+            item.update(
+                {'wind_dir_index': self.wind_dir_index,
+                 'shielding_multiplier': self.shielding_multiplier,
+                 'building_spacing': self.cfg.building_spacing,
+                 'flag_differential_shielding': self.cfg.flags['differential_shielding']})
+
             _zone = Zone(name=_name, **item)
 
             _zone.sample_cpe(
-                wind_dir_index=self.wind_dir_index,
                 cpe_cov=self.cpe_cov,
                 cpe_k=self.cpe_k,
                 big_a=self.big_a,
@@ -583,10 +590,11 @@ class House(object):
 
             for _name, item in df_coverages.iterrows():
 
+                item['wind_dir_index'] = self.wind_dir_index
+
                 _coverage = Coverage(name=_name, **item)
 
                 _coverage.sample_cpe(
-                    wind_dir_index=self.wind_dir_index,
                     cpe_cov=self.cpe_cov,
                     cpe_k=self.cpe_k,
                     big_a=self.big_a,

@@ -80,15 +80,6 @@ class Debris(object):
 
               if we use dD/dV (pdf of vulnerability), then
                  dN = f * (dD/dV) * dV
-
-        :getter: Returns this direction's name
-        :setter: Sets this direction's name        Args:
-            value :
-
-        Returns:
-            setter of mean_no_items
-
-        :return:
         """
         return np.rint(self.cfg.source_items * self._damage_incr)
 

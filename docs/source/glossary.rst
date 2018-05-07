@@ -21,6 +21,12 @@
     |qz|
         free stream wind pressure
 
+    |Mz,cat|
+        terrain height multiplier
+
+    |Ms|
+        shielding multiplier. This multiplier represents the reduction in peak 3-second gust velocity at a given height and terrain, caused by the presence of buildings and other obstructions upwind of the site of interest.
+
     patch
         Fragility "implies easily damaged or broken, but is often used to
 
@@ -79,3 +85,5 @@
 .. |Cpe| replace:: :math:`C_{pe}`
 .. |Cpi| replace:: :math:`C_{pi}`
 .. |qz| replace:: :math:`q_{z}`
+.. |Mz,cat| replace:: :math:`M_{z,cat}`
+.. |Ms| replace:: :math:`M_{s}`

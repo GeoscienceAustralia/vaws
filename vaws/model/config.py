@@ -151,17 +151,12 @@ class Config(object):
     # model dependent attributes
 
     house_bucket = ['profile_index', 'wind_dir_index', 'construction_level',
-                           'terrain_height_multiplier', 'shielding_multiplier',
-                           'str_mean_factor', 'str_cov_factor', 'qz', 'cpi', 'collapse', 'di',
-                           'di_except_water', 'repair_cost',
-                           'water_ingress_cost', 'window_breached_by_debris']
+                    'terrain_height_multiplier', 'shielding_multiplier',
+                    'str_mean_factor', 'str_cov_factor', 'qz', 'cpi',
+                    'collapse', 'di', 'di_except_water', 'repair_cost',
+                    'water_ingress_cost', 'window_breached_by_debris']
 
     att_non_float = ['construction_level']
-    att_time_invariant = ['strength', 'strength_negative', 'strength_positive',
-                          'dead_load', 'cpe', 'cpe_str', 'cpe_eave', 'capacity',
-                          'collapse', 'profile_index', 'wind_dir_index', 'construction_level',
-                           'terrain_height_multiplier', 'shielding_multiplier',
-                           'str_mean_factor', 'str_cov_factor']
 
     debris_bucket = ['no_items', 'no_touched', 'damaged_area']
 
@@ -172,10 +167,18 @@ class Config(object):
 
     connection_bucket = ['damaged', 'capacity', 'load', 'strength', 'dead_load']
 
-    zone_bucket = ['pressure_cpe', 'pressure_cpe_str', 'cpe', 'cpe_str', 'cpe_eave']
+    zone_bucket = ['pressure_cpe', 'pressure_cpe_str', 'cpe', 'cpe_str',
+                   'cpe_eave']
 
     coverage_bucket = ['strength_negative', 'strength_positive', 'load',
                        'breached', 'breached_area', 'capacity']
+
+    att_time_invariant = ['strength', 'strength_negative', 'strength_positive',
+                          'dead_load', 'cpe', 'cpe_str', 'cpe_eave', 'capacity',
+                          'collapse', 'profile_index', 'wind_dir_index',
+                          'construction_level', 'terrain_height_multiplier',
+                          'shielding_multiplier', 'str_mean_factor',
+                          'str_cov_factor']
 
     dic_obj_for_fitting = {'weibull': 'vulnerability_weibull',
                            'lognorm': 'vulnerability_lognorm'}

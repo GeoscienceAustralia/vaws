@@ -62,23 +62,7 @@ class Connection(object):
         self.lognormal_strength = None
         self.lognormal_dead_load = None
 
-        default_attr = {'type_name': self.type_name,
-                        'zone_loc': self.zone_loc,
-                        'group_name': self.group_name,
-                        'flag_pressure': self.flag_pressure,
-                        'sub_group': self.sub_group,
-                        'section': self.section,
-                        'grid': self.grid,
-                        'grid_raw': self.grid_raw,
-                        'centroid': self.centroid,
-                        'coords': self.coords,
-                        'costing_area': self.costing_area,
-                        'lognormal_strength': self.lognormal_strength,
-                        'lognormal_dead_load': self.lognormal_dead_load,
-                        }
-
-        default_attr.update(kwargs)
-        for key, value in default_attr.items():
+        for key, value in kwargs.items():
             setattr(self, key, value)
 
         self._influences = None
@@ -230,14 +214,7 @@ class ConnectionTypeGroup(object):
         self.trigger_collapse_at = None
         self.patch_dist = None
 
-        default_attr = {'dist_order': self.dist_order,
-                        'dist_dir': self.dist_dir,
-                        'damage_scenario': self.damage_scenario,
-                        'trigger_collapse_at': self.trigger_collapse_at,
-                        'patch_dist': self.patch_dist}
-
-        default_attr.update(kwargs)
-        for key, value in default_attr.items():
+        for key, value in kwargs.items():
             setattr(self, key, value)
 
         self.no_connections = 0

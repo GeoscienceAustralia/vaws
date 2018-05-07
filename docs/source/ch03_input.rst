@@ -69,7 +69,7 @@ The configuration file consists of a number of sections, among which *main* and 
 
     [options]
     debris = True
-    diff_shielding = False
+    differential_shielding = False
     water_ingress = True
     construction_levels = True
     save_heatmaps = True
@@ -146,7 +146,7 @@ Parameters of the Options section are listed in :numref:`section_options_table`.
     :widths: 25, 10, 10
 
     debris, 'Enabled' tick box in the Debris tab, if True then debris damage will be simulated.
-    diff_shielding, 'Differential shielding' tick box in the Options tab, if True then differential shielding effect is applied.
+    differential_shielding, 'Differential shielding' tick box in the Options tab, if True then differential shielding effect is applied.
     water_ingress, 'Enabled' tick box in the Water tab, if True then damage due to water ingress will be simulated.
     construction_levels, 'Enabled' tick box in the Construction tab, if True then construction level will be sampled.
     save_heatmaps, 'Save heatmaps' tick box in the Options tab, if True then heatmap plot of each model will be saved.

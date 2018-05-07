@@ -38,11 +38,7 @@ def simulation(house, conn_capacity, wind_speeds, list_connections):
             _zone.cpe_str = _zone.cpe_str_mean[wind_dir_index]
             _zone.cpe_eave = _zone.cpe_eave_mean[wind_dir_index]
 
-            _zone.calc_zone_pressure(wind_dir_index,
-                                     cpi,
-                                     house.qz,
-                                     shielding_multiplier,
-                                     building_spacing)
+            _zone.calc_zone_pressure(cpi, house.qz)
 
         for _, _connection in house.connections.items():
             _connection.compute_load()
@@ -97,11 +93,7 @@ def simulation_incl_coverages(house, wind_speeds):
             _zone.cpe_str = _zone.cpe_str_mean[wind_dir_index]
             _zone.cpe_eave = _zone.cpe_eave_mean[wind_dir_index]
 
-            _zone.calc_zone_pressure(wind_dir_index,
-                                     house.cpi,
-                                     house.qz,
-                                     shielding_multiplier,
-                                     building_spacing)
+            _zone.calc_zone_pressure(house.cpi, house.qz)
 
         for _, _ps in house.coverages.iterrows():
             _ps['coverage'].check_damage(house.qz, house.cpi, wind_speed)
@@ -160,11 +152,7 @@ class TestScenario1(unittest.TestCase):
             _zone.cpe = _zone.cpe_mean[0]
             _zone.cpe_str = _zone.cpe_str_mean[0]
             _zone.cpe_eave = _zone.cpe_eave_mean[0]
-            _zone.calc_zone_pressure(wind_dir_index,
-                                     cpi,
-                                     qz,
-                                     Ms,
-                                     building_spacing)
+            _zone.calc_zone_pressure(cpi, qz)
 
         ref_load = {1: -0.0049, 11: -0.1944, 15: -0.0194, 21: -0.0194,
                     25: -0.0097, 31: -0.0049, 35: -0.0972, 39: -0.1507,

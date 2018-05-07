@@ -59,11 +59,7 @@ class MyTestCase(unittest.TestCase):
         _zone = house.zones['A1']
         _zone.cpe = _zone.cpe_mean[0]  # originally randomly generated
 
-        _zone.calc_zone_pressure(wind_dir_index,
-                                 cpi,
-                                 qz,
-                                 Ms,
-                                 building_spacing)
+        _zone.calc_zone_pressure(cpi, qz)
 
         self.assertAlmostEqual(_zone.cpi_alpha, 0.0, places=2)
         self.assertAlmostEqual(_zone.cpe_mean[0], -1.25, places=2)
@@ -71,7 +67,7 @@ class MyTestCase(unittest.TestCase):
         self.assertAlmostEqual(_zone.cpe_str_mean[0], 0.0, places=2)
         self.assertAlmostEqual(house.zones['A1'].area, 0.2025, places=4)
 
-        # pz = qz * (cpe - cpi_alpha * cpi) * diff_shielding
+        # pz = qz * (cpe - cpi_alpha * cpi) * differential_shielding
         #self.assertAlmostEqual(house.zones['A1'].pressure, -1.0234, places=4)
 
         _conn = house.connections[1]
@@ -107,11 +103,7 @@ class MyTestCase(unittest.TestCase):
             _zone.cpe = _zone.cpe_mean[0]
             _zone.cpe_eave = _zone.cpe_eave_mean[0]
             _zone.cpe_str = _zone.cpe_str_mean[0]
-            _zone.calc_zone_pressure(wind_dir_index,
-                                     cpi,
-                                     qz,
-                                     Ms,
-                                     building_spacing)
+            _zone.calc_zone_pressure(cpi, qz)
             ref_value = qz * (_zone.cpe_mean[0] + _zone.cpe_str_mean[0]
                               - _zone.cpe_eave_mean[0])
             self.assertAlmostEqual(_zone.pressure_cpe, ref_value, places=4)
