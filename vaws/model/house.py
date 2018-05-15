@@ -378,12 +378,12 @@ class House(object):
         return area_by_group, total_area_by_group
 
     @property
-    def str_mean_factor(self):
+    def mean_factor(self):
         return self.cfg.construction_levels[
             self.construction_level]['mean_factor']
 
     @property
-    def str_cov_factor(self):
+    def cov_factor(self):
         return self.cfg.construction_levels[
                 self.construction_level]['cov_factor']
 
@@ -428,7 +428,7 @@ class House(object):
     def set_construction_level(self):
         """
 
-        Returns: construction_level, str_mean_factor, str_cov_factor
+        Returns: construction_level, mean_factor, cov_factor
 
         """
         rv = self.rnd_state.random_integers(0, 100)
@@ -535,8 +535,8 @@ class House(object):
         Returns:
 
         """
-        _connection.sample_strength(mean_factor=self.str_mean_factor,
-                                    cov_factor=self.str_cov_factor,
+        _connection.sample_strength(mean_factor=self.mean_factor,
+                                    cov_factor=self.cov_factor,
                                     rnd_state=self.rnd_state)
         _connection.sample_dead_load(rnd_state=self.rnd_state)
 

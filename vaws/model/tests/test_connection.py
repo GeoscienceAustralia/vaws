@@ -50,7 +50,7 @@ class MyTestCase(unittest.TestCase):
         house = House(self.cfg, 1)
 
         # compute zone pressures
-        wind_dir_index = 3
+        assert house.wind_dir_index == 3
         cpi = 0.0
         qz = 0.8187
         Ms = 1.0
@@ -58,6 +58,8 @@ class MyTestCase(unittest.TestCase):
 
         _zone = house.zones['A1']
         _zone.cpe = _zone.cpe_mean[0]  # originally randomly generated
+        _zone.cpe_eave = _zone.cpe_eave_mean[0]
+        _zone.cpe_str = _zone.cpe_str_mean[0]
 
         _zone.calc_zone_pressure(cpi, qz)
 
@@ -81,9 +83,11 @@ class MyTestCase(unittest.TestCase):
         # load = influence.pz * influence.coeff * influence.area + dead_load
         self.assertAlmostEqual(_conn.influences['A1'].source.area, 0.2025,
                                places=4)
-        self.assertAlmostEqual(_conn.influences['A1'].source.pressure_cpe, -0.7485,
-                               places=4)
-        self.assertAlmostEqual(_conn.load, -0.1414, places=4)
+        self.assertAlmostEqual(_conn.influences['A1'].source.pressure_cpe,
+                               -1.0234, places=4)
+        self.assertAlmostEqual(_conn.influences['A1'].source.pressure_cpe_str,
+                               -0.5731, places=4)
+        self.assertAlmostEqual(_conn.load, -0.1971, places=4)
 
     def test_check_damage(self):
 
@@ -104,9 +108,10 @@ class MyTestCase(unittest.TestCase):
             _zone.cpe_eave = _zone.cpe_eave_mean[0]
             _zone.cpe_str = _zone.cpe_str_mean[0]
             _zone.calc_zone_pressure(cpi, qz)
-            ref_value = qz * (_zone.cpe_mean[0] + _zone.cpe_str_mean[0]
-                              - _zone.cpe_eave_mean[0])
-            self.assertAlmostEqual(_zone.pressure_cpe, ref_value, places=4)
+            ref_cpe = qz * (_zone.cpe_mean[0])
+            ref_cpe_str = qz * (_zone.cpe_str_mean[0] - _zone.cpe_eave_mean[0])
+            self.assertAlmostEqual(_zone.pressure_cpe, ref_cpe, places=4)
+            self.assertAlmostEqual(_zone.pressure_cpe_str, ref_cpe_str, places=4)
 
         # compute dead_load and strength using constant values
         for _conn in house.connections.itervalues():
@@ -131,7 +136,7 @@ class MyTestCase(unittest.TestCase):
         group.check_damage(wind_speed=wind_speed)
 
         ref_dic = {x: False for x in range(1, 61)}
-        for i in [2, 8, 14, 20, 26]:
+        for i in [8, 14, 20, 26]:
             ref_dic[i] = True
 
         for id_conn, _conn in house.connections.items():

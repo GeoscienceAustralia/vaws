@@ -85,14 +85,14 @@ class MyTestCase(unittest.TestCase):
         big_a, big_b = calc_big_a_b_values(shape_k)
 
         rnd_state = np.random.RandomState(42)
-        rv_ = sample_gev(mean_est, cov_est, big_a, big_b, shape_k,
+        rv_ = sample_gev(mean_est, cov_est, shape_k, big_a, big_b,
                          rnd_state)
 
         self.assertAlmostEqual(rv_, 0.9230, 3)
 
         rv_list = []
         for i in range(1000):
-            rv_ = sample_gev(mean_est, cov_est, big_a, big_b, shape_k,
+            rv_ = sample_gev(mean_est, cov_est, shape_k, big_a, big_b,
                              rnd_state)
             rv_list.append(rv_)
 
@@ -106,14 +106,14 @@ class MyTestCase(unittest.TestCase):
         big_a, big_b = calc_big_a_b_values(shape_k)
 
         rnd_state = np.random.RandomState(42)
-        rv_ = sample_gev(mean_est, cov_est, big_a, big_b, shape_k,
+        rv_ = sample_gev(mean_est, cov_est, shape_k, big_a, big_b,
                          rnd_state)
 
         self.assertAlmostEqual(rv_, -0.9230, 3)
 
         rv_list = []
         for i in range(1000):
-            rv_ = sample_gev(mean_est, cov_est, big_a, big_b, shape_k,
+            rv_ = sample_gev(mean_est, cov_est, shape_k, big_a, big_b,
                              rnd_state)
             rv_list.append(rv_)
 

@@ -20,7 +20,7 @@ VAWS: Vulnerability and Adaptation to Wind Simulation
    ch04_use_GUI
    ch05_logic
    glossary
-   bibliography
+   zbibliography
 
 .. only:: html
 

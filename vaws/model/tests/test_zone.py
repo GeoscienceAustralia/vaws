@@ -1,5 +1,7 @@
 import unittest
 import numpy as np
+import StringIO
+import pandas as pd
 
 from vaws.model.zone import Zone, str2num
 
@@ -7,6 +9,7 @@ from vaws.model.zone import Zone, str2num
 class MyTestCase(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
+
         item = dict(area=0.2025,
                     cpi_alpha=0.0,
                     wind_dir_index=0,
@@ -64,6 +67,52 @@ class MyTestCase(unittest.TestCase):
     def test_str2num(self):
         self.assertEqual(str2num('B'), 2)
         self.assertEqual(str2num('AB'), 28)
+
+    def test_set_differential_shieding(self):
+
+        reference_data = StringIO.StringIO("""Differential shielding flag,Building spacing,Ms,Zone_edge_flag,Expected factor,Comments
+TRUE, 40, 1, 1, 1, No shielding
+TRUE, 40, 1, 0, 1, No shielding
+TRUE, 40, 0.95, 1, 1, JDH recommendation 1 - retain shielding for leading edges of upwind roofs
+TRUE, 40, 0.95, 0, 1.108, JDH recommendation 1 - neglect shielding to all other surfaces
+TRUE, 40, 0.85, 1, 1, JDH recommendation 1 - retain shielding for leading edges of upwind roofs
+TRUE, 40, 0.85, 0, 1.384, JDH recommendation 1 - neglect shielding to all other surfaces
+TRUE, 20, 1, 1, 1, No shielding
+TRUE, 20, 1, 0, 1, No shielding
+TRUE, 20, 0.95, 1, 0.709, JDH recommendation 3 - reduce Ms to 0.8 for leading edges of upwind roofs
+TRUE, 20, 0.95, 0, 1, JDH recommendation 3 - retain Ms = 0.95 for all other surfaces
+TRUE, 20, 0.85, 1, 0.678, JDH recommendation 2 - reduce Ms to 0.7 for leading edges of upwind roofs
+TRUE, 20, 0.85, 0, 1, JDH recommendation 2 - retain Ms = 0.85 for all other surfaces
+FALSE, 40, 1, 1, 1, Diff shielding not considered
+FALSE, 40, 1, 0, 1, Diff shielding not considered
+FALSE, 40, 0.95, 1, 1, Diff shielding not considered
+FALSE, 40, 0.95, 0, 1, Diff shielding not considered
+FALSE, 40, 0.85, 1, 1, Diff shielding not considered
+FALSE, 40, 0.85, 0, 1, Diff shielding not considered
+FALSE, 20, 1, 1, 1, Diff shielding not considered
+FALSE, 20, 1, 0, 1, Diff shielding not considered
+FALSE, 20, 0.95, 1, 1, Diff shielding not considered
+FALSE, 20, 0.95, 0, 1, Diff shielding not considered
+FALSE, 20, 0.85, 1, 1, Diff shielding not considered
+FALSE, 20, 0.85, 0, 1, Diff shielding not considered""")
+
+        reference_data = pd.read_csv(reference_data)
+
+        for irow, row in reference_data.iterrows():
+
+            item = dict(wind_dir_index= 0,
+                        shielding_multiplier = row['Ms'],
+                        building_spacing = row['Building spacing'],
+                        flag_differential_shielding = row['Differential shielding flag'],
+                        is_roof_edge={0: row['Zone_edge_flag']})
+
+            _zone = Zone(name='dummy', **item)
+            outcome = _zone.differential_shielding
+
+            try:
+                self.assertAlmostEqual(outcome, row['Expected factor'], places=3)
+            except AssertionError:
+                print('{}: expecting {} but returned {}'.format(irow, row['Expected factor'], outcome))
 
 if __name__ == '__main__':
     unittest.main()

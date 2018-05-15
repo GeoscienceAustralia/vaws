@@ -12,7 +12,7 @@ class HouseViewer(QDialog, Ui_Dialog, mixins.PersistSizePosMixin):
         self.setAttribute(Qt.WA_DeleteOnClose)
         self.ui = Ui_Dialog()
         self.ui.setupUi(self)
-        self.setWindowTitle('House Viewer: {}'.format(cfg.house_name))
+        self.setWindowTitle('House Viewer: {}'.format(cfg.model_name))
         self.ui.buttonBox.addButton(QDialogButtonBox.Ok)        
         self.ui.replacementCost.setText('$ {:.3f}'.format(cfg.house['replace_cost']))
         self.ui.height.setText('{:.3f}'.format(cfg.house['height']))

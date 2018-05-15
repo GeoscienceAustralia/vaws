@@ -774,7 +774,7 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
         # we'll have three seperate y axis running at different scales
 
         breaches = bucket['house']['window_breached_by_debris'].sum(axis=1) / self.cfg.no_models
-        nv_means = bucket['debris']['no_touched'].mean(axis=1)
+        nv_means = bucket['debris']['no_impacts'].mean(axis=1)
         num_means = bucket['debris']['no_items'].mean(axis=1)
 
         host = SubplotHost(self.ui.breaches_plot.axes.figure, 111)
@@ -1046,7 +1046,7 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
 
             # Scenario
             self.ui.numHouses.setText('{:d}'.format(self.cfg.no_models))
-            self.ui.houseName.setText(self.cfg.house_name)
+            self.ui.houseName.setText(self.cfg.model_name)
             self.ui.seedRandom.setText(str(self.cfg.random_seed))
 
             idx = self.ui.terrainCategory.findText(self.cfg.file_wind_profiles)
@@ -1131,7 +1131,7 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
 
         # Scenario section
         new_cfg.no_models = int(self.ui.numHouses.text())
-        new_cfg.house_name = str(self.ui.houseName.text())
+        new_cfg.model_name = str(self.ui.houseName.text())
         new_cfg.file_wind_profiles = str(self.ui.terrainCategory.currentText())
         new_cfg.regional_shielding_factor = float(self.ui.regionalShielding.text())
         new_cfg.wind_speed_min = self.ui.windMin.value()
@@ -1302,8 +1302,8 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
             house.set_construction_level()
             lognormal_strength = self.cfg.types['{}'.format(selected_type)]['lognormal_strength']
             mu, std = compute_arithmetic_mean_stddev(*lognormal_strength)
-            mu *= house.str_mean_factor
-            std *= house.str_cov_factor
+            mu *= house.mean_factor
+            std *= house.cov_factor
 
             x = []
             n = 50000

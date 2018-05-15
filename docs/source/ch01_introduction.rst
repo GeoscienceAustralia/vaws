@@ -9,7 +9,7 @@ Vulnerability and Adaptation to Wind Simulation (VAWS) is a software tool that c
 Background
 ==========
 
-Development of VAWS commenced in 2009-2010 in a collaborative project, partly funded by the then Department of Climate Change and energy Efficiency (DCCE), between Geoscience Australia, James Cook University and JDH Consulting. The development of the current version was undertaken as part of the Bushfire and Natural Hazard Cooperative Research Centre (BNHCRC) project “Improving the Resilience of Existing Housing to Severe Wind” led by James Cook University.
+Development of VAWS commenced in 2009-2010 in a collaborative project, partly funded by the then Department of Climate Change and energy Efficiency (DCCE), between Geoscience Australia, James Cook University and JDH Consulting :cite:`GA2011,Wehner2010`. The development of the current version was undertaken as part of the Bushfire and Natural Hazard Cooperative Research Centre (BNHCRC) project “Improving the Resilience of Existing Housing to Severe Wind” led by James Cook University.
 
 
 Overall logic
@@ -72,5 +72,3 @@ Caveats and limitations
 =======================
 
 VAWS has been designed primarily as a tool for assessing vulnerability of houses to wind hazard. The simulation outcomes should be interpreted as vulnerability of a group of similar houses on average, even though an individual house is modelled. In other words, the tool is not capable of predicting performance of an individual house for a specific wind event.
-
-

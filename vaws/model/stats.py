@@ -23,7 +23,7 @@ def sample_lognormal(mu_lnx, std_lnx, rnd_state):
         return exp(mu_lnx)
 
 
-def sample_gev(mean_est, cov_est, big_a, big_b, shape_k, rnd_state=None):
+def sample_gev(mean_est, cov_est, shape_k, big_a, big_b, rnd_state=None):
     """
     JHD F(u) = exp{-[1-k(U-u)/a]**(1/k)}
     where a: scale factor, u: location factor

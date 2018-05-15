@@ -112,7 +112,7 @@ To run the code, the conda environment *vaws_env* should be activated first as :
 
     vaws
 
-The default scenario will be loaded as shown in :numref:`main_window_fig`.
+The default scenario will be loaded as shown in :numref:`main_window_fig`. See :ref:`chapter 4 <use_of_the_GUI>` for details.
 
 .. _main_window_fig:
 .. figure:: _static/image/main_window.png
@@ -199,8 +199,7 @@ The code can be run in either GUI or CLI mode.
     ::
 
       cd <vaws dir>
-      python -m vaws.gui.main -c ./vaws/scenarios/default/default.cfg  # for default scenario
-      python -m vaws.gui.main -c <config_file>  # for a specific scenario
+      python -m vaws.model.main -c <config_file>  # for a specific scenario
 
 Building the conda package
 --------------------------
@@ -282,3 +281,30 @@ You should see something similar to below.
   Ran 93 tests in 56.053s
 
   OK
+
+Documentation
+-------------
+
+The VAWS user manual is generated using the Sphinx documentation tool (http://www.sphinx-doc.org/en/1.7/). The source code of the manual is located at the subdirectory called *docs* under *vaws* root directory. Both the *html* and *pdf* versions of the manual can be generated using the commands below:
+
+.. code-block:: bash
+
+    cd <vaws dir>/docs
+    make html   # for html format
+    make latexpdf  # for pdf format
+
+The html version of the manual can be updated to the manual website (`http://geoscienceaustralia.github.io/vaws`_) as below. Note that the <build_dir> can be set in the *Makefile* in the *docs* directory.
+
+.. code-block:: bash
+
+    cd <build_dir>/html
+    git checkout gh-pages
+    git commit -m <commit_message>
+    git push origin gh-pages
+
+The pdf version of the manaual can be accessed at `https://github.com/GeoscienceAustralia/vaws/tree/master/manaual.pdf`_.
+
+.. _https://github.com/GeoscienceAustralia/vaws/tree/master/manaual.pdf: https://github.com/GeoscienceAustralia/vaws/tree/master/manaual.pdf
+
+.. _http://geoscienceaustralia.github.io/vaws: http://geoscienceaustralia.github.io/vaws
+

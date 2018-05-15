@@ -67,7 +67,7 @@ class DebrisOriginal(object):
 
         # vary over wind speeds
         self.no_items = 0  # total number of debris items generated
-        self.no_touched = 0
+        self.no_impacts = 0
         self.damaged_area = 0.0  # total damaged area by debris items
 
         self.coverage_idx = []
@@ -149,7 +149,7 @@ class DebrisOriginal(object):
 
         """
 
-        self.no_touched = 0
+        self.no_impacts = 0
         self.debris_momentums = []
         self.sampled_impacts = 0
 
@@ -171,7 +171,7 @@ class DebrisOriginal(object):
             for debris_type in list_debris:
                 self.generate_debris_item(wind_speed, source, debris_type)
 
-        if self.no_touched:
+        if self.no_impacts:
             self.check_debris_impact()
 
     def generate_debris_item(self, wind_speed, source, debris_type_str):
@@ -226,7 +226,7 @@ class DebrisOriginal(object):
         pt_debris = shapely.geometry.Point(x + source.x - flight_distance, y + source.y)
 
         if self.footprint.contains(pt_debris):
-            self.no_touched += 1
+            self.no_impacts += 1
 
         line_debris = LineString([source, pt_debris])
         self.debris_items.append((debris_type_str, line_debris))
@@ -256,7 +256,7 @@ class DebrisOriginal(object):
 
             # Complementary CDF of impact momentum
             ccdf = 1.0*(self.debris_momentums > np.array(_capacity)).sum()/self.no_items
-            poisson_rate = self.no_touched * _coverage.area / self.area * ccdf
+            poisson_rate = self.no_impacts * _coverage.area / self.area * ccdf
 
             if _coverage.description == 'window':
                 prob_damage = 1.0 - math.exp(-1.0*poisson_rate)
@@ -448,7 +448,7 @@ class DebrisTest(DebrisOriginal):
         line_debris = shapely.geometry.LineString([source, pt_debris])
 
         if line_debris.intersects(self.footprint):
-            self.no_touched += 1
+            self.no_impacts += 1
 
         line_debris = shapely.geometry.LineString([source, pt_debris])
         self.debris_items.append((debris_type_str, line_debris))
@@ -531,7 +531,7 @@ class DebrisMC(DebrisOriginal):
 
         if self.footprint.contains(pt_debris):
 
-            self.no_touched += 1
+            self.no_impacts += 1
 
             item_momentum = self.compute_debris_momentum(debris['cdav'],
                                                          frontal_area,
@@ -675,7 +675,7 @@ class CompareCase(unittest.TestCase):
                 # print('{},,{}'.format(wind_speed, debris2.no_items_mean))
                 debris1.run(wind_speed)
                 no_items1.append(debris1.no_items)
-                no_touched1.append(debris1.no_touched)
+                no_touched1.append(debris1.no_impacts)
                 breached_area = sum(
                     [x.breached_area for x in debris1.coverages.itervalues()])
                 damaged_area1.append(breached_area)
@@ -723,7 +723,7 @@ class CompareCase(unittest.TestCase):
                 # print('{},,{}'.format(wind_speed, debris2.no_items_mean))
                 debris2.run(wind_speed)
                 no_items2.append(debris2.no_items)
-                no_touched2.append(debris2.no_touched)
+                no_touched2.append(debris2.no_impacts)
                 breached_area = sum(
                     [x.breached_area for x in debris2.coverages.itervalues()])
                 damaged_area2.append(breached_area)
@@ -770,7 +770,7 @@ class CompareCase(unittest.TestCase):
                 # print('{},,{}'.format(wind_speed, debris2.no_items_mean))
                 debris3.run(wind_speed)
                 no_items3.append(debris3.no_items)
-                no_touched3.append(debris3.no_touched)
+                no_touched3.append(debris3.no_impacts)
                 breached_area = sum(
                     [x.breached_area for x in debris3.coverages.itervalues()])
                 damaged_area3.append(breached_area)
@@ -817,7 +817,7 @@ class CompareCase(unittest.TestCase):
                 # print('{},,{}'.format(wind_speed, debris2.no_items_mean))
                 debris4.run(wind_speed)
                 no_items4.append(debris4.no_items)
-                no_touched4.append(debris4.no_touched)
+                no_touched4.append(debris4.no_impacts)
                 breached_area = sum(
                     [x.breached_area for x in debris4.coverages.itervalues()])
                 damaged_area4.append(breached_area)
@@ -1370,7 +1370,7 @@ class MyTestCase(unittest.TestCase):
 
         key = 'Tropical_town'
 
-        no_touched = []
+        no_impacts = []
         for speed in self.cfg.speeds:
 
             damage_incr = vulnerability_weibull_pdf(
@@ -1381,7 +1381,7 @@ class MyTestCase(unittest.TestCase):
             _debris.damage_incr = damage_incr
 
             _debris.run(speed)
-            no_touched.append(_debris.no_touched)
+            no_impacts.append(_debris.no_impacts)
             #no_items_mean.append(_debris.no_items_mean)
 
         fig = plt.figure(1)
@@ -1410,8 +1410,8 @@ class MyTestCase(unittest.TestCase):
             _x, _y = line_string.xy[0][1], line_string.xy[1][1]
             ax.scatter(_x, _y, color='g', alpha=0.2)
 
-        title_str = 'total no. of debris items touched: {} out of {}'.format(
-            sum(no_touched), len(_debris.debris_items))
+        title_str = 'total no. of impacts: {} out of {}'.format(
+            sum(no_impacts), len(_debris.debris_items))
         plt.title(title_str)
         ax.set_xlim([-150, 150])
         ax.set_ylim([-100, 100])

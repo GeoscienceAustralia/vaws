@@ -31,13 +31,13 @@ class MyTestCase(unittest.TestCase):
         assert self.house.wind_dir_index == 3
 
         if self.house.construction_level == 'low':
-            self.assertAlmostEqual(self.house.str_mean_factor, 0.9)
+            self.assertAlmostEqual(self.house.mean_factor, 0.9)
         elif self.house.construction_level == 'medium':
-            self.assertAlmostEqual(self.house.str_mean_factor, 1.0)
+            self.assertAlmostEqual(self.house.mean_factor, 1.0)
         elif self.house.construction_level == 'high':
-            self.assertAlmostEqual(self.house.str_mean_factor, 1.1)
+            self.assertAlmostEqual(self.house.mean_factor, 1.1)
 
-        self.assertAlmostEqual(self.house.str_cov_factor, 0.58)
+        self.assertAlmostEqual(self.house.cov_factor, 0.58)
 
     def test_set_construction_levels(self):
         self.house.cfg.construction_levels = OrderedDict(

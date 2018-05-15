@@ -20,7 +20,7 @@ The program is built around the following high level sequence:
 
 1. Create a group of models
 
-  - :ref:`For each model <house_module_section>`
+  - For each model
 
     * :ref:`sample wind direction <sample_wind_direction_section>`
     * :ref:`sample construction quality level <sample_construction_level_section>`
@@ -38,33 +38,47 @@ The program is built around the following high level sequence:
 
     - simulate damage for each model
 
-      * :ref:`calculate free stream wind pressure <calculate_qz_section>`
-      * :ref:`calculate zone pressures <calculate_zone_pressure_section>`
-      * :ref:`calculate coverage load and check damage <
-      - check damage of envelope coverages by wind load (:py:meth:`.Coverage.check_damage`)
-      - calculate connection loads (:py:meth:`.Connection.compute_load`)
-      - check damage of each connection by connection group (:py:meth:`.ConnectionTypeGroup.check_damage`)
-      - check damage and compute damaged area by connection group (:py:meth:`.ConnectionTypeGroup.compute_damaged_area`)
-      - update influence by connection group (:py:meth:`.ConnectionTypeGroup.update_influence`)
-      - check for total house collapse event (:py:meth:`.House.check_house_collapse`)
-      - compute damage index of the model (:py:meth:`.House.compute_damage_index`)
+      * :ref:`compute free stream wind pressure <compute_qz_section>`
+      * :ref:`compute zone pressures <compute_zone_pressure_section>`
+      * :ref:`compute coverage load and check damage <compute_coverage_load_section>`
+      * :ref:`compute connection loads <compute_connection_load_section>`
+      * :ref:`check damage of each connection by connection group <check_connection_damage_section>`
+      * :ref:`update influence by connection group <update_influence_section>`
+      * :ref:`check model collapse <check_model_collapse_section>`
+      * :ref:`run debris model and update Cpi <update_cpi_section>`
+      * :ref:`compute damage index <compute_damage_index_section>`
 
-      - generate debris and update Cpi in case of internal pressurisation event (:py:meth:`.House.check_internal_pressurisation`)
+    - :ref:`compute damage index increment <compute_damage_increment_section>`
 
-    - calculate increment in mean damage index of the group of models (:py:func:`.update_bucket`)
-
-3. Fit fragility and vulnerability curves and save outputs (:py:func:`.save_results_to_files`)
+3. :ref:`Fit fragility and vulnerability curves and save outputs <save_output_section>`
 
 
 Detailed logic
 ==============
 
-This section provides detailed descriptions of each module.
+Detailed description of the logic is explained in the following sections by module.
 
-.. _house_module_section:
+Main module
+-----------
 
-House module (:py:class:`.House`)
----------------------------------
+.. _compute_damage_increment_section:
+
+compute damage index increment (:py:func:`.compute_damage_increment`)
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+The increment of mean damage index for the group of models is computed. If the computed increment is less than zero, then zero value is returned.
+
+
+.. _save_output_section:
+
+fit fragility and vulnerability curves and save outputs (:py:func:`.save_results_to_files`)
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Based on the simulation results, fragility (see :ref:`fit fragility <fit_fragility_section>`) and vulnerability curves (see :ref:`fit vulnerability <fit_fragility_section>`) are fitted. The output file `results.h5` is also created, and the values of the selected attributes are saved. See :ref:`output file <output_file_section>` for the list of attributes.
+
+
+House module
+------------
 
 .. _sample_wind_direction_section:
 
@@ -78,30 +92,29 @@ The wind direction is set up at the time of model creation, and kept constant du
 sample construction quality level (:py:meth:`.House.set_construction_level`)
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-A set of mean and cov factors for connection strength is defined for each construction quality level with likelihood as listed in :numref:`section_construction_levels_table`. Construction level for each model is determined from a random sampling, and the corresponding mean and cov factors are later multiplied to arithmetic mean and standard deviation of strength as :eq:`mean_cov_factors_eq`:
+A set of mean and coefficient of variation (CV) factors for connection strength is defined for each construction quality level with likelihood as listed in :numref:`section_construction_levels_table`. Construction level for each model is determined from a random sampling, and the corresponding mean and CV factors are later multiplied to arithmetic mean and standard deviation of strength as :eq:`mean_cv_factors_eq`:
 
 .. math::
-    :label: mean_cov_factors_eq
+    :label: mean_cv_factors_eq
 
     \mu_{adj} &= \mu \times f_{\mu} \\
-    \sigma_{adj} &= \sigma \times f_{\mu} \times f_{\text{cov}}
+    \sigma_{adj} &= \sigma \times f_{\mu} \times f_{\text{cv}}
 
-where :math:`\mu_{adj}` and :math:`\sigma_{adj}`: adjusted mean and standard deviation of connection strength reflecting construction quality level, respectively, :math:`\mu` and :math:`\sigma`: mean and standard deviation of connection strength, :math:`f_{\mu}` and :math:`f_{\text{cov}}`: mean and cov factors for connection strength.
+where :math:`\mu_{adj}` and :math:`\sigma_{adj}`: adjusted mean and standard deviation of connection strength reflecting construction quality level, respectively, :math:`\mu` and :math:`\sigma`: mean and standard deviation of connection strength, :math:`f_{\mu}` and :math:`f_{\text{cv}}`: mean and CV factors for connection strength.
 
 .. _sample_wind_profile_section:
 
 sample wind profile (:py:meth:`.House.set_profile_index`)
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-A set of gust envelope wind profiles is read from `wind_profiles` (:numref:`section_main_table`). Note that each profile is a normalized profile whose value is normalized to 1 at 10 metres height.
-One profile is randomly chosen for each model and kept constant during the simulation over a range of wind speeds.
+A set of gust envelope wind profiles is read from `wind_profiles` (:numref:`section_main_table`). Note that each profile is a normalized profile whose value is normalized to 1 at 10 metres height. An example profile is shown in :numref:`wind_profile_fig`. One profile is randomly chosen for each model and kept constant during the simulation over a range of wind speeds.
 
 .. _set_terrain_height_section:
 
 set terrain height multiplier (:py:meth:`.House.set_terrain_height_multiplier`)
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-The terrain height multiplier (|Mz,cat|) value at the model height is calculated by the interpolation using the sampled profile over height.
+The terrain height multiplier (|Mz,cat|) value at the model height is calculated by the interpolation using the selected win profile over height.
 
 
 .. _set_shielding_section:
@@ -109,31 +122,26 @@ The terrain height multiplier (|Mz,cat|) value at the model height is calculated
 set shielding multiplier (:py:meth:`.House.set_shielding_multiplier`)
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-The shielding multiplier (|Ms|) value is computed
-
-If the value of `regional_shielding_factor` is greater than 0.85, then |Ms| value is set to be 1.0. Otherwise |Ms| value is sampled from a probability mass function, which has 1.0, 0.85, and 0.95 with likelihood of 0.63, 0.15, and 0.22, respectively. And the sampled value of Ms is used to adjust wind speed as :eq:`regional_shielding_factor_eq`:
+The shielding multiplier (|Ms|) value is determined based on the location. If the value of `regional_shielding_factor` is less or equal to 0.85, which means that the model is located in Australian urban areas, then |Ms| value is sampled based on the proportion of each type of shielding listed in :numref:`shielding_table`. Otherwise, |Ms| value is set to be 1.0, which corresponds to `No shielding`. The proportion of shielding type is adopted following the recommendation in :cite:`JDH2010`.
 
 .. _shielding_table:
-.. csv-table::
-    :header: Type, |Ms| value, Probability
+.. csv-table:: Proportion of shielding type
+    :header: Type, |Ms| value, Proportion
     :widths: 10, 20, 20
 
     Full shielding, 0.85, 63%
     Partial shielding, 0.95, 15%
     No shielding, 1.0, 22%
 
-
-
-
-
-
 .. _set_coverages_section:
 
 set up coverages (:py:meth:`.House.set_coverages`)
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-A set of coverage components(:py:class:`.Coverage`) is defined using the information provided in the input files of :ref:`coverages.csv <coverages.csv_section>`, :ref:`coverage_types.csv <coverage_types.csv_section>` and :ref:`coverages_cpe.csv <coverages_cpe.csv_section>`.
-The Cpe and strength values for each coverage component are sampled when it is defined. The windward direction for each coverage component is assigned from among `windward`, `leeward`, `side1`, or `side2`, which is used in determining the windward direction of dominant opening due to coverage failure.
+The coverages are making up the wall part of the envelope of the model. Two failure mechanism are implemented: 1) failure by wind load and 2) failure by windborne debris.
+
+A set of coverage components (:py:class:`.Coverage`) is defined using the information provided in the input files of :ref:`coverages.csv <coverages.csv_section>`, :ref:`coverage_types.csv <coverage_types.csv_section>` and :ref:`coverages_cpe.csv <coverages_cpe.csv_section>`.
+The |Cpe| and strength values for each coverage component are sampled when it is defined. The windward direction for each coverage component is assigned from among `windward`, `leeward`, `side1`, or `side2`, which is used in determining the windward direction of dominant opening due to coverage failure.
 
 
 .. _set_zones_section:
@@ -141,7 +149,7 @@ The Cpe and strength values for each coverage component are sampled when it is d
 set up zones (:py:meth:`.House.set_zones`)
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-A set of zone components(:py:class:`.Zone`) is defined using the information provided in the input files of :ref:`zones.csv <zones.csv_section>`, :ref:`zones_cpe_mean.csv <zones_cpe_mean.csv_section>`, :ref:`zones_cpe_str_mean.csv <zones_cpe_str_mean.csv_section>`, :ref:`zones_cpe_eave_mean.csv <zones_cpe_eave_mean.csv_section>`, and :ref:`zones_edges.csv <zones_edges.csv_section>`. The Cpe value for each zone component is sampled when it is defined.
+A set of zone components (:py:class:`.Zone`) is defined using the information provided in the input files of :ref:`zones.csv <zones.csv_section>`, :ref:`zones_cpe_mean.csv <zones_cpe_mean.csv_section>`, :ref:`zones_cpe_str_mean.csv <zones_cpe_str_mean.csv_section>`, :ref:`zones_cpe_eave_mean.csv <zones_cpe_eave_mean.csv_section>`, and :ref:`zones_edges.csv <zones_edges.csv_section>`. The |Cpe| value for each zone component is sampled when it is defined.
 
 
 .. _set_connections_section:
@@ -149,9 +157,9 @@ A set of zone components(:py:class:`.Zone`) is defined using the information pro
 set up connections (:py:meth:`.House.set_connections`)
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-A set of connection components(:py:class:`.Connection`) is defined using the information provided in the input files of :ref:`conn_groups.csv <conn_groups.csv_section>`, :ref:`conn_types.csv <conn_types.csv_section>`, :ref:`connections.csv <connections.csv_section>`, :ref:`influences.csv <influences.csv_section>`, and :ref:`influence_patches.csv <influence_patches.csv_section>`. The strength and dead load values for each connection component are sampled and influence and influence patch for each connection are also defined with reference to either zone or another connection components.
+A set of connection components (:py:class:`.Connection`) is defined using the information provided in the input files of :ref:`conn_groups.csv <conn_groups.csv_section>`, :ref:`conn_types.csv <conn_types.csv_section>`, :ref:`connections.csv <connections.csv_section>`, :ref:`influences.csv <influences.csv_section>`, and :ref:`influence_patches.csv <influence_patches.csv_section>`. The strength and dead load values for each connection component are sampled and influence and influence patch for each connection are also defined with reference to either zone or another connection components.
 
-A set of connection type group(:py:class:`.ConnectionTypeGroup`) is also defined, and reference is created to relate a connection component to a connection type group. A connection type group is further divided into sub-group by section in order to represent load distribution area within the same group. For instance roof sheetings on a hip roof are divided into a number of sheeting sub-groups to represent areas divided by roof ridge lines.
+A set of connection type group (:py:class:`.ConnectionTypeGroup`) is also defined, and reference is created to relate a connection component to a connection type group. A connection type group is further divided into sub-group by section in order to represent load distribution area within the same group. For instance roof sheetings on a hip roof are divided into a number of sheeting sub-groups to represent areas divided by roof ridge lines.
 
 
 .. _set_debris_section:
@@ -174,9 +182,192 @@ A debris damage model is set up by referencing the wind direction and coverages 
 
 Also walls and coverage components subject to debris impact are selected based on the wind direction (:py:attr:`.Debris.front_facing_walls`). The boundary for debris impact assessment is also defined with the radius of boundary (:py:attr:`.Debris.boundary`)
 
+.. _compute_qz_section:
 
-connection load
-^^^^^^^^^^^^^^^
+calculate free stream wind pressure (:py:meth:`.House.compute_qz`)
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+The free stream wind pressure, |qz| is calculated as :eq:`qz_eq`:
+
+.. math::
+    :label: qz_eq
+
+    q_{z} = \frac{1}{2}\times\rho_{air} \times \left( V \times M_{z,cat} \times M_{s} \right)^2 \times 1.0\text{e-}3
+
+where :math:`\rho_{air}`: air density (=1.2 |kgm^3|), :math:`V`: 3-sec gust wind speed at 10m height, |Mz,cat|: terrain-height multiplier, |Ms|: shielding multiplier. Note that :math:`1.0\text{e-}3` is multiplied to convert the unit of the wind pressure from N to kN.
+
+
+.. _check_model_collapse_section:
+
+check model collapse (:py:meth:`.House.check_collapse`)
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+The model is deemed to be collapsed if the proportion of damaged components out of the total components is greater than the value of *trigger_collapse_at*, which is listed in :numref:`conn_groups_table`, for any group with non-zero value of *trigger_collapse_at*.
+
+.. _update_cpi_section:
+
+run debris model and update |Cpi| (:py:meth:`.House.check_internal_pressurisation`)
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+If the value of *debris* is *True* (see :numref:`section_options_table`), then debris impact to the model is simulated. See :ref:`Debris module <debris_module_section>` for more details.
+
+The internal pressure coefficient, |Cpi| is determined based on :numref:`cpi_no_dominant_table` and :numref:`cpi_dominant_table` depending on the existence of dominant opening by either coverage failure or debris breach, which are revised from Tables 5.1(A) and 5.1(B) of AS/NZS 1170.2:2011 :cite:`ASNZS-1170.2`, respectively.
+
+.. tabularcolumns:: |p{6.0cm}|p{3.5cm}|
+.. _cpi_no_dominant_table:
+.. csv-table:: |Cpi| for buildings without dominant openings
+    :header: Condition, |Cpi|
+    :widths: 10, 9
+
+    All walls equally breached, -0.3
+    Two or three windward walls equally breached, 0.2
+    Two or three non-windward walls equally breached, -0.3
+
+
+.. tabularcolumns:: |p{4.0cm}|p{3.5cm}|p{3.5cm}|p{3.5cm}|
+.. _cpi_dominant_table:
+.. csv-table:: |Cpi| for buildings with dominant openings
+    :header: Ratio of dominant opening to total open area (:math:`r`), Dominant opening on windward wall, Dominant opening on leeward wall, Dominant opening on side wall
+    :widths: 10, 9, 10, 10
+
+    :math:`r <` 0.5, -0.3, -0.3, -0.3
+    0.5 :math:`\leq r <` 1.5, 0.2, -0.3, -0.3
+    1.5 :math:`\leq r <` 2.5, 0.7 |Cpe|, |Cpe|, |Cpe|
+    2.5 :math:`\leq r <` 6.0, 0.85 |Cpe|, |Cpe|, |Cpe|
+    :math:`r \geq` 6.0, |Cpe|, |Cpe|, |Cpe|
+
+.. _compute_damage_index_section:
+
+compute damage index (:py:meth:`.House.compute_damage_index`)
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+The damage index is calculated over the following steps:
+
+1) calculate sum of damaged area by connection group (:py:meth:`.House.compute_area_by_group`)
+
+2) Apply damage factoring (:py:meth:`.House.apply_damage_factoring`)
+
+In order to avoid double counting of repair cost, damage cost associated with child group(s) will be factored out of damage cost of the parent group as explained in :ref:`3.4.16 <damage_factorings.csv_section>`.
+
+3) Calculate sum of damaged area by damage scenario (:py:meth:`.House.compute_area_by_scenario`)
+
+A damage scenario is assigned to each connection type group as explained in :ref:`3.4.2 <conn_groups.csv_section>`.
+
+4) calculate total damage cost and damage index prior to water ingress (:math:`DI_p`) as :eq:`di_prior`:
+
+.. math::
+    :label: di_prior
+
+    DI_p = \frac{\sum_{i=1}^{S}C_i}{R}
+
+where :math:`S`: number of damage scenario, :math:`C_i`: damage cost for :math:`i` th damage scenario, and :math:`R`: total replacement cost.
+
+5) Calculate cost by water ingress damage, :math:`C_{wi}` if required as explained in :ref:`damage due to water ingress <water_ingress_section>`.
+
+6) calculate damage index as :eq:`di`:
+
+.. math::
+    :label: di
+
+    DI = \frac{\sum_{i=1}^{S}C_i + C_{wi}}{R}
+
+
+Zone module (:py:class:`.Zone`)
+-------------------------------
+
+sample Cpe (:py:meth:`.Zone.sample_cpe`)
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+The external pressure coefficient, :math:`C_{pe}` is used in computing zone pressures, and is sampled from Type III extreme value distribution (:py:meth:`.stats.sample_gev`) which has the cumulative distribution function and probability density as :eq:`cdf_gev` and :eq:`pdf_gev`, respectively.
+
+.. math::
+    :label: cdf_gev
+
+    F(s; k) = \exp(-(1-ks)^{1/k})
+
+.. math::
+    :label: pdf_gev
+
+    f(s; a, k) = \frac{1}{a}(1-ks)^{1/k-1} \exp(-(1-ks)^{1/k})
+
+where :math:`s=(x-u)/a`, :math:`u`: location factor (:math:`\in \rm I\!R`), :math:`a`: scale factor (:math:`> 0`), and :math:`k`: shape factor (:math:`k\neq0`).
+
+The mean and standard deviation are calculated as :eq:`mean_sd`:
+
+.. math::
+    :label: mean_sd
+
+    \operatorname{E}(X) &= u + \frac{a}{k}\left[1-\Gamma(1+k)\right] \\
+    \operatorname{SD}(X) &= \frac{a}{k}\sqrt{\Gamma(1+2k)-\Gamma^{2}(1+k)}
+
+
+The :math:`u` and :math:`a` can be estimated given :math:`c_v\left(=\frac{SD}{E}\right)` and :math:`k` values as :eq:`a_u`:
+
+.. math::
+    :label: a_u
+
+    a &= \operatorname{E} \frac{c_v}{B} \\
+    u &= \operatorname{E} - a \times A
+
+where :math:`A=(1/k)\left[1-\Gamma(1+k)\right]` and :math:`B=(1/k)\sqrt{\Gamma(1+2k)-\Gamma^{2}(1+k)}`.
+
+.. _compute_zone_pressure_section:
+
+calculate zone pressure (:py:meth:`.Zone.calc_zone_pressure`)
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Two kinds of zone pressure, |pz| for zone component related to sheeting and batten and |pz,str| for zone component related to rafter, are computed as :eq:`zone_pressure_eq`:
+
+.. math::
+    :label: zone_pressure_eq
+
+    p_{z} &= q_{z} \times \left( C_{pe} - C_{pi,\alpha} \times C_{pi} \right) \times D_{s} \\
+    p_{z,str} &= q_{z} \times \left( C_{pe,str} - C_{pi, \alpha} \times C_{pi} - C_{pe,eave} \right) \times D_{s} \\
+
+where |qz|: free stream wind pressure, |Cpe|: external pressure coefficient, |Cpi|: internal pressure coefficient, |Cpi,alpha|: proportion of the zone's area to which internal pressure is applied, |Cpe,str|: external pressure coefficient for zone component related to rafter, |Cpe,eave|: external pressure coefficient for zone component related to eave, and :math:`D_{s}`: differential shielding. The value of differential shielding is determined as explained in :ref:`set differential shielding <differential_shielding_section>`.
+
+.. _differential_shielding_section:
+
+set differential shielding (:py:attr:`.Zone.differential_shielding`)
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+If the value of *differential_shielding* (see :numref:`section_options_table`) is *True*, then differential shielding effect is considered in calculating zone pressure. Based on the recommendations from :cite:`JDH2010`, adjustment for shielding multiplier is made as follows:
+
+- For outer suburban situations and country towns (*building_spacing*\=40m),
+    adjust |Ms| to 1.0 except for the leading edges of upwind roofs
+- For inner suburban buildings (*building_spacing* =20m) with full shielding (|Ms|\=0.85),
+    adjust |Ms| to 0.7 for the leading edges of upwind roofs
+- For inner suburban buildings (*building_spacing* =20m) with partial shielding (|Ms|\=0.95),
+    adjust |Ms| to 0.8 for the leading edges of upwind roofs
+- Otherwise, no adjustment is made.
+
+
+Coverage module (:py:class:`.Coverage`)
+---------------------------------------
+
+.. _compute_coverage_load_section:
+
+calculate coverage load and check damage (:py:meth:`.Coverage.check_damage`)
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+The load applied for each of coverages are calculated as :eq:`coverage_load_eq`:
+
+.. math::
+    :label: coverage_load_eq
+
+    L = 0.9 \times q_{z} \times \left(C_{pe} - C_{pi} \right) \times A
+
+where :math:`q_{z}`: free stream wind pressure, |Cpe|: external pressure coefficient, |Cpi|: internal pressure coefficient, and :math:`A`: area.
+
+If the calculated load exceeds either positive or negative strength, which represents strength in either direction, then it is deemed to be damaged.
+
+
+Connection module (:py:class:`.Connection` and :py:class:`.ConnectionTypeGroup`)
+--------------------------------------------------------------------------------
+
+.. _compute_connection_load_section:
+
+calculate connection load (:py:meth:`.Connection.compute_load`)
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 The load applied for each of connections are calculated as :eq:`connection_load_eq`:
 
@@ -189,10 +380,49 @@ The load applied for each of connections are calculated as :eq:`connection_load_
 where :math:`L_{i}`: applied load for :math:`i` th connection, :math:`D_{i}`: dead load of :math:`i` th connection, :math:`N_{z}`: number of zones associated with the :math:`i` th connection, :math:`N_{c}`: number of connections associated with the :math:`i` th connection, :math:`A_{j}`: area of :math:`j` th zone, :math:`P_{j}`: wind pressure on :math:`j` th zone, :math:`I_{ji}`: influence coefficient from :math:`j` th either zone or connection to :math:`i` th connection.
 
 
-Debris damage module
---------------------
+.. _check_connection_damage_section:
 
-The methdology of modelling damage from wind-borne debris implemented in the code is described in the [JDH2010d]_ and [JDH2010d]_. The debris damage module consists of four parts: 1) debris generation, 2) debris trajectory, 3) debris impact, and 4) debris damage costing.
+check connection damage by connection type group (:py:meth:`.ConnectionTypeGroup.check_damage`)
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Damage of each connection is checked by connection type group. If the load applied for a connection is less than the negative value of its strength, then the connection is considered damaged. Then damage grid of the connection type group (:py:attr:`.ConnectionTypeGroup.damage_grid`) is updated with the index of the damaged connection, which is later used in updating influence of intact components (:py:meth:`.ConnectionTypeGroup.update_influence`).
+
+
+.. _update_influence_section:
+
+update influence by connection group (:py:meth:`.ConnectionTypeGroup.update_influence`)
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+The influence coefficient is used to associate one connection with another either zone or connection with regard to load distribution. For instance, if connection 1 has influences of connection 2 and 3 with coefficient 0.5 and 0.5, respectively, then the load on connection 1 is equal to the sum of 0.5 times load on connection 2 and 0.5 times load on connection 3, as shown in :eq:`connection_load_eq`.
+
+Once a connection is damaged, then load on the damaged connection needs to be distributed to other intact connections accordingly, which means that influence set of the connections needs to be updated.
+
+Two types of influence update are implemented:
+
+1. update influence coefficients of the next intact connections for the distribution of load on the damaged connection
+
+Given the damage of connection of either sheeting and batten connection type group, the influence coefficient will be distributed evenly to the next intact connections of the same type to the distribution direction (*dist_dir* listed in :numref:`conn_groups_table`). Note that *patch_dist* of both sheeting and batten connection group are set to *False*. If both the next connections, which are left and right if *dist_dir* is 'row' or above and below if 'col', of the damaged connection are intact, then the half of the load is distributed to the each of next intact connection. Otherwise, the full load of the damaged connection is distributed to the intact connection.
+
+2. replace the existing influence set with new one, when `patch_distribution` is set to 1 (:py:meth:`.ConnectionTypeGroup.update_influence_by_patch`)
+
+Unlike sheeting and batten, a connection of rafter group fails, then influence set of each connection associated with the failed connection are replaced with a new set of influence, which is termed "patch". In the current implementation, the patch is defined for a single failed connection. Thus the failure order of the connections may make difference in the resulting influences as shown in :numref:`patch_example_table`.
+
+.. _patch_example_table:
+.. csv-table::  Example of how patch works
+    :header: Failed connection, Connection, "Patch (connection: influence coeff.)"
+
+    1, 3, "1:0.0, 2:0.5, 3:0.5"
+    2, 3, "1:0.5, 2:0.0, 3:1.0"
+    1 and then 2, 3, "1:0.0, 2:0.0, 3:1.0"
+    2 and then 1, 3, "1:0.0, 2:0.0, 3:0.5"
+
+
+.. _debris_module_section:
+
+Debris module (:py:class:`.Debris`)
+-----------------------------------
+
+The methdology of modelling damage from wind-borne debris implemented in the code is described in :cite:`Holmes2010,Wehner2010a`. The debris damage module consists of four parts: 1) debris source generation, 2) debris generation, 3) debris trajectory, and 4) debris impact.
 
 debris source generation
 ^^^^^^^^^^^^^^^^^^^^^^^^
@@ -240,7 +470,7 @@ The number of generated debris items is assumed to follow the Poisson distributi
 debris trajectory
 ^^^^^^^^^^^^^^^^^
 
-For each generated debris item, mass, frontal area, and flight time are sampled from the lognormal distribution with parameter values provided in :ref:`3.1.3 <debris_section>` and :ref:`3.2 <debris.csv_section>`. The flight distance is calculated based on the methodology presented in the Appendix of Lin and Vanmarcke (2008). Note that the original fifth polynomial functions are replaced with quadratic one with the coefficients as listed in :numref:`flight_distance_table`. The computed flight distance by debris type using the fitth and quadratic polynomials is shown in :numref:`flight_distance_fig`.
+For each generated debris item, mass, frontal area, and flight time are sampled from the lognormal distribution with parameter values provided in :ref:`3.1.3 <debris_section>` and :ref:`3.2 <debris.csv_section>`. The flight distance is calculated based on the methodology presented in the Appendix of :cite:`Lin2008`. Note that the original fifth polynomial functions are replaced with quadratic one with the coefficients as listed in :numref:`flight_distance_table`. The computed flight distance by debris type using the fitth and quadratic polynomials is shown in :numref:`flight_distance_fig`.
 
 .. _flight_distance_fig:
 .. figure:: _static/image/flight_distance.png
@@ -252,7 +482,7 @@ For each generated debris item, mass, frontal area, and flight time are sampled 
 .. tabularcolumns:: |p{6.0cm}|p{3.5cm}|p{3.5cm}|
 .. _flight_distance_table:
 .. csv-table:: Coefficients of quadratic function for flight distance computation by debris type
-    :header: Debris type, linear coeff., quadratic coeff.
+    :header: Debris type, Linear coeff., Quadratic coeff.
     :widths: 40, 30, 30
 
     Compact, 0.011, 0.2060
@@ -342,10 +572,13 @@ The probability of damage can be calculated based on the Poisson distribution as
 
 :math:`q` and :math:`F_{\xi}(\xi>\xi_d)` are estimated for each coverage. If the material of the coverage is glass, then :math:`P_D` is computed and compared against a random value sampled from unit uniform distribution to determine whether the coverage is damaged or not. For coverage with non-glass material, a random value of number of impact is sampled from the Poisson distribution with :math:`\lambda`, and damaged coverage area is then computed assuming that affected area by debris impact is 1.
 
+damage_costing module (:py:class:`.Costing`)
+--------------------------------------------
+
 .. _water_ingress_section:
 
-Water ingress
--------------
+damage due to water ingress
+^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 The damage cost induced by water ingress is estimated over the following three steps:
 
@@ -369,189 +602,46 @@ The cost for water ingress damage is estimated using the data provided in :ref:`
 
     Relationship between cost due to water ingress damage and damage index
 
-Cpe
----
+Curve module
+------------
 
-The external pressure coefficient, :math:`C_{pe}` is used in computing zone pressures, and is sampled from Type III extreme value distribution (:py:meth:`.stats.sample_gev`) which has the cumulative distribution function and probability density as :eq:`cdf_gev` and :eq:`pdf_gev`, respectively.
+.. _fit_fragility_section:
 
-.. math::
-    :label: cdf_gev
+fit fragility (:py:func:`.curve.fit_fragility_curves`)
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-    F(s; k) = \exp(-(1-ks)^{1/k})
-
-.. math::
-    :label: pdf_gev
-
-    f(s; a, k) = \frac{1}{a}(1-ks)^{1/k-1} \exp(-(1-ks)^{1/k})
-
-where :math:`s=(x-u)/a`, :math:`u`: location factor (:math:`\in \rm I\!R`), :math:`a`: scale factor (:math:`> 0`), and :math:`k`: shape factor (:math:`k\neq0`).
-
-The mean and standard deviation are calculated as :eq:`mean_sd`:
+The probability of exceeding a damage state :math:`ds` at a wind speed :math:`x` is calculated as :eq:`fragility_eq`:
 
 .. math::
-    :label: mean_sd
+    :label: fragility_eq
 
-    \operatorname{E}(X) &= u + \frac{a}{k}\left[1-\Gamma(1+k)\right] \\
-    \operatorname{SD}(X) &= \frac{a}{k}\sqrt{\Gamma(1+2k)-\Gamma^{2}(1+k)}
+    P\left(DS \geq ds | x \right) = \frac {\sum_{i=1}^N\left[DI_{i|x} \geq t_{ds}\right]}{N}
 
+where :math:`N`: number of models, :math:`DI_{i|x}`: damage index of :math:`i` th model at the wind speed :math:`x`, and :math:`t_{ds}`: threshold for damage state :math:`ds`.
 
-The :math:`u` and :math:`a` can be estimated given :math:`c_v\left(=\frac{SD}{E}\right)` and :math:`k` values as :eq:`a_u`:
-
-.. math::
-    :label: a_u
-
-    a &= \operatorname{E} \frac{c_v}{B} \\
-    u &= \operatorname{E} - a \times A
-
-where :math:`A=(1/k)\left[1-\Gamma(1+k)\right]` and :math:`B=(1/k)\sqrt{\Gamma(1+2k)-\Gamma^{2}(1+k)}`.
+Then for each damage state, a curve of cumulative lognormal distribution :eq:`cdf_lognormal` is fitted to the computed probabilities of exceeding the damage state.
 
 
-Calculate damage index
-----------------------
+.. _fit_vulnerability_section:
 
-The damage index is calculated over the following steps:
+fit vulnerability (:py:func:`.curve.fit_vulnerability_curve`)
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-1) calculate sum of damaged area by connection group (:py:meth:`.House.compute_area_by_group`)
-
-2) Apply damage factoring (:py:meth:`.House.apply_damage_factoring`)
-
-In order to avoid double counting of repair cost, damage cost associated with child group(s) will be factored out of damage cost of the parent group as explained in :ref:`3.4.16 <damage_factorings.csv_section>`.
-
-3) Calculate sum of damaged area by damage scenario (:py:meth:`.House.compute_area_by_scenario`)
-
-A damage scenario is assigned to each connection type group as explained in :ref:`3.4.2 <conn_groups.csv_section>`.
-
-4) calculate total damage cost and damage index prior to water ingress (:math:`DI_p`) as :eq:`di_prior`:
-
-.. math::
-    :label: di_prior
-
-    DI_p = \frac{\sum_{i=1}^{S}C_i}{R}
-
-where :math:`S`: number of damage scenario, :math:`C_i`: damage cost for :math:`i` th damage scenario, and :math:`R`: total replacement cost.
-
-5) Calculate cost by water ingress damage, :math:`C_{wi}` if required as explained in :ref:`5.x <water_ingress_section>`
-
-6) calculate damage index as :eq:`di`:
-
-.. math::
-    :label: di
-
-    DI = \frac{\sum_{i=1}^{S}C_i + C_{wi}}{R}
+Two types of curves are used to fit the results of damage indices of models: a cumulative lognormal distribution (:eq:`cdf_lognormal`, :py:func:`.curve.vulnerability_lognormal`) and Weibull distribution (:eq:`cdf_weibull_oz`, :py:func:`.curve.vulnerability_weibull`).
 
 
-
-Cpi
----
-
-The internal pressure coefficient, |Cpi| is determined based on :numref:`cpi_no_dominant_table` and :numref:`cpi_dominant_table` depending on the existence of dominant opening by either coverage failure or debris breach, which are revised from Tables 5.1(A) and 5.1(B) of AS/NZS 1170.2:2011, respectively.
-
-.. tabularcolumns:: |p{6.0cm}|p{3.5cm}|
-.. _cpi_no_dominant_table:
-.. csv-table:: |Cpi| for buildings without dominant openings
-    :header: condition, |Cpi|
-    :widths: 10, 9
-
-    All walls equally breached, -0.3
-    Two or three windward walls equally breached, 0.2
-    Two or three non-windward walls equally breached, -0.3
-
-
-.. tabularcolumns:: |p{4.0cm}|p{3.5cm}|p{3.5cm}|p{3.5cm}|
-.. _cpi_dominant_table:
-.. csv-table:: |Cpi| for buildings with dominant openings
-    :header: ratio of dominant opening to total open area (:math:`r`), dominant opening on windward wall, dominant opening on leeward wall, dominant opening on side wall
-    :widths: 10, 9, 10, 10
-
-    :math:`r <` 0.5, -0.3, -0.3, -0.3
-    0.5 :math:`\leq r <` 1.5, 0.2, -0.3, -0.3
-    1.5 :math:`\leq r <` 2.5, 0.7 |Cpe|, |Cpe|, |Cpe|
-    2.5 :math:`\leq r <` 6.0, 0.85 |Cpe|, |Cpe|, |Cpe|
-    :math:`r \geq` 6.0, |Cpe|, |Cpe|, |Cpe|
-
-
-Zone module
------------
-
-.. _zone_pressure_section:
-
-zone pressure
-^^^^^^^^^^^^^
-
-The zone pressure is calculated as :eq:`zone_pressure`:
-
-.. math::
-    :label: zone_pressure
-
-    P = q_z \times (C_{pe} - \alpha_{C_{pi}} \times C_{pi}) \times d_s
-
-where :math:`q_z`:, :math:`C_{pe}`:, :math:`C_{pi}`, :math:`\alpha_{C_{pi}}`, and :math:`d_s`:
-
-
-
-differential shielding
-^^^^^^^^^^^^^^^^^^^^^^
-
-If the value of differential_shielding is True, then differential shielding effect is considered in calculating zone pressure. The differential shielding is computed as follows:
-
-  .. code-block:: python
-
-    front_facing = self.is_roof_edge[wind_dir_index]
-    if building_spacing == 40 and ms >= 1.0 and front_facing == 0:
-        dsd = ms ** 2.0
-    elif building_spacing == 20 and front_facing == 1:
-        dsd = ms ** 2.0
-        if ms <= 0.85:
-            dsn = 0.7 ** 2.0
-        else:
-            dsn = 0.8 ** 2.0
-
-
-
-update influence coefficient
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-The influence coefficient is used to associate one connection with another either zone or connection with regard to load distribution. For instance, if connection 1 has influences of connection 2 and 3 with coefficient 0.5 and 0.5, respectively, then the load on connection 1 is equal to the sum of 0.5 times load on connection 2 and 0.5 times load on connection 3, as shown in :eq:`connection_load_eq`.
-
-Once a connection is failed, then load on the failed connection needs to be distributed to other connections accordingly, which means that influence coefficient needs to be revised.
-
-Given the failure of connection of either sheeting and batten connection type group, the influence coefficient will be distributed evenly to the next connection of the same type to the distribution direction (*dist_dir* listed in :numref:`conn_groups_table`). Note that *patch_dist* of both sheeting and batten connection group are set to be *False*.
-
-Unlike sheeting and batten, a connection of Rafter group fails, then influence coefficients associated with the failed connection are replaced with a new set of influence coefficients, which is termed "patch". In the current implementation, the patch is defined for a single failed connection. Thus the failure order of the connections may make difference in the resulting influences as shown in :numref:`patch_example_table`.
-
-.. _patch_example_table:
-.. csv-table::  Example of how patch works
-    :header: Failed connection, Connection, "Patch (connection: influence coeff.)"
-
-    1, 3, "1:0.0, 2:0.5, 3:0.5"
-    2, 3, "1:0.5, 2:0.0, 3:1.0"
-    1 and then 2, 3, "1:0.0, 2:0.0, 3:1.0"
-    2 and then 1, 3, "1:0.0, 2:0.0, 3:0.5"
-
-coverage
-^^^^^^^^
-
-The coverages are making up the wall part of the envelope of the model. Two failure mechanism are implemented: 1) failure by wind load and 2) failure by windborne debris.
-The coverage failure by wind load is very similar to the failure of connection by wind, in which wind load is first calculated as :eq:`load_coverage_eq` and then compared against its strengths in both directions to check the failure.
-
-.. math::
-    :label: load_coverage_eq
-
-    L = 0.9 \times q_{z} \times \left(C_{pe} - C_{pi}\right) \times A
-
-
-vulnerability
-^^^^^^^^^^^^^
-
-.. math::
-    :label: vulnerabilit
-
-    P = q_z \times (C_{pe} - \alpha_{C_{pi}} \times C_{pi}) \times d_s
 
 .. |Cpe| replace:: :math:`C_{pe}`
+.. |Cpe,str| replace:: :math:`C_{pe, str}`
+.. |Cpe,eave| replace:: :math:`C_{pe, eave}`
 .. |Cpi| replace:: :math:`C_{pi}`
+.. |Cpi,alpha| replace:: :math:`C_{pi,\alpha}`
 .. |qz| replace:: :math:`q_{z}`
 .. |Mz,cat| replace:: :math:`M_{z,cat}`
 .. |Ms| replace:: :math:`M_{s}`
+.. |pz| replace:: :math:`p_{z}`
+.. |pz,str| replace:: :math:`p_{z,str}`
+.. |kgm^3| replace:: :math:`\text{kg}/\text{m}^{3}`
 
 ..
   .. literalinclude:: ../../vaws/model/debris.py

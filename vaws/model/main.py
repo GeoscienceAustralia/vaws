@@ -51,7 +51,8 @@ def simulate_wind_damage_to_houses(cfg, call_back=None):
 
             results_by_speed.append(result)
 
-        damage_incr = update_bucket(cfg, bucket, results_by_speed, ispeed)
+        bucket = update_bucket(cfg, bucket, results_by_speed, ispeed)
+        damage_incr = compute_damage_increment(bucket, ispeed)
 
         logging.debug('damage index increment {}'.format(damage_incr))
 
@@ -61,7 +62,7 @@ def simulate_wind_damage_to_houses(cfg, call_back=None):
             sys.stdout.flush()
         else:
             percent_done = 100.0 * (ispeed + 1) / len(cfg.speeds)
-            if not call_back(int(percent_done)):
+            if not call_back(int(percent_done)):  # stop triggered
                 return
 
     save_results_to_files(cfg, bucket)
@@ -82,15 +83,15 @@ def init_bucket(cfg):
             if att in cfg.att_time_invariant:
                 if att in cfg.att_non_float:
                     bucket[item][att] = np.zeros(shape=(1, cfg.no_models),
-                                                    dtype=str)
+                                                 dtype=str)
                 else:
                     bucket[item][att] = np.zeros(shape=(1, cfg.no_models),
-                                                    dtype=float)
+                                                 dtype=float)
             else:
                 bucket[item][att] = np.zeros(
                     shape=(cfg.wind_speed_steps, cfg.no_models), dtype=float)
 
-    # components: group, connection, zone
+    # components: group, connection, zone, coverage
     for comp in cfg.list_components:
         bucket[comp] = {}
         for att in getattr(cfg, '{}_bucket'.format(comp)):
@@ -122,6 +123,26 @@ def update_bucket(cfg, bucket, results_by_speed, ispeed):
                     bucket[comp][att][item][ispeed] = \
                         [x[comp][att][item] for x in results_by_speed]
 
+    # save time invariant attribute
+    if ispeed == cfg.wind_speed_steps-1:
+
+        for item in ['house', 'debris']:
+            for att in getattr(cfg, '{}_bucket'.format(item)):
+                if att in cfg.att_time_invariant:
+                    bucket[item][att] = [x[item][att] for x in results_by_speed]
+
+        for comp in cfg.list_components:
+            for att, chunk in bucket[comp].items():
+                if att in cfg.att_time_invariant:
+                    for item in chunk.iterkeys():
+                        bucket[comp][att][item] = \
+                            [x[comp][att][item] for x in results_by_speed]
+
+    return bucket
+
+
+def compute_damage_increment(bucket, ispeed):
+
     # compute damage index increment
     damage_incr = 0.0  # default value
 
@@ -132,21 +153,6 @@ def update_bucket(cfg, bucket, results_by_speed, ispeed):
         if damage_incr < 0:
             logging.warning('damage increment is less than zero')
             damage_incr = 0.0
-
-        if ispeed == cfg.wind_speed_steps - 1:
-
-            # doing nothing but save house attributes
-            for item in ['house', 'debris']:
-                for att in getattr(cfg, '{}_bucket'.format(item)):
-                    if att in cfg.att_time_invariant:
-                        bucket[item][att] = [x[item][att] for x in results_by_speed]
-
-            for comp in cfg.list_components:
-                for att, chunk in bucket[comp].items():
-                    if att in cfg.att_time_invariant:
-                        for item in chunk.iterkeys():
-                            bucket[comp][att][item] = \
-                                [x[comp][att][item] for x in results_by_speed]
 
     return damage_incr
 
@@ -164,12 +170,12 @@ def save_results_to_files(cfg, bucket):
 
     # file_house
     with h5py.File(cfg.file_results, 'w') as hf:
+
         for item in ['house', 'debris']:
             _group = hf.create_group(item)
             for att, value in bucket[item].items():
                 _group.create_dataset(att, data=value)
 
-        # file_group, file_connection, file_zone
         for comp in cfg.list_components:
             _group = hf.create_group(comp)
             for att, chunk in bucket[comp].items():
@@ -216,20 +222,6 @@ def save_results_to_files(cfg, bucket):
                              xlim_max=cfg.house['length'],
                              ylim_max=cfg.house['width'],
                              file_name=file_name)
-
-
-def make_filetype_aware_handler(handler_class):
-    class DontRepeatFiletypeHandler(handler_class):
-
-        def __init__(self, *args, **kwds):
-            super(DontRepeatFiletypeHandler, self).__init__(*args, **kwds)
-            self.previous_types = set()
-
-        def emit(self, record):
-            if not record.file_type in self.previous_types:
-                self.previous_types.add(record.file_type)
-                super(DontRepeatFiletypeHandler, self).emit(record)
-    return DontRepeatFiletypeHandler
 
 
 def set_logger(path_cfg, logging_level=None):

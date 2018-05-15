@@ -1,10 +1,10 @@
 .. _input:
 
-**********
-Input Data
-**********
+****************
+Input and output
+****************
 
-The input data for a scenario consists of a configuration file and a large number of files located in three different directories. This chapter provides details of input data using the template of default scenario, which can be downloaded from  `https://github.com/GeoscienceAustralia/vaws/blob/master/scenarios/default <https://github.com/GeoscienceAustralia/vaws/blob/master/scenarios/default>`_. The folder structure of the default scenario is shown :numref:`folder_structure`, which consists of a configuration file (default.cfg) and input directory with three sub-directories (debris, gust_envelope_profiles, and house).
+The input data for a scenario consists of a configuration file and a large number of files located in three different directories. This chapter provides details of input data using the template of default scenario, which can be downloaded from  `https://github.com/GeoscienceAustralia/vaws/blob/master/scenarios/default <https://github.com/GeoscienceAustralia/vaws/blob/master/scenarios/default>`_. The folder structure of the default scenario is shown :numref:`folder_structure`, which consists of a configuration file (default.cfg) and input directory with three sub-directories (debris, gust_envelope_profiles, and house). The output file named *results.h5* is located in the output directory.
 
 .. _folder_structure:
 .. code-block:: none
@@ -42,6 +42,8 @@ The input data for a scenario consists of a configuration file and a large numbe
             +-- water_ingress_costing_data.csv
             +-- footprint.csv
             +-- front_facing_walls.csv
+    +-- output
+       +-- results.h5
 
 .. _configuration_file:
 
@@ -58,7 +60,7 @@ The configuration file consists of a number of sections, among which *main* and 
 
     [main]
     no_models = 10
-    house_name = Group 4 House
+    model_name = Group 4 House
     random_seed = 0
     wind_direction = S
     wind_speed_min = 55
@@ -117,7 +119,7 @@ Parameters of the main section are listed in :numref:`section_main_table`. In th
     :header: Name, "Name in GUI", "Description"
 
     no_models, Number of models, "number of models"
-    house_name, Model name, "name of model"
+    model_name, Model name, "name of model"
     random_seed, Random seed, "a number used to initialize a pseudorandom number generator"
     wind_profiles, Wind profiles, "file name of wind profile"
     regional_shielding_factor, Regional shielding, "regional shielding factor (default: 1.0)"
@@ -133,6 +135,8 @@ Parameters of the main section are listed in :numref:`section_main_table`. In th
     :width: 80 %
 
     Parameters of main section in the Scenario tab
+
+.. _options_section:
 
 Options section
 ---------------
@@ -238,15 +242,7 @@ Parameters of the water_ingress section are listed in :numref:`section_water_ing
 Fragility_thresholds
 --------------------
 
-Parameters of the fragility_thresholds section are listed in :numref:`section_fragility_thresholds_table`. In the GUI window, they are displayed in the Options tab as box shown in :numref:`section_fragility_thresholds_fig`. The probability of exceeding a damage state :math:`ds` at a wind speed :math:`x` is calculated as :eq:`fragility_eq`:
-
-
-.. math::
-    :label: fragility_eq
-
-    P\left(DS \geq ds\right | x ) = \frac {\sum_{i=1}^N\left[DI_{i|x} \geq t_{ds}\right]}{N}
-
-where :math:`N`: number of models, :math:`DI_{i|x}`: damage index of :math:`i` th model at the wind speed :math:`x`, and :math:`t_{ds}`: threshold for damage state :math:`ds`.
+Parameters of the fragility_thresholds section are listed in :numref:`section_fragility_thresholds_table`. In the GUI window, they are displayed in the Options tab as box shown in :numref:`section_fragility_thresholds_fig`. The use of the fragility thresholds in
 
 .. tabularcolumns:: |p{3.0cm}|p{3.0cm}|p{8.5cm}|
 .. _section_fragility_thresholds_table:
@@ -291,7 +287,7 @@ Parameters of the heatmap section are listed in :numref:`section_heatmap_table`.
 .. _debris.csv_section:
 
 Input file under `debris` directory
-====================================
+===================================
 
 In the debris directory, `debris.csv` is located where parameter values related to windborne debris are defined. Three types of windborne debris are modelled, as listed in :numref:`debris_types_table`, which include *Compact*, *Rod*, and *Sheet*. Parameter values for each debris type needs to be defined by unique region name, and the defined region name should be referenced in the configuration file.
 
@@ -354,7 +350,12 @@ Input files under `gust_envelope_profiles` directory
 
 The gust envelope profiles are defined under `gust_envelope_profiles` directory. In the configuration file, file name of the gust envelope profile needs to be referenced as shown in :numref:`default.cfg`.
 
-Example files are provided in the `default sceanrio <https://github.com/GeoscienceAustralia/vaws/blob/master/scenarios/default/input/gust_envelope_profiles>`_  with respect to Australian wind design categories: cyclonic_terrain_cat2.csv, cyclonic_terrain_cat2.5.csv, cyclonic_terrain_cat3.csv, and non_cyclonic.csv
+Example files are provided with respect to Australian wind design categories: `cyclonic_terrain_cat2.csv`_, `cyclonic_terrain_cat2.5.csv`_, `cyclonic_terrain_cat3.csv`_, and `non_cyclonic.csv`_, which are recommended in :cite:`JDH2010`.
+
+.. _cyclonic_terrain_cat2.csv: https://github.com/GeoscienceAustralia/vaws/blob/master/scenarios/default/input/gust_envelope_profiles/cyclonic_terrain_cat2.csv
+.. _cyclonic_terrain_cat2.5.csv: https://github.com/GeoscienceAustralia/vaws/blob/master/scenarios/default/input/gust_envelope_profiles/cyclonic_terrain_cat2.5.csv
+.. _cyclonic_terrain_cat3.csv: https://github.com/GeoscienceAustralia/vaws/blob/master/scenarios/default/input/gust_envelope_profiles/cyclonic_terrain_cat3.csv>
+.. _non_cyclonic.csv: https://github.com/GeoscienceAustralia/vaws/blob/master/scenarios/default/input/gust_envelope_profiles/non_cyclonic.csv
 
 An example of gust envelope profile is provided in :numref:`gust_envelope_profile`, and the corresponding plot is shown in :numref:`wind_profile_fig`.
 
@@ -962,4 +963,77 @@ This file contains wall information with respect to the eight wind direction. Ea
     NE,5,7
     E,7
     SE,1,7
+
+.. _output_file_section:
+
+output file
+===========
+
+After simulation output file named *results.h5* is created, which is in HDF5 format. Its content can be accessed via Python or HDF Viewer. :numref:`output_attribute_table` lists attributes in the output file. Note that time invariant attribute is one whose value is set when the model is created, and is kept the same over the range of wind speeds.
+
+.. tabularcolumns:: |p{4.5cm}|p{5.5cm}|p{3.0cm}|
+.. _output_attribute_table:
+.. csv-table:: Attributes saved in the output file
+    :header: Attribute, Description, Note
+    :widths: 15, 15, 15
+
+    profile_index, wind profile index, per model (time invariant)
+    wind_dir_index, wind direction index, per model (time invariant)
+    construction_level, construction quality level, per model (time invariant)
+    terrain_height_multiplier, terrain height multiplier, per model (time invariant)
+    shielding_multiplier, shielding multiplier, per model (time invariant)
+    mean_factor, mean factor of construction quality, per model (time invariant)
+    cov_factor, cov factor of construction quality, per model (time invariant)
+    qz, free stream wind pressure, per model
+    cpi, internal pressure coefficient, per model
+    collapse, 1 if model collapse otherwise 0, per model
+    di, damage index, per model
+    di_except_water, damage index except water ingress induced damage, per model
+    repair_cost, repair cost, per model
+    water_ingress_cost, repair cost induced by water ingress, per model
+    window_breached_by_debris, 1 if any window breached by debris otherwise 0, per model
+    no_items,total number of generated debris items, per debris model
+    no_impacts, total number of debris impacts, per debris model
+    damaged_area, total damaged area by debris impact, per debris model
+    damaged_area, total damaged area by group, per group
+    damaged, 1 if connection is damaged otherwise 0, per connection
+    capacity, wind speed at which damage occurred, per connection
+    load, wind load, per connection
+    strength, strength, per connection (time invariant)
+    dead load, dead load, per connection (time invariant)
+    pressure_cpe, wind pressure for zone component related to sheeting and batten, per zone
+    pressure_cpe_str, wind pressure for zone component related to rafter, per zone
+    cpe, external pressure coefficient for zone component related to sheeting and batten, per zone (time invariant)
+    cpe_str, external pressure coefficient for zone component related to rafter, per zone (time invariant)
+    cpe_eave, external pressure coefficient for zone component related to eave, per zone (time invariant)
+    strength_negative, strength in one direction, per coverage (time invariant)
+    strength_positive, strength in the other direction, per coverage (time invariant)
+    load, wind load, per coverage
+    breached, 1 if coverage is damaged otherwise 0, per coverage
+    breached_area, cumulative area breached by debris, per coverage
+    capacity, wind speed at which breach occurred, per coverage
+
+:numref:`hdfview_structure_fig` shows the structure of the results when opened in the HDFView, a visual tool for browsing HDF5 files. There are 8 groups consisting of connection, coverage, debris, fragility, group, house, vulnerability, and zone. :numref:`hdfview_connection_fig` shows a list of sub-groups under the connection: capacity, damaged, dead_load, load, and strength. :numref:`hdfview_capacity_fig` shows a dataset of capacity of the selected connection.
+
+.. _hdfview_structure_fig:
+.. figure:: _static/image/hdfview_structure.png
+    :align: center
+    :width: 40 %
+
+    Structures of output in the HDFView
+
+
+.. _hdfview_connection_fig:
+.. figure:: _static/image/hdfview_connection.png
+    :align: center
+    :width: 40 %
+
+    Attributes under connection tab in the HDFView
+
+.. _hdfview_capacity_fig:
+.. figure:: _static/image/hdfview_capacity.png
+    :align: center
+    :width: 40 %
+
+    Values of capacity of the selected connection in the HDFView
 

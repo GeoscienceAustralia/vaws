@@ -145,20 +145,20 @@ class Config(object):
                              2: ('no', 1.0)}
     shielding_multiplier_thresholds = np.array([63, 78])
 
-    rho_air = 1.2  # air density
-    g_const = 9.81  # acceleration of gravity
+    rho_air = 1.2  # air density (kg/m^3)
+    g_const = 9.81  # acceleration of gravity (m/sec^2)
 
     # model dependent attributes
 
     house_bucket = ['profile_index', 'wind_dir_index', 'construction_level',
                     'terrain_height_multiplier', 'shielding_multiplier',
-                    'str_mean_factor', 'str_cov_factor', 'qz', 'cpi',
+                    'mean_factor', 'cov_factor', 'qz', 'cpi',
                     'collapse', 'di', 'di_except_water', 'repair_cost',
                     'water_ingress_cost', 'window_breached_by_debris']
 
     att_non_float = ['construction_level']
 
-    debris_bucket = ['no_items', 'no_touched', 'damaged_area']
+    debris_bucket = ['no_items', 'no_impacts', 'damaged_area']
 
     # model and wind dependent attributes
     list_components = ['group', 'connection', 'zone', 'coverage']
@@ -177,12 +177,11 @@ class Config(object):
                           'dead_load', 'cpe', 'cpe_str', 'cpe_eave', 'capacity',
                           'collapse', 'profile_index', 'wind_dir_index',
                           'construction_level', 'terrain_height_multiplier',
-                          'shielding_multiplier', 'str_mean_factor',
-                          'str_cov_factor']
+                          'shielding_multiplier', 'mean_factor',
+                          'cov_factor']
 
     dic_obj_for_fitting = {'weibull': 'vulnerability_weibull',
                            'lognorm': 'vulnerability_lognorm'}
-
 
     def __init__(self, cfg_file=None):
         """ Initialise instance of Config class
@@ -192,7 +191,7 @@ class Config(object):
         """
         self.cfg_file = cfg_file
 
-        self.house_name = None  # only used for gui display may be deleted later
+        self.model_name = None  # only used for gui display may be deleted later
         self.no_models = None
         self.random_seed = 0
         self.wind_direction = None
@@ -357,7 +356,7 @@ class Config(object):
         Returns:
 
         """
-        self.house_name = conf.get(key, 'house_name')
+        self.model_name = conf.get(key, 'model_name')
         self.no_models = conf.getint(key, 'no_models')
         try:
             self.random_seed = conf.getint(key, 'random_seed')
@@ -476,6 +475,11 @@ class Config(object):
         for item in ['building_spacing', 'debris_radius', 'debris_angle',
                      'flight_time_mean', 'flight_time_stddev']:
             setattr(self, item, conf.getfloat(key, item))
+
+        try:
+            assert self.building_spacing in [20, 40]
+        except AssertionError:
+            logging.error('building_spacing should be either 20 or 40')
 
         self.set_region_name(conf.get(key, 'region_name'))
 
@@ -1026,7 +1030,7 @@ class Config(object):
         # config.set(key, 'path_datafile', self.path_house_data)
         # config.set(key, 'parallel', self.parallel)
         config.set(key, 'no_models', self.no_models)
-        config.set(key, 'house_name', self.house_name)
+        config.set(key, 'model_name', self.model_name)
         config.set(key, 'random_seed', self.random_seed)
 
         config.set(key, 'wind_direction', self.__class__.wind_dir[self.wind_dir_index])

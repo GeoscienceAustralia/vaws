@@ -57,8 +57,8 @@ class Debris(object):
         self.debris_momentums = []  # container of momentums in a wind step
 
         # vary over wind speeds
-        self.no_items = 0  # total number of debris items generated
-        self.no_touched = 0
+        self.no_items = 0  # total number of generated debris items
+        self.no_impacts = 0  # total number of impacted debris items
         self.damaged_area = 0.0  # total damaged area by debris items
 
     @property
@@ -68,6 +68,10 @@ class Debris(object):
     @damage_incr.setter
     def damage_incr(self, value):
         assert isinstance(value, numbers.Number)
+        try:
+            del self._mean_no_items
+        except AttributeError:
+            pass
         self._damage_incr = value
 
     @property
@@ -81,7 +85,12 @@ class Debris(object):
               if we use dD/dV (pdf of vulnerability), then
                  dN = f * (dD/dV) * dV
         """
-        return np.rint(self.cfg.source_items * self._damage_incr)
+        try:
+            return self._mean_no_items
+        except AttributeError:
+            mean_no_items = np.rint(self.cfg.source_items * self._damage_incr)
+            self._mean_no_items = mean_no_items
+            return mean_no_items
 
     @property
     def footprint(self):
@@ -119,7 +128,7 @@ class Debris(object):
 
         """
 
-        self.no_touched = 0
+        self.no_impacts = 0
         self.debris_momentums = []
 
         # sample a poisson for each source
@@ -142,7 +151,7 @@ class Debris(object):
             for debris_type in list_debris:
                 self.generate_debris_item(wind_speed, source, debris_type)
 
-        if self.no_touched:
+        if self.no_impacts:
             self.check_debris_impact()
 
     def generate_debris_item(self, wind_speed, source, debris_type_str):
@@ -209,7 +218,7 @@ class Debris(object):
         if self.footprint.contains(pt_debris) or (
                     line_debris.intersects(self.footprint) and
                     self.boundary.contains(pt_debris)):
-            self.no_touched += 1
+            self.no_impacts += 1
 
         item_momentum = self.compute_debris_momentum(debris['cdav'],
                                                      frontal_area,
@@ -241,7 +250,7 @@ class Debris(object):
 
             # Complementary CDF of impact momentum
             ccdf = (self.debris_momentums > np.array(_capacity)).sum()/self.no_items
-            poisson_rate = self.no_touched * _coverage.area / self.area * ccdf
+            poisson_rate = self.no_impacts * _coverage.area / self.area * ccdf
 
             if _coverage.description == 'window':
                 prob_damage = 1.0 - math.exp(-1.0*poisson_rate)

@@ -42,14 +42,11 @@ class Zone(object):
         for key, value in kwargs.items():
             setattr(self, key, value)
 
-        self.differential_shielding = None
         self.cpe = None
         self.cpe_str = None
         self.cpe_eave = None
         self.pressure_cpe = 0.0
         self.pressure_cpe_str = 0.0
-
-        self.set_differential_shielding()
 
     def __str__(self):
         return 'Zone(name={}, area={:.2f}, cpi_alpha={:.2f})'.format(
@@ -82,13 +79,13 @@ class Zone(object):
         """
 
         self.cpe = sample_gev(self.cpe_mean[self.wind_dir_index],
-                              cpe_cov, big_a, big_b, cpe_k, rnd_state)
+                              cpe_cov, cpe_k, big_a, big_b, rnd_state)
 
         self.cpe_str = sample_gev(self.cpe_str_mean[self.wind_dir_index],
-                                  cpe_str_cov, big_a_str, big_b_str, cpe_str_k, rnd_state)
+                                  cpe_str_cov, cpe_str_k, big_a_str, big_b_str, rnd_state)
 
         self.cpe_eave = sample_gev(self.cpe_eave_mean[self.wind_dir_index],
-                                   cpe_str_cov, big_a_str, big_b_str, cpe_str_k, rnd_state)
+                                   cpe_str_cov, cpe_str_k, big_a_str, big_b_str, rnd_state)
 
     def calc_zone_pressure(self, cpi, qz):
         """
@@ -104,47 +101,56 @@ class Zone(object):
 
         """
 
-        for item in self.__class__.flag_pressure:
-            value = qz * (
-                getattr(self, item) - self.cpi_alpha * cpi - self.cpe_eave
-                ) * self.differential_shielding
-            setattr(self, 'pressure_{}'.format(item), value)
+        self.pressure_cpe = qz * (
+            self.cpe - self.cpi_alpha * cpi) * self.differential_shielding
 
-    def set_differential_shielding(self):
+        self.pressure_cpe_str = qz * (
+            self.cpe_str - self.cpi_alpha * cpi -
+            self.cpe_eave) * self.differential_shielding
+
+    @property
+    def differential_shielding(self):
         """
         The following recommendations for differential shielding for buildings
         deemed to be subject to full shielding are made:
 
-        - For outer suburban situations and country towns:
-            Neglect shielding effects except for the leading edges of upwind
-            roofs. For the latter an implied pressure ratio of Ms2 (equal to
-            0.852 for the full shielding cases, and0.95 for partial shielding
-            cases) can be adopted.
-        - For inner suburban buildings with full shielding:
+        - For outer suburban situations and country towns (building_spacing=40m):
+            Neglect shielding effects (self.shielding_multiplier=1.0),
+            except for the leading edges of upwind roofs.
+            For the latter an implied pressure ratio of Ms^2 (equal to
+            0.85^2 for the full shielding cases (Ms=0.85), and
+            0.95^2 for partial shielding cases (Ms=0.95)) can be adopted.
+
+        - For inner suburban buildings (building_spacing=20m) with full shielding (Ms=0.85):
             Reduce the shielding multiplier to 0.7 for upwind roof areas,
             except adjacent to the ridge (implying a pressure reduction factor
             of 0.49). Retain a nominal value of Ms of 0.85 for all other surfaces.
-        - For inner suburban buildings deemed to have partial shielding:
+
+        - For inner suburban buildings (building_spacing=20m) deemed to have partial shielding (Ms=0.95):
             Reduce the shielding multiplier to 0.8 for upwind roof areas,
             except adjacent to the ridge (implying a pressure reduction factor
             of 0.64). Retain a nominal value of Ms of 0.95 for all other surfaces.
 
+        differential_shielding_factor = Ms,adj**2 / Ms ** 2
+
+
         """
+        adjusted_shielding_multiplier = self.shielding_multiplier  # default
 
-        dsn, dsd = 1.0, 1.0
+        if self.flag_differential_shielding:
+            edge_of_upwind_roofs = self.is_roof_edge[self.wind_dir_index]
+            if self.building_spacing == 40:  # outer suburban buildings
+                if not edge_of_upwind_roofs:
+                    adjusted_shielding_multiplier = 1.0
 
-        if self.building_spacing > 0 and self.flag_differential_shielding:
-            front_facing = self.is_roof_edge[self.wind_dir_index]
-            if self.building_spacing == 40 and self.shielding_multiplier >= 1.0 and front_facing == 0:
-                dsd = self.shielding_multiplier ** 2.0
-            elif self.building_spacing == 20 and front_facing == 1:
-                dsd = self.shielding_multiplier ** 2.0
-                if self.shielding_multiplier <= 0.85:
-                    dsn = 0.7 ** 2.0
-                else:
-                    dsn = 0.8 ** 2.0
+            elif self.building_spacing == 20:  # inner suburban buildings
+                if edge_of_upwind_roofs:
+                    if self.shielding_multiplier == 0.85:
+                        adjusted_shielding_multiplier = 0.7
+                    elif self.shielding_multiplier == 0.95:
+                        adjusted_shielding_multiplier = 0.8
 
-        self.differential_shielding = dsn / dsd
+        return (adjusted_shielding_multiplier / self.shielding_multiplier) ** 2
 
     @staticmethod
     def get_zone_location_from_grid(_zone_grid):

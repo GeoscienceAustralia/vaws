@@ -55,7 +55,7 @@ class TestConfig(unittest.TestCase):
 
     def test_read_main(self):
 
-        self.assertEqual(self.cfg.house_name, 'Group 4 House')
+        self.assertEqual(self.cfg.model_name, 'Group 4 House')
 
         self.assertEqual(self.cfg.no_models, 10)
 

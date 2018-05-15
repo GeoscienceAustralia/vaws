@@ -46,7 +46,8 @@ PygmentsBridge.latex_formatter = CustomLatexFormatter
 extensions = ['sphinx.ext.autodoc',
               'sphinx.ext.mathjax',
               'sphinx.ext.viewcode',
-              'sphinx.ext.napoleon']
+              'sphinx.ext.napoleon',
+              'sphinxcontrib.bibtex']
 
 # Napoleon settings
 napoleon_google_docstring = True

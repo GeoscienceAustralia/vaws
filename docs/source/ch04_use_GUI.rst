@@ -213,7 +213,7 @@ The Damages tab shows heatmap by connection type group such as Sheeting, Batten,
 Curves tab
 ^^^^^^^^^^
 
-The Curves tab shows curves in four sub-windows: Vulnerability, Fragility, Water Ingress, and Debris. The Vulnerability window shows a scatter plot of damage indices at each wind speed along with two fitted vulnerability curves, one of which is fitted to cumulative lognormal distribution function as :eq:`cdf_lognormal` and the other one is to cumulative Weibull distribution function as :eq:`cdf_weibull_oz`. The estimated parameter values are displayed at the top.
+The Curves tab shows curves in four sub-windows: Vulnerability, Fragility, Water Ingress, and Debris. The Vulnerability window shows a scatter plot of damage indices at each wind speed along with two fitted vulnerability curves, one of which is cumulative lognormal distribution function as :eq:`cdf_lognormal` and the other one is cumulative Weibull distribution as :eq:`cdf_weibull_oz`. The estimated parameter values are displayed at the top.
 
 
 .. math::
@@ -281,8 +281,27 @@ At the bottom of the main window, configuration file name and status of current 
 Running simulations
 ===================
 
-Bottom
-------
+The simulation can be run by either 1) creating a new scenario or 2) loading a saved scenario.
+
+Creating a new scenario
+-----------------------
+
+User can create a new scenario by clicking the *New* button, as shown in :numref:`toolbar_table`. The new scenario comes with a set of input files as an template. Once all the setting are set, then user can save the configuration file to a folder where the template input files will be saved. User need to make changes to each of the input files as required.
+
+Loading a saved scenario
+------------------------
+
+User can load a saved scenario file (e.g., default.cfg). A collection of input files should be located in the directory with the folder structure described in :numref:`folder_structure`. User may make some changes on the settings through GUI. Once all the settings are set, then simulation can be run by clicking the *Run* button, as shown in
+:numref:`toolbar_table`. Once the simulation is completed, user can either exit the program or save the current setting to a different scenario, as shown in :numref:`save_as_new_cfg_fig`.
+
+
+.. _save_as_new_cfg_fig:
+.. figure:: _static/image/save_as_new_cfg.png
+    :align: center
+    :width: 80 %
+
+    Save as a new scenario
+
 
 
 .. |alpha| replace:: :math:`\alpha`
