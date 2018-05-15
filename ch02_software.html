@@ -1,36 +1,24 @@
+
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 
-
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    
     <title>Getting Started &#8212; VAWS 2.0 documentation</title>
-    
     <link rel="stylesheet" href="_static/classic.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
-    
-    <script type="text/javascript">
-      var DOCUMENTATION_OPTIONS = {
-        URL_ROOT:    './',
-        VERSION:     '2.0',
-        COLLAPSE_INDEX: false,
-        FILE_SUFFIX: '.html',
-        HAS_SOURCE:  true,
-        SOURCELINK_SUFFIX: '.txt'
-      };
-    </script>
+    <script type="text/javascript" src="_static/documentation_options.js"></script>
     <script type="text/javascript" src="_static/jquery.js"></script>
     <script type="text/javascript" src="_static/underscore.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
-    <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
-    <link rel="next" title="Input Data" href="ch03_input.html" />
+    <link rel="next" title="Input and output" href="ch03_input.html" />
     <link rel="prev" title="Introduction" href="ch01_introduction.html" /> 
-  </head>
-  <body role="document">
+  </head><body>
     <div class="related" role="navigation" aria-label="related navigation">
       <h3>Navigation</h3>
       <ul>
@@ -41,7 +29,7 @@
           <a href="py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
         <li class="right" >
-          <a href="ch03_input.html" title="Input Data"
+          <a href="ch03_input.html" title="Input and output"
              accesskey="N">next</a> |</li>
         <li class="right" >
           <a href="ch01_introduction.html" title="Introduction"
@@ -78,7 +66,7 @@
 <li><p class="first">Linux</p>
 <ul>
 <li><p class="first">In Terminal window, run</p>
-<div class="highlight-bash"><div class="highlight"><pre><span></span>$ bash Miniconda2-latest-Linux-x86_64.sh
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$ bash Miniconda2-latest-Linux-x86_64.sh
 </pre></div>
 </div>
 </li>
@@ -87,7 +75,7 @@
 <li><p class="first">Mac</p>
 <ul>
 <li><p class="first">In Terminal window, run</p>
-<div class="highlight-bash"><div class="highlight"><pre><span></span>$ bash Miniconda2-latest-MacOSX-x86_64.sh
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$ bash Miniconda2-latest-MacOSX-x86_64.sh
 </pre></div>
 </div>
 </li>
@@ -100,7 +88,7 @@
 </ol>
 <p>In the terminal client, enter the following command to create the environment called <em>vaws_env</em>.</p>
 <blockquote>
-<div><div class="highlight-bash"><div class="highlight"><pre><span></span>conda create -n vaws_env <span class="nv">python</span><span class="o">=</span>2.7
+<div><div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>conda create -n vaws_env <span class="nv">python</span><span class="o">=</span>2.7
 </pre></div>
 </div>
 </div></blockquote>
@@ -111,12 +99,12 @@
 <blockquote>
 <div><ul>
 <li><p class="first">Windows</p>
-<div class="highlight-bash"><div class="highlight"><pre><span></span>activate vaws_env
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>activate vaws_env
 </pre></div>
 </div>
 </li>
 <li><p class="first">Linux/Mac</p>
-<div class="highlight-bash"><div class="highlight"><pre><span></span><span class="nb">source</span> activate vaws_env
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="nb">source</span> activate vaws_env
 </pre></div>
 </div>
 </li>
@@ -127,13 +115,13 @@
 </ol>
 <p>In the terminal client, enter the following to install the code.</p>
 <blockquote>
-<div><div class="highlight-bash"><div class="highlight"><pre><span></span>conda install -c crankymax vaws
+<div><div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>conda install -c crankymax vaws
 </pre></div>
 </div>
 </div></blockquote>
 <p>In case you see <cite>PackageNotFoundError: Packages missing in current channels:</cite> then enter the following in the terminal client and try above command again.</p>
 <blockquote>
-<div><div class="highlight-bash"><div class="highlight"><pre><span></span>conda config --add channels conda-forge
+<div><div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>conda config --add channels conda-forge
 </pre></div>
 </div>
 </div></blockquote>
@@ -142,7 +130,7 @@
 <h3>Updating<a class="headerlink" href="#updating" title="Permalink to this headline">¶</a></h3>
 <p>In case new version of the code is available, you may update the code. The conda environment <em>vaws_env</em> should be activated first as <a class="reference internal" href="#activate-environment"><span class="std std-ref">2.1.1 step 3</span></a>. And then enter the following commands in the terminal to remove the old version and re-install the new version of the code.</p>
 <blockquote>
-<div><div class="highlight-bash"><div class="highlight"><pre><span></span>conda remove vaws
+<div><div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>conda remove vaws
 conda install -c crankymax vaws
 </pre></div>
 </div>
@@ -152,11 +140,11 @@ conda install -c crankymax vaws
 <h3>Running through GUI<a class="headerlink" href="#running-through-gui" title="Permalink to this headline">¶</a></h3>
 <p id="run-code">To run the code, the conda environment <em>vaws_env</em> should be activated first as <a class="reference internal" href="#activate-environment"><span class="std std-ref">2.1.1 step 3</span></a>. And then enter the following command in the terminal.</p>
 <blockquote>
-<div><div class="highlight-bash"><div class="highlight"><pre><span></span>vaws
+<div><div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>vaws
 </pre></div>
 </div>
 </div></blockquote>
-<p>The default scenario will be loaded as shown in <a class="reference internal" href="#main-window-fig"><span class="std std-numref">Fig. 1</span></a>.</p>
+<p>The default scenario will be loaded as shown in <a class="reference internal" href="#main-window-fig"><span class="std std-numref">Fig. 1</span></a>. See <a class="reference internal" href="ch04_use_GUI.html#use-of-the-gui"><span class="std std-ref">chapter 4</span></a> for details.</p>
 <div class="figure align-center" id="id2">
 <span id="main-window-fig"></span><a class="reference internal image-reference" href="_images/main_window.png"><img alt="_images/main_window.png" src="_images/main_window.png" style="width: 80%;" /></a>
 <p class="caption"><span class="caption-number">Fig. 1 </span><span class="caption-text">Program main window with default scenario loaded</span></p>
@@ -175,7 +163,7 @@ conda install -c crankymax vaws
 <blockquote>
 <div><ul>
 <li><p class="first">If git is installed, run the following command in the terminal</p>
-<div class="highlight-bash"><div class="highlight"><pre><span></span>$ git clone git@github.com:GeoscienceAustralia/vaws.git
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$ git clone git@github.com:GeoscienceAustralia/vaws.git
 </pre></div>
 </div>
 </li>
@@ -191,13 +179,13 @@ conda install -c crankymax vaws
 <blockquote>
 <div><ul>
 <li><p class="first">Windows</p>
-<div class="highlight-bash"><div class="highlight"><pre><span></span><span class="nb">cd</span> &lt;vaws dir&gt;
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="nb">cd</span> &lt;vaws dir&gt;
 conda env create --name vaws_env --file vaws_win.yml
 </pre></div>
 </div>
 </li>
 <li><p class="first">Linux/Mac</p>
-<div class="highlight-bash"><div class="highlight"><pre><span></span><span class="nb">cd</span> &lt;vaws dir&gt;
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="nb">cd</span> &lt;vaws dir&gt;
 conda env create --name vaws_env --file vaws_env.yml
 </pre></div>
 </div>
@@ -212,13 +200,13 @@ conda env create --name vaws_env --file vaws_env.yml
 <blockquote>
 <div><ul>
 <li><p class="first">Windows</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">cd</span> <span class="o">&lt;</span><span class="n">vaws</span> <span class="nb">dir</span><span class="o">&gt;</span>\<span class="n">vaws</span>\<span class="n">gui</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">cd</span> <span class="o">&lt;</span><span class="n">vaws</span> <span class="nb">dir</span><span class="o">&gt;</span>\<span class="n">vaws</span>\<span class="n">gui</span>
 <span class="n">build</span><span class="o">.</span><span class="n">cmd</span>
 </pre></div>
 </div>
 </li>
 <li><p class="first">Linux/Mac</p>
-<div class="highlight-bash"><div class="highlight"><pre><span></span><span class="nb">cd</span> &lt;vaws dir&gt;/vaws/gui
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="nb">cd</span> &lt;vaws dir&gt;/vaws/gui
 ./build.sh
 </pre></div>
 </div>
@@ -232,16 +220,15 @@ conda env create --name vaws_env --file vaws_env.yml
 <blockquote>
 <div><ul>
 <li><p class="first">GUI</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">cd</span> <span class="o">&lt;</span><span class="n">vaws</span> <span class="nb">dir</span><span class="o">&gt;</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">cd</span> <span class="o">&lt;</span><span class="n">vaws</span> <span class="nb">dir</span><span class="o">&gt;</span>
 <span class="n">python</span> <span class="o">-</span><span class="n">m</span> <span class="n">vaws</span><span class="o">.</span><span class="n">gui</span><span class="o">.</span><span class="n">main</span>  <span class="c1"># for default scenario</span>
 <span class="n">python</span> <span class="o">-</span><span class="n">m</span> <span class="n">vaws</span><span class="o">.</span><span class="n">gui</span><span class="o">.</span><span class="n">main</span> <span class="o">-</span><span class="n">c</span> <span class="o">&lt;</span><span class="n">config_file</span><span class="o">&gt;</span>  <span class="c1"># for a specific scenario</span>
 </pre></div>
 </div>
 </li>
 <li><p class="first">CLI</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">cd</span> <span class="o">&lt;</span><span class="n">vaws</span> <span class="nb">dir</span><span class="o">&gt;</span>
-<span class="n">python</span> <span class="o">-</span><span class="n">m</span> <span class="n">vaws</span><span class="o">.</span><span class="n">gui</span><span class="o">.</span><span class="n">main</span> <span class="o">-</span><span class="n">c</span> <span class="o">./</span><span class="n">vaws</span><span class="o">/</span><span class="n">scenarios</span><span class="o">/</span><span class="n">default</span><span class="o">/</span><span class="n">default</span><span class="o">.</span><span class="n">cfg</span>  <span class="c1"># for default scenario</span>
-<span class="n">python</span> <span class="o">-</span><span class="n">m</span> <span class="n">vaws</span><span class="o">.</span><span class="n">gui</span><span class="o">.</span><span class="n">main</span> <span class="o">-</span><span class="n">c</span> <span class="o">&lt;</span><span class="n">config_file</span><span class="o">&gt;</span>  <span class="c1"># for a specific scenario</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">cd</span> <span class="o">&lt;</span><span class="n">vaws</span> <span class="nb">dir</span><span class="o">&gt;</span>
+<span class="n">python</span> <span class="o">-</span><span class="n">m</span> <span class="n">vaws</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">main</span> <span class="o">-</span><span class="n">c</span> <span class="o">&lt;</span><span class="n">config_file</span><span class="o">&gt;</span>  <span class="c1"># for a specific scenario</span>
 </pre></div>
 </div>
 </li>
@@ -256,7 +243,7 @@ conda env create --name vaws_env --file vaws_env.yml
 </ol>
 <p>To build the package, you need to install <cite>conda-build</cite> and <cite>anaaconda-client</cite> in the conda <em>root</em> environment not the <cite>vaws_env</cite> environment. And then enter the following in the terminal.</p>
 <blockquote>
-<div><div class="highlight-bash"><div class="highlight"><pre><span></span>conda install conda-build anaconda-client
+<div><div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>conda install conda-build anaconda-client
 </pre></div>
 </div>
 </div></blockquote>
@@ -265,14 +252,14 @@ conda env create --name vaws_env --file vaws_env.yml
 </ol>
 <p>In the terminal client, enter the following to build the package.</p>
 <blockquote>
-<div><div class="highlight-bash"><div class="highlight"><pre><span></span><span class="nb">cd</span> &lt;vaws dir&gt;/build
+<div><div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="nb">cd</span> &lt;vaws dir&gt;/build
 conda-build .
 </pre></div>
 </div>
 </div></blockquote>
 <p>At the end of the building, you should see something like below:</p>
 <blockquote>
-<div><div class="highlight-bash"><div class="highlight"><pre><span></span>Updating index at /foo/anaconda2/conda-bld/noarch to make package installable with dependencies
+<div><div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>Updating index at /foo/anaconda2/conda-bld/noarch to make package installable with dependencies
 INFO:conda_build.build:Updating index at /foo/anaconda2/conda-bld/noarch to make package installable with dependencies
 Nothing to <span class="nb">test</span> <span class="k">for</span>: /foo/anaconda2/conda-bld/osx-64/vaws-2.0.3-py27_1.tar.bz2
 <span class="c1"># Automatic uploading is disabled</span>
@@ -292,7 +279,7 @@ anaconda_upload is not set.  Not uploading wheels: <span class="o">[]</span>
 </ol>
 <p>In the terminal client, enter the following to upload the package to the channel.</p>
 <blockquote>
-<div><div class="highlight-bash"><div class="highlight"><pre><span></span>anaconda login
+<div><div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>anaconda login
 anaconda upload &lt;package&gt;
 </pre></div>
 </div>
@@ -301,11 +288,11 @@ anaconda upload &lt;package&gt;
 <div class="section" id="testing-the-code">
 <h3>Testing the code<a class="headerlink" href="#testing-the-code" title="Permalink to this headline">¶</a></h3>
 <p>To test the code, the conda environment <em>vaws_env</em> should be activated first as <a class="reference internal" href="#activate-environment"><span class="std std-ref">2.1.1 step 3</span></a>. And then enter the following command in the terminal.</p>
-<div class="highlight-bash"><div class="highlight"><pre><span></span>nosetests -v vaws
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>nosetests -v vaws
 </pre></div>
 </div>
 <p>You should see something similar to below.</p>
-<div class="highlight-bash"><div class="highlight"><pre><span></span>test_distribute_damage_by_row <span class="o">(</span>vaws.model.tests.test_simulation_batten.TestHouseDamage<span class="o">)</span> ... ok
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>test_distribute_damage_by_row <span class="o">(</span>vaws.model.tests.test_simulation_batten.TestHouseDamage<span class="o">)</span> ... ok
 test_calc <span class="o">(</span>vaws.model.tests.test_stats.MyTestCase<span class="o">)</span> ... ok
 test_calc2 <span class="o">(</span>vaws.model.tests.test_stats.MyTestCase<span class="o">)</span> ... ok
 test_calc_big_a_b_values <span class="o">(</span>vaws.model.tests.test_stats.MyTestCase<span class="o">)</span> ... ok
@@ -325,6 +312,23 @@ Ran <span class="m">93</span> tests in 56.053s
 OK
 </pre></div>
 </div>
+</div>
+<div class="section" id="documentation">
+<h3>Documentation<a class="headerlink" href="#documentation" title="Permalink to this headline">¶</a></h3>
+<p>The VAWS user manual is generated using the Sphinx documentation tool (<a class="reference external" href="http://www.sphinx-doc.org/en/1.7/">http://www.sphinx-doc.org/en/1.7/</a>). The source code of the manual is located at the subdirectory called <em>docs</em> under <em>vaws</em> root directory. Both the <em>html</em> and <em>pdf</em> versions of the manual can be generated using the commands below:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="nb">cd</span> &lt;vaws dir&gt;/docs
+make html   <span class="c1"># for html format</span>
+make latexpdf  <span class="c1"># for pdf format</span>
+</pre></div>
+</div>
+<p>The html version of the manual can be updated to the manual website (<a class="reference external" href="http://geoscienceaustralia.github.io/vaws">http://geoscienceaustralia.github.io/vaws</a>) as below. Note that the &lt;build_dir&gt; can be set in the <em>Makefile</em> in the <em>docs</em> directory.</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="nb">cd</span> &lt;build_dir&gt;/html
+git checkout gh-pages
+git commit -m &lt;commit_message&gt;
+git push origin gh-pages
+</pre></div>
+</div>
+<p>The pdf version of the manaual can be accessed at <a class="reference external" href="https://github.com/GeoscienceAustralia/vaws/tree/master/manaual.pdf">https://github.com/GeoscienceAustralia/vaws/tree/master/manaual.pdf</a>.</p>
 </div>
 </div>
 </div>
@@ -348,6 +352,7 @@ OK
 <li><a class="reference internal" href="#id1">Installation</a></li>
 <li><a class="reference internal" href="#building-the-conda-package">Building the conda package</a></li>
 <li><a class="reference internal" href="#testing-the-code">Testing the code</a></li>
+<li><a class="reference internal" href="#documentation">Documentation</a></li>
 </ul>
 </li>
 </ul>
@@ -359,7 +364,7 @@ OK
                         title="previous chapter">Introduction</a></p>
   <h4>Next topic</h4>
   <p class="topless"><a href="ch03_input.html"
-                        title="next chapter">Input Data</a></p>
+                        title="next chapter">Input and output</a></p>
   <div role="note" aria-label="source link">
     <h3>This Page</h3>
     <ul class="this-page-menu">
@@ -369,12 +374,14 @@ OK
    </div>
 <div id="searchbox" style="display: none" role="search">
   <h3>Quick search</h3>
+    <div class="searchformwrapper">
     <form class="search" action="search.html" method="get">
-      <div><input type="text" name="q" /></div>
-      <div><input type="submit" value="Go" /></div>
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
       <input type="hidden" name="check_keywords" value="yes" />
       <input type="hidden" name="area" value="default" />
     </form>
+    </div>
 </div>
 <script type="text/javascript">$('#searchbox').show(0);</script>
         </div>
@@ -391,7 +398,7 @@ OK
           <a href="py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
         <li class="right" >
-          <a href="ch03_input.html" title="Input Data"
+          <a href="ch03_input.html" title="Input and output"
              >next</a> |</li>
         <li class="right" >
           <a href="ch01_introduction.html" title="Introduction"
@@ -401,7 +408,7 @@ OK
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright 2017, Geoscience Australia.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.5.1.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.7.4.
     </div>
   </body>
 </html>

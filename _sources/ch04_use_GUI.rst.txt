@@ -67,8 +67,16 @@ The Test button in the Debris tab demonstrates debris generation function at a s
     :align: center
     :width: 80 %
 
-    Vulnerability curves implemented in the debris test function
+    Vulnerability curves implemented in the debris test function using the parameter values listed in :numref:`vul_parameters_table`.
 
+.. tabularcolumns:: |p{4.0cm}|p{4.0cm}|p{4.0cm}|
+.. _vul_parameters_table:
+.. csv-table:: Parameter values for vulnerability curves :eq:`cdf_weibull_oz` used in the debris test
+    :header: name, |alpha|, |beta|
+    :widths: 30, 30, 30
+
+    Capital_city, 0.1585, 3.8909
+    Tropical_town, 0.1030, 4.1825
 
 The Test button in the Construction tab shows distribution of connection strength of the selected connection type. Example of sampled strength of batten type is shown in :numref:`test_construction_fig`.
 
@@ -79,14 +87,14 @@ The Test button in the Construction tab shows distribution of connection strengt
 
     Distribution of sampled strength of the selected connection type
 
-The Test button in the Water tab shows relationship between percentage of water ingress vs. wind speed for a range of damage index as shown in :numref:`test_water_ingress_fig`.
+The Test button in the Water tab shows relationship between percentage of water ingress and wind speed for a range of damage index as shown in :numref:`test_water_ingress_fig`.
 
 .. _test_water_ingress_fig:
 .. figure:: _static/image/test_water_ingress.png
     :align: center
     :width: 80 %
 
-    Relationship between percentage of water ingress vs. wind speed
+    Relationship between percentage of water ingress and wind speed
 
 
 Bottom left
@@ -205,7 +213,23 @@ The Damages tab shows heatmap by connection type group such as Sheeting, Batten,
 Curves tab
 ^^^^^^^^^^
 
-The Curves tab shows curves in four sub-windows: Vulnerability, Fragility, Water Ingress, and Debris. The Vulnerability window shows a scatter plot of damage indices at each wind speed along with two fitted vulnerability curves, one of which is fitted to cumulative lognormal distribution function and the other one is to cumulative Weibull distribution function. An example plot is shown in :numref:`curves_vulnerability_fig`.
+The Curves tab shows curves in four sub-windows: Vulnerability, Fragility, Water Ingress, and Debris. The Vulnerability window shows a scatter plot of damage indices at each wind speed along with two fitted vulnerability curves, one of which is cumulative lognormal distribution function as :eq:`cdf_lognormal` and the other one is cumulative Weibull distribution as :eq:`cdf_weibull_oz`. The estimated parameter values are displayed at the top.
+
+
+.. math::
+    :label: cdf_lognormal
+
+    F_X(x; m, \sigma) = \Phi\left( \frac{\ln (x / m)} \sigma \right)
+
+where :math:`\Phi`: the cumulative distribution function of the standard normal distribution, :math:`m`: median, and :math:`\sigma`: logarithmic standard deviation.
+
+.. math::
+    :label: cdf_weibull_oz
+
+    F(x; \alpha, \beta) = 1- \exp\left[-\left(\frac{x}{e^\beta}\right)^\frac{1}{\alpha}\right]
+
+
+An example plot is shown in :numref:`curves_vulnerability_fig`.
 
 
 .. _curves_vulnerability_fig:
@@ -257,5 +281,29 @@ At the bottom of the main window, configuration file name and status of current 
 Running simulations
 ===================
 
+The simulation can be run by either 1) creating a new scenario or 2) loading a saved scenario.
 
+Creating a new scenario
+-----------------------
+
+User can create a new scenario by clicking the *New* button, as shown in :numref:`toolbar_table`. The new scenario comes with a set of input files as an template. Once all the setting are set, then user can save the configuration file to a folder where the template input files will be saved. User need to make changes to each of the input files as required.
+
+Loading a saved scenario
+------------------------
+
+User can load a saved scenario file (e.g., default.cfg). A collection of input files should be located in the directory with the folder structure described in :numref:`folder_structure`. User may make some changes on the settings through GUI. Once all the settings are set, then simulation can be run by clicking the *Run* button, as shown in
+:numref:`toolbar_table`. Once the simulation is completed, user can either exit the program or save the current setting to a different scenario, as shown in :numref:`save_as_new_cfg_fig`.
+
+
+.. _save_as_new_cfg_fig:
+.. figure:: _static/image/save_as_new_cfg.png
+    :align: center
+    :width: 80 %
+
+    Save as a new scenario
+
+
+
+.. |alpha| replace:: :math:`\alpha`
+.. |beta| replace:: :math:`\beta`
 

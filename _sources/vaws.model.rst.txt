@@ -50,17 +50,9 @@ vaws.model.debris module
     :show-inheritance:
 
 vaws.model.house module
------------------------
-
-.. automodule:: vaws.model.house
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
-vaws.model.house_damage module
 ------------------------------
 
-.. automodule:: vaws.model.house_damage
+.. automodule:: vaws.model.house
     :members:
     :undoc-members:
     :show-inheritance:
