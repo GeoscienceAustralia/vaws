@@ -1,83 +1,41 @@
-## Installation
+Vulnerability and Adaptation to Wind Simulation (VAWS) is a software tool that can be used to model the vulnerability of small buildings such as domestic houses and light industrial sheds to wind. The primary use-case of VAWS is the examination of the change in vulnerability afforded by mitigation measures to upgrade a building’s resilience to wind hazard.
 
-It is recommended that you create a `conda` environment to run the *vaws* code.
-These instructions have been tested on `Windows 7`, `Linux`, and `OS 10.11.x` and
-is expected to work on most of modern operating systems.
+## Background
 
-1. Download and install [Miniconda](https://conda.io/miniconda.html) with Python 2.7.
+Development of VAWS commenced in 2009-2010 in a collaborative project, partly funded by the then Department of Climate Change and energy Efficiency (DCCE), between Geoscience Australia, James Cook University and JDH Consulting. The development of the current version was undertaken as part of the Bushfire and Natural Hazard Cooperative Research Centre (BNHCRC) project “Improving the Resilience of Existing Housing to Severe Wind” led by James Cook University.
 
- * Windows
-    - Double-click the downloaded `Miniconda2-latest-Windows-x86_64.exe` file.
-	- When installation is finished, from the `Start` menu, open the `Anaconda Prompt`.
+## Overall logic
 
- * Linux/Mac
-    - In your Terminal window, run:   
-    
-        `bash Miniconda2-latest-Linux-x86_64.sh` for `Linux` or 
-        
-        `bash Miniconda2-latest-MacOSX-x86_64.sh` for `OS X`
+The VAWS tool takes a component-based approach to modelling building vulnerability. It is based on the premise that overall building damage is strongly related to the failure of key connections.
 
-2. Create a conda environment. 
+The tool generates a building model by randomly selecting parameter values from predetermined probability distributions using a Monte Carlo process. Values include component and connection strengths, external pressure coefficients, shielding coefficients, wind speed profile, building orientation, debris damage parameters, and component masses.
 
-    In the terminal client, enter the following to create the environment called *vaws_env*.
+Then, for progressive gust wind speed increments, it calculates the forces in all critical connections using influence coefficients, assesses which connections have failed and translates these into a damage scenario and costs the repair. Using the repair cost and the full replacement cost, it calculates a damage index for each wind speed.
 
-    `conda create -n vaws_env python=2.7`
+## Key features
 
-3. Activate the environment.
+* Component-based approach:
 
-    In the terminal client, enter the following to activate the environment.
+  A house is modelled consisting of a large number of components, and overall damage is estimated based on damage of each of the components.
 
-    * Windows
- 
-        `activate vaws_env`
+* Uncertainty captured through a Monte-Carlo process:
 
-     * Linux/Mac
- 
-        `source activate vaws_env`
+  Various uncertainties affecting house performance are modelled through a monte-carlo process.
 
-4. Install the *vaws* code from conda channel
+* Inclusion of debris and water ingress induced damages:
 
-    In the terminal client, enter the following to install the *vaws*.
+  In addition to the damage to the connections by wind loads, debris and water ingress induced damages are modelled.
 
-    `conda install -c crankymax vaws`
+* Internal pressurisation:
 
-    In case you see `PackageNotFoundError: Packages missing in current channels:` then enter the following and try above command again.
+  Internal pressure coefficients are calculated at each wind speed following the procedures of AS/NZS 1170.2 (Standards Australia, 2011) using the modelled envelope failures to determine envelope permeability.
 
-    `conda config --add channels conda-forge`
+## Caveats and limitations
 
-5. Run the vaws code
+VAWS has been designed primarily as a tool for assessing vulnerability of houses to wind hazard. The simulation outcomes should be interpreted as vulnerability of a group of similar houses on average, even though an individual house is modelled. In other words, the tool is not capable of predicting performance of an individual house for a specific wind event.
 
-    In the terminal client, enter the following to run the code.
+## Documentation
 
-    `vaws`
+* User manual in html format at GitHub pages: http://geoscienceaustralia.github.io/vaws
 
-## Running the tests
-
-To run tests use `unittest`:
-    
-    cd vaws
-    python -m unittest discover model/tests/
-
-
-## Building the VAWS conda package
-
-Prerequisites:
-
-    conda
-    conda-build
-    anaconda-client
-
-Build the package
-
-    cd <vaws dir>/build
-    ~/miniconda2/bin/conda-build .
-
-Upload to conda-forge
-
-    anaconda login
-    anaconda upload /home/ubuntu/miniconda2/conda-bld/linux-64/vaws-2.0-py27<package details>
-
-Windows upload to conda
-
-    \dev\Miniconda2\Scripts\anaconda -s anaconda.org login
-    \dev\Miniconda2\Scripts\anaconda upload --force c:\dev\Miniconda2\conda-bld\win-64\vaws-2.0-py27<package details>
+* User manual in pdf format: https://github.com/GeoscienceAustralia/vaws/tree/master/manaual.pdf 
