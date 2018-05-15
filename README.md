@@ -41,4 +41,4 @@ VAWS has been designed primarily as a tool for assessing vulnerability of houses
 
 * User manual in html format at GitHub pages: http://geoscienceaustralia.github.io/vaws
 
-* User manual in pdf format: https://github.com/GeoscienceAustralia/vaws/tree/master/manaual.pdf 
+* User manual in pdf format: https://github.com/GeoscienceAustralia/vaws/blob/master/manual.pdf 
