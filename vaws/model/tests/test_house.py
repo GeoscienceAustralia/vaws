@@ -37,17 +37,17 @@ class MyTestCase(unittest.TestCase):
         elif self.house.construction_level == 'high':
             self.assertAlmostEqual(self.house.mean_factor, 1.1)
 
-        self.assertAlmostEqual(self.house.cov_factor, 0.58)
+        self.assertAlmostEqual(self.house.cv_factor, 0.58)
 
     def test_set_construction_levels(self):
         self.house.cfg.construction_levels = OrderedDict(
-            [('low', {'cov_factor': 0.58,
+            [('low', {'cv_factor': 0.58,
                       'mean_factor': 0.9,
                       'probability': 0.3}),
-             ('medium', {'cov_factor': 0.58,
+             ('medium', {'cv_factor': 0.58,
                          'mean_factor': 1.0,
                          'probability': 0.6}),
-             ('high', {'cov_factor': 0.58,
+             ('high', {'cv_factor': 0.58,
                        'mean_factor': 1.1,
                        'probability': 0.1})])
         tmp = []

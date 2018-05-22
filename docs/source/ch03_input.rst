@@ -91,7 +91,7 @@ The configuration file consists of a number of sections, among which *main* and 
     levels = low, medium, high
     probabilities = 0.33, 0.34, 0.33
     mean_factors = 0.9, 1.0, 1.1
-    cov_factors = 0.58, 0.58, 0.58
+    cv_factors = 0.58, 0.58, 0.58
 
     [water_ingress]
     thresholds = 0.1, 0.2, 0.5
@@ -190,7 +190,8 @@ Parameters of the debris section are listed in :numref:`section_debris_table`. N
 Construction_levels section
 ---------------------------
 
-Parameters of the construction_levels section are listed in :numref:`section_construction_levels_table`. In the GUI window, they are dispalyed in the Construction tab as box shown in :numref:`section_construction_levels_fig`.
+Parameters of the construction_levels section are listed in :numref:`section_construction_levels_table`. In the GUI window, they are dispalyed in the Construction tab as box shown in :numref:`section_construction_levels_fig`. The parameters are used as shown in :eq:`mean_cv_factors_eq`.
+
 
 .. tabularcolumns:: |p{3.0cm}|p{3.0cm}|p{8.5cm}|
 .. _section_construction_levels_table:
@@ -200,7 +201,7 @@ Parameters of the construction_levels section are listed in :numref:`section_con
     levels, Levels, "comma separated list of construction levels (default: low, medium, high)"
     probabilities, probabilities, "comma separated list of probabilities of a modelled house being of a construction level (default: 0.33, 0.34, 0.33)"
     mean_factors, Mean factors, "comma separated list of mean factors of construction levels (default: 0.9, 1.0, 1.1)"
-    cov_factors, Cov factors, "comma separated list of cov factors of construction levels (default: 0.58, 0.58, 0.58)"
+    cv_factors, CV factors, "comma separated list of CV factors of construction levels (default: 0.58, 0.58, 0.58)"
 
 .. _section_construction_levels_fig:
 .. figure:: _static/image/section_construction_levels.png
@@ -242,7 +243,7 @@ Parameters of the water_ingress section are listed in :numref:`section_water_ing
 Fragility_thresholds
 --------------------
 
-Parameters of the fragility_thresholds section are listed in :numref:`section_fragility_thresholds_table`. In the GUI window, they are displayed in the Options tab as box shown in :numref:`section_fragility_thresholds_fig`. The use of the fragility thresholds in
+Parameters of the fragility_thresholds section are listed in :numref:`section_fragility_thresholds_table`. In the GUI window, they are displayed in the Options tab as box shown in :numref:`section_fragility_thresholds_fig`. The fragility thresholds are used as shown in :eq:`fragility_eq`.
 
 .. tabularcolumns:: |p{3.0cm}|p{3.0cm}|p{8.5cm}|
 .. _section_fragility_thresholds_table:
@@ -336,8 +337,8 @@ The parameter values should be provided for each of the debris types as set out 
     :widths: 8, 30
 
     ratio, "proportion out of debris in percent"
-    mass_mean, "mean of mass"
-    mass_stddev, "standard deviation of mass"
+    mass_mean, "mean of mass (kg)"
+    mass_stddev, "standard deviation of mass (kg)"
     frontal_area_mean, "mean of frontal area (:math:`\text{m}^2`)"
     frontal_area_stddev, "standard deviation of frontal area (:math:`\text{m}^2`)"
     cdav, "average drag coefficient"
@@ -403,9 +404,9 @@ This file defines parameter values for the model such as replacement cost and di
     height,4.5
     length,0.9
     width,9.0
-    cpe_cov,0.0
+    cpe_cv,0.0
     cpe_k,0.1
-    cpe_str_cov,0.0
+    cpe_str_cv,0.0
     cpe_str_k,0.1
 
 .. _house_data_table:
@@ -417,10 +418,10 @@ This file defines parameter values for the model such as replacement cost and di
     height, float, "height of the model (in metre)"
     length, float, "length of the model (in metre)"
     width, float, "width of the model (in metre)"
-    cpe_cov, float, "cov of Cpe for sheeting and batten"
-    cpe_k, float, "shape factor of Cpe for sheeting and batten"
-    cpe_str_cov, float, "cov of Cpe for rafters and eaves"
-    cpe_str_k, float, "shape factor of Cpe for rafters and eaves"
+    cpe_cv, float, "CV of |Cpe| for cladding elements such as sheeting and batten"
+    cpe_k, float, "shape factor of |Cpe| for cladding elements such as sheeting and batten"
+    cpe_str_cv, float, "CV of |Cpe| for structural elements such as rafter"
+    cpe_str_k, float, "shape factor of |Cpe| for structural elements as rafter"
 
 .. _conn_groups.csv_section:
 
@@ -450,7 +451,7 @@ The model is assumed to consist of a number of connection groups. This file defi
     damage_scenario, string, "damage scenario name defined in damage_costing_data.csv"
     trigger_collapse_at, float, "proportion of damaged connections of the group at which a model is deemed to be collapsed. 0 if ignored"
     patch_dist, integer, "1 if influence patch is applied when connection is damaged otherwise 0"
-    flag_pressure, string, "type of cpe for pressure calculation; either 'cpe' or 'cpe_str'"
+    flag_pressure, string, "type of |Cpe| for pressure calculation; either 'cpe' or 'cpe_str'"
 
 
 .. _conn_types.csv_section:
@@ -524,7 +525,7 @@ This file defines connections and parameter values of the each connection. An ex
     type_name, string, "name of connection type"
     zone_loc, integer, "zone name corresponding to connection location"
     section, integer, "index of section in which damage distribution occurs"
-    coords, float, "comma separated values of x, y coordinates for plotting purpose. Provide 4 sets of x, y coordinates for a rectangular shape."
+    coords, float, "comma separated values of x, y coordinates for plotting purpose. e.g., 4 sets for a rectangular shape, 3 sets for a triangular shape."
 
 .. _zones.csv_section:
 
@@ -554,7 +555,7 @@ This file defines zones and parameter values of the each zone. An example is sho
     name, string, "name of zone"
     area, float, "area of zone (:math:`\text{m}^2`)"
     cpi_alpha, float, "proportion of the zone's area to which internal pressure is applied"
-    coords, float, "comma separated list of x, y coordinates for plotting purpose. Provide 4 sets of x, y coordinates for a rectangular shape."
+    coords, float, "comma separated list of x, y coordinates for plotting purpose. e.g., 4 sets for a rectangular shape, 3 sets for a triangular shape."
 
 
 .. _zones_cpe_mean.csv_section:
@@ -562,7 +563,7 @@ This file defines zones and parameter values of the each zone. An example is sho
 zones_cpe_mean.csv
 ------------------
 
-This file defines mean cladding Cpe of each zone with regard to the eight wind directions. An example is shown in :numref:`zones_cpe_mean.csv`, and description of each of the parameter values are provided in :numref:`zones_cpe_mean_table`.
+This file defines mean cladding |Cpe| of each zone with regard to the eight wind directions. An example is shown in :numref:`zones_cpe_mean.csv`, and description of each of the parameter values are provided in :numref:`zones_cpe_mean_table`.
 
 .. _zones_cpe_mean.csv:
 .. code-block:: none
@@ -591,14 +592,14 @@ This file defines mean cladding Cpe of each zone with regard to the eight wind d
     :widths: 10, 9, 30
 
     name, string, "name of zones"
-    S, float, "mean cladding Cpe value in South direction"
-    SW, float, "mean cladding Cpe value in South West direction"
-    W, integer, "mean cladding Cpe value in West direction"
-    NW, float, "mean cladding Cpe value in North East direction"
-    N, float, "mean cladding Cpe value in North direction"
-    NE, float, "mean cladding Cpe value in North East direction"
-    E, integer, "mean cladding Cpe value in East direction"
-    SE, float, "mean cladding Cpe value in South East direction"
+    S, float, "mean cladding |Cpe| value in South direction"
+    SW, float, "mean cladding |Cpe| value in South West direction"
+    W, integer, "mean cladding |Cpe| value in West direction"
+    NW, float, "mean cladding |Cpe| value in North East direction"
+    N, float, "mean cladding |Cpe| value in North direction"
+    NE, float, "mean cladding |Cpe| value in North East direction"
+    E, integer, "mean cladding |Cpe| value in East direction"
+    SE, float, "mean cladding |Cpe| value in South East direction"
 
 
 .. _zones_cpe_str_mean.csv_section:
@@ -606,7 +607,7 @@ This file defines mean cladding Cpe of each zone with regard to the eight wind d
 zones_cpe_str_mean.csv
 ----------------------
 
-Like zones_cpe_mean.csv, mean Cpe values for zones associated with structural component (e.g., rafter) need to be provided in zones_cpe_str_mean.csv. An example is shown in :numref:`zones_cpe_str_mean.csv`.
+Like zones_cpe_mean.csv, mean |Cpe| values for zones associated with structural component (e.g., rafter) need to be provided in zones_cpe_str_mean.csv. An example is shown in :numref:`zones_cpe_str_mean.csv`.
 
 .. _zones_cpe_str_mean.csv:
 .. code-block:: none
@@ -634,7 +635,7 @@ Like zones_cpe_mean.csv, mean Cpe values for zones associated with structural co
 zones_cpe_eave_mean.csv
 -----------------------
 
-Like zones_cpe_mean.csv, mean Cpe values for zones at eave need to be provided in zones_cpe_eave_mean.csv. An example is shown in :numref:`zones_cpe_eave_mean.csv`.
+Like zones_cpe_mean.csv, mean |Cpe| values for zones at eave need to be provided in zones_cpe_eave_mean.csv. An example is shown in :numref:`zones_cpe_eave_mean.csv`.
 
 .. _zones_cpe_eave_mean.csv:
 .. code-block:: none
@@ -688,7 +689,7 @@ In zones_edge.csv, for each of the eight direction, 1 is provided for zone withi
 coverages.csv
 -------------
 
-This file defines coverages making up the wall part of the envelope of the model. An example is shown in :numref:`coverages.csv`, and description of each of the parameter values are provided in :numref:`coverages_table`. The wall name is defined in :numref:`front_facing_walls.csv`.
+This file defines coverages making up the wall part of the envelope of the model. An example is shown in :numref:`coverages.csv`, and description of each of the parameter values are provided in :numref:`coverages_table`. The wall name is defined in :numref:`front_facing_walls.csv`. Coverages are assessed for debris impact damage and failure by direct wind pressure. The area of coverage is used in the calculation of |Cpi|.
 
 .. _coverages.csv:
 .. code-block:: none
@@ -702,7 +703,7 @@ This file defines coverages making up the wall part of the envelope of the model
 
 
 .. _coverages_table:
-.. csv-table:: Parameters in tge coverages.csv
+.. csv-table:: Parameters in the coverages.csv
     :header: Name, Type, "Description"
     :widths: 10, 9, 30
 
@@ -728,17 +729,17 @@ This file defines types of coverages referenced in the :numref:`coverages.csv`. 
     Timber_door,142.2,28.44,100,0.0,-100,0.0
 
 
+.. tabularcolumns:: |p{5.0cm}|p{1.0cm}|p{7.0cm}|
 .. _coverage_types_table:
 .. csv-table:: Parameters in the coverage_types.csv
     :header: Name, Type, "Description"
-    :widths: 10, 9, 30
 
     name, string, "name of coverage type"
-    failure_momentum_mean, float, "mean failure momentum (:math:`\text{kg}\cdot\text{m/s}`)"
+    failure_momentum_mean, float, "mean failure momentum (:math:`\text{kg}\cdot\text{m/s}`) for debris impact"
     failure_momentum_std, float, "standard deviation of failure momentum"
-    failure_strength_in_mean, float, "mean failure strength inward direction (kN)"
+    failure_strength_in_mean, float, "mean failure strength inward direction (positive) for failure due to wind pressure (kN)"
     failure_strength_in_std, float, "standard deviation of failure strength inward direction"
-    failure_strength_out_mean, float, "mean failure strength outward direction (kN)"
+    failure_strength_out_mean, float, "mean failure strength outward direction (negative) for failure due to wind pressure (kN)"
     failure_strength_out_std, float, "standard deviation of failure strength outward direction"
 
 
@@ -747,7 +748,7 @@ This file defines types of coverages referenced in the :numref:`coverages.csv`. 
 coverages_cpe.csv
 -----------------
 
-Like zones_cpe_mean.csv, mean Cpe values for coverages are provided in coverages_cpe.csv. An example is shown in :numref:`coverages_cpe.csv`.
+Like zones_cpe_mean.csv, mean |Cpe| values for coverages are provided in coverages_cpe.csv. An example is shown in :numref:`coverages_cpe.csv`.
 
 .. _coverages_cpe.csv:
 .. code-block:: none
@@ -853,19 +854,19 @@ where :math:`x`: proportion of damaged area (:math:`0 \leq x \leq 1`), :math:`A`
     Loss of roof structure,116,317,1,0.3105,-0.8943,1.6015,8320.97,1,-0.4902,1.4896,0.0036,3
 
 
+.. tabularcolumns:: |p{6.0cm}|p{10.0cm}|
 .. _damage_costing_data_table:
 .. csv-table:: Parameters in the damage_costing_data.csv
     :header: Name, "Description"
-    :widths: 10, 30
 
     name, name of damage scenario
     surface_area, surface area (:math:`\text{m}^2`)
-    envelope_repair_rate, repair rate for envelope ($/:math:`\text{m}^2`)
+    envelope_repair_rate, repair rate for envelope damage($/:math:`\text{m}^2`)
     envelope_factor_formula_type, type index of costing function for envelope
     envelope_coeff1, :math:`c_1` in costing function for envelope
     envelope_coeff2, :math:`c_2` in costing function for envelope
     envelope_coeff3, :math:`c_3` in costing function for envelope
-    internal_repair_rate, repair rate for internal ($)
+    internal_repair_rate, repair rate for internal damage ($)
     internal_factor_formula_type, type index of costing function for internal
     internal_coeff1, :math:`c_1` in costing function for internal
     internal_coeff2, :math:`c_2` in costing function for internal
@@ -971,11 +972,10 @@ output file
 
 After simulation output file named *results.h5* is created, which is in HDF5 format. Its content can be accessed via Python or HDF Viewer. :numref:`output_attribute_table` lists attributes in the output file. Note that time invariant attribute is one whose value is set when the model is created, and is kept the same over the range of wind speeds.
 
-.. tabularcolumns:: |p{4.5cm}|p{5.5cm}|p{3.0cm}|
+.. tabularcolumns:: |p{4.5cm}|p{5.5cm}|p{4.5cm}|
 .. _output_attribute_table:
 .. csv-table:: Attributes saved in the output file
     :header: Attribute, Description, Note
-    :widths: 15, 15, 15
 
     profile_index, wind profile index, per model (time invariant)
     wind_dir_index, wind direction index, per model (time invariant)
@@ -983,7 +983,7 @@ After simulation output file named *results.h5* is created, which is in HDF5 for
     terrain_height_multiplier, terrain height multiplier, per model (time invariant)
     shielding_multiplier, shielding multiplier, per model (time invariant)
     mean_factor, mean factor of construction quality, per model (time invariant)
-    cov_factor, cov factor of construction quality, per model (time invariant)
+    cv_factor, cv factor of construction quality, per model (time invariant)
     qz, free stream wind pressure, per model
     cpi, internal pressure coefficient, per model
     collapse, 1 if model collapse otherwise 0, per model
@@ -1037,3 +1037,10 @@ After simulation output file named *results.h5* is created, which is in HDF5 for
 
     Values of capacity of the selected connection in the HDFView
 
+.. |Cpe| replace:: :math:`C_{pe}`
+.. |Cpe,str| replace:: :math:`C_{pe,str}`
+.. |Cpi| replace:: :math:`C_{pi}`
+.. |qz| replace:: :math:`q_{z}`
+.. |Mz,cat| replace:: :math:`M_{z,cat}`
+.. |Ms| replace:: :math:`M_{s}`
+.. |Cpi,alpha| replace:: :math:`C_{pi,\alpha}`

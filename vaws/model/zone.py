@@ -55,8 +55,8 @@ class Zone(object):
     def __repr__(self):
         return 'Zone(name={})'.format(self.name)
 
-    def sample_cpe(self, cpe_cov, cpe_k, big_a, big_b,
-                   cpe_str_cov, cpe_str_k, big_a_str, big_b_str, rnd_state):
+    def sample_cpe(self, cpe_cv, cpe_k, big_a, big_b,
+                   cpe_str_cv, cpe_str_k, big_a_str, big_b_str, rnd_state):
 
         """
         Sample external Zone Pressures for sheeting, structure and eaves Cpe,
@@ -64,11 +64,11 @@ class Zone(object):
         zone areas for load calculations.
 
         Args:
-            cpe_cov: cov of dist. of CPE for sheeting and batten
+            cpe_cv: cov of dist. of CPE for sheeting and batten
             cpe_k: shape parameter of dist. of CPE
             big_a:
             big_b:
-            cpe_str_cov: cov. of dist of CPE for rafter
+            cpe_str_cv: cov. of dist of CPE for rafter
             cpe_str_k
             big_a_str:
             big_b_str:
@@ -79,15 +79,15 @@ class Zone(object):
         """
 
         self.cpe = sample_gev(self.cpe_mean[self.wind_dir_index],
-                              cpe_cov, cpe_k, big_a, big_b, rnd_state)
+                              cpe_cv, cpe_k, big_a, big_b, rnd_state)
 
         self.cpe_str = sample_gev(self.cpe_str_mean[self.wind_dir_index],
-                                  cpe_str_cov, cpe_str_k, big_a_str, big_b_str, rnd_state)
+                                  cpe_str_cv, cpe_str_k, big_a_str, big_b_str, rnd_state)
 
         self.cpe_eave = sample_gev(self.cpe_eave_mean[self.wind_dir_index],
-                                   cpe_str_cov, cpe_str_k, big_a_str, big_b_str, rnd_state)
+                                   cpe_str_cv, cpe_str_k, big_a_str, big_b_str, rnd_state)
 
-    def calc_zone_pressure(self, cpi, qz):
+    def calc_zone_pressure(self, cpi, qz, combination_factor):
         """
         Determine wind pressure loads (Cpe) on each zone (to be distributed onto
         connections)
@@ -95,18 +95,18 @@ class Zone(object):
         Args:
             cpi: internal pressure coefficient
             qz: free stream wind pressure
+            combination_factor: action combination factor
 
         Returns:
             pressure : zone pressure
 
         """
 
-        self.pressure_cpe = qz * (
-            self.cpe - self.cpi_alpha * cpi) * self.differential_shielding
+        self.pressure_cpe = qz * combination_factor * (
+            self.cpe - self.cpi_alpha * cpi - self.cpe_eave) * self.differential_shielding
 
-        self.pressure_cpe_str = qz * (
-            self.cpe_str - self.cpi_alpha * cpi -
-            self.cpe_eave) * self.differential_shielding
+        self.pressure_cpe_str = qz * combination_factor * (
+            self.cpe_str - self.cpi_alpha * cpi - self.cpe_eave) * self.differential_shielding
 
     @property
     def differential_shielding(self):

@@ -152,7 +152,7 @@ class Config(object):
 
     house_bucket = ['profile_index', 'wind_dir_index', 'construction_level',
                     'terrain_height_multiplier', 'shielding_multiplier',
-                    'mean_factor', 'cov_factor', 'qz', 'cpi',
+                    'mean_factor', 'cv_factor', 'qz', 'cpi',
                     'collapse', 'di', 'di_except_water', 'repair_cost',
                     'water_ingress_cost', 'window_breached_by_debris']
 
@@ -178,7 +178,7 @@ class Config(object):
                           'collapse', 'profile_index', 'wind_dir_index',
                           'construction_level', 'terrain_height_multiplier',
                           'shielding_multiplier', 'mean_factor',
-                          'cov_factor']
+                          'cv_factor']
 
     dic_obj_for_fitting = {'weibull': 'vulnerability_weibull',
                            'lognorm': 'vulnerability_lognorm'}
@@ -209,7 +209,7 @@ class Config(object):
         self.construction_levels = OrderedDict()
         self.construction_levels_i_levels = ['low', 'medium', 'high']
         self.construction_levels_i_mean_factors = [0.9, 1.0, 1.1]
-        self.construction_levels_i_cov_factors = [0.58, 0.58, 0.58]
+        self.construction_levels_i_cv_factors = [0.58, 0.58, 0.58]
         self.construction_levels_i_probs = [0.33, 0.34, 0.33]
 
         self.fragility = None
@@ -512,7 +512,7 @@ class Config(object):
 
     def read_construction_levels(self, conf, key):
         if self.flags[key]:
-            for k in ['levels', 'probabilities', 'mean_factors', 'cov_factors']:
+            for k in ['levels', 'probabilities', 'mean_factors', 'cv_factors']:
                 setattr(self, 'construction_levels_i_{}'.format(k),
                         self.read_column_separated_entry(conf.get(key, k)))
         else:
@@ -524,10 +524,10 @@ class Config(object):
                 self.construction_levels_i_levels,
                 self.construction_levels_i_probs,
                 self.construction_levels_i_mean_factors,
-                self.construction_levels_i_cov_factors):
+                self.construction_levels_i_cv_factors):
             self.construction_levels[_level] = {'probability': _prob,
                                                 'mean_factor': _mean,
-                                                'cov_factor': _cov}
+                                                'cv_factor': _cov}
 
     @staticmethod
     def read_column_separated_entry(value):
@@ -1076,8 +1076,8 @@ class Config(object):
                    ', '.join(str(x) for x in self.construction_levels_i_probs))
         config.set(key, 'mean_factors',
                    ', '.join(str(x) for x in self.construction_levels_i_mean_factors))
-        config.set(key, 'cov_factors',
-                   ', '.join(str(x) for x in self.construction_levels_i_cov_factors))
+        config.set(key, 'cv_factors',
+                   ', '.join(str(x) for x in self.construction_levels_i_cv_factors))
 
         key = 'water_ingress'
         config.add_section(key)

@@ -94,20 +94,20 @@ class Coverage(Zone):
             else:
                 self.strength_negative = -1.0 * _value
 
-    def check_damage(self, qz, cpi, wind_speed):
+    def check_damage(self, qz, cpi, combination_factor, wind_speed):
         """
 
         :param qz:
         :param cpi:
+        :param combination_factor:
         :param wind_speed:
         :return:
         """
-
         self.load = 0.0
 
         if not self.breached:
 
-            self.load = 0.9 * qz * (self.cpe - cpi) * self.area
+            self.load = qz * (self.cpe - cpi) * self.area * combination_factor
 
             logging.debug(
                 'load at coverage {}: {:.3f} * ({:.3f} - {:.3f}) * {:.3f}'.format(

@@ -332,7 +332,7 @@ rafter,3,col,Loss of roof structure,0,1,0,3
         ref = {'low': (0.33, 0.9, 0.58),
                'medium': (0.34, 1.0, 0.58),
                'high': (0.33, 1.1, 0.58)}
-        keys = ['probability', 'mean_factor', 'cov_factor']
+        keys = ['probability', 'mean_factor', 'cv_factor']
         for key, values in ref.items():
             for sub_key, value in zip(keys, values):
                 self.assertEqual(value,
@@ -343,14 +343,14 @@ rafter,3,col,Loss of roof structure,0,1,0,3
         self.cfg.construction_levels_i_levels = ['dummy']
         self.cfg.construction_levels_i_probs = [0.5]
         self.cfg.construction_levels_i_mean_factors = [0.5]
-        self.cfg.construction_levels_i_cov_factors = [0.5]
+        self.cfg.construction_levels_i_cv_factors = [0.5]
 
         self.cfg.set_construction_levels()
 
         self.assertDictEqual(self.cfg.construction_levels['dummy'],
                              {'probability': 0.5,
                               'mean_factor': 0.5,
-                              'cov_factor': 0.5})
+                              'cv_factor': 0.5})
 
     def test_save_config(self):
         self.cfg.cfg_file += '.copy'

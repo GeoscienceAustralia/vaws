@@ -55,13 +55,14 @@ class MyTestCase(unittest.TestCase):
         qz = 0.8187
         Ms = 1.0
         building_spacing = 0
+        combination_factor = house.combination_factor
 
         _zone = house.zones['A1']
         _zone.cpe = _zone.cpe_mean[0]  # originally randomly generated
         _zone.cpe_eave = _zone.cpe_eave_mean[0]
         _zone.cpe_str = _zone.cpe_str_mean[0]
 
-        _zone.calc_zone_pressure(cpi, qz)
+        _zone.calc_zone_pressure(cpi, qz, combination_factor)
 
         self.assertAlmostEqual(_zone.cpi_alpha, 0.0, places=2)
         self.assertAlmostEqual(_zone.cpe_mean[0], -1.25, places=2)
@@ -69,7 +70,7 @@ class MyTestCase(unittest.TestCase):
         self.assertAlmostEqual(_zone.cpe_str_mean[0], 0.0, places=2)
         self.assertAlmostEqual(house.zones['A1'].area, 0.2025, places=4)
 
-        # pz = qz * (cpe - cpi_alpha * cpi) * differential_shielding
+        # pz = qz * (cpe - cpi_alpha * cpi - cpe_eave) * differential_shielding
         #self.assertAlmostEqual(house.zones['A1'].pressure, -1.0234, places=4)
 
         _conn = house.connections[1]
@@ -81,13 +82,14 @@ class MyTestCase(unittest.TestCase):
         _conn.compute_load()
 
         # load = influence.pz * influence.coeff * influence.area + dead_load
-        self.assertAlmostEqual(_conn.influences['A1'].source.area, 0.2025,
-                               places=4)
+        # ref_cpe = qz * (_zone.cpe - _zone.cpe_eave)
         self.assertAlmostEqual(_conn.influences['A1'].source.pressure_cpe,
-                               -1.0234, places=4)
+                               -1.5965, places=4)
+        # ref_cpe_str = qz * (_zone.cpe_str - _zone.cpe_eave)
         self.assertAlmostEqual(_conn.influences['A1'].source.pressure_cpe_str,
                                -0.5731, places=4)
-        self.assertAlmostEqual(_conn.load, -0.1971, places=4)
+        # ref_load = _zone.area * ref_cpe + _conn.dead_load
+        self.assertAlmostEqual(_conn.load, -0.3132, places=4)
 
     def test_check_damage(self):
 
@@ -101,14 +103,15 @@ class MyTestCase(unittest.TestCase):
         qz = 0.6 * 1.0e-3 * (wind_speed * mzcat) ** 2
         Ms = 1.0
         building_spacing = 0
+        combination_factor = house.combination_factor
 
         # compute pz using constant cpe
         for _zone in house.zones.itervalues():
             _zone.cpe = _zone.cpe_mean[0]
             _zone.cpe_eave = _zone.cpe_eave_mean[0]
             _zone.cpe_str = _zone.cpe_str_mean[0]
-            _zone.calc_zone_pressure(cpi, qz)
-            ref_cpe = qz * (_zone.cpe_mean[0])
+            _zone.calc_zone_pressure(cpi, qz, combination_factor)
+            ref_cpe = qz * (_zone.cpe_mean[0] - _zone.cpe_eave_mean[0])
             ref_cpe_str = qz * (_zone.cpe_str_mean[0] - _zone.cpe_eave_mean[0])
             self.assertAlmostEqual(_zone.pressure_cpe, ref_cpe, places=4)
             self.assertAlmostEqual(_zone.pressure_cpe_str, ref_cpe_str, places=4)
@@ -119,7 +122,7 @@ class MyTestCase(unittest.TestCase):
             _conn.lognormal_strength = _conn.lognormal_strength[0], 0.0
 
             _conn.sample_dead_load(house.rnd_state)
-            _conn.sample_strength(mean_factor=1.0, cov_factor=0.0,
+            _conn.sample_strength(mean_factor=1.0, cv_factor=0.0,
                                   rnd_state=house.rnd_state)
             _conn.compute_load()
 
@@ -136,7 +139,7 @@ class MyTestCase(unittest.TestCase):
         group.check_damage(wind_speed=wind_speed)
 
         ref_dic = {x: False for x in range(1, 61)}
-        for i in [8, 14, 20, 26]:
+        for i in [2, 8, 14, 20, 26]:
             ref_dic[i] = True
 
         for id_conn, _conn in house.connections.items():

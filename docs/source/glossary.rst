@@ -14,7 +14,7 @@ Glossary
     connection
         models a physical structural connection that will bear a simulated load and when broken cause load to be distributed and generate damage outcomes.
 
-    connection group
+    connection type
         a collection of connections sharing the same strength and dead load statistical characteristics and costing area
 
     coverage
@@ -53,7 +53,7 @@ Glossary
         terrain height multiplier
 
     patch
-        a set of influence coefficients for a connection
+        a set of revised influence coefficients for a connection
 
     |qz|
         free stream wind pressure
@@ -62,7 +62,7 @@ Glossary
         A damage model, or curve, which describes the average severity of physical economic loss to a group of buildings of a particular type in terms of a damage index with increasing natural hazard exposure.
 
     zone
-        an area where wind pressure acts. zone is linked with connection with influence coefficient so the wind pressure is transformed to wind load to connection.
+        an area of building enveloped on which wind pressure acts. Zone is linked with connection with influence coefficient so the wind pressure is transformed to wind load on a connection.
 
 
 .. |Cpe| replace:: :math:`C_{pe}`

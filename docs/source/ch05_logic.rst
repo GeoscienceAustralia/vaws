@@ -92,7 +92,7 @@ The wind direction is set up at the time of model creation, and kept constant du
 sample construction quality level (:py:meth:`.House.set_construction_level`)
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-A set of mean and coefficient of variation (CV) factors for connection strength is defined for each construction quality level with likelihood as listed in :numref:`section_construction_levels_table`. Construction level for each model is determined from a random sampling, and the corresponding mean and CV factors are later multiplied to arithmetic mean and standard deviation of strength as :eq:`mean_cv_factors_eq`:
+A set of mean and coefficient of variation (CV) factors for connection strength is defined for each construction quality level with likelihood as listed in :numref:`section_construction_levels_table`. Construction level for each model is determined from a random sampling, and the corresponding mean and CV factors are later multiplied to arithmetic mean and standard deviation of conneciton strength as :eq:`mean_cv_factors_eq`:
 
 .. math::
     :label: mean_cv_factors_eq
@@ -114,7 +114,7 @@ A set of gust envelope wind profiles is read from `wind_profiles` (:numref:`sect
 set terrain height multiplier (:py:meth:`.House.set_terrain_height_multiplier`)
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-The terrain height multiplier (|Mz,cat|) value at the model height is calculated by the interpolation using the selected win profile over height.
+The terrain height multiplier (|Mz,cat|) value at the model height is calculated by the interpolation using the selected wind profile over height.
 
 
 .. _set_shielding_section:
@@ -138,7 +138,7 @@ The shielding multiplier (|Ms|) value is determined based on the location. If th
 set up coverages (:py:meth:`.House.set_coverages`)
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-The coverages are making up the wall part of the envelope of the model. Two failure mechanism are implemented: 1) failure by wind load and 2) failure by windborne debris.
+The coverages make up the wall part of the envelope of the model. Two failure mechanism are implemented: 1) failure by wind load and 2) failure by windborne debris.
 
 A set of coverage components (:py:class:`.Coverage`) is defined using the information provided in the input files of :ref:`coverages.csv <coverages.csv_section>`, :ref:`coverage_types.csv <coverage_types.csv_section>` and :ref:`coverages_cpe.csv <coverages_cpe.csv_section>`.
 The |Cpe| and strength values for each coverage component are sampled when it is defined. The windward direction for each coverage component is assigned from among `windward`, `leeward`, `side1`, or `side2`, which is used in determining the windward direction of dominant opening due to coverage failure.
@@ -194,7 +194,7 @@ The free stream wind pressure, |qz| is calculated as :eq:`qz_eq`:
 
     q_{z} = \frac{1}{2}\times\rho_{air} \times \left( V \times M_{z,cat} \times M_{s} \right)^2 \times 1.0\text{e-}3
 
-where :math:`\rho_{air}`: air density (=1.2 |kgm^3|), :math:`V`: 3-sec gust wind speed at 10m height, |Mz,cat|: terrain-height multiplier, |Ms|: shielding multiplier. Note that :math:`1.0\text{e-}3` is multiplied to convert the unit of the wind pressure from N to kN.
+where :math:`\rho_{air}`: air density (=1.2 |kgm^3|), :math:`V`: 3-sec gust wind speed at 10m height, |Mz,cat|: terrain-height multiplier, |Ms|: shielding multiplier. Note that :math:`1.0\text{e-}3` is multiplied to convert the unit of the wind pressure from Pa to kPa.
 
 
 .. _check_model_collapse_section:
@@ -320,10 +320,10 @@ Two kinds of zone pressure, |pz| for zone component related to sheeting and batt
 .. math::
     :label: zone_pressure_eq
 
-    p_{z} &= q_{z} \times \left( C_{pe} - C_{pi,\alpha} \times C_{pi} \right) \times D_{s} \\
-    p_{z,str} &= q_{z} \times \left( C_{pe,str} - C_{pi, \alpha} \times C_{pi} - C_{pe,eave} \right) \times D_{s} \\
+    p_{z} &= q_{z} \times \left( C_{pe} - C_{pi,\alpha} \times C_{pi} \right) \times D_{s} \times K_{c}\\
+    p_{z,str} &= q_{z} \times \left( C_{pe,str} - C_{pi, \alpha} \times C_{pi} - C_{pe,eave} \right) \times D_{s} \times K_{c} \\
 
-where |qz|: free stream wind pressure, |Cpe|: external pressure coefficient, |Cpi|: internal pressure coefficient, |Cpi,alpha|: proportion of the zone's area to which internal pressure is applied, |Cpe,str|: external pressure coefficient for zone component related to rafter, |Cpe,eave|: external pressure coefficient for zone component related to eave, and :math:`D_{s}`: differential shielding. The value of differential shielding is determined as explained in :ref:`set differential shielding <differential_shielding_section>`.
+where |qz|: free stream wind pressure, |Cpe|: external pressure coefficient, |Cpi|: internal pressure coefficient, |Cpi,alpha|: proportion of the zone's area to which internal pressure is applied, |Cpe,str|: external pressure coefficient for zone component related to rafter, |Cpe,eave|: external pressure coefficient for zone component related to eave, :math:`D_{s}`: differential shielding, and :math:`K_{c}`: action combination factor. The value of differential shielding is determined as explained in :ref:`set differential shielding <differential_shielding_section>`.
 
 .. _differential_shielding_section:
 
@@ -465,7 +465,7 @@ The mean number of debris items to be generated (:math:`N_{mean}`) is calculated
 
 where :math:`N_{items}`: number of debris items per source defined in :ref:`3.1.3 <debris_section>`, :math:`\Delta{DI}`: increment in damage index from previous wind step, and :math:`\operatorname{nint}`: nearest integer function.
 
-The number of generated debris items is assumed to follow the Poisson distribution with parameter :math:`\lambda=N_{mean}`. For each debris source, the number of generated debris items is randomly sampled from the distribution, and debris type is randomly chosen as many as number of items with probability proportional to the ratio of each type defined in :numref:`debris_item_table`. The debris types are provided in :ref:`3.2 <debris.csv_section>`:
+The number of generated debris items is assumed to follow the Poisson distribution with parameter :math:`\lambda=N_{mean}`. For each debris source, the number of generated debris items is randomly sampled from the distribution, and debris type is randomly chosen as many as number of items with probability proportional to the ratio of each type defined in :numref:`debris_item_table`. The debris types are provided in the section of :ref:`3.2 debris.csv <debris.csv_section>`.
 
 debris trajectory
 ^^^^^^^^^^^^^^^^^
@@ -570,7 +570,7 @@ The probability of damage can be calculated based on the Poisson distribution as
 
     P_D = 1 - P(N=0) = 1-\exp\left[-\lambda\right]
 
-:math:`q` and :math:`F_{\xi}(\xi>\xi_d)` are estimated for each coverage. If the material of the coverage is glass, then :math:`P_D` is computed and compared against a random value sampled from unit uniform distribution to determine whether the coverage is damaged or not. For coverage with non-glass material, a random value of number of impact is sampled from the Poisson distribution with :math:`\lambda`, and damaged coverage area is then computed assuming that affected area by debris impact is 1.
+:math:`q` and :math:`F_{\xi}(\xi>\xi_d)` are estimated for each coverage. If the material of the coverage is glass, then :math:`P_D` is computed and compared against a random value sampled from unit uniform distribution to determine whether the coverage is damaged or not. For coverage with non-glass material, a random value of number of impact is sampled from the Poisson distribution with :math:`\lambda`, and damaged coverage area is then computed assuming that the area requiring repairs due to debris impact is 1.
 
 damage_costing module (:py:class:`.Costing`)
 --------------------------------------------

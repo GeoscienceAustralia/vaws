@@ -96,12 +96,12 @@ class Connection(object):
         assert isinstance(_dic, dict)
         self._influence_patch = _dic
 
-    def sample_strength(self, mean_factor, cov_factor, rnd_state):
+    def sample_strength(self, mean_factor, cv_factor, rnd_state):
         """Return a sampled strength from lognormal distribution
 
         Args:
             mean_factor: factor adjusting arithmetic mean strength
-            cov_factor: factor adjusting arithmetic cov
+            cv_factor: factor adjusting arithmetic cv
             rnd_state:
 
         Returns: sample of strength following log normal dist.
@@ -110,7 +110,7 @@ class Connection(object):
         mu, std = compute_arithmetic_mean_stddev(*self.lognormal_strength)
 
         mu *= mean_factor
-        std *= cov_factor * mean_factor
+        std *= cv_factor * mean_factor
 
         self.strength = sample_lognorm_given_mean_stddev(mu, std, rnd_state)
 

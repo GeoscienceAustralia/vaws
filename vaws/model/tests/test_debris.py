@@ -1334,10 +1334,10 @@ class MyTestCase(unittest.TestCase):
         plt.title('Flight distance')
         plt.legend(loc=2)
         plt.xlabel('Wind speed (m/s)')
-        plt.xlabel('Flight distance (m)')
+        plt.ylabel('Flight distance (m)')
         # plt.show()
         plt.pause(1.0)
-        # plt.savefig('./flight_distance.png', dpi=200)
+        plt.savefig('./flight_distance.png', dpi=200)
         plt.close()
 
     @staticmethod

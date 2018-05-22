@@ -28,8 +28,8 @@ class House(object):
         self.height = None
         self.length = None
         self.replace_cost = None
-        self.cpe_cov = None
-        self.cpe_str_cov = None
+        self.cpe_cv = None
+        self.cpe_str_cv = None
         self.cpe_k = None
         self.cpe_str_k = None
         self.big_a = None
@@ -74,6 +74,15 @@ class House(object):
         self.set_connections()
         self.set_debris()
 
+    @property
+    def combination_factor(self):
+        """
+        AS/NZS 1170.2 action combination factor, Kc
+        reduction when wind pressures from more than one building sufrace, e.g.,
+        walls and roof
+        """
+        return 1.0 if abs(self.cpi) < 0.2 else 0.9
+
     def run_simulation(self, wind_speed):
 
         if not self.collapse:
@@ -85,11 +94,12 @@ class House(object):
 
             # load = qz * (Cpe + Cpi) * A + dead_load
             for _zone in self.zones.itervalues():
-                _zone.calc_zone_pressure(self.cpi, self.qz)
+                _zone.calc_zone_pressure(self.cpi, self.qz, self.combination_factor)
 
             if self.coverages is not None:
                 for _, _ps in self.coverages.iterrows():
-                    _ps['coverage'].check_damage(self.qz, self.cpi, wind_speed)
+                    _ps['coverage'].check_damage(self.qz, self.cpi,
+                                                 self.combination_factor, wind_speed)
 
             for _, _connection in self.connections.items():
                 _connection.compute_load()
@@ -383,9 +393,9 @@ class House(object):
             self.construction_level]['mean_factor']
 
     @property
-    def cov_factor(self):
+    def cv_factor(self):
         return self.cfg.construction_levels[
-                self.construction_level]['cov_factor']
+                self.construction_level]['cv_factor']
 
     def set_terrain_height_multiplier(self):
         self.terrain_height_multiplier = np.interp(
@@ -428,7 +438,7 @@ class House(object):
     def set_construction_level(self):
         """
 
-        Returns: construction_level, mean_factor, cov_factor
+        Returns: construction_level, mean_factor, cv_factor
 
         """
         rv = self.rnd_state.random_integers(0, 100)
@@ -463,11 +473,11 @@ class House(object):
             _zone = Zone(name=_name, **item)
 
             _zone.sample_cpe(
-                cpe_cov=self.cpe_cov,
+                cpe_cv=self.cpe_cv,
                 cpe_k=self.cpe_k,
                 big_a=self.big_a,
                 big_b=self.big_b,
-                cpe_str_cov=self.cpe_str_cov,
+                cpe_str_cv=self.cpe_str_cv,
                 cpe_str_k=self.cpe_str_k,
                 big_a_str=self.big_a_str,
                 big_b_str=self.big_b_str,
@@ -536,7 +546,7 @@ class House(object):
 
         """
         _connection.sample_strength(mean_factor=self.mean_factor,
-                                    cov_factor=self.cov_factor,
+                                    cv_factor=self.cv_factor,
                                     rnd_state=self.rnd_state)
         _connection.sample_dead_load(rnd_state=self.rnd_state)
 
@@ -595,11 +605,11 @@ class House(object):
                 _coverage = Coverage(name=_name, **item)
 
                 _coverage.sample_cpe(
-                    cpe_cov=self.cpe_cov,
+                    cpe_cv=self.cpe_cv,
                     cpe_k=self.cpe_k,
                     big_a=self.big_a,
                     big_b=self.big_b,
-                    cpe_str_cov=self.cpe_str_cov,
+                    cpe_str_cv=self.cpe_str_cv,
                     cpe_str_k=self.cpe_str_k,
                     big_a_str=self.big_a_str,
                     big_b_str=self.big_b_str,
@@ -636,8 +646,8 @@ class House(object):
 
     def compute_damaged_area_and_assign_cpi(self):
 
-        # self.coverages['breached_area'] = \
-        #     self.coverages['coverage'].apply(lambda x: x.breached_area)
+        self.coverages['breached_area'] = \
+            self.coverages['coverage'].apply(lambda x: x.breached_area)
 
         # self.debris.damaged_area = self.coverages['breached_area'].sum()
 

@@ -107,11 +107,11 @@ The bottom left panel contains data browser of house and global data. This panel
 .. csv-table:: House data
     :header: Tab name, Input file, Section
 
-    Connections, connections.csv, :ref:`3.4.4 <connections.csv_section>`
-    Types, conn_types.csv, :ref:`3.4.3 <conn_types.csv_section>`
-    Groups, conn_groups.csv, :ref:`3.4.2 <conn_groups.csv_section>`
-    Zones, zones.csv, :ref:`3.4.5 <zones.csv_section>`
-    Damage, damage_costing_data.csv, :ref:`3.4.15 <damage_costing_data.csv_section>`
+    Connections, connections.csv, :ref:`3.4.4 connections.csv <connections.csv_section>`
+    Types, conn_types.csv, :ref:`3.4.3 conn_types.csv <conn_types.csv_section>`
+    Groups, conn_groups.csv, :ref:`3.4.2 conn_groups.csv <conn_groups.csv_section>`
+    Zones, zones.csv, :ref:`3.4.5 zones.csv <zones.csv_section>`
+    Damage, damage_costing_data.csv, :ref:`3.4.15 damage_costing_data.csv <damage_costing_data.csv_section>`
 
 .. _house_tab_fig:
 .. figure:: _static/image/house_tab.png
@@ -120,7 +120,7 @@ The bottom left panel contains data browser of house and global data. This panel
 
     House data tab showing connections information
 
-The Global tab has two tabs at the bottom: Boundary Profile and Debris, as shown in :numref:`global_tab_fig`. In the Boundary Profile tab, gust envelope profiles of selected wind profiles is displayed. Details about the gust envelop profiles can be found in :ref:`3.3 <envelope_profiles_section>`. In the Debris tab, parameter values for debris model listed in the debris.csv (:ref:`3.1.3 <debris.csv_section>`) is displayed. Note that the contents of both tabs are to be changed dynamically upon different selection of wind profile file (Wind Profiles) and debris region (Region).
+The Global tab has two tabs at the bottom: Boundary Profile and Debris, as shown in :numref:`global_tab_fig`. In the Boundary Profile tab, gust envelope profiles of selected wind profiles is displayed. Details about the gust envelope profiles can be found in :ref:`3.3 <envelope_profiles_section>`. In the Debris tab, parameter values for debris model listed in the debris.csv (:ref:`3.1.3 <debris.csv_section>`) is displayed. Note that the contents of both tabs are to be changed dynamically upon different selection of wind profile file (Wind Profiles) and debris region (Region).
 
 .. _global_tab_fig:
 .. figure:: _static/image/global_tab.png
@@ -257,7 +257,7 @@ The Water Ingress window shows a scatter plot of the costing associated with wat
 
     Plot in the Water Ingress window
 
-The	Debris window shows 1) number of generated debris items, 2) number of impacted debris items, and 3) proportion of model breached by debris along the range of wind speed, as shown in :numref:`curves_debris_fig`.
+The	Debris window shows 1) number of generated debris items, 2) number of impacted debris items, and 3) proportion of models breached by debris along the range of wind speed, as shown in :numref:`curves_debris_fig`.
 
 .. _curves_debris_fig:
 .. figure:: _static/image/curves_debris.png
