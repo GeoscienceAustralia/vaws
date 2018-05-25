@@ -314,7 +314,7 @@
 
 <dl class="attribute">
 <dt>
-<code class="descname">att_time_invariant</code><em class="property"> = ['strength', 'strength_negative', 'strength_positive', 'dead_load', 'cpe', 'cpe_str', 'cpe_eave', 'capacity', 'collapse', 'profile_index', 'wind_dir_index', 'construction_level', 'terrain_height_multiplier', 'shielding_multiplier', 'mean_factor', 'cov_factor']</em></dt>
+<code class="descname">att_time_invariant</code><em class="property"> = ['strength', 'strength_negative', 'strength_positive', 'dead_load', 'cpe', 'cpe_str', 'cpe_eave', 'capacity', 'collapse', 'profile_index', 'wind_dir_index', 'construction_level', 'terrain_height_multiplier', 'shielding_multiplier', 'mean_factor', 'cv_factor']</em></dt>
 <dd></dd></dl>
 
 <dl class="attribute">
@@ -379,12 +379,12 @@
 
 <dl class="attribute">
 <dt id="vaws.model.config.Config.group_bucket">
-<code class="descname">group_bucket</code><em class="property"> = ['damaged_area']</em><a class="headerlink" href="#vaws.model.config.Config.group_bucket" title="Permalink to this definition">¶</a></dt>
+<code class="descname">group_bucket</code><em class="property"> = ['damaged_area', 'prop_damaged']</em><a class="headerlink" href="#vaws.model.config.Config.group_bucket" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="attribute">
 <dt id="vaws.model.config.Config.house_bucket">
-<code class="descname">house_bucket</code><em class="property"> = ['profile_index', 'wind_dir_index', 'construction_level', 'terrain_height_multiplier', 'shielding_multiplier', 'mean_factor', 'cov_factor', 'qz', 'cpi', 'collapse', 'di', 'di_except_water', 'repair_cost', 'water_ingress_cost', 'window_breached_by_debris']</em><a class="headerlink" href="#vaws.model.config.Config.house_bucket" title="Permalink to this definition">¶</a></dt>
+<code class="descname">house_bucket</code><em class="property"> = ['profile_index', 'wind_dir_index', 'construction_level', 'terrain_height_multiplier', 'shielding_multiplier', 'mean_factor', 'cv_factor', 'qz', 'cpi', 'collapse', 'di', 'di_except_water', 'repair_cost', 'water_ingress_cost', 'window_breached_by_debris']</em><a class="headerlink" href="#vaws.model.config.Config.house_bucket" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="attribute">
@@ -698,14 +698,8 @@
 <dl class="method">
 <dt id="vaws.model.connection.Connection.check_damage">
 <code class="descname">check_damage</code><span class="sig-paren">(</span><em>wind_speed</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/vaws/model/connection.html#Connection.check_damage"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#vaws.model.connection.Connection.check_damage" title="Permalink to this definition">¶</a></dt>
-<dd><table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>wind_speed</strong> – </td>
-</tr>
-</tbody>
-</table>
+<dd><blockquote>
+<div>wind_speed:</div></blockquote>
 <p>Returns:</p>
 </dd></dl>
 
@@ -741,7 +735,7 @@
 
 <dl class="method">
 <dt id="vaws.model.connection.Connection.sample_strength">
-<code class="descname">sample_strength</code><span class="sig-paren">(</span><em>mean_factor</em>, <em>cov_factor</em>, <em>rnd_state</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/vaws/model/connection.html#Connection.sample_strength"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#vaws.model.connection.Connection.sample_strength" title="Permalink to this definition">¶</a></dt>
+<code class="descname">sample_strength</code><span class="sig-paren">(</span><em>mean_factor</em>, <em>cv_factor</em>, <em>rnd_state</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/vaws/model/connection.html#Connection.sample_strength"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#vaws.model.connection.Connection.sample_strength" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return a sampled strength from lognormal distribution</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -749,7 +743,7 @@
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
 <li><strong>mean_factor</strong> – factor adjusting arithmetic mean strength</li>
-<li><strong>cov_factor</strong> – factor adjusting arithmetic cov</li>
+<li><strong>cv_factor</strong> – factor adjusting arithmetic cv</li>
 <li><strong>rnd_state</strong> – </li>
 </ul>
 </td>
@@ -891,7 +885,7 @@ row: chr, col: number</p>
 
 <dl class="method">
 <dt id="vaws.model.coverage.Coverage.check_damage">
-<code class="descname">check_damage</code><span class="sig-paren">(</span><em>qz</em>, <em>cpi</em>, <em>wind_speed</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/vaws/model/coverage.html#Coverage.check_damage"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#vaws.model.coverage.Coverage.check_damage" title="Permalink to this definition">¶</a></dt>
+<code class="descname">check_damage</code><span class="sig-paren">(</span><em>qz</em>, <em>cpi</em>, <em>combination_factor</em>, <em>wind_speed</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/vaws/model/coverage.html#Coverage.check_damage"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#vaws.model.coverage.Coverage.check_damage" title="Permalink to this definition">¶</a></dt>
 <dd><table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -899,6 +893,7 @@ row: chr, col: number</p>
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
 <li><strong>qz</strong> – </li>
 <li><strong>cpi</strong> – </li>
+<li><strong>combination_factor</strong> – </li>
 <li><strong>wind_speed</strong> – </li>
 </ul>
 </td>
@@ -1471,6 +1466,14 @@ self.cpi_wind_speed</td>
 </table>
 </dd></dl>
 
+<dl class="attribute">
+<dt id="vaws.model.house.House.combination_factor">
+<code class="descname">combination_factor</code><a class="headerlink" href="#vaws.model.house.House.combination_factor" title="Permalink to this definition">¶</a></dt>
+<dd><p>AS/NZS 1170.2 action combination factor, Kc
+reduction when wind pressures from more than one building sufrace, e.g.,
+walls and roof</p>
+</dd></dl>
+
 <dl class="method">
 <dt id="vaws.model.house.House.compute_area_by_group">
 <code class="descname">compute_area_by_group</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/vaws/model/house.html#House.compute_area_by_group"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#vaws.model.house.House.compute_area_by_group" title="Permalink to this definition">¶</a></dt>
@@ -1534,8 +1537,8 @@ qz = 1/2*rho_air*(V*Mz,cat*Ms)**2 * 1.0e-3  (kN)
 <dd></dd></dl>
 
 <dl class="attribute">
-<dt id="vaws.model.house.House.cov_factor">
-<code class="descname">cov_factor</code><a class="headerlink" href="#vaws.model.house.House.cov_factor" title="Permalink to this definition">¶</a></dt>
+<dt id="vaws.model.house.House.cv_factor">
+<code class="descname">cv_factor</code><a class="headerlink" href="#vaws.model.house.House.cv_factor" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="method">
@@ -1590,7 +1593,7 @@ qz = 1/2*rho_air*(V*Mz,cat*Ms)**2 * 1.0e-3  (kN)
 <dl class="method">
 <dt id="vaws.model.house.House.set_construction_level">
 <code class="descname">set_construction_level</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/vaws/model/house.html#House.set_construction_level"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#vaws.model.house.House.set_construction_level" title="Permalink to this definition">¶</a></dt>
-<dd><p>Returns: construction_level, mean_factor, cov_factor</p>
+<dd><p>Returns: construction_level, mean_factor, cv_factor</p>
 </dd></dl>
 
 <dl class="method">
@@ -1932,7 +1935,7 @@ If std is zero, just return exp(mu_lnx)</p>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
 <dl class="method">
 <dt id="vaws.model.zone.Zone.calc_zone_pressure">
-<code class="descname">calc_zone_pressure</code><span class="sig-paren">(</span><em>cpi</em>, <em>qz</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/vaws/model/zone.html#Zone.calc_zone_pressure"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#vaws.model.zone.Zone.calc_zone_pressure" title="Permalink to this definition">¶</a></dt>
+<code class="descname">calc_zone_pressure</code><span class="sig-paren">(</span><em>cpi</em>, <em>qz</em>, <em>combination_factor</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/vaws/model/zone.html#Zone.calc_zone_pressure"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#vaws.model.zone.Zone.calc_zone_pressure" title="Permalink to this definition">¶</a></dt>
 <dd><p>Determine wind pressure loads (Cpe) on each zone (to be distributed onto
 connections)</p>
 <table class="docutils field-list" frame="void" rules="none">
@@ -1942,6 +1945,7 @@ connections)</p>
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
 <li><strong>cpi</strong> – internal pressure coefficient</li>
 <li><strong>qz</strong> – free stream wind pressure</li>
+<li><strong>combination_factor</strong> – action combination factor</li>
 </ul>
 </td>
 </tr>
@@ -2017,7 +2021,7 @@ row=9)</p>
 
 <dl class="method">
 <dt id="vaws.model.zone.Zone.sample_cpe">
-<code class="descname">sample_cpe</code><span class="sig-paren">(</span><em>cpe_cov</em>, <em>cpe_k</em>, <em>big_a</em>, <em>big_b</em>, <em>cpe_str_cov</em>, <em>cpe_str_k</em>, <em>big_a_str</em>, <em>big_b_str</em>, <em>rnd_state</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/vaws/model/zone.html#Zone.sample_cpe"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#vaws.model.zone.Zone.sample_cpe" title="Permalink to this definition">¶</a></dt>
+<code class="descname">sample_cpe</code><span class="sig-paren">(</span><em>cpe_cv</em>, <em>cpe_k</em>, <em>big_a</em>, <em>big_b</em>, <em>cpe_str_cv</em>, <em>cpe_str_k</em>, <em>big_a_str</em>, <em>big_b_str</em>, <em>rnd_state</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/vaws/model/zone.html#Zone.sample_cpe"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#vaws.model.zone.Zone.sample_cpe" title="Permalink to this definition">¶</a></dt>
 <dd><p>Sample external Zone Pressures for sheeting, structure and eaves Cpe,
 based on TypeIII General Extreme Value distribution. Prepare effective
 zone areas for load calculations.</p>
@@ -2026,11 +2030,11 @@ zone areas for load calculations.</p>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>cpe_cov</strong> – cov of dist. of CPE for sheeting and batten</li>
+<li><strong>cpe_cv</strong> – cov of dist. of CPE for sheeting and batten</li>
 <li><strong>cpe_k</strong> – shape parameter of dist. of CPE</li>
 <li><strong>big_a</strong> – </li>
 <li><strong>big_b</strong> – </li>
-<li><strong>cpe_str_cov</strong> – cov. of dist of CPE for rafter</li>
+<li><strong>cpe_str_cv</strong> – cov. of dist of CPE for rafter</li>
 <li><strong>cpe_str_k</strong> – </li>
 <li><strong>big_a_str</strong> – </li>
 <li><strong>big_b_str</strong> – </li>

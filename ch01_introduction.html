@@ -48,12 +48,12 @@
 <p>Vulnerability and Adaptation to Wind Simulation (VAWS) is a software tool that can be used to model the vulnerability of small buildings such as domestic houses and light industrial sheds to wind. The primary use-case of VAWS is the examination of the change in vulnerability afforded by mitigation measures to upgrade a building’s resilience to wind hazard.</p>
 <div class="section" id="background">
 <h2>Background<a class="headerlink" href="#background" title="Permalink to this headline">¶</a></h2>
-<p>Development of VAWS commenced in 2009-2010 in a collaborative project, partly funded by the then Department of Climate Change and energy Efficiency (DCCE), between Geoscience Australia, James Cook University and JDH Consulting <a class="reference internal" href="zbibliography.html#ga2011" id="id1">[1]</a><a class="reference internal" href="zbibliography.html#wehner2010" id="id2">[7]</a>. The development of the current version was undertaken as part of the Bushfire and Natural Hazard Cooperative Research Centre (BNHCRC) project “Improving the Resilience of Existing Housing to Severe Wind” led by James Cook University.</p>
+<p>Development of VAWS commenced in 2009-2010 in a collaborative project, partly funded by the then Department of Climate Change and energy Efficiency (DCCE), between Geoscience Australia, James Cook University and JDH Consulting <a class="reference internal" href="zbibliography.html#ga2011" id="id1">[2]</a><a class="reference internal" href="zbibliography.html#wehner2010" id="id2">[7]</a>. The development of the current version was undertaken as part of the Bushfire and Natural Hazard Cooperative Research Centre (BNHCRC) project “Improving the Resilience of Existing Housing to Severe Wind” led by James Cook University.</p>
 </div>
 <div class="section" id="overall-logic">
 <h2>Overall logic<a class="headerlink" href="#overall-logic" title="Permalink to this headline">¶</a></h2>
 <p>The VAWS tool takes a component-based approach to modelling building vulnerability. It is based on the premise that overall building damage is strongly related to the failure of key connections.</p>
-<p>The tool generates a building model by randomly selecting parameter values from predetermined probability distributions using a Monte Carlo process. Values include component and connection strengths, external pressure coefficients, shielding coefficients, wind speed profile, building orientation, debris damage parameters, and component masses.</p>
+<p>The tool generates a building model by randomly selecting parameter values from predetermined probability distributions using a Monte Carlo process. Values include component and connection strengths, external pressure coefficients, shielding coefficients, wind speed profile with height, building orientation, debris damage parameters, and component masses.</p>
 <p>Then, for progressive gust wind speed increments, it calculates the forces in all critical connections using influence coefficients, assesses which connections have failed and translates these into a damage scenario and costs the repair. Using the repair cost and the full replacement cost, it calculates a damage index for each wind speed.</p>
 <p>For more details, see  <a class="reference internal" href="ch05_logic.html#logic"><span class="std std-ref">Chapter 5</span></a>.</p>
 </div>
@@ -61,7 +61,7 @@
 <h2>Key features<a class="headerlink" href="#key-features" title="Permalink to this headline">¶</a></h2>
 <ul>
 <li><p class="first">Component-based approach:</p>
-<p>A house is modelled consisting of a large number of components, and overall damage is estimated based on damage of each of the components.</p>
+<p>A house is modelled consisting of a large number of components, and overall damage is estimated based on damage to each of the components.</p>
 </li>
 <li><p class="first">Uncertainty captured through a Monte-Carlo process:</p>
 <p>Various uncertainties affecting house performance are modelled through a monte-carlo process.</p>
@@ -84,11 +84,11 @@
 <li><p class="first">Gust wind profile</p>
 <p>Variation in the profile of wind speed with height is captured by the random sampling of a profile from a suite of user-provided profiles.</p>
 </li>
-<li><p class="first">Pressure coefficients for zone and coverage</p>
+<li><p class="first">Pressure coefficients for zones and coverages</p>
 <p>Pressure coefficients for different zones of the house surfaces envelope are randomly chosen from a Type III (Weibull) extreme value distribution with specified means for different zones of the house envelope, and specified coefficients of variation for different load effects.</p>
 </li>
-<li><p class="first">Construction level</p>
-<p>Multiple construction levels can be defined with mean and cov factors which will be used to adjust the mean and cov of distribution of connection strength.</p>
+<li><p class="first">Construction level (or quality)</p>
+<p>Multiple construction levels can be defined with mean and coefficient of variation (CV) factors which will be used to adjust the mean and CV of distribution of connection strength.</p>
 </li>
 <li><p class="first">Strength and dead load</p>
 <p>Connection strengths and dead loads for generated houses are sampled from lognormal probability distributions.</p>

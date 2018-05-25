@@ -49,19 +49,18 @@
 <div><dl class="docutils">
 <dt>connection</dt>
 <dd>models a physical structural connection that will bear a simulated load and when broken cause load to be distributed and generate damage outcomes.</dd>
-<dt>connection group</dt>
+<dt>connection type</dt>
 <dd>a collection of connections sharing the same strength and dead load statistical characteristics and costing area</dd>
+<dt>connection group, connection type group</dt>
+<dd>a collection of connection types sharing the same load distribution and costing scenario</dd>
 <dt>coverage</dt>
 <dd>a component making up the wall part of the envelope of the model</dd>
 <dt><span class="math notranslate nohighlight">\(C_{pe}\)</span></dt>
 <dd>external pressure coefficient</dd>
 <dt><span class="math notranslate nohighlight">\(C_{pi}\)</span></dt>
 <dd>internal pressure coefficient</dd>
-</dl>
-<p><span class="math notranslate nohighlight">\(C_{pi,\alpha}\)</span></p>
-<blockquote>
-<div>proportion of the zone’s area to which internal pressure is applied</div></blockquote>
-<dl class="docutils">
+<dt><span class="math notranslate nohighlight">\(C_{pi,\alpha}\)</span></dt>
+<dd>proportion of the zone’s area to which internal pressure is applied</dd>
 <dt>CV</dt>
 <dd>coefficient of variation, the ratio of the standard deviation to the mean</dd>
 <dt>damage index</dt>
@@ -73,18 +72,20 @@
 hazard. Fragility function or curve is referred to a damage model which describes the likelihood of a building of a particular type being damaged to a defined degree for a given level of natural hazard exposure.</dd>
 <dt>influence coefficient</dt>
 <dd>coefficient relating a connection to either zone or connection with regard to load distribution</dd>
+<dt><span class="math notranslate nohighlight">\(K_{c}\)</span></dt>
+<dd>action combination factor. This factor is devised to reduce wind pressure when wind pressures from more than one building surfaces, for example walls and roof, contribute significantly to a peak load effect.</dd>
 <dt><span class="math notranslate nohighlight">\(M_{s}\)</span></dt>
 <dd>shielding multiplier. This multiplier represents the reduction in peak 3-second gust velocity at a given height and terrain, caused by the presence of buildings and other obstructions upwind of the site of interest.</dd>
 <dt><span class="math notranslate nohighlight">\(M_{z,cat}\)</span></dt>
 <dd>terrain height multiplier</dd>
 <dt>patch</dt>
-<dd>a set of influence coefficients for a connection</dd>
+<dd>a set of revised influence coefficients for a connection</dd>
 <dt><span class="math notranslate nohighlight">\(q_{z}\)</span></dt>
 <dd>free stream wind pressure</dd>
 <dt>vulnerability, vulnerability function, vulnerability curve</dt>
 <dd>A damage model, or curve, which describes the average severity of physical economic loss to a group of buildings of a particular type in terms of a damage index with increasing natural hazard exposure.</dd>
 <dt>zone</dt>
-<dd>an area where wind pressure acts. zone is linked with connection with influence coefficient so the wind pressure is transformed to wind load to connection.</dd>
+<dd>an area of building envelope on which wind pressure acts. Zone is linked with connection with influence coefficient so the wind pressure is transformed to wind load on a connection.</dd>
 </dl>
 </div></blockquote>
 </div>
