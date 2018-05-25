@@ -351,7 +351,7 @@ class MyTestCaseConnectionGroup(unittest.TestCase):
         # sheeting1 group connection 1 failed
         _group = house.groups['sheeting1']
         _group.damage_grid[0, 0] = 1
-        _group.damaged = [0]
+        _group.damage_grid_index = [(0, 0)]
 
         _group.update_influence(house)
 
@@ -363,7 +363,8 @@ class MyTestCaseConnectionGroup(unittest.TestCase):
 
         # connection 2 failed after connection 1
         _group.damage_grid[0, 1] = 1
-        _group.damaged = [0]
+        _group.damage_grid_index = [(0, 1)]
+
         _group.update_influence(house)
 
         _dic = {3: {'A2': 1.0, 'A1': 1.0, 'A3': 1.0}}
@@ -382,12 +383,10 @@ class MyTestCaseConnectionGroup(unittest.TestCase):
                     123: {'A13': 0.19, 'A14': 0.81}}
 
         self.assert_influence_coeff(init_dic, house)
-
-
         # connection 121 failed
         _group = house.groups['rafter0']
         _group.damage_grid[0, 0] = 1
-        _group.damaged = [0]
+        _group.damage_grid_index = [(0, 0)]
         _group.connections[121].damaged = 1.0
         _group.update_influence(house)
 
@@ -399,7 +398,7 @@ class MyTestCaseConnectionGroup(unittest.TestCase):
 
         # connection 122 failed after 121
         _group.damage_grid[0, 4] = 1
-        _group.damaged = [0]
+        _group.damage_grid_index = [(0, 4)]
         _group.connections[122].damaged = 1.0
         _group.update_influence(house)
 

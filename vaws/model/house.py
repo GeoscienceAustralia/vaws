@@ -92,7 +92,6 @@ class House(object):
             # compute load by zone
             self.compute_qz(wind_speed)
 
-            # load = qz * (Cpe + Cpi) * A + dead_load
             for _zone in self.zones.itervalues():
                 _zone.calc_zone_pressure(self.cpi, self.qz, self.combination_factor)
 
@@ -110,8 +109,7 @@ class House(object):
                 _group.compute_damaged_area()
 
                 # change influence / influence patch
-                if _group.flag_damaged and self.cfg.flags.get('damage_distribute_{}'.format(
-                        _group.name)):
+                if _group.damage_dist:
                     _group.update_influence(self)
 
             self.check_house_collapse(wind_speed)

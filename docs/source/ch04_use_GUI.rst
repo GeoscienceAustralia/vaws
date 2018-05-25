@@ -33,7 +33,7 @@ Top
 
 At the top of the main window, tool bar with buttons is located. The file menu and action corresponding to each of the buttons is set out in the :numref:`toolbar_table`.
 
-.. tabularcolumns:: |p{1.0cm}|p{4.0cm}|p{7.5cm}|
+.. tabularcolumns:: |p{1.0cm}|p{4.0cm}|p{9.5cm}|
 .. _toolbar_table:
 .. csv-table:: Buttons in the toolbar
     :header: Button, Menu, "Action"
@@ -73,7 +73,6 @@ The Test button in the Debris tab demonstrates debris generation function at a s
 .. _vul_parameters_table:
 .. csv-table:: Parameter values for vulnerability curves :eq:`cdf_weibull_oz` used in the debris test
     :header: name, |alpha|, |beta|
-    :widths: 30, 30, 30
 
     Capital_city, 0.1585, 3.8909
     Tropical_town, 0.1030, 4.1825

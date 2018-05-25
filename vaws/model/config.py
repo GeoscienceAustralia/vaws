@@ -163,7 +163,7 @@ class Config(object):
     # model and wind dependent attributes
     list_components = ['group', 'connection', 'zone', 'coverage']
 
-    group_bucket = ['damaged_area']
+    group_bucket = ['damaged_area', 'prop_damaged']
 
     connection_bucket = ['damaged', 'capacity', 'load', 'strength', 'dead_load']
 

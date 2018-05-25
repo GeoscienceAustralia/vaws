@@ -40,8 +40,6 @@ def simulation(house, wind_speeds, conn_capacity={}, list_connections=[],
                 _ps['coverage'].check_damage(
                     house.qz, house.cpi, house.combination_factor, wind_speed)
 
-        # print('{}, {}, {}, {}'.format(wind_speed, house.combination_factor, house.cpi, house.coverages.loc[1, 'coverage'].load))
-
         for _, _connection in house.connections.items():
             _connection.compute_load()
 
@@ -50,7 +48,9 @@ def simulation(house, wind_speeds, conn_capacity={}, list_connections=[],
 
             _group.check_damage(wind_speed)
             _group.compute_damaged_area()
-            _group.update_influence(house)
+
+            if _group.damage_dist:
+                _group.update_influence(house)
 
         house.check_internal_pressurisation(wind_speed)
 
@@ -192,6 +192,40 @@ class TestScenario2(unittest.TestCase):
                    list_connections=range(1, 19))
 
 
+class TestScenario2a(unittest.TestCase):
+    """
+    Same as Scenario 2, but no damage distribution applied.
+    """
+
+    @classmethod
+    def setUpClass(cls):
+
+        path = os.sep.join(__file__.split(os.sep)[:-1])
+        cfg = Config(cfg_file=os.path.join(
+            path, 'test_scenarios', 'test_scenario2', 'test_scenario2.cfg'))
+
+        cls.house = House(cfg, seed=0)
+
+    def test_damage_sheeting(self):
+
+        conn_capacity = {40.0: [10],
+                         53.0: [13, 6],
+                         75.0: [9, 11, 14],
+                         80.0: [5]}
+
+        # for _conn in self.house.connections.itervalues():
+        #     for key, value in _conn.influences.iteritems():
+        #         est = np.sqrt(np.abs(_conn.strength * 1.0e+3 / (value.source.area * value.source.cpe_mean[0] * 0.5 * 1.2)))
+        #     print('{} fails at {}'.format(_conn.name, est))
+
+        self.house.groups['sheeting0'].damage_dist = 0
+
+        simulation(self.house,
+                   wind_speeds=np.arange(40.0, 120, 1.0),
+                   conn_capacity=conn_capacity,
+                   list_connections=range(1, 19))
+
+
 class TestScenario3(unittest.TestCase):
     """
     Designed to test whether the code correctly calculates which batten
@@ -323,18 +357,27 @@ class TestScenario6(unittest.TestCase):
     def setUpClass(cls):
 
         path = os.sep.join(__file__.split(os.sep)[:-1])
-        cfg = Config(cfg_file=os.path.join(
-            path, 'test_scenarios', 'test_scenario6', 'test_scenario6.cfg'))
+
+        # set up logging
+        cfg_file = os.path.join(
+            path, 'test_scenarios', 'test_scenario6', 'test_scenario6.cfg')
+        # set_logger(os.path.dirname(cfg_file), logging_level='debug')
+
+        cfg = Config(cfg_file=cfg_file)
         cls.house = House(cfg, seed=0)
 
     def test_damage_sheeting_batten_rafter(self):
 
         conn_capacity = {40.0: [41, 43],
-                         48.0: [46],
-                         49.0: [14, 15, 16, 17, 32, 33, 34, 35],
-                         50.0: [13, 18, 31, 36, 42],
-                         71.0: [8, 9, 10, 11, 26, 27, 28, 29],
-                         72.0: [7, 12, 25, 30]
+                         49.0: [32, 33, 34, 35],
+                         50.0: [36],
+                         58.0: [46],
+                         78.0: [45],
+                         79.0: [40],
+                         92.0: [38],
+                         98.0: [8, 9, 10, 11, 14, 15, 16, 17,
+                                26, 27, 28, 29, 32, 33, 34, 35],
+                         99.0: [7, 12, 13, 18, 25, 30, 31, 36, 42]
                          }
 
         simulation(self.house,

@@ -147,7 +147,6 @@ Parameters of the Options section are listed in :numref:`section_options_table`.
 .. _section_options_table:
 .. csv-table:: Parameters of options section
     :header: Name, Name in GUI, Description
-    :widths: 25, 10, 10
 
     debris, 'Enabled' tick box in the Debris tab, if True then debris damage will be simulated.
     differential_shielding, 'Differential shielding' tick box in the Options tab, if True then differential shielding effect is applied.
@@ -166,7 +165,6 @@ Parameters of the debris section are listed in :numref:`section_debris_table`. N
 .. _section_debris_table:
 .. csv-table:: Parameters of debris section
     :header: Name, Name in GUI, "Description"
-    :widths: 16, 16, 30
 
     region_name, Region, one of the region names defined in the :numref:`debris.csv`. Each region has different debris source characteristics.
     building_spacing, Building spacing, distance between debris sources (m)
@@ -193,7 +191,7 @@ Construction_levels section
 Parameters of the construction_levels section are listed in :numref:`section_construction_levels_table`. In the GUI window, they are dispalyed in the Construction tab as box shown in :numref:`section_construction_levels_fig`. The parameters are used as shown in :eq:`mean_cv_factors_eq`.
 
 
-.. tabularcolumns:: |p{3.0cm}|p{3.0cm}|p{8.5cm}|
+.. tabularcolumns:: |p{2.5cm}|p{2.5cm}|p{9.5cm}|
 .. _section_construction_levels_table:
 .. csv-table::  Parameters of construction_level section
     :header: Name, Name in GUI, "Description"
@@ -245,14 +243,13 @@ Fragility_thresholds
 
 Parameters of the fragility_thresholds section are listed in :numref:`section_fragility_thresholds_table`. In the GUI window, they are displayed in the Options tab as box shown in :numref:`section_fragility_thresholds_fig`. The fragility thresholds are used as shown in :eq:`fragility_eq`.
 
-.. tabularcolumns:: |p{3.0cm}|p{3.0cm}|p{8.5cm}|
+.. tabularcolumns:: |p{2.0cm}|p{3.0cm}|p{9.5cm}|
 .. _section_fragility_thresholds_table:
 .. csv-table:: Parameters of fragility_thresholds section
     :header: Name, Name in GUI, "Description"
-    :widths: 16, 16, 30
 
     states,  Damage states, "comma separated list of damage states (default: slight, medium, severe, complete)"
-    thresholds, Thresholds, "comma separated list of damage states thresholds(default: 0.02, 0.1, 0.35, 0.9)"
+    thresholds, Thresholds, "comma separated list of damage states thresholds (default: 0.02, 0.1, 0.35, 0.9)"
 
 .. _section_fragility_thresholds_fig:
 .. figure:: _static/image/section_fragility_thresholds.png
@@ -267,10 +264,10 @@ Heatmap
 
 Parameters of the heatmap section are listed in :numref:`section_heatmap_table`. In the GUI window, they are displayed in the Options tab as box shown in :numref:`section_heatmap_fig`
 
+.. tabularcolumns:: |p{2.0cm}|p{3.0cm}|p{9.5cm}|
 .. _section_heatmap_table:
 .. csv-table:: Parameters of heatmap section
     :header: Name, Name in GUI, Description
-    :widths: 8, 8, 30
 
     vmin, Lower limit, lower limit of wind speed for heatmap
     vmax, Upper limit, upper limit of wind speed for heatmap
@@ -351,7 +348,7 @@ Input files under `gust_envelope_profiles` directory
 
 The gust envelope profiles are defined under `gust_envelope_profiles` directory. In the configuration file, file name of the gust envelope profile needs to be referenced as shown in :numref:`default.cfg`.
 
-Example files are provided with respect to Australian wind design categories: `cyclonic_terrain_cat2.csv`_, `cyclonic_terrain_cat2.5.csv`_, `cyclonic_terrain_cat3.csv`_, and `non_cyclonic.csv`_, which are recommended in :cite:`JDH2010`.
+Example files are provided with respect to Australian wind design categories: `cyclonic_terrain_cat2.csv`_, `cyclonic_terrain_cat2.5.csv`_, `cyclonic_terrain_cat3.csv`_, and `non_cyclonic.csv`_, which are recommended in JDH Consulting, 2010 :cite:`JDH2010`.
 
 .. _cyclonic_terrain_cat2.csv: https://github.com/GeoscienceAustralia/vaws/blob/master/scenarios/default/input/gust_envelope_profiles/cyclonic_terrain_cat2.csv
 .. _cyclonic_terrain_cat2.5.csv: https://github.com/GeoscienceAustralia/vaws/blob/master/scenarios/default/input/gust_envelope_profiles/cyclonic_terrain_cat2.5.csv
@@ -434,10 +431,10 @@ The model is assumed to consist of a number of connection groups. This file defi
 .. code-block:: none
    :caption: Example conn_groups.csv
 
-    group_name,dist_order,dist_dir,damage_scenario,trigger_collapse_at,patch_dist,flag_pressure
-    sheeting,1,col,Loss of roof sheeting,0.0,1,cpe
-    batten,2,row,Loss of roof sheeting & purlins,0.0,1,cpe
-    rafter,3,col,Loss of roof structure,0.0,1,cpe_str
+    group_name,dist_order,dist_dir,damage_dist,damage_scenario,trigger_collapse_at,flag_pressure
+    sheeting,1,col,1,Loss of roof sheeting,0.0,cpe
+    batten,2,row,1,Loss of roof sheeting & purlins,0.0,cpe
+    rafter,3,patch,1,Loss of roof structure,0.0,cpe_str
 
 
 .. tabularcolumns:: |p{3.5cm}|p{1.5cm}|p{9.5cm}|
@@ -447,10 +444,10 @@ The model is assumed to consist of a number of connection groups. This file defi
 
     group_name, string, "name of connections group"
     dist_order, integer, "order of checking damage"
-    dist_dir, integer, "direction of damage distribution; either 'col', 'row', or ''"
-    damage_scenario, string, "damage scenario name defined in damage_costing_data.csv"
+    dist_dir, string, "direction of damage distribution; either 'col', 'row', 'patch', or ''"
+    damage_dist, integer, "1 if load distribution is applied when connection is damaged otherwise 0"
+    damage_scenario, string, "damage scenario name defined in :ref:`damage_costing_data.csv <damage_costing_data.csv_section>`"
     trigger_collapse_at, float, "proportion of damaged connections of the group at which a model is deemed to be collapsed. 0 if ignored"
-    patch_dist, integer, "1 if influence patch is applied when connection is damaged otherwise 0"
     flag_pressure, string, "type of |Cpe| for pressure calculation; either 'cpe' or 'cpe_str'"
 
 
@@ -515,11 +512,10 @@ This file defines connections and parameter values of the each connection. An ex
     4,sheetinggable,A4,1,0,1.5,0.2,1.5,0.2,2,0,2
     5,sheetinggable,A5,1,0,2,0.2,2,0.2,2.5,0,2.5
 
-.. tabularcolumns:: |p{2.0cm}|p{1.0cm}|p{12.5cm}|
+.. tabularcolumns:: |p{2.0cm}|p{1.0cm}|p{11.5cm}|
 .. _connections_table:
 .. csv-table:: Parameters in the connections.csv
     :header: Name, Type, "Description"
-    :widths: 10, 9, 30
 
     conn_name, string, "name of connection"
     type_name, string, "name of connection type"
@@ -546,11 +542,10 @@ This file defines zones and parameter values of the each zone. An example is sho
     A5,0.405,1,0,0,2,0.2,2,0.2,2.5,0,2.5
 
 
-.. tabularcolumns:: |p{2.0cm}|p{1.0cm}|p{12.5cm}|
+.. tabularcolumns:: |p{1.5cm}|p{1.0cm}|p{12.0cm}|
 .. _zones_table:
 .. csv-table:: Parameters in the zones.csv
     :header: Name, Type, "Description"
-    :widths: 10, 9, 30
 
     name, string, "name of zone"
     area, float, "area of zone (:math:`\text{m}^2`)"
@@ -729,7 +724,7 @@ This file defines types of coverages referenced in the :numref:`coverages.csv`. 
     Timber_door,142.2,28.44,100,0.0,-100,0.0
 
 
-.. tabularcolumns:: |p{5.0cm}|p{1.0cm}|p{7.0cm}|
+.. tabularcolumns:: |p{4.5cm}|p{1.0cm}|p{9.0cm}|
 .. _coverage_types_table:
 .. csv-table:: Parameters in the coverage_types.csv
     :header: Name, Type, "Description"
@@ -861,7 +856,7 @@ where :math:`x`: proportion of damaged area (:math:`0 \leq x \leq 1`), :math:`A`
 
     name, name of damage scenario
     surface_area, surface area (:math:`\text{m}^2`)
-    envelope_repair_rate, repair rate for envelope damage($/:math:`\text{m}^2`)
+    envelope_repair_rate, repair rate for envelope damage ($/:math:`\text{m}^2`)
     envelope_factor_formula_type, type index of costing function for envelope
     envelope_coeff1, :math:`c_1` in costing function for envelope
     envelope_coeff2, :math:`c_2` in costing function for envelope
@@ -917,7 +912,7 @@ where :math:`x`: envelope damage index prior to water ingress (:math:`0 \leq x \
     Loss of roof sheeting,67,40065.59,1,0,0,1
     Loss of roof sheeting,100,59799.39,1,0,0,1
 
-.. tabularcolumns:: |p{5.0cm}|p{7.0cm}|
+.. tabularcolumns:: |p{3.0cm}|p{7.0cm}|
 .. _water_ingress_costing_data_table:
 .. csv-table:: Parameters in the water_ingress_costing_data.csv
     :header: Name, Description
@@ -1018,7 +1013,7 @@ After simulation output file named *results.h5* is created, which is in HDF5 for
 .. _hdfview_structure_fig:
 .. figure:: _static/image/hdfview_structure.png
     :align: center
-    :width: 40 %
+    :width: 60 %
 
     Structures of output in the HDFView
 
@@ -1026,14 +1021,14 @@ After simulation output file named *results.h5* is created, which is in HDF5 for
 .. _hdfview_connection_fig:
 .. figure:: _static/image/hdfview_connection.png
     :align: center
-    :width: 40 %
+    :width: 60 %
 
     Attributes under connection tab in the HDFView
 
 .. _hdfview_capacity_fig:
 .. figure:: _static/image/hdfview_capacity.png
     :align: center
-    :width: 40 %
+    :width: 60 %
 
     Values of capacity of the selected connection in the HDFView
 

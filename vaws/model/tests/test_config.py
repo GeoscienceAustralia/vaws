@@ -172,10 +172,10 @@ WI only,100,59799.39,1,0,0,1
         """)
 
         file_conn_groups = StringIO.StringIO("""
-group_name,dist_order,dist_dir,damage_scenario,trigger_collapse_at,patch_dist,set_zone_to_zero,water_ingress_order
-sheeting,1,col,Loss of roof sheeting,0,0,1,6
-batten,2,row,Loss of roof sheeting & purlins,0,0,1,7
-rafter,3,col,Loss of roof structure,0,1,0,3        
+group_name,dist_order,dist_dir,damage_scenario,trigger_collapse_at,set_zone_to_zero,water_ingress_order
+sheeting,1,col,Loss of roof sheeting,0,1,6
+batten,2,row,Loss of roof sheeting & purlins,0,1,7
+rafter,3,patch,Loss of roof structure,0,0,3        
         """)
         groups = pd.read_csv(file_conn_groups, index_col=0)
 

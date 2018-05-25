@@ -1,9 +1,9 @@
-group_name,dist_dir,dist_order,damage_scenario,trigger_collapse_at,patch_dist,flag_pressure
-sheeting,col,1,Loss of roof sheeting,0,0,cpe
-batten,row,2,Loss of roof sheeting & purlins,0,0,cpe
-rafter,col,3,Loss of roof structure,0,1,cpe_str
-wallcladding,col,4,Loss of wall cladding,0,0,cpe
-wallracking_cladding,col,5,,0,1,cpe
-wallracking_bracing,col,6,Wall racking,0,1,cpe
-wallcollapse,col,7,Wall collapse,0,0,cpe
-piersgroup,,8,Wall racking,0.5,0,cpe
+group_name,dist_dir,dist_order,damage_dist,damage_scenario,trigger_collapse_at,flag_pressure
+sheeting,col,1,1,Loss of roof sheeting,0,cpe
+batten,row,2,1,Loss of roof sheeting & purlins,0,cpe
+rafter,patch,3,1,Loss of roof structure,0,cpe_str
+wallcladding,col,4,1,Loss of wall cladding,0,cpe
+wallracking_cladding,patch,5,1,,0,cpe
+wallracking_bracing,patch,6,1,Wall racking,0,cpe
+wallcollapse,col,7,1,Wall collapse,0,cpe
+piersgroup,,8,0,Wall racking,0.5,cpe

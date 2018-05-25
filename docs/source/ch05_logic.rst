@@ -122,16 +122,23 @@ The terrain height multiplier (|Mz,cat|) value at the model height is calculated
 set shielding multiplier (:py:meth:`.House.set_shielding_multiplier`)
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-The shielding multiplier (|Ms|) value is determined based on the location. If the value of `regional_shielding_factor` is less or equal to 0.85, which means that the model is located in Australian urban areas, then |Ms| value is sampled based on the proportion of each type of shielding listed in :numref:`shielding_table`. Otherwise, |Ms| value is set to be 1.0, which corresponds to `No shielding`. The proportion of shielding type is adopted following the recommendation in :cite:`JDH2010`.
+The shielding multiplier (|Ms|) value is determined based on the location. If the value of `regional_shielding_factor` is less or equal to 0.85, which means that the model is located in Australian urban areas, then |Ms| value is sampled based on the proportion of each type of shielding listed in :numref:`shielding_table`. Otherwise, |Ms| value is set to be 1.0, which corresponds to `No shielding`. The proportion of shielding type is adopted following the recommendation in JDH Consulting, 2010 :cite:`JDH2010`.
 
+.. tabularcolumns:: |p{3.0cm}|p{2.5cm}|p{2.5cm}|
 .. _shielding_table:
 .. csv-table:: Proportion of shielding type
     :header: Type, |Ms| value, Proportion
-    :widths: 10, 20, 20
 
     Full shielding, 0.85, 63%
     Partial shielding, 0.95, 15%
     No shielding, 1.0, 22%
+
+.. _combination_factor_section:
+
+set action combination factor (:py:attr:`.House.combination_factor`)
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+In the AS/NZS 1170.2 :cite:`ASNZS-1170.2`, the action combination factor, :math:`K_{c}` is defined to reduce wind pressure when wind pressures from more than one building surfaces, for example walls and roof, contribute significantly to a peak load effect. When |Cpi| is between -0.2 and +0.2, then the effect is ignored. Otherwise 0.9 is used.
 
 .. _set_coverages_section:
 
@@ -169,10 +176,10 @@ set up debris model (:py:meth:`.House.set_debris`)
 
 A debris damage model is set up by referencing the wind direction and coverages of the model. Once the wind direction of the model is assigned to the debris model, the footprint for debris impact is created by rotating the model footprint with regard to the wind direction as set out in :numref:`rotation_angle_table` (:py:attr:`.Debris.footprint`). Note that all the debris sources are assumed to be located in the East of the model when debris impact to the model is simulated.
 
+.. tabularcolumns:: |p{3.5cm}|p{3.5cm}|
 .. _rotation_angle_table:
 .. csv-table:: Rotation angle by wind direction
     :header: Wind direction, Rotation angle (deg)
-    :widths: 10, 30
 
     S or N, 90
     SW or NE, 45
@@ -211,13 +218,12 @@ run debris model and update |Cpi| (:py:meth:`.House.check_internal_pressurisatio
 
 If the value of *debris* is *True* (see :numref:`section_options_table`), then debris impact to the model is simulated. See :ref:`Debris module <debris_module_section>` for more details.
 
-The internal pressure coefficient, |Cpi| is determined based on :numref:`cpi_no_dominant_table` and :numref:`cpi_dominant_table` depending on the existence of dominant opening by either coverage failure or debris breach, which are revised from Tables 5.1(A) and 5.1(B) of AS/NZS 1170.2:2011 :cite:`ASNZS-1170.2`, respectively.
+The internal pressure coefficient, |Cpi| is determined based on :numref:`cpi_no_dominant_table` and :numref:`cpi_dominant_table` depending on the existence of dominant opening by either coverage failure or debris breach, which are revised from Tables 5.1(A) and 5.1(B) of AS/NZS 1170.2 :cite:`ASNZS-1170.2`, respectively.
 
-.. tabularcolumns:: |p{6.0cm}|p{3.5cm}|
+.. tabularcolumns:: |p{9.0cm}|p{2.0cm}|
 .. _cpi_no_dominant_table:
 .. csv-table:: |Cpi| for buildings without dominant openings
     :header: Condition, |Cpi|
-    :widths: 10, 9
 
     All walls equally breached, -0.3
     Two or three windward walls equally breached, 0.2
@@ -228,7 +234,6 @@ The internal pressure coefficient, |Cpi| is determined based on :numref:`cpi_no_
 .. _cpi_dominant_table:
 .. csv-table:: |Cpi| for buildings with dominant openings
     :header: Ratio of dominant opening to total open area (:math:`r`), Dominant opening on windward wall, Dominant opening on leeward wall, Dominant opening on side wall
-    :widths: 10, 9, 10, 10
 
     :math:`r <` 0.5, -0.3, -0.3, -0.3
     0.5 :math:`\leq r <` 1.5, 0.2, -0.3, -0.3
@@ -323,14 +328,14 @@ Two kinds of zone pressure, |pz| for zone component related to sheeting and batt
     p_{z} &= q_{z} \times \left( C_{pe} - C_{pi,\alpha} \times C_{pi} \right) \times D_{s} \times K_{c}\\
     p_{z,str} &= q_{z} \times \left( C_{pe,str} - C_{pi, \alpha} \times C_{pi} - C_{pe,eave} \right) \times D_{s} \times K_{c} \\
 
-where |qz|: free stream wind pressure, |Cpe|: external pressure coefficient, |Cpi|: internal pressure coefficient, |Cpi,alpha|: proportion of the zone's area to which internal pressure is applied, |Cpe,str|: external pressure coefficient for zone component related to rafter, |Cpe,eave|: external pressure coefficient for zone component related to eave, :math:`D_{s}`: differential shielding, and :math:`K_{c}`: action combination factor. The value of differential shielding is determined as explained in :ref:`set differential shielding <differential_shielding_section>`.
+where |qz|: free stream wind pressure, |Cpe|: external pressure coefficient, |Cpi|: internal pressure coefficient, |Cpi,alpha|: proportion of the zone's area to which internal pressure is applied, |Cpe,str|: external pressure coefficient for zone component related to rafter, |Cpe,eave|: external pressure coefficient for zone component related to eave, :math:`D_{s}`: differential shielding, and :math:`K_{c}`: action combination factor. The value of differential shielding is determined as explained in :ref:`set differential shielding <differential_shielding_section>`. The value of action combination factor is determined as explained in :ref:`set action combination factor <combination_factor_section>`.
 
 .. _differential_shielding_section:
 
 set differential shielding (:py:attr:`.Zone.differential_shielding`)
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-If the value of *differential_shielding* (see :numref:`section_options_table`) is *True*, then differential shielding effect is considered in calculating zone pressure. Based on the recommendations from :cite:`JDH2010`, adjustment for shielding multiplier is made as follows:
+If the value of *differential_shielding* (see :numref:`section_options_table`) is *True*, then differential shielding effect is considered in calculating zone pressure. Based on the recommendations from JDH Consulting, 2010 :cite:`JDH2010`, adjustment for shielding multiplier is made as follows:
 
 - For outer suburban situations and country towns (*building_spacing*\=40m),
     adjust |Ms| to 1.0 except for the leading edges of upwind roofs
@@ -354,9 +359,9 @@ The load applied for each of coverages are calculated as :eq:`coverage_load_eq`:
 .. math::
     :label: coverage_load_eq
 
-    L = 0.9 \times q_{z} \times \left(C_{pe} - C_{pi} \right) \times A
+    L = q_{z} \times \left(C_{pe} - C_{pi} \right) \times A \times K_{c}
 
-where :math:`q_{z}`: free stream wind pressure, |Cpe|: external pressure coefficient, |Cpi|: internal pressure coefficient, and :math:`A`: area.
+where :math:`q_{z}`: free stream wind pressure, |Cpe|: external pressure coefficient, |Cpi|: internal pressure coefficient, :math:`A`: area, and :math:`K_{c}`: action combination factor.
 
 If the calculated load exceeds either positive or negative strength, which represents strength in either direction, then it is deemed to be damaged.
 
@@ -399,11 +404,11 @@ Once a connection is damaged, then load on the damaged connection needs to be di
 
 Two types of influence update are implemented:
 
-1. update influence coefficients of the next intact connections for the distribution of load on the damaged connection
+1. update influence coefficients of the next intact connections for the distribution of load on the damaged connection, when `dist_dir` is either `col` or `row` (:py:meth:`.ConnectionTypeGroup.updata_influence`)
 
-Given the damage of connection of either sheeting and batten connection type group, the influence coefficient will be distributed evenly to the next intact connections of the same type to the distribution direction (*dist_dir* listed in :numref:`conn_groups_table`). Note that *patch_dist* of both sheeting and batten connection group are set to *False*. If both the next connections, which are left and right if *dist_dir* is 'row' or above and below if 'col', of the damaged connection are intact, then the half of the load is distributed to the each of next intact connection. Otherwise, the full load of the damaged connection is distributed to the intact connection.
+Given the damage of connection of either sheeting and batten connection type group, the influence coefficient will be distributed evenly to the next intact connections of the same type to the distribution direction (*dist_dir* listed in :numref:`conn_groups_table`). If both the next connections, which are left and right if *dist_dir* is 'row' or above and below if 'col', of the damaged connection are intact, then the half of the load is distributed to the each of next intact connection. Otherwise, the full load of the damaged connection is distributed to the intact connection.
 
-2. replace the existing influence set with new one, when `patch_distribution` is set to 1 (:py:meth:`.ConnectionTypeGroup.update_influence_by_patch`)
+2. replace the existing influence set with new one, when `dist_dir` is `patch` (:py:meth:`.ConnectionTypeGroup.update_influence_by_patch`)
 
 Unlike sheeting and batten, a connection of rafter group fails, then influence set of each connection associated with the failed connection are replaced with a new set of influence, which is termed "patch". In the current implementation, the patch is defined for a single failed connection. Thus the failure order of the connections may make difference in the resulting influences as shown in :numref:`patch_example_table`.
 
@@ -422,7 +427,7 @@ Unlike sheeting and batten, a connection of rafter group fails, then influence s
 Debris module (:py:class:`.Debris`)
 -----------------------------------
 
-The methdology of modelling damage from wind-borne debris implemented in the code is described in :cite:`Holmes2010,Wehner2010a`. The debris damage module consists of four parts: 1) debris source generation, 2) debris generation, 3) debris trajectory, and 4) debris impact.
+The methdology of modelling damage from wind-borne debris implemented in the code is described in Holmes et al., 2010 :cite:`Holmes2010` and Wehner et al., 2010 :cite:`Wehner2010a`. The debris damage module consists of four parts: 1) debris source generation, 2) debris generation, 3) debris trajectory, and 4) debris impact.
 
 debris source generation
 ^^^^^^^^^^^^^^^^^^^^^^^^
@@ -470,7 +475,7 @@ The number of generated debris items is assumed to follow the Poisson distributi
 debris trajectory
 ^^^^^^^^^^^^^^^^^
 
-For each generated debris item, mass, frontal area, and flight time are sampled from the lognormal distribution with parameter values provided in :ref:`3.1.3 <debris_section>` and :ref:`3.2 <debris.csv_section>`. The flight distance is calculated based on the methodology presented in the Appendix of :cite:`Lin2008`. Note that the original fifth polynomial functions are replaced with quadratic one with the coefficients as listed in :numref:`flight_distance_table`. The computed flight distance by debris type using the fitth and quadratic polynomials is shown in :numref:`flight_distance_fig`.
+For each generated debris item, mass, frontal area, and flight time are sampled from the lognormal distribution with parameter values provided in :ref:`3.1.3 <debris_section>` and :ref:`3.2 <debris.csv_section>`. The flight distance is calculated based on the methodology presented in the Appendix of Lin and Vanmarcke, 2008 :cite:`Lin2008`. Note that the original fifth polynomial functions are replaced with quadratic one with the coefficients as listed in :numref:`flight_distance_table`. The computed flight distance by debris type using the fitth and quadratic polynomials is shown in :numref:`flight_distance_fig`.
 
 .. _flight_distance_fig:
 .. figure:: _static/image/flight_distance.png
@@ -479,11 +484,10 @@ For each generated debris item, mass, frontal area, and flight time are sampled 
 
     Flight distance of debris item
 
-.. tabularcolumns:: |p{6.0cm}|p{3.5cm}|p{3.5cm}|
+.. tabularcolumns:: |p{3.5cm}|p{3.5cm}|p{3.5cm}|
 .. _flight_distance_table:
 .. csv-table:: Coefficients of quadratic function for flight distance computation by debris type
     :header: Debris type, Linear coeff., Quadratic coeff.
-    :widths: 40, 30, 30
 
     Compact, 0.011, 0.2060
     Rod, 0.2376, 0.0723
