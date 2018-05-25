@@ -404,7 +404,7 @@ Once a connection is damaged, then load on the damaged connection needs to be di
 
 Two types of influence update are implemented:
 
-1. update influence coefficients of the next intact connections for the distribution of load on the damaged connection, when `dist_dir` is either `col` or `row` (:py:meth:`.ConnectionTypeGroup.updata_influence`)
+1. update influence coefficients of the next intact connections for the distribution of load on the damaged connection, when `dist_dir` is either `col` or `row` (:py:meth:`.ConnectionTypeGroup.update_influence`)
 
 Given the damage of connection of either sheeting and batten connection type group, the influence coefficient will be distributed evenly to the next intact connections of the same type to the distribution direction (*dist_dir* listed in :numref:`conn_groups_table`). If both the next connections, which are left and right if *dist_dir* is 'row' or above and below if 'col', of the damaged connection are intact, then the half of the load is distributed to the each of next intact connection. Otherwise, the full load of the damaged connection is distributed to the intact connection.
 
