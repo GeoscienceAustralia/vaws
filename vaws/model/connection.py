@@ -5,7 +5,7 @@
 """
 from __future__ import division, print_function
 
-from numpy import where, ones
+import numpy as np
 import logging
 
 from vaws.model.zone import Zone
@@ -96,12 +96,12 @@ class Connection(object):
         assert isinstance(_dic, dict)
         self._influence_patch = _dic
 
-    def sample_strength(self, mean_factor, cov_factor, rnd_state):
+    def sample_strength(self, mean_factor, cv_factor, rnd_state):
         """Return a sampled strength from lognormal distribution
 
         Args:
             mean_factor: factor adjusting arithmetic mean strength
-            cov_factor: factor adjusting arithmetic cov
+            cv_factor: factor adjusting arithmetic cv
             rnd_state:
 
         Returns: sample of strength following log normal dist.
@@ -110,7 +110,7 @@ class Connection(object):
         mu, std = compute_arithmetic_mean_stddev(*self.lognormal_strength)
 
         mu *= mean_factor
-        std *= cov_factor * mean_factor
+        std *= cv_factor * mean_factor
 
         self.strength = sample_lognorm_given_mean_stddev(mu, std, rnd_state)
 
@@ -148,7 +148,6 @@ class Connection(object):
     def check_damage(self, wind_speed):
         """
 
-        Args:
             wind_speed:
 
         Returns:
@@ -210,9 +209,9 @@ class ConnectionTypeGroup(object):
 
         self.dist_order = None
         self.dist_dir = None
+        self.damage_dist = None  # flag for damage distribution (0 or 1)
         self.damage_scenario = None
         self.trigger_collapse_at = None
-        self.patch_dist = None
 
         for key, value in kwargs.items():
             setattr(self, key, value)
@@ -227,9 +226,8 @@ class ConnectionTypeGroup(object):
         self._damage_grid = None  # column (chr), row (num)
         # negative: no connection, 0: Intact,  1: Failed
 
-        self.damaged_previous = []
-        self.damaged = None
-        self.flag_damaged = False
+        self.damage_grid_previous = None
+        self.damage_grid_index = []  # list of index of damaged connection
         self.damaged_area = 0.0
         self.prop_damaged = 0.0
 
@@ -258,9 +256,9 @@ class ConnectionTypeGroup(object):
         max_row_idx, max_col_idx = _tuple
 
         if self.dist_dir:
-            self._damage_grid = -1 * ones(dtype=int,
-                                          shape=(max_row_idx + 1,
-                                                 max_col_idx + 1))
+            self._damage_grid = -1 * np.ones(dtype=int,
+                                             shape=(max_row_idx + 1,
+                                                    max_col_idx + 1))
         else:
             self._damage_grid = None
 
@@ -309,8 +307,7 @@ class ConnectionTypeGroup(object):
 
         """
 
-        self.damaged = []
-        self.flag_damaged = False
+        self.damage_grid_previous = self.damage_grid.copy()
 
         for _connection in self.connections.itervalues():
 
@@ -319,18 +316,12 @@ class ConnectionTypeGroup(object):
 
             if _connection.damaged:
 
-                try:
-                    grid_idx = self.__class__.grid_idx_by_dist_dir[self.dist_dir]
-                except KeyError:
-                    pass
-                else:
-                    self.damaged.append(_connection.grid[grid_idx])
-                    self.damage_grid[_connection.grid] = 1
+                self.damage_grid[_connection.grid] = 1
 
-        if set(self.damaged).difference(set(self.damaged_previous)):
-            self.flag_damaged = True
+        self.damage_grid_index = zip(*np.where(
+            self.damage_grid - self.damage_grid_previous))
 
-        self.damaged_previous = self.damaged
+        self.damage_grid_previous = self.damage_grid.copy()
 
     def update_influence(self, house_inst):
         """
@@ -348,113 +339,69 @@ class ConnectionTypeGroup(object):
             row: chr, col: number
         """
 
-        if self.patch_dist == 1 and self.dist_dir == 'col':
+        if self.dist_dir == 'patch':
 
-            for row0, col in zip(
-                    *where(self.damage_grid[self.damaged, :] > 0)):
-
-                row = self.damaged[row0]
+            for row, col in self.damage_grid_index:
                 source_connection = self.connection_by_grid[row, col]
                 self.update_influence_by_patch(source_connection, house_inst)
 
-        elif self.patch_dist == 1 and self.dist_dir == 'row':
+        elif self.dist_dir in ['col', 'row']:
 
-            for row, col0 in zip(
-                    *where(self.damage_grid[:, self.damaged] > 0)):
+            for row, col in self.damage_grid_index:
 
-                col = self.damaged[col0]
-                source_connection = self.connection_by_grid[row, col]
-                self.update_influence_by_patch(source_connection, house_inst)
-
-        elif self.patch_dist == 0 and self.dist_dir == 'col':
-
-            for row0, col in zip(
-                    *where(self.damage_grid[self.damaged, :] > 0)):
-
-                row = self.damaged[row0]
                 source_connection = self.connection_by_grid[row, col]
 
-                intact = where(-self.damage_grid[row, :] == 0)[0]
-                intact_left = intact[where(col > intact)[0]]
-                intact_right = intact[where(col < intact)[0]]
+                intact_grids = []
+                if self.dist_dir == 'col':
+                    intact = np.where(-self.damage_grid[row, :] == 0)[0]
+                    intact_left = intact[np.where(col > intact)[0]]
+                    intact_right = intact[np.where(col < intact)[0]]
 
-                logging.debug('rows of intact zones: {}'.format(intact))
+                    try:
+                        intact_grids.append((row, intact_right[0]))
+                    except IndexError:
+                        pass
+
+                    try:
+                        intact_grids.append((row, intact_left[-1]))
+                    except IndexError:
+                        pass
+
+                else:
+                    intact = np.where(-self.damage_grid[:, col] == 0)[0]
+                    intact_left = intact[np.where(row > intact)[0]]
+                    intact_right = intact[np.where(row < intact)[0]]
+
+                    try:
+                        intact_grids.append((intact_right[0], col))
+                    except IndexError:
+                        pass
+
+                    try:
+                        intact_grids.append((intact_left[-1], col))
+                    except IndexError:
+                        pass
+
+                logging.debug('row/col of intact zones: {}'.format(intact))
 
                 if intact_left.size * intact_right.size > 0:
                     influence_coeff = 0.5
                 else:
                     influence_coeff = 1.0
 
-                try:
-                    target_connection = self.connection_by_grid[row, intact_right[0]]
-                except IndexError:
-                    pass
-                else:
-                    target_connection.update_influence(source_connection,
-                                                       influence_coeff)
-                    logging.debug('Influence of connection {} is updated: '
-                                  'connection {} with {:.2f}'.format(target_connection.name,
-                                                               source_connection.name,
-                                                               influence_coeff))
-
-                try:
-                    target_connection = self.connection_by_grid[row, intact_left[-1]]
-                except IndexError:
-                    pass
-                else:
-                    target_connection.update_influence(source_connection, influence_coeff)
-                    logging.debug('Influence of connection {} is updated: '
-                                  'connection {} with {:.2f}'.format(target_connection.name,
-                                                               source_connection.name,
-                                                               influence_coeff))
-
-                # empty the influence of source connection
-                source_connection.influences.clear()
-                source_connection.load = 0.0
-
-                # update influence patch if applicable
-                self.update_influence_by_patch(source_connection, house_inst)
-
-        elif self.patch_dist == 0 and self.dist_dir == 'row':
-
-            for row, col0 in zip(
-                    *where(self.damage_grid[:, self.damaged] > 0)):
-
-                col = self.damaged[col0]
-                source_connection = self.connection_by_grid[row, col]
-
-                intact = where(-self.damage_grid[:, col] == 0)[0]
-                intact_left = intact[where(row > intact)[0]]
-                intact_right = intact[where(row < intact)[0]]
-
-                logging.debug('cols of intact connections: {}'.format(intact))
-
-                if intact_left.size * intact_right.size > 0:
-                    influence_coeff = 0.5  # can be prop. to distance later
-                else:
-                    influence_coeff = 1.0
-
-                try:
-                    target_connection = self.connection_by_grid[intact_right[0], col]
-                except IndexError:
-                    pass
-                else:
-                    target_connection.update_influence(source_connection, influence_coeff)
-                    logging.debug('Influence of connection {} is updated: '
-                                  'connection {} with {:.2f}'.format(target_connection.name,
-                                                               source_connection.name,
-                                                               influence_coeff))
-
-                try:
-                    target_connection = self.connection_by_grid[intact_left[-1], col]
-                except IndexError:
-                    pass
-                else:
-                    target_connection.update_influence(source_connection, influence_coeff)
-                    logging.debug('Influence of connection {} is updated: '
-                                  'connection {} with {:.2f}'.format(target_connection.name,
-                                                               source_connection.name,
-                                                               influence_coeff))
+                for intact_grid in intact_grids:
+                    try:
+                        target_connection = self.connection_by_grid[intact_grid]
+                    except IndexError:
+                        logging.error('wrong intact_grid {} for {}'.format(
+                            intact_grid, self.name))
+                    else:
+                        target_connection.update_influence(source_connection,
+                                                           influence_coeff)
+                        logging.debug('Influence of connection {} is updated: '
+                                      'connection {} with {:.2f}'.format(target_connection.name,
+                                                                   source_connection.name,
+                                                                   influence_coeff))
 
                 # empty the influence of source connection
                 source_connection.influences.clear()

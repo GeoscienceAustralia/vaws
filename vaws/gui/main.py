@@ -1093,7 +1093,7 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
             self.ui.constMeans.setText(
                 ', '.join([str(x) for x in self.cfg.construction_levels_i_mean_factors]))
             self.ui.constCovs.setText(
-                ', '.join([str(x) for x in self.cfg.construction_levels_i_cov_factors]))
+                ', '.join([str(x) for x in self.cfg.construction_levels_i_cv_factors]))
 
             # water ingress
             self.ui.waterThresholds.setText(

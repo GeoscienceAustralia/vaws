@@ -1,4 +1,4 @@
-group_name,dist_order,dist_dir,damage_scenario,trigger_collapse_at,patch_dist,flag_pressure
-sheeting,1,col,Loss of roof sheeting,0,0,cpe
-batten,2,row,Loss of roof sheeting & purlins,0,0,cpe
-rafter,3,col,Loss of roof structure,0,1,cpe_str
+group_name,dist_order,dist_dir,damage_dist,damage_scenario,trigger_collapse_at,flag_pressure
+sheeting,1,col,1,Loss of roof sheeting,0,cpe
+batten,2,row,1,Loss of roof sheeting & purlins,0,cpe
+rafter,3,patch,1,Loss of roof structure,0,cpe_str

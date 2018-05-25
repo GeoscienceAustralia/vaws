@@ -37,11 +37,11 @@ class MyTestCase(unittest.TestCase):
     #     self.assertEqual(self.zone.is_wall_zone, False)
 
     def test_calc_zone_pressures(self):
-        self.zone.sample_cpe(cpe_cov=0.12,
+        self.zone.sample_cpe(cpe_cv=0.12,
                              cpe_k=0.1,
                              big_a=0.486,
                              big_b=1.145,
-                             cpe_str_cov=0.07,
+                             cpe_str_cv=0.07,
                              cpe_str_k=0.1,
                              big_a_str=0.486,
                              big_b_str=1.145,
@@ -55,7 +55,7 @@ class MyTestCase(unittest.TestCase):
         mzcat = 0.9235
         qz = 0.6 * 1.0e-3 * (wind_speed * mzcat) ** 2
 
-        self.zone.calc_zone_pressure(cpi=0.0, qz=qz)
+        self.zone.calc_zone_pressure(cpi=0.0, qz=qz, combination_factor=1.0)
 
         self.assertAlmostEqual(self.zone.pressure_cpe, -0.0888, places=4)
         self.assertAlmostEqual(self.zone.pressure_cpe_str, -0.0388, places=4)

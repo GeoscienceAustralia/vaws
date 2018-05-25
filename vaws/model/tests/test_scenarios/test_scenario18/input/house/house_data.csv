@@ -1,9 +1,9 @@
 name,Group 4 House
 replace_cost,20654
 height,4.814
-cpe_cov,0.0
+cpe_cv,0.0
 cpe_k,0.1
-cpe_str_cov,0.0
+cpe_str_cv,0.0
 length,5.4
 width,7.2
 roof_cols,14
