@@ -499,7 +499,7 @@ class House(object):
             self.groups[sub_group_name] = _group
 
             _group.damage_grid = self.cfg.damage_grid_by_sub_group[sub_group_name]
-            _group.costing = self.assign_costing(dic_group['damage_scenario'])
+            _group.costing = self.assign_costing(dic_group['damage_scenario'], group_name)
             _group.connections = connections_by_sub_group.to_dict('index')
 
             # linking with connections
@@ -557,7 +557,7 @@ class House(object):
         else:
             _connection.influence_patch = {}
 
-    def assign_costing(self, key):
+    def assign_costing(self, key, group_name):
         """
 
         Args:
@@ -570,7 +570,8 @@ class House(object):
         if key in self.cfg.costings:
             return self.cfg.costings[key]
         else:
-            logging.warning('group {} undefined in cfg.costings'.format(key))
+            msg = 'damage scenario {} for group {} is not found in costings'
+            logging.warning(msg.format(key, group_name))
 
     def set_debris(self):
 

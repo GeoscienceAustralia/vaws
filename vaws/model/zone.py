@@ -14,8 +14,6 @@ from stats import sample_gev
 
 class Zone(object):
 
-    flag_pressure = ['cpe', 'cpe_str']
-
     def __init__(self, name=None, **kwargs):
         """
         Args:

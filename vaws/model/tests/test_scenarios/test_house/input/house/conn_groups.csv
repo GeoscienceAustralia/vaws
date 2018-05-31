@@ -6,4 +6,4 @@ wallcladding,col,4,1,Loss of wall cladding,0,cpe
 wallracking_cladding,patch,5,1,,0,cpe
 wallracking_bracing,patch,6,1,Wall racking,0,cpe
 wallcollapse,col,7,1,Wall collapse,0,cpe
-piersgroup,,8,0,Wall racking,0.5,cpe
+piersgroup,none,8,0,Wall racking,0.5,cpe
