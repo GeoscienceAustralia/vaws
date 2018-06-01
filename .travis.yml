@@ -28,8 +28,8 @@ install:
 #  - conda build ./build/
 #  - conda install your-package --use-local
 
-#after_success:
-#  - test $TRAVIS_BRANCH = "master" && conda install conda-build && conda install anaconda-client && bash conda/conda_upload.sh
+after_success:
+  - test $TRAVIS_BRANCH = "master" && conda install conda-build && conda install anaconda-client && bash conda/conda_upload.sh
 
 script:
-  - python -m unittest vaws.model.tests.test_config
+  - python -m unittest discover ./vaws/model/tests
