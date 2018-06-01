@@ -902,7 +902,7 @@ class CompareCase(unittest.TestCase):
         plt.grid(1)
         plt.pause(1.0)
         # plt.show()
-        plt.savefig('compare_damaged_area.png')
+        # plt.savefig('compare_damaged_area.png')
         plt.close()
 '''
 
@@ -1337,7 +1337,7 @@ class MyTestCase(unittest.TestCase):
         plt.ylabel('Flight distance (m)')
         # plt.show()
         plt.pause(1.0)
-        plt.savefig('./flight_distance.png', dpi=200)
+        # plt.savefig('./flight_distance.png', dpi=200)
         plt.close()
 
     @staticmethod
