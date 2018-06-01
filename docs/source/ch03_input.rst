@@ -1,7 +1,7 @@
 .. _input:
 
 ****************
-Input and output
+Input and Output
 ****************
 
 The input data for a scenario consists of a configuration file and a large number of files located in three different directories. This chapter provides details of input data using the template of default scenario, which can be downloaded from  `https://github.com/GeoscienceAustralia/vaws/blob/master/scenarios/default <https://github.com/GeoscienceAustralia/vaws/blob/master/scenarios/default>`_. The folder structure of the default scenario is shown :numref:`folder_structure`, which consists of a configuration file (default.cfg) and input directory with three sub-directories (debris, gust_envelope_profiles, and house). The output file named *results.h5* is located in the output directory.
@@ -417,8 +417,8 @@ This file defines parameter values for the model such as replacement cost and di
     width, float, "width of the model (in metre)"
     cpe_cv, float, "CV of |Cpe| for cladding elements such as sheeting and batten"
     cpe_k, float, "shape factor of |Cpe| for cladding elements such as sheeting and batten"
-    cpe_str_cv, float, "CV of |Cpe| for structural elements such as rafter"
-    cpe_str_k, float, "shape factor of |Cpe| for structural elements as rafter"
+    cpe_str_cv, float, "CV of |Cpe,str| for structural elements such as rafter"
+    cpe_str_k, float, "shape factor of |Cpe,str| for structural elements as rafter"
 
 .. _conn_groups.csv_section:
 
@@ -444,7 +444,7 @@ The model is assumed to consist of a number of connection groups. This file defi
 
     group_name, string, "name of connections group"
     dist_order, integer, "order of checking damage"
-    dist_dir, string, "direction of damage distribution; either 'col', 'row', 'patch', or ''"
+    dist_dir, string, "direction of damage distribution; either 'col', 'row', 'patch', or 'none"
     damage_dist, integer, "1 if load distribution is applied when connection is damaged otherwise 0"
     damage_scenario, string, "damage scenario name defined in :ref:`damage_costing_data.csv <damage_costing_data.csv_section>`"
     trigger_collapse_at, float, "proportion of damaged connections of the group at which a model is deemed to be collapsed. 0 if ignored"
@@ -602,7 +602,7 @@ This file defines mean cladding |Cpe| of each zone with regard to the eight wind
 zones_cpe_str_mean.csv
 ----------------------
 
-Like zones_cpe_mean.csv, mean |Cpe| values for zones associated with structural component (e.g., rafter) need to be provided in zones_cpe_str_mean.csv. An example is shown in :numref:`zones_cpe_str_mean.csv`.
+Like zones_cpe_mean.csv, mean |Cpe,str| values for zones associated with structural component (e.g., rafter) need to be provided in zones_cpe_str_mean.csv. An example is shown in :numref:`zones_cpe_str_mean.csv`.
 
 .. _zones_cpe_str_mean.csv:
 .. code-block:: none
@@ -962,7 +962,7 @@ This file contains wall information with respect to the eight wind direction. Ea
 
 .. _output_file_section:
 
-output file
+Output file
 ===========
 
 After simulation output file named *results.h5* is created, which is in HDF5 format. Its content can be accessed via Python or HDF Viewer. :numref:`output_attribute_table` lists attributes in the output file. Note that time invariant attribute is one whose value is set when the model is created, and is kept the same over the range of wind speeds.
