@@ -1,3 +1,4 @@
+[![Build Status](https://travis-ci.com/GeoscienceAustralia/vaws.svg?branch=master)](https://travis-ci.com/GeoscienceAustralia/vaws)
 
 # VAWS
 
