@@ -31,5 +31,11 @@ install:
 after_success:
   - test $TRAVIS_BRANCH = "master" && conda install conda-build && conda install anaconda-client && bash conda/conda_upload.sh
 
+before_script: # configure a headless display to test plot generation
+- "export DISPLAY=:99.0"
+- "sh -e /etc/init.d/xvfb start"
+- sleep 3 # give xvfb some time to start
+
 script:
-  - python -m unittest discover ./vaws/model/tests
+#  - python -m unittest discover ./vaws/model/tests
+  - python -m unittest vaws.model.tests.test_curve
