@@ -1,7 +1,9 @@
 
 package:
   name: "vaws"
-  version: "2.0.3"
+  version: "2.1"
+#  version: "2.0.3"
+#  version: {{ environ['VERSION'] }}
 
 source:
   path: ../
@@ -11,6 +13,9 @@ build:
   entry_points:
     - vaws = vaws.gui.main:run_gui
     - vaws_cmd = vaws.model.main:main
+#  script_env:
+#   - VERSION
+#   - CONDA_BLD_PATH
 
 requirements:
   build:
