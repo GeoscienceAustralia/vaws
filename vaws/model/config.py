@@ -452,6 +452,9 @@ class Config(object):
             self.return_norm_cdf, axis=1)
 
     def set_coverages(self):
+
+        self.set_front_facing_walls()
+
         try:
             coverage_types = pd.read_csv(
                 self.file_coverage_types, index_col=0)
@@ -482,6 +485,18 @@ class Config(object):
         else:
 
             if not self.coverages.empty:
+
+                _walls = set([item for sublist in
+                              self.front_facing_walls.values()
+                              for item in sublist])
+
+                # check coverage_type
+                not_good = self.coverages.loc[
+                    ~self.coverages['wall_name'].isin(_walls)].index.tolist()
+
+                if not_good:
+                    raise ValueError(
+                        'Invalid wall name for coverages: {}'.format(not_good))
 
                 # check area >= 0
                 not_good = self.coverages.loc[
@@ -514,8 +529,6 @@ class Config(object):
 
         self.set_coverages_cpe()
 
-        self.set_front_facing_walls()
-
     def set_front_facing_walls(self):
 
         try:
@@ -523,15 +536,15 @@ class Config(object):
                 self.file_front_facing_walls)
         except IOError as msg:
             logging.error('{}'.format(msg))
-        else:
-            try:
-                _set = set(self.coverages.wall_name.unique())
-            except AttributeError:
-                pass
-            else:
-                msg = 'Invalid wall name for {}'
-                for key, value in self.front_facing_walls.items():
-                    assert set(value).issubset(_set), msg.format(key)
+        # else:
+        #     try:
+        #         _set = set(self.coverages.wall_name.unique())
+        #     except AttributeError:
+        #         pass
+        #     else:
+        #         msg = 'Invalid wall name for {}'
+        #         for key, value in self.front_facing_walls.items():
+        #             assert set(value).issubset(_set), msg.format(key)
 
     def set_coverages_cpe(self):
         try:
@@ -897,6 +910,7 @@ class Config(object):
     @classmethod
     def read_file_zones(cls, file_zones):
 
+        msg = 'Coordinates should consist of at least 3 points: {}'
         dump = []
         with open(file_zones, 'rU') as f:
             next(f)  # skip the first line
@@ -908,11 +922,13 @@ class Config(object):
                     _array = np.array([float(x) for x in fields[4:]])
                     if _array.size:
                         try:
-                            _array = np.reshape(_array, (-1, 2))
+                            _array = _array.reshape((-1, 2))
                         except ValueError:
                             logging.warning(
-                                'Coordinates are incomplete: {}'.format(_array))
+                                'Coordinates are incomplete: {}'.format(tmp[0]))
                         else:
+                            if _array.size < 6:
+                                logging.warning(msg.format(tmp[0]))
                             tmp.append(patches.Polygon(_array))
                     else:
                         tmp.append([])
@@ -953,6 +969,7 @@ class Config(object):
     @classmethod
     def read_file_connections(cls, file_connections):
 
+        msg = 'Coordinates should consist of at least 3 points: {}'
         dump = []
         with open(file_connections, 'rU') as f:
             next(f)  # skip the first line
@@ -966,8 +983,10 @@ class Config(object):
                             _array = _array.reshape((-1, 2))
                         except ValueError:
                             logging.warning(
-                                'Coordinates are incomplete: {}'.format(_array))
+                                'Coordinates are incomplete: {}'.format(tmp[0]))
                         else:
+                            if _array.size < 6:
+                                logging.warning(msg.format(tmp[0]))
                             tmp.append(patches.Polygon(_array))
                     else:
                         tmp.append([])

@@ -425,7 +425,7 @@ This file defines parameter values for the model such as replacement cost and di
 conn_groups.csv
 ---------------
 
-The model is assumed to consist of a number of connection groups. This file defines connection groups and parameter values of the each connection group. An example is shown in :numref:`conn_groups.csv`, and description of each of the parameter values are provided in :numref:`conn_groups_table`.
+The model is assumed to consist of a number of connection groups. This file defines connection groups and parameter values of the each connection group. An example is shown in :numref:`conn_groups.csv`, and description of each of the parameter values are provided in :numref:`conn_groups_table`. Note that pre-defined group names need to be used for display of heatmap in the GUI, which are *sheeting*, *tiles*, *batten*, *rafter*, *truss*, *wallcladding*, *wallracking_cladding*, *wallracking_bracing*, *wall_collapse*, and *piersgroup*.
 
 .. _conn_groups.csv:
 .. code-block:: none

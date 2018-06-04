@@ -7,10 +7,8 @@ VAWS: Vulnerability and Adaptation to Wind Simulation
 =====================================================
 
 .. only:: not html
-
-   .. toctree::
+    .. toctree::
       :hidden:
-
       ch00_toc_figures
 
 .. toctree::

@@ -611,13 +611,18 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
         vstep = self.ui.vStep.value()
         self.ui.damages_tab.setUpdatesEnabled(False)
 
-        group_widget = {'sheeting': [self.ui.mplsheeting, self.ui.tab_19, 0, "Sheeting"],
-                        'batten': [self.ui.mplbatten, self.ui.tab_20, 1, "Batten"],
-                        'rafter': [self.ui.mplrafter, self.ui.tab_21, 2, "Rafter"],
-                        'piersgroup': [self.ui.mplpiers, self.ui.tab_27, 3, "PiersGroup"],
-                        'wallracking': [self.ui.mplwallracking, self.ui.tab_25, 4, "WallRacking"],
-                        'wallCladding': [self.ui.mplwallcladding, self.ui.tab_26, 5, "WallCladding"],
-                        'wallCollapse': [self.ui.mplwallcollapse, self.ui.tab_29, 6, "WallCollapse"]}
+        group_widget = {
+            'sheeting': [self.ui.mplsheeting, self.ui.tab_19, 0, "Sheeting"],
+            'batten': [self.ui.mplbatten, self.ui.tab_20, 1, "Batten"],
+            'rafter': [self.ui.mplrafter, self.ui.tab_21, 2, "Rafter"],
+            'piersgroup': [self.ui.mplpiers, self.ui.tab_27, 3, "PiersGroup"],
+            'wallcladding': [self.ui.mplwallcladding, self.ui.tab_26, 4, "WallCladding"],
+            'wallracking_cladding': [self.ui.mplwallracking_cladding, self.ui.tab_25, 5, "WallRackingCladding"],
+            'wallracking_bracing': [self.ui.mplwallracking_bracing, self.ui.tab_35, 6, "WallRackingBracing"],
+            'wallcollapse': [self.ui.mplwallcollapse, self.ui.tab_29, 7, "WallCollapse"],
+            'tiles': [self.ui.mpltile, self.ui.tab_32, 8, "Tiles"],
+            'truss': [self.ui.mpltruss, self.ui.tab_31, 9, "Truss"],
+        }
 
         for group_name, widget in group_widget.items():
             tab_index = self.ui.damages_tab.indexOf(widget[1])
@@ -655,61 +660,61 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
                              red_v, blue_v, vstep,
                              house_number)
 
-        wall_major_rows = 2
-        wall_major_cols = self.cfg.house['roof_cols']
-        wall_minor_rows = 2
-        wall_minor_cols = 8
-
-        for group_name, grouped in self.cfg.connections.groupby('group_name'):
-            if group_name not in ('wallcladding', 'wallcollapse'):
-                continue
-
-            v_south_grid = ones((wall_major_rows, wall_major_cols), dtype=float32) * blue_v + 10.0
-            v_north_grid = ones((wall_major_rows, wall_major_cols), dtype=float32) * blue_v + 10.0
-            v_west_grid = ones((wall_minor_rows, wall_minor_cols), dtype=float32) * blue_v + 10.0
-            v_east_grid = ones((wall_minor_rows, wall_minor_cols), dtype=float32) * blue_v + 10.0
-    
-            # construct south grid
-            for gridCol in range(0, wall_major_cols):
-                for gridRow in range(0, wall_major_rows):
-                    colChar = chr(ord('A') + gridCol)
-                    loc = 'WS%s%d' % (colChar, gridRow + 1)
-                    conn = connByZoneTypeMap[loc].get(group_name)
-
-                if conn and conn.result_failure_v > 0:
-                    v_south_grid[gridRow][gridCol] = conn.result_failure_v
-
-            # construct north grid
-            for gridCol in range(0, wall_major_cols):
-                for gridRow in range(0, wall_major_rows):
-                    colChar = chr(ord('A') + gridCol)
-                    loc = 'WN%s%d' % (colChar, gridRow + 1)
-                    conn = connByZoneTypeMap[loc].get(group_name)
-
-                if conn and conn.result_failure_v > 0:
-                    v_north_grid[gridRow][gridCol] = conn.result_failure_v
-
-            # construct west grid
-            for gridCol in range(0, wall_minor_cols):
-                for gridRow in range(0, wall_minor_rows):
-                    loc = 'WW%d%d' % (gridCol + 2, gridRow + 1)
-                    conn = connByZoneTypeMap[loc].get(group_name)
-
-                    if conn and conn.result_failure_v > 0:
-                        v_west_grid[gridRow][gridCol] = conn.result_failure_v
-
-            # construct east grid
-            for gridCol in range(0, wall_minor_cols):
-                for gridRow in range(0, wall_minor_rows):
-                    loc = 'WE%d%d' % (gridCol + 2, gridRow + 1)
-                    conn = connByZoneTypeMap[loc].get(group_name)
-
-                    if conn and conn.result_failure_v > 0:
-                        v_east_grid[gridRow][gridCol] = conn.result_failure_v
-
-            plot_wall_damage_show(group_name,v_south_grid, v_north_grid, v_west_grid,
-                                  v_east_grid, wall_major_cols, wall_major_rows,
-                                  wall_minor_cols, wall_minor_rows,red_v, blue_v)
+        # wall_major_rows = 2
+        # wall_major_cols = self.cfg.house['roof_cols']
+        # wall_minor_rows = 2
+        # wall_minor_cols = 8
+        #
+        # for group_name, grouped in self.cfg.connections.groupby('group_name'):
+        #     if group_name not in ('wallcladding', 'wallcollapse'):
+        #         continue
+        #
+        #     v_south_grid = ones((wall_major_rows, wall_major_cols), dtype=float32) * blue_v + 10.0
+        #     v_north_grid = ones((wall_major_rows, wall_major_cols), dtype=float32) * blue_v + 10.0
+        #     v_west_grid = ones((wall_minor_rows, wall_minor_cols), dtype=float32) * blue_v + 10.0
+        #     v_east_grid = ones((wall_minor_rows, wall_minor_cols), dtype=float32) * blue_v + 10.0
+        #
+        #     # construct south grid
+        #     for gridCol in range(0, wall_major_cols):
+        #         for gridRow in range(0, wall_major_rows):
+        #             colChar = chr(ord('A') + gridCol)
+        #             loc = 'WS%s%d' % (colChar, gridRow + 1)
+        #             conn = connByZoneTypeMap[loc].get(group_name)
+        #
+        #         if conn and conn.result_failure_v > 0:
+        #             v_south_grid[gridRow][gridCol] = conn.result_failure_v
+        #
+        #     # construct north grid
+        #     for gridCol in range(0, wall_major_cols):
+        #         for gridRow in range(0, wall_major_rows):
+        #             colChar = chr(ord('A') + gridCol)
+        #             loc = 'WN%s%d' % (colChar, gridRow + 1)
+        #             conn = connByZoneTypeMap[loc].get(group_name)
+        #
+        #         if conn and conn.result_failure_v > 0:
+        #             v_north_grid[gridRow][gridCol] = conn.result_failure_v
+        #
+        #     # construct west grid
+        #     for gridCol in range(0, wall_minor_cols):
+        #         for gridRow in range(0, wall_minor_rows):
+        #             loc = 'WW%d%d' % (gridCol + 2, gridRow + 1)
+        #             conn = connByZoneTypeMap[loc].get(group_name)
+        #
+        #             if conn and conn.result_failure_v > 0:
+        #                 v_west_grid[gridRow][gridCol] = conn.result_failure_v
+        #
+        #     # construct east grid
+        #     for gridCol in range(0, wall_minor_cols):
+        #         for gridRow in range(0, wall_minor_rows):
+        #             loc = 'WE%d%d' % (gridCol + 2, gridRow + 1)
+        #             conn = connByZoneTypeMap[loc].get(group_name)
+        #
+        #             if conn and conn.result_failure_v > 0:
+        #                 v_east_grid[gridRow][gridCol] = conn.result_failure_v
+        #
+        #     plot_wall_damage_show(group_name,v_south_grid, v_north_grid, v_west_grid,
+        #                           v_east_grid, wall_major_cols, wall_major_rows,
+        #                           wall_minor_cols, wall_minor_rows,red_v, blue_v)
 
         self.ui.damages_tab.setUpdatesEnabled(True)
 
@@ -864,9 +869,10 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
         self.statusBar().showMessage('Updating Connections Table')
 
         connections_damaged = bucket['connection']['damaged']
-        for irow, connection in enumerate(self.cfg.connections.itertuples()):
-            failure_count = count_nonzero(connections_damaged[irow+1])
-            failure_mean = mean(connections_damaged[irow+1])
+        for irow, item in enumerate(self.cfg.connections.iterrows()):
+            conn_id = item[0]
+            failure_count = count_nonzero(connections_damaged[conn_id])
+            failure_mean = mean(connections_damaged[conn_id])
             self.ui.connections.setItem(irow, 4, QTableWidgetItem('{:.3}'.format(failure_mean)))
             self.ui.connections.setItem(irow, 5, QTableWidgetItem('{}'.format(failure_count)))
 
@@ -1138,7 +1144,8 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
         new_cfg.wind_speed_max = self.ui.windMax.value()
         new_cfg.wind_speed_increment = float(self.ui.windIncrement.text())
         # new_cfg.set_wind_speeds()
-        # new_cfg.wind_dir_index = self.ui.windDirection.currentIndex()
+        new_cfg.wind_direction = self.cfg.wind_dir[
+            self.ui.windDirection.currentIndex()]
 
         # Debris section
         new_cfg.set_region_name(str(self.ui.debrisRegion.currentText()))

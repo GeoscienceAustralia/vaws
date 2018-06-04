@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>1280</width>
-    <height>711</height>
+    <height>729</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -1923,6 +1923,20 @@
               </item>
              </layout>
             </widget>
+            <widget class="QWidget" name="tab_32">
+             <attribute name="title">
+              <string>Tiles</string>
+             </attribute>
+             <layout class="QHBoxLayout" name="horizontalLayout_57">
+              <item>
+               <widget class="MatplotlibWidget" name="mpltile" native="true">
+                <property name="enabled">
+                 <bool>true</bool>
+                </property>
+               </widget>
+              </item>
+             </layout>
+            </widget>
             <widget class="QWidget" name="tab_20">
              <attribute name="title">
               <string>Batten</string>
@@ -1943,13 +1957,33 @@
               </item>
              </layout>
             </widget>
+            <widget class="QWidget" name="tab_31">
+             <attribute name="title">
+              <string>Truss</string>
+             </attribute>
+             <layout class="QHBoxLayout" name="horizontalLayout_55">
+              <item>
+               <widget class="MatplotlibWidget" name="mpltruss" native="true"/>
+              </item>
+             </layout>
+            </widget>
             <widget class="QWidget" name="tab_25">
              <attribute name="title">
-              <string>WallRacking</string>
+              <string>WallRackingCladding</string>
              </attribute>
              <layout class="QHBoxLayout" name="horizontalLayout_33">
               <item>
-               <widget class="MatplotlibWidget" name="mplwallracking" native="true"/>
+               <widget class="MatplotlibWidget" name="mplwallracking_cladding" native="true"/>
+              </item>
+             </layout>
+            </widget>
+            <widget class="QWidget" name="tab_35">
+             <attribute name="title">
+              <string>WallRackingBracing</string>
+             </attribute>
+             <layout class="QHBoxLayout" name="horizontalLayout_44">
+              <item>
+               <widget class="MatplotlibWidget" name="mplwallracking_bracing" native="true"/>
               </item>
              </layout>
             </widget>

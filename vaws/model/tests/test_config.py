@@ -10,6 +10,7 @@ import tempfile
 from vaws.model.config import Config
 from vaws.model.stats import compute_logarithmic_mean_stddev
 
+
 class TestConfig(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
@@ -532,6 +533,39 @@ name,description,wall_name,area,coverage_type
 
         self.assertRaises(ValueError, self.cfg.set_coverages)
 
+    def test_coverages3(self):
+        """Check each wall_name is valid"""
+
+        try:
+            _file = tempfile.NamedTemporaryFile(mode='w+t', delete=False)
+
+            _file.writelines(['wind_dir,wall_name\n',
+                              'S,1\n',
+                              'SW,1,3\n',
+                              'W,3\n',
+                              'NW,3,5\n',
+                              'N,5\n',
+                              'NE,5,7\n',
+                              'E,7\n',
+                              'SE,1,7\n'])
+
+            _file.close()
+
+            self.cfg.file_front_facing_walls = _file.name
+
+            self.cfg.file_coverages = StringIO.StringIO("""
+name,description,wall_name,area,coverage_type
+1,window,1,3.6,Glass_annealed_6mm
+2,door,1,1.8,Timber_door
+3,window,1,1.89,Glass_annealed_6mm
+4,window,dummy,1.89,Glass_annealed_6mm
+                """)
+
+            self.assertRaises(ValueError, self.cfg.set_coverages)
+
+        finally:
+            os.unlink(_file.name)
+
     def test_coverages_cpe(self):
         """Check that each numerical entry is between -5 and +5."""
 
@@ -572,30 +606,30 @@ Loss of roof sheeting & purlins,116,184.23,-1,0.3105,-0.8943,1.6015,0,1,0,0,0,7
 
         self.assertRaises(ValueError, self.cfg.set_footprint)
 
-    def test_front_facing_walls(self):
-        """each wall_name entry is a valid wall number"""
-
-        try:
-            _file = tempfile.NamedTemporaryFile(mode='w+t', delete=False)
-
-            _file.writelines(['wind_dir,wall_name\n',
-                              'S,1\n',
-                              'SW,1,3\n',
-                              'W,3\n',
-                              'NW,3,5\n',
-                              'N,5\n',
-                              'NE,5,7\n',
-                              'E,7\n',
-                              'SE,1,77\n'])
-
-            _file.close()
-
-            self.cfg.file_front_facing_walls = _file.name
-
-            self.assertRaises(AssertionError, self.cfg.set_front_facing_walls)
-
-        finally:
-            os.unlink(_file.name)
+    # def test_front_facing_walls(self):
+    #     """each wall_name entry is a valid wall number"""
+    #
+    #     try:
+    #         _file = tempfile.NamedTemporaryFile(mode='w+t', delete=False)
+    #
+    #         _file.writelines(['wind_dir,wall_name\n',
+    #                           'S,1\n',
+    #                           'SW,1,3\n',
+    #                           'W,3\n',
+    #                           'NW,3,5\n',
+    #                           'N,5\n',
+    #                           'NE,5,7\n',
+    #                           'E,7\n',
+    #                           'SE,1,77\n'])
+    #
+    #         _file.close()
+    #
+    #         self.cfg.file_front_facing_walls = _file.name
+    #
+    #         self.assertRaises(AssertionError, self.cfg.set_front_facing_walls)
+    #
+    #     finally:
+    #         os.unlink(_file.name)
 
     def test_house_data(self):
         """Check that cpe_cov and cpe_str_cov are between 0 and 1.
@@ -610,8 +644,6 @@ cpe_k,0.1
 cpe_str_cv,-0.07
 length,12.6
 width,9.0
-roof_cols,15
-roof_rows,12
 cpe_str_k,0.1
 """)
         self.assertRaises(AssertionError, self.cfg.set_house)
@@ -903,6 +935,35 @@ WI only,0,0,dummy,0,0,1
                               'A7,0.2475,1.0,0, 0, 0.45, 0, 0.45, 0.45, 0, 0.45, 0.0\n',
                               'A8,0.405,1.0,0, 0, 0.45, 0, 0.45, 0.45, 0, 0.45, 0.0\n',
                               'A9,0.405,1.0,0, 0, 0.45, 0, 0.45, 0.45, 0, 0.45, 0.0, 9.0\n'])
+
+            _file.close()
+
+            self.cfg.read_file_zones(_file.name)
+
+        finally:
+            os.unlink(_file.name)
+
+    def test_zones3(self):
+        """Check that each zone has either 3 or 4 pairs of coordinates."""
+
+        for item in ['cpe_mean', 'cpe_str_mean', 'cpe_eave_mean', 'edge']:
+            file_org = os.path.join(
+                self.path_cfg, 'input', 'house', 'zones_{}.csv'.format(item))
+            setattr(self.cfg, 'file_zones_{}'.format(item), file_org)
+
+        try:
+            _file = tempfile.NamedTemporaryFile(mode='w+t', delete=False)
+
+            _file.writelines(['name,area,cpi_alpha,wall_dir,coords\n',
+                              'A1,0.2025,0.0,0, 0, 0, 0.45, 0, 0.45, 0.45, 0, 0.45\n',
+                              'A2,0.405,0.5,0,  0, 0.45, 0, 0.45, 0.45, 0, 0.45, 0.0\n',
+                              'A3,0.405,1.0,0, 0, 0.45, 0, 0.45, 0.45, 0, 0.45, 0.0\n',
+                              'A4,0.405,1.0,0, 0, 0.45, 0, 0.45, 0.45, 0, 0.45, 0.0\n',
+                              'A5,0.405,1.0,0, 0, 0.45, 0, 0.45, 0.45, 0, 0.45, 0.0\n',
+                              'A6,0.2475,1.0,0, 0, 0.45, 0, 0.45, 0.45, 0, 0.45, 0.0\n',
+                              'A7,0.2475,1.0,0, 0, 0.45, 0, 0.45, 0.45, 0, 0.45, 0.0\n',
+                              'A8,0.405,1.0,0, 0, 0.45, 0, 0.45, 0.45, 0, 0.45, 0.0\n',
+                              'A9,0.405,1.0,0, 0, 0.45, 0, 0.45\n'])
 
             _file.close()
 
