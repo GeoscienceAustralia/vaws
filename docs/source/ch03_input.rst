@@ -84,8 +84,6 @@ The configuration file consists of a number of sections, among which *main* and 
     building_spacing = 20.0
     debris_radius = 200
     debris_angle = 45
-    flight_time_mean = 2.0
-    flight_time_stddev = 0.8
 
     [construction_levels]
     levels = low, medium, high
@@ -172,8 +170,6 @@ Parameters of the debris section are listed in :numref:`section_debris_table`. N
     debris_angle, Angle, included angle (in degree) of the sector in which debris sources exist
     source_items, Source items, number of debris items per debris sources
     boundary_radius, Boundary, radius (in metre) of boundary for debris impact assessment
-    flight_time_mean, Flight time mean, mean flight time of debris items
-    flight_time_stddev, Flight time std, standard deviation of flight time of debris items
     staggered_sources, Staggered sources, "if True then staggered sources are used. Otherwise, a grid pattern of debris sources are used."
 
 
@@ -302,18 +298,24 @@ An example `debris.csv` is shown in :numref:`debris.csv`, in which debris parame
     Compact_frontal_area_mean,0.002,0.002
     Compact_frontal_area_stddev,0.001,0.001
     Compact_cdav,0.65,0.65
+    Compact_flight_time_mean, 2.0, 2.0
+    Compact_flight_time_stddev, 0.8, 0.8
     Rod_ratio,30,40
     Rod_mass_mean,4,4
     Rod_mass_stddev,2,2
     Rod_frontal_area_mean,0.1,0.1
     Rod_frontal_area_stddev,0.03,0.03
     Rod_cdav,0.8,0.8
+    Rod_flight_time_mean, 2.0, 2.0
+    Rod_flight_time_stddev, 0.8, 0.8
     Sheet_ratio,50,45
     Sheet_mass_mean,3,10
     Sheet_mass_stddev,0.9,5
     Sheet_frontal_area_mean,0.1,1
     Sheet_frontal_area_stddev,0.03,0.3
     Sheet_cdav,0.9,0.9
+    Sheet_flight_time_mean, 2.0, 2.0
+    Sheet_flight_time_stddev, 0.8, 0.8
 
 
 .. _debris_types_table:
@@ -339,6 +341,8 @@ The parameter values should be provided for each of the debris types as set out 
     frontal_area_mean, "mean of frontal area (:math:`\text{m}^2`)"
     frontal_area_stddev, "standard deviation of frontal area (:math:`\text{m}^2`)"
     cdav, "average drag coefficient"
+    flight_time_mean, "mean of flight time"
+    frontal_area_stddev, "standard deviation of flight time"
 
 
 .. _envelope_profiles_section:

@@ -449,11 +449,11 @@ def generate_debris_item_per_source(source_and_debris_type, debris_types,
     except ValueError:
         flight_time = math.exp(debris_property['flight_time_mu'])
 
-    flight_distance = compute_flight_distance(debris_type,
-                                              flight_time,
-                                              frontal_area,
-                                              mass,
-                                              wind_speed)
+    flight_distance = compute_flight_distance(debris_type=debris_type,
+                                              flight_time=flight_time,
+                                              frontal_area=frontal_area,
+                                              mass=mass,
+                                              wind_speed=wind_speed)
 
     # logging.debug('debris type:{}, area:{}, time:{}, distance:{}'.format(
     #    debris_type_str, frontal_area, flight_time, flight_distance))
@@ -468,15 +468,15 @@ def generate_debris_item_per_source(source_and_debris_type, debris_types,
     #                                           cov=cov_matrix)
     # reference point: target house
     landing = geometry.Point(x + source.x - flight_distance,
-                               y + source.y)
+                             y + source.y)
     trajectory = geometry.LineString([source, landing])
 
-    debris_momentum = compute_debris_momentum(debris_property['cdav'],
-                                              frontal_area,
-                                              flight_distance,
-                                              mass,
-                                              wind_speed,
-                                              rnd_state)
+    debris_momentum = compute_debris_momentum(cdav=debris_property['cdav'],
+                                              frontal_area=frontal_area,
+                                              flight_distance=flight_distance,
+                                              mass=mass,
+                                              wind_speed=wind_speed,
+                                              rnd_state=rnd_state)
 
     flag_impact = 0
     if footprint.contains(landing) or (trajectory.intersects(footprint)
