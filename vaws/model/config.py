@@ -87,6 +87,9 @@ FILE_DEBRIS = 'debris.csv'
 # results
 FILE_RESULTS = 'results.h5'
 
+G_CONST = 9.81  # acceleration of gravity (m/sec^2)
+RHO_AIR = 1.2  # air density (kg/m^3)
+
 
 class Config(object):
     """ Config class to set configuration for simulation
@@ -129,7 +132,7 @@ class Config(object):
     # lookup table mapping (0-7) to wind direction (8: random)
     wind_dir = ['S', 'SW', 'W', 'NW', 'N', 'NE', 'E', 'SE', 'RANDOM']
     debris_types_keys = ['Rod', 'Compact', 'Sheet']
-    debris_types_atts = ['mass', 'frontal_area', 'cdav', 'ratio']
+    debris_types_atts = ['mass', 'frontal_area', 'cdav', 'ratio', 'flight_time']
     dominant_opening_ratio_thresholds = [0.5, 1.5, 2.5, 6.0]
     cpi_table_for_dominant_opening = \
         {0: {'windward': -0.3, 'leeward': -0.3, 'side1': -0.3, 'side2': -0.3},
@@ -233,10 +236,6 @@ class Config(object):
         self.building_spacing = None
         self.debris_radius = 0.0
         self.debris_angle = 0.0
-        self.flight_time_mean = 0.0
-        self.flight_time_stddev = 0.0
-        self.flight_time_log_mu = None
-        self.flight_time_log_std = None
         self.debris_sources = None
         self.debris_regions = None
         self.debris_types = {}
@@ -355,7 +354,6 @@ class Config(object):
         self.set_wind_speeds()  # speeds, wind_speed_steps
         self.set_wind_dir_index()  # wind_dir_index
         self.set_wind_profiles()  # profile_heights, wind_profiles
-        self.set_flight_time_log()  # flight_time_log_mu, flight_time_log_std
 
         self.set_house()
         df_groups = self.set_groups()
@@ -370,9 +368,9 @@ class Config(object):
 
         if self.flags['debris']:
 
-            from vaws.model.debris import Debris
+            from vaws.model.debris import create_sources
 
-            self.debris_sources = Debris.create_sources(
+            self.debris_sources = create_sources(
                 self.debris_radius,
                 self.debris_angle,
                 self.building_spacing,
@@ -577,8 +575,7 @@ class Config(object):
         self.staggered_sources = conf.getboolean(key, 'staggered_sources')
         self.source_items = conf.getint(key, 'source_items')
         self.boundary_radius = conf.getfloat(key, 'boundary_radius')
-        for item in ['building_spacing', 'debris_radius', 'debris_angle',
-                     'flight_time_mean', 'flight_time_stddev']:
+        for item in ['building_spacing', 'debris_radius', 'debris_angle']:
             setattr(self, item, conf.getfloat(key, item))
 
         try:
@@ -595,16 +592,11 @@ class Config(object):
             footprint_xy = pd.read_csv(self.file_footprint, skiprows=1,
                                        header=None).values
         except IOError as msg:
-            logging.error('{}'.format(msg))
+            logging.warning('{}'.format(msg))
         else:
             if np.isnan(footprint_xy).any():
                 raise ValueError('Invalid coordinates for footprint')
             self.footprint = geometry.Polygon(footprint_xy)
-
-    def set_flight_time_log(self):
-        self.flight_time_log_mu, self.flight_time_log_std = \
-            compute_logarithmic_mean_stddev(self.flight_time_mean,
-                                            self.flight_time_stddev)
 
     def read_fragility_thresholds(self, conf, key):
         if conf.has_section(key):
@@ -1240,7 +1232,7 @@ class Config(object):
             self.debris_types[key] = {}
             for item in self.__class__.debris_types_atts:
 
-                if item in ['frontal_area', 'mass']:
+                if item in ['frontal_area', 'mass', 'flight_time']:
                     _mean = _debris_region['{0}_{1}_mean'.format(key, item)]
                     _std = _debris_region['{0}_{1}_stddev'.format(key, item)]
                     mu_lnx, std_lnx = compute_logarithmic_mean_stddev(_mean, _std)
@@ -1302,8 +1294,8 @@ class Config(object):
         config.set(key, 'building_spacing', self.building_spacing)
         config.set(key, 'debris_radius', self.debris_radius)
         config.set(key, 'debris_angle', self.debris_angle)
-        config.set(key, 'flight_time_mean', self.flight_time_mean)
-        config.set(key, 'flight_time_stddev', self.flight_time_stddev)
+        # config.set(key, 'flight_time_mean', self.flight_time_mean)
+        # config.set(key, 'flight_time_stddev', self.flight_time_stddev)
 
         key = 'construction_levels'
         config.add_section(key)

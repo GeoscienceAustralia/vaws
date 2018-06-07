@@ -237,9 +237,6 @@
           <string>Debris</string>
          </attribute>
          <layout class="QGridLayout" name="gridLayout_5">
-          <item row="16" column="1">
-           <widget class="QLineEdit" name="flighttimeStddev"/>
-          </item>
           <item row="11" column="1">
            <layout class="QHBoxLayout" name="horizontalLayout_21">
             <item>
@@ -277,16 +274,6 @@
            <widget class="QLabel" name="label_19">
             <property name="text">
              <string>Building spacing</string>
-            </property>
-            <property name="alignment">
-             <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-            </property>
-           </widget>
-          </item>
-          <item row="16" column="0">
-           <widget class="QLabel" name="label_3">
-            <property name="text">
-             <string>Flight time std</string>
             </property>
             <property name="alignment">
              <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
@@ -372,7 +359,7 @@
             </property>
            </widget>
           </item>
-          <item row="18" column="1">
+          <item row="16" column="1">
            <layout class="QHBoxLayout" name="horizontalLayout_18">
             <item>
              <widget class="QCheckBox" name="debris">
@@ -463,14 +450,17 @@
             </item>
            </layout>
           </item>
-          <item row="17" column="1">
+          <item row="9" column="1">
+           <widget class="QComboBox" name="debrisRegion"/>
+          </item>
+          <item row="15" column="1">
            <widget class="QCheckBox" name="staggeredDebrisSources">
             <property name="text">
              <string/>
             </property>
            </widget>
           </item>
-          <item row="17" column="0">
+          <item row="15" column="0">
            <widget class="QLabel" name="label_4">
             <property name="text">
              <string>Staggered sources</string>
@@ -479,22 +469,6 @@
              <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
             </property>
            </widget>
-          </item>
-          <item row="9" column="1">
-           <widget class="QComboBox" name="debrisRegion"/>
-          </item>
-          <item row="15" column="0">
-           <widget class="QLabel" name="label_5">
-            <property name="text">
-             <string>Flight time mean</string>
-            </property>
-            <property name="alignment">
-             <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-            </property>
-           </widget>
-          </item>
-          <item row="15" column="1">
-           <widget class="QLineEdit" name="flighttimeMean"/>
           </item>
          </layout>
         </widget>

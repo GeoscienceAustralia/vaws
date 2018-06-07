@@ -14,9 +14,10 @@ import math
 import shapely
 
 from vaws.model.config import Config
-from vaws.model.debris import Debris
+from vaws.model.debris import Debris, create_sources, compute_flight_distance, \
+    compute_debris_momentum, compute_coeff_beta_dist
 from vaws.model.coverage import Coverage
-from vaws.model.curve import vulnerability_weibull_pdf, vulnerability_weibull
+from vaws.model.curve import vulnerability_weibull_pdf
 
 VUL_DIC = {'Capital_city': {'alpha': 0.1586, 'beta': 3.8909},
            'Tropical_town': {'alpha': 0.1030, 'beta': 4.1825}}
@@ -924,6 +925,7 @@ class MyTestCase(unittest.TestCase):
         cfg_file = os.path.join(cls.path_scenario, 'test_roof_sheeting.cfg')
         cls.cfg = Config(cfg_file=cfg_file)
 
+        cls.flight_time_mean = 2.0
         cls.rnd_state = np.random.RandomState(1)
         cls.radius = 24.0
         # cls.footprint_circle = Point(0, 0).buffer(cls.radius)
@@ -953,10 +955,10 @@ class MyTestCase(unittest.TestCase):
         self.cfg.building_spacing = 20.0
         self.cfg.flags['debris_staggered_sources'] = False
 
-        sources1 = Debris.create_sources(self.cfg.debris_radius,
-                                         self.cfg.debris_angle,
-                                         self.cfg.building_spacing,
-                                         False)
+        sources1 = create_sources(self.cfg.debris_radius,
+                                  self.cfg.debris_angle,
+                                  self.cfg.building_spacing,
+                                  False)
         self.assertEquals(len(sources1), 13)
 
         plt.figure()
@@ -972,10 +974,10 @@ class MyTestCase(unittest.TestCase):
         plt.close()
 
         # staggered source
-        sources2 = Debris.create_sources(self.cfg.debris_radius,
-                                         self.cfg.debris_angle,
-                                         self.cfg.building_spacing,
-                                         True)
+        sources2 = create_sources(self.cfg.debris_radius,
+                                  self.cfg.debris_angle,
+                                  self.cfg.building_spacing,
+                                  True)
 
         self.assertEquals(len(sources2), 15)
 
@@ -1161,9 +1163,9 @@ class MyTestCase(unittest.TestCase):
             mass = self.cfg.debris_regions[key][
                 '{}_mass_mean'.format(debris_type)]
 
-            result = _debris.compute_flight_distance(
-                debris_type_str=debris_type,
-                flight_time=self.cfg.flight_time_mean,
+            result = compute_flight_distance(
+                debris_type=debris_type,
+                flight_time=self.flight_time_mean,
                 frontal_area=frontal_area,
                 mass=mass,
                 wind_speed=wind_speed)
@@ -1213,7 +1215,7 @@ class MyTestCase(unittest.TestCase):
                          rnd_state=self.rnd_state,
                          coverages={})
 
-        beta_a, beta_b = _debris.compute_coeff_beta_dist(
+        beta_a, beta_b = compute_coeff_beta_dist(
             cdav, frontal_area, flight_distance, mass)
         self.assertAlmostEqual(beta_a, 2.1619, places=3)
         self.assertAlmostEqual(beta_b, 3.4199, places=3)
@@ -1235,12 +1237,13 @@ class MyTestCase(unittest.TestCase):
         nsample = 100
         momentum = np.zeros(shape=nsample)
         for i in range(nsample):
-            momentum[i] = _debris.compute_debris_momentum(
+            momentum[i] = compute_debris_momentum(
                 cdav=cdav,
                 frontal_area=frontal_area,
                 flight_distance=flight_distance,
                 mass=mass,
-                wind_speed=wind_speed)
+                wind_speed=wind_speed,
+                rnd_state=self.rnd_state)
 
         plt.figure()
         plt.hist(momentum)
@@ -1257,7 +1260,6 @@ class MyTestCase(unittest.TestCase):
                          coverages={})
 
         wind_speeds = np.arange(0.01, 120.0, 1.0)
-        # flight_time = math.exp(self.cfg.flight_time_log_mu)
         momentum = {}
 
         for key, value in self.cfg.debris_types.items():
@@ -1266,16 +1268,17 @@ class MyTestCase(unittest.TestCase):
 
             frontal_area = math.exp(value['frontal_area_mu'])
             mass = math.exp(value['mass_mu'])
-            flight_time = math.exp(self.cfg.flight_time_log_mu)
+            flight_time = self.flight_time_mean
             cdav = value['cdav']
 
             for i, wind_speed in enumerate(wind_speeds):
 
-                flight_distance = _debris.compute_flight_distance(
+                flight_distance = compute_flight_distance(
                     key, flight_time, frontal_area, mass, wind_speed)
 
-                momentum[key][i] = _debris.compute_debris_momentum(
-                    cdav, frontal_area, flight_distance, mass, wind_speed)
+                momentum[key][i] = compute_debris_momentum(
+                    cdav, frontal_area, flight_distance, mass, wind_speed,
+                    self.rnd_state)
 
         dic_ = {'Compact': 'b', 'Sheet': 'r', 'Rod': 'g'}
         plt.figure()
@@ -1298,7 +1301,7 @@ class MyTestCase(unittest.TestCase):
                          coverages={})
 
         wind_speeds = np.arange(0.0, 120.0, 1.0)
-        flight_time = math.exp(self.cfg.flight_time_log_mu)
+        flight_time = math.exp(self.cfg.debris_types['Sheet']['flight_time_mu'])
         flight_distance = {}
         flight_distance_poly5 = {}
 
@@ -1311,12 +1314,10 @@ class MyTestCase(unittest.TestCase):
             flight_distance_poly5[key] = np.zeros_like(wind_speeds)
 
             for i, wind_speed in enumerate(wind_speeds):
-                flight_distance[key][i] = \
-                    _debris.compute_flight_distance(
+                flight_distance[key][i] = compute_flight_distance(
                         key, flight_time, frontal_area, mass, wind_speed)
 
-                flight_distance_poly5[key][i] = \
-                    _debris.compute_flight_distance(
+                flight_distance_poly5[key][i] = compute_flight_distance(
                         key, flight_time, frontal_area, mass, wind_speed, flag_poly=5)
 
         dic_ = {'Compact': 'b', 'Sheet': 'r', 'Rod': 'g'}
@@ -1370,7 +1371,9 @@ class MyTestCase(unittest.TestCase):
 
         key = 'Tropical_town'
 
+        items_all = []
         no_impacts = []
+        no_generated = 0
         for speed in self.cfg.speeds:
 
             damage_incr = vulnerability_weibull_pdf(
@@ -1382,11 +1385,30 @@ class MyTestCase(unittest.TestCase):
 
             _debris.run(speed)
             no_impacts.append(_debris.no_impacts)
-            #no_items_mean.append(_debris.no_items_mean)
+            items_all.append(_debris.items)
+            no_generated += len(_debris.items)
 
         fig = plt.figure(1)
         ax = fig.add_subplot(111)
         # plt.title('Wind direction: 0')
+
+        # p = PolygonPatch(_debris.footprint, fc='red')
+        # ax.add_patch(p)
+
+        # ax.add_patch(patches_Polygon(_array, alpha=0.5))
+
+        # shape_type = {'Compact': 'c', 'Sheet': 'g', 'Rod': 'r'}
+
+        for items in items_all:
+            for debris_type, line_string in items:
+                _x, _y = line_string.xy[0][1], line_string.xy[1][1]
+                ax.scatter(_x, _y, color='g', alpha=0.2)
+
+        title_str = 'total no. of impacts: {} out of {}'.format(
+            sum(no_impacts), no_generated)
+        plt.title(title_str)
+        ax.set_xlim([-150, 150])
+        ax.set_ylim([-100, 100])
 
         source_x, source_y = [], []
         for source in self.cfg.debris_sources:
@@ -1399,22 +1421,7 @@ class MyTestCase(unittest.TestCase):
         ax.add_patch(matplotlib.patches.Polygon(_debris.footprint.exterior, fc='red', alpha=0.5))
         ax.add_patch(matplotlib.patches.Polygon(_debris.boundary.exterior, alpha=0.5))
 
-        # p = PolygonPatch(_debris.footprint, fc='red')
-        # ax.add_patch(p)
 
-        # ax.add_patch(patches_Polygon(_array, alpha=0.5))
-
-        # shape_type = {'Compact': 'c', 'Sheet': 'g', 'Rod': 'r'}
-
-        for debris_type, line_string in _debris.debris_items:
-            _x, _y = line_string.xy[0][1], line_string.xy[1][1]
-            ax.scatter(_x, _y, color='g', alpha=0.2)
-
-        title_str = 'total no. of impacts: {} out of {}'.format(
-            sum(no_impacts), len(_debris.debris_items))
-        plt.title(title_str)
-        ax.set_xlim([-150, 150])
-        ax.set_ylim([-100, 100])
         #plt.show()
         plt.pause(1.0)
         plt.close()

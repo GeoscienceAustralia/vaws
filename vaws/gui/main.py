@@ -371,6 +371,8 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
         _debris_region = self.cfg.debris_regions[self.cfg.region_name]
         setupTable(self.ui.debrisRegions, _debris_region)
 
+        no_values = len(self.cfg.debris_types[self.cfg.debris_types.keys()[0]])
+
         for i, key in enumerate(self.cfg.debris_types_keys):
 
             _list = [(k, v) for k, v in _debris_region.items() if key in k]
@@ -379,9 +381,9 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
 
             for j, (k, v) in enumerate(_list):
 
-                self.ui.debrisRegions.setItem(6*i + j, 0,
+                self.ui.debrisRegions.setItem(no_values*i + j, 0,
                                               QTableWidgetItem(k))
-                self.ui.debrisRegions.setItem(6*i + j, 1,
+                self.ui.debrisRegions.setItem(no_values*i + j, 1,
                                               QTableWidgetItem('{:.3f}'.format(v)))
 
         finiTable(self.ui.debrisRegions)
@@ -1083,10 +1085,10 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
             self.ui.sourceItems.setValue(self.cfg.source_items)
             self.ui.debrisBoundary.setText(
                 '{:.3f}'.format(self.cfg.boundary_radius))
-            self.ui.flighttimeMean.setText(
-                '{:.3f}'.format(self.cfg.flight_time_mean))
-            self.ui.flighttimeStddev.setText(
-                '{:.3f}'.format(self.cfg.flight_time_stddev))
+            # self.ui.flighttimeMean.setText(
+            #     '{:.3f}'.format(self.cfg.flight_time_mean))
+            # self.ui.flighttimeStddev.setText(
+            #     '{:.3f}'.format(self.cfg.flight_time_stddev))
             self.ui.staggeredDebrisSources.setChecked(self.cfg.staggered_sources)
             self.ui.debris.setChecked(self.cfg.flags['debris'])
 
@@ -1153,10 +1155,10 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
         new_cfg.debris_radius = self.ui.debrisRadius.value()
         new_cfg.debris_angle = self.ui.debrisAngle.value()
         new_cfg.source_items = self.ui.sourceItems.value()
-        if self.ui.flighttimeMean.text():
-            new_cfg.flight_time_mean = float(self.ui.flighttimeMean.text())
-        if self.ui.flighttimeStddev.text():
-            new_cfg.flight_time_stddev = float(self.ui.flighttimeStddev.text())
+        # if self.ui.flighttimeMean.text():
+        #     new_cfg.flight_time_mean = float(self.ui.flighttimeMean.text())
+        # if self.ui.flighttimeStddev.text():
+        #     new_cfg.flight_time_stddev = float(self.ui.flighttimeStddev.text())
         if self.ui.debrisBoundary.text():
             new_cfg.boundary_radius = float(self.ui.debrisBoundary.text())
         new_cfg.staggered_sources = self.ui.staggeredDebrisSources.isChecked()
@@ -1247,7 +1249,7 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
 
         if ok:
 
-            house = House(self.cfg, rnd_state=RandomState(self.cfg.random_seed))
+            house = House(self.cfg, seed=1)
 
             incr_speed = self.cfg.speeds[1] - self.cfg.speeds[0]
 
@@ -1256,7 +1258,7 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
                 alpha_=vul_dic[self.cfg.region_name][0],
                 beta_=vul_dic[self.cfg.region_name][1]) * incr_speed
 
-            house.debris.no_items_mean = damage_incr
+            house.debris.damage_incr = damage_incr
 
             house.debris.run(wind_speed)
 
@@ -1274,8 +1276,9 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
             _array = array(house.debris.footprint.exterior.xy).T
 
             ax.add_patch(patches_Polygon(_array, alpha=0.5))
+            ax.add_patch(patches_Polygon(house.debris.boundary.exterior, alpha=0.5))
 
-            for debris_type, line_string in house.debris.debris_items:
+            for debris_type, line_string in house.debris.items:
                 _x, _y = line_string.xy
                 ax.plot(_x, _y,
                         linestyle='-',
@@ -1305,12 +1308,12 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
 
         if ok:
 
-            house = House(self.cfg, rnd_state=RandomState(self.cfg.random_seed))
+            house = House(self.cfg, seed=1)
             house.set_construction_level()
             lognormal_strength = self.cfg.types['{}'.format(selected_type)]['lognormal_strength']
             mu, std = compute_arithmetic_mean_stddev(*lognormal_strength)
             mu *= house.mean_factor
-            std *= house.cov_factor
+            std *= house.cv_factor * house.mean_factor
 
             x = []
             n = 50000
