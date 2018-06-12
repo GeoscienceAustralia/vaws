@@ -24,27 +24,42 @@ from vaws.model.house import House
 VUL_DIC = {'Capital_city': {'alpha': 0.1586, 'beta': 3.8909},
            'Tropical_town': {'alpha': 0.1030, 'beta': 4.1825}}
 
+REF04 = geometry.Polygon([(-24.0, 6.5), (4.0, 6.5), (4.0, -6.5),
+                          (-24.0, -6.5), (-24.0, 6.5)])
+
+REF37 = geometry.Polygon([(-1.77, 7.42), (7.42, -1.77), (1.77, -7.42),
+                          (-27.42, 1.77), (-1.77, 7.42)])
+
+REF26 = geometry.Polygon([(-26.5, 4.0), (6.5, 4.0), (6.5, -4.0),
+                          (-26.5, -4.0), (-26.5, 4.0)])
+
+REF15 = geometry.Polygon([(-27.42, -1.77), (1.77, 7.42), (7.42, 1.77),
+                          (-1.77, -7.42), (-27.42, -1.77)])
+
+STRETCHED_FOOTPRINT = {0: REF04, 1: REF15, 2: REF26, 3: REF37,
+                       4: REF04, 5: REF15, 6: REF26, 7: REF37}
+
+FLIGHT_DISTANCE_COEFF = {2: {'Compact': [0.011, 0.2060],
+                             'Sheet': [0.3456, 0.072],
+                             'Rod': [0.2376, 0.0723]},
+                         5: {'Compact': [0.405, -0.036, -0.052, 0.008],
+                             'Sheet': [0.456, -0.148, 0.024, -0.0014],
+                             'Rod': [0.4005, -0.16, 0.036, -0.0032]}}
+
+FLIGHT_DISTANCE_POWER = {2: [1, 2],
+                         5: [2, 3, 4, 5]}
+
 
 class DebrisOriginal(object):
     """
     Original debris model
-    : footprint: stretched
+    : footprint: stretched (only works for defined stretched_footprint)
     : touching: within the footprint
     : estimated breached area assuming poisson distribution
     """
 
     rho_air = 1.2  # air density
     g_const = 9.81  # acceleration of gravity
-
-    flight_distance_coeff = {2: {'Compact': [0.011, 0.2060],
-                                 'Sheet': [0.3456, 0.072],
-                                 'Rod': [0.2376, 0.0723]},
-                             5: {'Sheet': [0.456, -0.148, 0.024, -0.0014],
-                                 'Compact': [0.405, -0.036, -0.052, 0.008],
-                                 'Rod': [0.4005, -0.16, 0.036, -0.0032]}}
-
-    flight_distance_power = {2: [1, 2],
-                             5: [2, 3, 4, 5]}
 
     angle_by_idx = {0: 90.0, 4: 90.0,  # S, N
                     1: 45.0, 5: 45.0,  # SW, NE
@@ -126,8 +141,7 @@ class DebrisOriginal(object):
         :return:
             self.footprint, self.front_facing_walls
         """
-        return affinity.rotate(
-            self.cfg.footprint, self.__class__.angle_by_idx[self.wind_dir_idx])
+        return STRETCHED_FOOTPRINT[self.wind_dir_idx]
 
     @property
     def front_facing_walls(self):
@@ -299,26 +313,24 @@ class DebrisOriginal(object):
 
         else:
 
-            assert flag_poly in self.__class__.flight_distance_power
+            assert flag_poly in FLIGHT_DISTANCE_POWER
 
             # dimensionless time
             t_star = self.__class__.g_const * flight_time / wind_speed
 
-            # Tachikawa Number: rho*(V**2)/(2*g*h_m*rho_m)
+            # tachikawa number: rho*(v**2)/(2*g*h_m*rho_m)
             # assume h_m * rho_m == mass / frontal_area
             k_star = self.__class__.rho_air * math.pow(wind_speed, 2.0) / (
                 2.0 * self.__class__.g_const * mass / frontal_area)
             kt_star = k_star * t_star
 
-            kt_star_powered = np.array([math.pow(kt_star, i)
-                for i in self.__class__.flight_distance_power[flag_poly]])
-            coeff = np.array(self.__class__.flight_distance_coeff[
-                              flag_poly][debris_type_str])
+            kt_star_powered = np.array([math.pow(kt_star, i) for i in FLIGHT_DISTANCE_POWER[flag_poly]])
+            coeff = np.array(FLIGHT_DISTANCE_COEFF[flag_poly][debris_type_str])
             less_dis = (coeff * kt_star_powered).sum()
 
             # dimensionless hor. displacement
-            # k*x_star = k*g*x/V**2
-            # x = (k*x_star)*(V**2)/(k*g)
+            # k*x_star = k*g*x/v**2
+            # x = (k*x_star)*(v**2)/(k*g)
             convert_to_dim = math.pow(wind_speed, 2.0) / (
                 k_star * self.__class__.g_const)
 
@@ -390,10 +402,23 @@ class DebrisCircle(DebrisOriginal):
 
     def __init__(self, cfg, rnd_state, wind_dir_idx, coverages):
 
-        super(DebrisTest, self).__init__(cfg=cfg,
-                                         rnd_state=rnd_state,
-                                         wind_dir_idx=wind_dir_idx,
-                                         coverages=coverages)
+        super(DebrisOriginal, self).__init__(cfg=cfg,
+                                             rnd_state=rnd_state,
+                                             wind_dir_idx=wind_dir_idx,
+                                             coverages=coverages)
+
+    @property
+    def footprint(self):
+        """
+        create house footprint by wind direction
+        Note that debris source model is generated assuming wind blows from East.
+
+        :param _tuple: (polygon_inst, wind_dir_index)
+
+        :return:
+            self.footprint, self.front_facing_walls
+        """
+        return affinity.rotate(self.cfg.footprint, self.__class__.angle_by_idx[self.wind_dir_idx])
 
     def generate_debris_item(self, wind_speed, source, debris_type_str):
         """
@@ -446,10 +471,12 @@ class DebrisCircle(DebrisOriginal):
         pt_debris = geometry.Point(x + source.x - flight_distance, y + source.y)
         line_debris = geometry.LineString([source, pt_debris])
 
-        if line_debris.intersects(self.footprint):
+        land_within_footprint = self.footprint.contains(pt_debris)
+        intersect_within_boundary = (line_debris.intersects(self.footprint)
+                                     and self.boundary.contains(pt_debris))
+        if land_within_footprint or intersect_within_boundary:
             self.no_impacts += 1
 
-        line_debris = geometry.LineString([source, pt_debris])
         self.debris_items.append((debris_type_str, line_debris))
 
         item_momentum = self.compute_debris_momentum(debris['cdav'],
@@ -504,10 +531,10 @@ class DebrisMC(DebrisOriginal):
             frontal_area = math.exp(debris['frontal_area_mu'])
 
         try:
-            flight_time = self.rnd_state.lognormal(self.cfg.flight_time_log_mu,
-                                                   self.cfg.flight_time_log_std)
+            flight_time = self.rnd_state.lognormal(debris['flight_time_mu'],
+                                                   debris['flight_time_std'])
         except ValueError:
-            flight_time = math.exp(self.cfg.flight_time_log_mu)
+            flight_time = math.exp(debris['flight_time_mu'])
 
         flight_distance = self.compute_flight_distance(debris_type_str,
                                                        flight_time,
@@ -528,8 +555,10 @@ class DebrisMC(DebrisOriginal):
         line_debris = geometry.LineString([source, pt_debris])
         self.debris_items.append((debris_type_str, line_debris))
 
-        if self.footprint.contains(pt_debris):
-
+        land_within_footprint = self.footprint.contains(pt_debris)
+        intersect_within_boundary = (line_debris.intersects(self.footprint)
+                                     and self.boundary.contains(pt_debris))
+        if land_within_footprint or intersect_within_boundary:
             self.no_impacts += 1
 
             item_momentum = self.compute_debris_momentum(debris['cdav'],
@@ -587,7 +616,7 @@ def area_circle(r, a, b):
     theta = math.acos(x_plus_a/r)
     return theta * r**2 + x_plus_a*b + (a * 2*b)
 
-'''
+
 class CompareCase(unittest.TestCase):
 
     @classmethod
@@ -595,35 +624,22 @@ class CompareCase(unittest.TestCase):
         path = os.sep.join(__file__.split(os.sep)[:-1])
         cls.path_scenario = os.path.join(
             path, 'test_scenarios', 'test_roof_sheeting')
-        # set up logging
-        file_logger = os.path.join(cls.path_scenario, 'output', 'log.txt')
-        logging.basicConfig(filename=file_logger,
-                            filemode='w',
-                            level=logging.DEBUG,
-                            format='%(levelname)s %(message)s')
 
         cfg_file = os.path.join(cls.path_scenario, 'test_roof_sheeting.cfg')
         cls.cfg = Config(cfg_file=cfg_file)
 
-        cls.footprint_inst = Polygon([(-6.5, 4.0), (6.5, 4.0), (6.5, -4.0),
+        cls.footprint_inst = geometry.Polygon([(-6.5, 4.0), (6.5, 4.0), (6.5, -4.0),
                                       (-6.5, -4.0), (-6.5, 4.0)])
 
-        cls.footprint_stretched = Polygon([
+        cls.footprint_stretched = geometry.Polygon([
             (-24.0, 6.5), (4.0, 6.5), (4.0, -6.5), (-24.0, -6.5), (-24.0, 6.5)])
 
-        cls.footprint_rotated = Polygon([
+        cls.footprint_rotated = geometry.Polygon([
             (-4.0, 6.5), (4.0, 6.5), (4.0, -6.5), (-4.0, -6.5), (-4.0, 6.5)])
 
         cls.radius = 24.0
 
     def test_run(self):
-
-        # set up logging
-        # file_logger = os.path.join(self.path_output, 'log_debris.txt')
-        # logging.basicConfig(filename=file_logger,
-        #                     filemode='w',
-        #                     level=logging.DEBUG,
-        #                     format='%(levelname)s %(message)s')
 
         wind_speeds = np.arange(40.0, 120.0, 1.0)
 
@@ -903,7 +919,6 @@ class CompareCase(unittest.TestCase):
         # plt.show()
         # plt.savefig('compare_damaged_area.png')
         plt.close()
-'''
 
 
 class MyTestCase(unittest.TestCase):
@@ -1357,12 +1372,12 @@ class MyTestCase(unittest.TestCase):
         ax.add_patch(matplotlib.patches.Polygon(house.footprint.exterior, fc='red', alpha=0.5))
         ax.add_patch(matplotlib.patches.Polygon(house.boundary.exterior, alpha=0.5))
 
-        plt.show()
-        # plt.pause(1.0)
-        # plt.close()
+        #plt.show()
+        plt.pause(1.0)
+        plt.close()
+
 
 if __name__ == '__main__':
     # unittest.main()
     suite = unittest.TestLoader().loadTestsFromTestCase(MyTestCase)
     unittest.TextTestRunner(verbosity=2).run(suite)
-
