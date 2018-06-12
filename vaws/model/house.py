@@ -1,12 +1,17 @@
 import copy
 import logging
 import numpy as np
+import numbers
 import collections
+from shapely import geometry, affinity
+from scipy import stats
+import pandas as pd
+import parmap
 
-from vaws.model.config import Config
+from vaws.model.config import Config, ROTATION_BY_WIND_IDX, DEBRIS_TYPES_KEYS, WIND_DIR
 from vaws.model.connection import ConnectionTypeGroup
 from vaws.model.zone import Zone
-from vaws.model.debris import Debris
+from vaws.model.debris import Debris, determine_impact_by_debris
 from vaws.model.coverage import Coverage
 from vaws.model.damage_costing import compute_water_ingress_given_damage
 
@@ -39,24 +44,27 @@ class House(object):
 
         # debris related
         self.debris = None
+        self._damage_incr = None
+        self._windward_coverages = None
+        self._windward_coverages_area = None
 
         # random variables
-        self.wind_dir_index = None  # 0 to 7
-        self.construction_level = None
-        self.profile_index = None
-        self.terrain_height_multiplier = None
-        self.shielding_multiplier = None
+        self._wind_dir_index = None  # 0 to 7
+        self._construction_level = None
+        self._profile_index = None
+        self._terrain_height_multiplier = None
+        self._shielding_multiplier = None
 
         self.groups = collections.OrderedDict()  # list of conn type groups
         self.connections = {}  # dict of connections with name
         self.zones = {}  # dict of zones with id
         self.coverages = None  # pd.dataframe of coverages
+        self.debris_items = None
 
         # vary over wind speeds
         self.qz = None
         self.cpi = 0.0
         self.collapse = False
-        self.window_breached_by_debris = False
         self.repair_cost = 0.0
         self.water_ingress_cost = 0.0
         self.di = None
@@ -72,7 +80,59 @@ class House(object):
         self.set_coverages()
         self.set_zones()
         self.set_connections()
-        self.set_debris()
+
+    @property
+    def damage_incr(self):
+        return self._damage_incr
+
+    @damage_incr.setter
+    def damage_incr(self, value):
+        assert isinstance(value, numbers.Number)
+        try:
+            del self._mean_no_items
+        except AttributeError:
+            pass
+        self._damage_incr = value
+
+    @property
+    def mean_no_items(self):
+        """
+        dN = f * dD
+        where dN: incr. number of debris items,
+              dD: incr in vulnerability (or damage index)
+              f : a constant factor
+
+              if we use dD/dV (pdf of vulnerability), then
+                 dN = f * (dD/dV) * dV
+        """
+        try:
+            return self._mean_no_items
+        except AttributeError:
+            mean_no_items = np.rint(self.cfg.source_items * self._damage_incr)
+            self._mean_no_items = mean_no_items
+            return mean_no_items
+
+    @property
+    def footprint(self):
+        """
+        create house footprint by wind direction
+        Note that debris source model is generated assuming wind blows from East.
+
+        :param _tuple: (polygon_inst, wind_dir_index)
+
+        :return:
+            self.footprint, self.front_facing_walls
+        """
+        return affinity.rotate(
+            self.cfg.footprint, ROTATION_BY_WIND_IDX[self.wind_dir_index])
+
+    @property
+    def front_facing_walls(self):
+        return self.cfg.front_facing_walls[WIND_DIR[self.wind_dir_index]]
+
+    @property
+    def boundary(self):
+        return geometry.Point(0, 0).buffer(self.cfg.boundary_radius)
 
     @property
     def combination_factor(self):
@@ -83,6 +143,117 @@ class House(object):
         """
         return 1.0 if abs(self.cpi) < 0.2 else 0.9
 
+    @property
+    def mean_factor(self):
+        return self.cfg.construction_levels[
+            self.construction_level]['mean_factor']
+
+    @property
+    def cv_factor(self):
+        return self.cfg.construction_levels[
+                self.construction_level]['cv_factor']
+
+    @property
+    def terrain_height_multiplier(self):
+        if self._terrain_height_multiplier is None:
+            self._terrain_height_multiplier = np.interp(
+                self.height, self.cfg.profile_heights,
+                self.cfg.wind_profiles[self.profile_index])
+        return self._terrain_height_multiplier
+
+    @property
+    def shielding_multiplier(self):
+        """
+        AS4055 (Wind loads for housing) defines the shielding multiplier
+        for full, partial and no shielding as 0.85, 0.95 and 1.0, respectively.
+
+        Based on the JDH report, the following percentages are recommended for
+        the shielding of houses well inside Australian urban areas:
+
+            Full shielding: 63%,
+            Partial shielding: 15%,
+            No shielding: 22%.
+
+        Note that regional shielding factor is less or equal to 0.85, then
+        it model buildings are considered to be in Australian urban area.
+
+        """
+        if self._shielding_multiplier is None:
+            if self.cfg.regional_shielding_factor <= 0.85:  # urban area
+                idx = (self.cfg.shielding_multiplier_thresholds <=
+                       self.rnd_state.random_integers(0, 100)).sum()
+                self._shielding_multiplier = self.cfg.shielding_multipliers[idx][1]
+            else:  #
+                self._shielding_multiplier = 1.0
+        return self._shielding_multiplier
+
+    @property
+    def no_debris_items(self):
+        """total number of generated debris items"""
+        return len(self.debris_items)
+
+    @property
+    def no_debris_impact(self):
+        """total number of impacted debris items"""
+        return sum([x.impact for x in self.debris_items])
+
+    @property
+    def debris_momentums(self):
+        """list of momentums of generated debris items"""
+        return np.array([x.momentum for x in self.debris_items])
+
+    @property
+    def windward_coverages(self):
+        if self._windward_coverages is None:
+            self._windward_coverages = self.coverages.loc[
+                self.coverages.direction == 'windward']
+        return self._windward_coverages
+
+    @property
+    def windward_coverages_area(self):
+        if self._windward_coverages_area is None:
+            self._windward_coverages_area = sum(
+                [x.coverage.area for _, x in self.windward_coverages.iterrows()])
+        return self._windward_coverages_area
+
+    @property
+    def window_breached_by_debris(self):
+        return sum([x.coverage.breached for _, x in self.coverages.iterrows()
+                    if x.coverage.description == 'window']) > 0
+
+    @property
+    def wind_dir_index(self):
+        if self._wind_dir_index is None:
+            if self.cfg.wind_dir_index == 8:
+                self._wind_dir_index = self.rnd_state.random_integers(0, 7)
+            else:
+                self._wind_dir_index = self.cfg.wind_dir_index
+        return self._wind_dir_index
+
+    @property
+    def profile_index(self):
+        if self._profile_index is None:
+            self._profile_index = self.rnd_state.random_integers(
+                1, len(self.cfg.wind_profiles))
+        return self._profile_index
+
+    @property
+    def construction_level(self):
+        """
+
+        Returns: construction_level
+
+        """
+        if self._construction_level is None:
+            rv = self.rnd_state.random_integers(0, 100)
+            key, value, cum_prob = None, None, 0.0
+            for key, value in self.cfg.construction_levels.items():
+                cum_prob += value['probability'] * 100.0
+                if rv <= cum_prob:
+                    break
+            self._construction_level = key
+        return self._construction_level
+
     def run_simulation(self, wind_speed):
 
         if not self.collapse:
@@ -92,23 +263,22 @@ class House(object):
             # compute load by zone
             self.compute_qz(wind_speed)
 
-            for _zone in self.zones.itervalues():
-                _zone.calc_zone_pressure(self.cpi, self.qz, self.combination_factor)
+            for _, _zone in self.zones.items():
+                _zone.calc_zone_pressure(self.cpi, self.qz,
+                                         self.combination_factor)
 
             if self.coverages is not None:
                 for _, _ps in self.coverages.iterrows():
                     _ps['coverage'].check_damage(self.qz, self.cpi,
-                                                 self.combination_factor, wind_speed)
-
-            for _, _connection in self.connections.items():
-                _connection.compute_load()
+                                                 self.combination_factor,
+                                                 wind_speed)
 
             # check damage by connection type group
             for _, _group in self.groups.items():
                 _group.check_damage(wind_speed)
-                _group.compute_damaged_area()
 
-                # change influence / influence patch
+            # change influence / influence patch
+            for _, _group in self.groups.items():
                 if _group.damage_dist:
                     _group.update_influence(self)
 
@@ -116,11 +286,6 @@ class House(object):
 
             # cpi is computed here for the next step
             self.check_internal_pressurisation(wind_speed)
-
-            if self.coverages is not None:
-                self.coverages['breached_area'] = \
-                    self.coverages['coverage'].apply(
-                        lambda x: x.breached_area)
 
             self.compute_damage_index(wind_speed)
 
@@ -189,6 +354,25 @@ class House(object):
             self.terrain_height_multiplier *
             self.shielding_multiplier) ** 2 * 1.0E-3
 
+    def determine_breach(self, row):
+
+        # Complementary CDF of impact momentum
+        ccdf = (self.debris_momentums >
+                row.coverage.momentum_capacity).sum() / self.no_debris_items
+        poisson_rate = (self.no_debris_impact * row.coverage.area /
+                        self.windward_coverages_area * ccdf)
+
+        if row.coverage.description == 'window':
+            prob_damage = 1.0 - np.exp(-1.0 * poisson_rate)
+            rv = self.rnd_state.rand()
+            if rv < prob_damage:
+                row.coverage.breached_area = row.coverage.area
+                row.coverage.breached = 1
+        else:
+            # assume area: no_impacts * size(1) * amplification_factor(1)
+            sampled_impacts = self.rnd_state.poisson(poisson_rate)
+            row.coverage.breached_area = min(sampled_impacts, row.coverage.area)
+
     def check_internal_pressurisation(self, wind_speed):
         """
 
@@ -201,21 +385,22 @@ class House(object):
 
         """
 
-        if self.cfg.flags['debris']:
-            self.debris.run(wind_speed)
+        if self.cfg.flags['debris'] and wind_speed:
 
-        # logging.debug('no_items_mean: {}, no_items:{}'.format(
-        #     self.house.debris.no_items_mean,
-        #     self.house.debris.no_items))
+            self.set_debris(wind_speed)
+
+            self.debris_items = parmap.map(determine_impact_by_debris,
+                                           self.debris_items, self.footprint,
+                                           self.boundary)
+
+            self.windward_coverages.apply(self.determine_breach, axis=1)
+
+                # logging.debug('coverage {} breached by debris b/c {:.3f} < {:.3f} -> area: {:.3f}'.format(
+                #     _coverage.name, _capacity, item_momentum, _coverage.breached_area))
 
         # area of breached coverages
         if self.coverages is not None:
             self.cpi = self.compute_damaged_area_and_assign_cpi()
-
-            if self.cfg.flags['debris']:
-                window_breach = np.array([x.breached for x in self.debris.coverages.itervalues()]).sum()
-                if window_breach:
-                    self.window_breached_by_debris = True
 
     def check_house_collapse(self, wind_speed):
         """
@@ -267,9 +452,6 @@ class House(object):
         # sum of area by scenario
         prop_area_by_scenario = self.compute_area_by_scenario(
             revised_area_by_group, total_area_by_group)
-
-        # print('{}'.format(area_by_scenario))
-        # print('{}'.format(total_area_by_scenario))
 
         _list = []
         for key, value in prop_area_by_scenario.items():
@@ -380,108 +562,39 @@ class House(object):
 
         # include DEBRIS when debris is ON
         if self.cfg.coverages_area:
-            area_by_group['debris'] = self.coverages['breached_area'].sum()
+            area_by_group['debris'] = sum([x.coverage.breached_area
+                                           for _, x in self.coverages.iterrows()])
             total_area_by_group['debris'] = self.cfg.coverages_area
 
         return area_by_group, total_area_by_group
-
-    @property
-    def mean_factor(self):
-        return self.cfg.construction_levels[
-            self.construction_level]['mean_factor']
-
-    @property
-    def cv_factor(self):
-        return self.cfg.construction_levels[
-                self.construction_level]['cv_factor']
-
-    def set_terrain_height_multiplier(self):
-        self.terrain_height_multiplier = np.interp(
-            self.height, self.cfg.profile_heights,
-            self.cfg.wind_profiles[self.profile_index])
-
-    def set_shielding_multiplier(self):
-        """
-        AS4055 (Wind loads for housing) defines the shielding multiplier
-        for full, partial and no shielding as 0.85, 0.95 and 1.0, respectively.
-
-        Based on the JDH report, the following percentages are recommended for
-        the shielding of houses well inside Australian urban areas:
-
-            Full shielding: 63%,
-            Partial shielding: 15%,
-            No shielding: 22%.
-
-        Note that regional shielding factor is less or equal to 0.85, then
-        it model buildings are considered to be in Australian urban area.
-
-        """
-        if self.cfg.regional_shielding_factor <= 0.85:  # urban area
-            idx = (self.cfg.shielding_multiplier_thresholds <=
-                   self.rnd_state.random_integers(0, 100)).sum()
-            self.shielding_multiplier = self.cfg.shielding_multipliers[idx][1]
-        else:  #
-            self.shielding_multiplier = 1.0
-
-    def set_wind_dir_index(self):
-        if self.cfg.wind_dir_index == 8:
-            self.wind_dir_index = self.rnd_state.random_integers(0, 7)
-        else:
-            self.wind_dir_index = self.cfg.wind_dir_index
-
-    def set_profile_index(self):
-        self.profile_index = self.rnd_state.random_integers(
-            1, len(self.cfg.wind_profiles))
-
-    def set_construction_level(self):
-        """
-
-        Returns: construction_level, mean_factor, cv_factor
-
-        """
-        rv = self.rnd_state.random_integers(0, 100)
-        key, value, cum_prob = None, None, 0.0
-        for key, value in self.cfg.construction_levels.items():
-            cum_prob += value['probability'] * 100.0
-            if rv <= cum_prob:
-                break
-        self.construction_level = key
 
     def set_house_data(self):
 
         for key, value in self.cfg.house.items():
             setattr(self, key, value)
 
-        self.set_wind_dir_index()
-        self.set_construction_level()
-        self.set_profile_index()
-        self.set_terrain_height_multiplier()
-        self.set_shielding_multiplier()
-
     def set_zones(self):
 
         for _name, item in self.cfg.zones.items():
 
-            item.update(
+            new_item = item.copy()
+            new_item.update(
                 {'wind_dir_index': self.wind_dir_index,
                  'shielding_multiplier': self.shielding_multiplier,
                  'building_spacing': self.cfg.building_spacing,
-                 'flag_differential_shielding': self.cfg.flags['differential_shielding']})
+                 'flag_differential_shielding': self.cfg.flags['differential_shielding'],
+                 'cpe_cv': self.cpe_cv,
+                 'cpe_k': self.cpe_k,
+                 'big_a': self.big_a,
+                 'big_b': self.big_b,
+                 'cpe_str_cv': self.cpe_str_cv,
+                 'cpe_str_k': self.cpe_str_k,
+                 'big_a_str': self.big_a_str,
+                 'big_b_str': self.big_b_str,
+                 'rnd_state': self.rnd_state
+                 })
 
-            _zone = Zone(name=_name, **item)
-
-            _zone.sample_cpe(
-                cpe_cv=self.cpe_cv,
-                cpe_k=self.cpe_k,
-                big_a=self.big_a,
-                big_b=self.big_b,
-                cpe_str_cv=self.cpe_str_cv,
-                cpe_str_k=self.cpe_str_k,
-                big_a_str=self.big_a_str,
-                big_b_str=self.big_b_str,
-                rnd_state=self.rnd_state)
-
-            self.zones[_name] = _zone
+            self.zones[_name] = Zone(name=_name, **new_item)
             # self.zone_by_grid[_zone.grid] = _zone
 
     def set_connections(self):
@@ -499,14 +612,29 @@ class House(object):
             self.groups[sub_group_name] = _group
 
             _group.damage_grid = self.cfg.damage_grid_by_sub_group[sub_group_name]
-            _group.costing = self.assign_costing(dic_group['damage_scenario'], group_name)
-            _group.connections = connections_by_sub_group.to_dict('index')
+            _group.costing = self.assign_costing(dic_group['damage_scenario'])
+
+            added = pd.DataFrame({'mean_factor': self.mean_factor,
+                                  'cv_factor': self.cv_factor,
+                                  'rnd_state': self.rnd_state},
+                                 index=connections_by_sub_group.index)
+
+            df_connections = connections_by_sub_group.join(added)
+            _group.connections = df_connections.to_dict('index')
 
             # linking with connections
             for connection_name, _connection in _group.connections.items():
 
                 self.connections[connection_name] = _connection
-                self.set_connection_property(_connection)
+
+                _connection.influences = self.cfg.influences[_connection.name]
+
+                # influence_patches
+                if _connection.name in self.cfg.influence_patches:
+                    _connection.influence_patch = \
+                        self.cfg.influence_patches[_connection.name]
+                else:
+                    _connection.influence_patch = {}
 
                 try:
                     _group.damage_grid[_connection.grid] = 0  # intact
@@ -523,6 +651,7 @@ class House(object):
                 self.link_connection_to_influence(_connection)
 
     def link_connection_to_influence(self, _connection):
+        msg = 'unable to associate {conn} with {name} wrt influence'
         # linking connections either zones or connections
         for _, _inf in _connection.influences.items():
             try:
@@ -531,59 +660,45 @@ class House(object):
                 try:
                     _inf.source = self.connections[_inf.name]
                 except KeyError:
-                    logging.warning('unable to associate {} with {} wrt influence'.format(
-                        _connection.name, _inf.name))
+                    logging.warning(msg.format(conn=_connection.name,
+                                               name=_inf.name))
 
-    def set_connection_property(self, _connection):
+    def assign_costing(self, damage_scenario):
         """
 
         Args:
-            _connection: instance of Connection class
+            damage_scenario:
 
         Returns:
 
         """
-        _connection.sample_strength(mean_factor=self.mean_factor,
-                                    cv_factor=self.cv_factor,
-                                    rnd_state=self.rnd_state)
-        _connection.sample_dead_load(rnd_state=self.rnd_state)
+        try:
+            return self.cfg.costings[damage_scenario]
+        except KeyError:
+            pass
 
-        _connection.influences = self.cfg.influences[_connection.name]
+    def set_debris(self, wind_speed):
 
-        # influence_patches
-        if _connection.name in self.cfg.influence_patches:
-            _connection.influence_patch = \
-                self.cfg.influence_patches[_connection.name]
-        else:
-            _connection.influence_patch = {}
+        self.debris_items = []
 
-    def assign_costing(self, key, group_name):
-        """
+        no_items_by_source = self.rnd_state.poisson(
+            self.mean_no_items, size=len(self.cfg.debris_sources))
 
-        Args:
-            key:
+        for no_item, source in zip(no_items_by_source, self.cfg.debris_sources):
+            _debris_types = self.rnd_state.choice(DEBRIS_TYPES_KEYS,
+                                                  size=no_item,
+                                                  replace=True,
+                                                  p=self.cfg.debris_types_ratio)
 
-        Returns:
+            for debris_type in _debris_types:
 
-        """
+                _debris = Debris(debris_source=source,
+                                 debris_type=debris_type,
+                                 debris_property=self.cfg.debris_types[debris_type],
+                                 wind_speed=wind_speed,
+                                 rnd_state=self.rnd_state)
 
-        if key in self.cfg.costings:
-            return self.cfg.costings[key]
-        else:
-            msg = 'damage scenario {} for group {} is not found in costings'
-            logging.warning(msg.format(key, group_name))
-
-    def set_debris(self):
-
-        coverages_debris = {}
-        if self.coverages is not None and not self.coverages.empty:
-            coverages_debris = self.coverages.loc[
-                self.coverages.direction == 'windward', 'coverage'].to_dict()
-
-        self.debris = Debris(cfg=self.cfg,
-                             wind_dir_idx=self.wind_dir_index,
-                             rnd_state=self.rnd_state,
-                             coverages=coverages_debris)
+                self.debris_items.append(_debris)
 
     def set_coverages(self):
 
@@ -595,42 +710,43 @@ class House(object):
                 self.assign_windward)
 
             self.coverages = df_coverages[['direction', 'wall_name']].copy()
-            self.coverages['breached_area'] = np.zeros_like(self.coverages.direction)
+            #self.coverages['breached_area'] = np.zeros_like(self.coverages.direction)
+
+            new_item = {
+                'wind_dir_index': self.wind_dir_index,
+                'cpe_cv': self.cpe_cv,
+                'cpe_k': self.cpe_k,
+                'big_a': self.big_a,
+                'big_b': self.big_b,
+                'cpe_str_cv': self.cpe_str_cv,
+                'cpe_str_k': self.cpe_str_k,
+                'big_a_str': self.big_a_str,
+                'big_b_str': self.big_b_str,
+                'rnd_state': self.rnd_state
+            }
 
             for _name, item in df_coverages.iterrows():
 
-                item['wind_dir_index'] = self.wind_dir_index
+                for key, value in new_item.items():
+                    item[key] = value
 
                 _coverage = Coverage(name=_name, **item)
-
-                _coverage.sample_cpe(
-                    cpe_cv=self.cpe_cv,
-                    cpe_k=self.cpe_k,
-                    big_a=self.big_a,
-                    big_b=self.big_b,
-                    cpe_str_cv=self.cpe_str_cv,
-                    cpe_str_k=self.cpe_str_k,
-                    big_a_str=self.big_a_str,
-                    big_b_str=self.big_b_str,
-                    rnd_state=self.rnd_state)
-
-                _coverage.sample_strength(rnd_state=self.rnd_state)
 
                 self.coverages.loc[_name, 'coverage'] = _coverage
 
     def assign_windward(self, wall_name):
 
-        windward_dir = self.cfg.wind_dir[self.wind_dir_index]
+        windward_dir = WIND_DIR[self.wind_dir_index]
         windward = self.cfg.front_facing_walls[windward_dir]
 
-        leeward = self.cfg.front_facing_walls[self.cfg.wind_dir[
+        leeward = self.cfg.front_facing_walls[WIND_DIR[
             (self.wind_dir_index + 4) % 8]]
 
         side1, side2 = None, None
         if len(windward_dir) == 1:
-            side1 = self.cfg.front_facing_walls[self.cfg.wind_dir[
+            side1 = self.cfg.front_facing_walls[WIND_DIR[
                 (self.wind_dir_index + 2) % 8]]
-            side2 = self.cfg.front_facing_walls[self.cfg.wind_dir[
+            side2 = self.cfg.front_facing_walls[WIND_DIR[
                 (self.wind_dir_index + 6) % 8]]
 
         # assign windward, leeward, side
@@ -645,13 +761,18 @@ class House(object):
 
     def compute_damaged_area_and_assign_cpi(self):
 
-        self.coverages['breached_area'] = \
-            self.coverages['coverage'].apply(lambda x: x.breached_area)
+        # self.coverages['breached_area'] = \
+        #     self.coverages['coverage'].apply(lambda x: x.breached_area)
 
         # self.debris.damaged_area = self.coverages['breached_area'].sum()
 
-        breached_area_by_wall = \
-            self.coverages.groupby('direction')['breached_area'].sum()
+        # breached_area_by_wall = \
+        #     self.coverages.groupby('direction').apply(
+        #         lambda x: x.coverage.breached_area, axis=1).sum()
+
+        breached_area_by_wall = self.coverages.groupby('direction').apply(
+            lambda x: x.coverage).apply(lambda x: x.breached_area).sum(
+            level='direction')
 
         # check if opening is dominant or non-dominant
         max_breached = breached_area_by_wall[breached_area_by_wall ==
@@ -675,10 +796,12 @@ class House(object):
 
                 # cpe where the largest opening
                 breached_area = self.coverages.loc[
-                    self.coverages['direction'] == direction, 'breached_area']
+                    self.coverages['direction'] == direction].apply(
+                    lambda x: x.coverage.breached_area, axis=1)
+
                 max_area = breached_area[breached_area == breached_area.max()]
                 cpe_array = np.array([self.coverages.loc[i, 'coverage'].cpe
-                                   for i in max_area.keys()])
+                                     for i in max_area.keys()])
                 max_cpe = max(cpe_array.min(), cpe_array.max(), key=abs)
                 cpi *= max_cpe
 

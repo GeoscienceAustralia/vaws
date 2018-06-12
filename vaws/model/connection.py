@@ -61,6 +61,9 @@ class Connection(object):
         self.costing_area = None
         self.lognormal_strength = None
         self.lognormal_dead_load = None
+        self.mean_factor = None
+        self.cv_factor = None
+        self.rnd_state = None
 
         for key, value in kwargs.items():
             setattr(self, key, value)
@@ -68,11 +71,10 @@ class Connection(object):
         self._influences = None
         self._influence_patch = None
 
-        self.strength = None
-        self.dead_load = None
+        self._strength = None
+        self._dead_load = None
         self.capacity = -1.0  # default
         self.damaged = 0
-        self.load = None
 
     @property
     def influences(self):
@@ -81,11 +83,9 @@ class Connection(object):
     @influences.setter
     def influences(self, _dic):
         assert isinstance(_dic, dict)
-
         self._influences = {}
         for key, value in _dic.items():
-            self._influences[key] = Influence(name=key,
-                                              coeff=value)
+            self._influences[key] = Influence(name=key, coeff=value)
 
     @property
     def influence_patch(self):
@@ -96,54 +96,54 @@ class Connection(object):
         assert isinstance(_dic, dict)
         self._influence_patch = _dic
 
-    def sample_strength(self, mean_factor, cv_factor, rnd_state):
+    @property
+    def strength(self):
         """Return a sampled strength from lognormal distribution
 
         Args:
             mean_factor: factor adjusting arithmetic mean strength
             cv_factor: factor adjusting arithmetic cv
-            rnd_state:
+            rnd_state: None, integer or np.random.RandomState
 
         Returns: sample of strength following log normal dist.
-
         """
-        mu, std = compute_arithmetic_mean_stddev(*self.lognormal_strength)
+        if self._strength is None:
+            mu, std = compute_arithmetic_mean_stddev(*self.lognormal_strength)
+            mu *= self.mean_factor
+            std *= self.cv_factor * self.mean_factor
+            self._strength = sample_lognorm_given_mean_stddev(mu, std, self.rnd_state)
+        return self._strength
 
-        mu *= mean_factor
-        std *= cv_factor * mean_factor
-
-        self.strength = sample_lognorm_given_mean_stddev(mu, std, rnd_state)
-
-    def sample_dead_load(self, rnd_state):
+    @property
+    def dead_load(self):
         """
-
-        Args:
-            rnd_state:
-
         Returns: sample of dead load following log normal dist.
 
         """
-        self.dead_load = sample_lognormal(*(self.lognormal_dead_load +
-                                            (rnd_state,)))
+        if self._dead_load is None:
+            self._dead_load = sample_lognormal(*(self.lognormal_dead_load +
+                                               (self.rnd_state,)))
+        return self._dead_load
 
-    def compute_load(self):
+    @property
+    def load(self):
         """
 
         Returns: load
 
         """
 
-        self.load = 0.0
-
+        load = 0.0
         if not self.damaged:
-
             logging.debug('computing load at conn: {}'.format(self.name))
 
-            self.load = compute_load_by_zone(self.flag_pressure, self.influences)
+            load = compute_load_by_zone(self.flag_pressure, self.influences)
 
             logging.debug('dead load: {:.3f}'.format(self.dead_load))
 
-            self.load += self.dead_load
+            load += self.dead_load
+
+        return load
 
     def check_damage(self, wind_speed):
         """
@@ -153,17 +153,20 @@ class Connection(object):
         Returns:
 
         """
+        msg = 'connection {name} of {group} damaged at {speed:.3f} ' \
+              'b/c {strength:.3f} < {load:.3f}'
 
         # if load is negative, check failure
         if self.load < -1.0 * self.strength:
 
+            logging.info(msg.format(name=self.name,
+                                    group=self.sub_group,
+                                    speed=wind_speed,
+                                    strength=self.strength,
+                                    load=self.load))
+
             self.damaged = 1
             self.capacity = wind_speed
-
-            logging.info(
-                'connection {} of {} damaged at {:.3f} '
-                'b/c {:.3f} < {:.3f}'.format(self.name, self.sub_group,
-                                             wind_speed, self.strength, self.load))
 
     def update_influence(self, source_connection, influence_coeff):
         """
@@ -228,8 +231,9 @@ class ConnectionTypeGroup(object):
 
         self.damage_grid_previous = None
         self.damage_grid_index = []  # list of index of damaged connection
-        self.damaged_area = 0.0
-        self.prop_damaged = 0.0
+
+        self._prop_damaged = 0
+        self._damaged_area = 0
 
     @property
     def connections(self):
@@ -274,29 +278,41 @@ class ConnectionTypeGroup(object):
 
         self._connection_by_grid[_connection_grid] = _connection
 
-    def compute_damaged_area(self):
+    @property
+    def damaged_area(self):
         """
 
         Returns: prop_damaged_group, prop_damaged_area
 
         """
+        if self._damaged_area < self.costing_area and self.no_connections:
+            self._damaged_area = sum([x.damaged * x.costing_area for
+                                      _, x in self.connections.items()])
+        else:
+            self._damaged_area = 0.0
 
-        if self.prop_damaged < 1.0:
+        logging.info('group {}: damaged area: {:.3f}'.format(
+            self.name, self._damaged_area))
 
-            num_damaged = 0
-            self.damaged_area = 0.0
+        return self._damaged_area
 
-            for _, _connection in self.connections.items():
-                num_damaged += _connection.damaged
-                self.damaged_area += _connection.costing_area * _connection.damaged
+    @property
+    def prop_damaged(self):
+        """
 
-            try:
-                self.prop_damaged = num_damaged / self.no_connections
-            except ZeroDivisionError:
-                self.prop_damaged = 0.0
+        Returns: prop_damaged_group, prop_damaged_area
 
-        logging.info('group {}: damaged area: {:.3f}, prop damaged: {:.2f}'.format(
-            self.name, self.damaged_area, self.prop_damaged))
+        """
+        if self._prop_damaged < 1 and self.no_connections:
+            no_damaged = sum([x.damaged for _, x in self.connections.items()])
+            self._prop_damaged = no_damaged / self.no_connections
+        else:
+            self._prop_damaged = 0
+
+        logging.info('group {}: prop damaged: {:.3f}'.format(
+            self.name, self._prop_damaged))
+
+        return self._prop_damaged
 
     def check_damage(self, wind_speed):
         """
@@ -309,9 +325,8 @@ class ConnectionTypeGroup(object):
 
         self.damage_grid_previous = self.damage_grid.copy()
 
-        for _connection in self.connections.itervalues():
+        for _, _connection in self.connections.items():
 
-            # _connection.compute_load()
             _connection.check_damage(wind_speed)
 
             if _connection.damaged:
@@ -405,7 +420,7 @@ class ConnectionTypeGroup(object):
 
                 # empty the influence of source connection
                 source_connection.influences.clear()
-                source_connection.load = 0.0
+                source_connection.damaged = 1
 
                 # update influence patch if applicable
                 self.update_influence_by_patch(source_connection, house_inst)

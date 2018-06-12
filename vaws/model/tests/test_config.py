@@ -327,7 +327,7 @@ rafter,3,patch,Loss of roof structure,0,0,3
                 self.assertAlmostEqual(_mu, value['{}_mu'.format(item)])
                 self.assertAlmostEqual(_std, value['{}_std'.format(item)])
 
-    def test_get_get_construction_level(self):
+    def test_get_construction_level(self):
 
         ref = {'low': (0.33, 0.9, 0.58),
                'medium': (0.34, 1.0, 0.58),

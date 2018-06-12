@@ -58,7 +58,7 @@ from shapely import geometry
 
 from vaws.model.stats import compute_logarithmic_mean_stddev, calc_big_a_b_values
 from vaws.model.damage_costing import Costing, WaterIngressCosting
-from vaws.model.zone import Zone
+from vaws.model.zone import get_grid_from_zone_location
 
 OUTPUT_DIR = "output"
 INPUT_DIR = "input"
@@ -83,12 +83,19 @@ FILE_WATER_INGRESS_COSTING_DATA = 'water_ingress_costing_data.csv'
 FILE_FOOTPRINT = 'footprint.csv'
 FILE_FRONT_FACING_WALLS = 'front_facing_walls.csv'
 FILE_DEBRIS = 'debris.csv'
-
-# results
 FILE_RESULTS = 'results.h5'
 
 G_CONST = 9.81  # acceleration of gravity (m/sec^2)
 RHO_AIR = 1.2  # air density (kg/m^3)
+
+ROTATION_BY_WIND_IDX = {0: 90.0, 4: 90.0,  # S, N
+                        1: 45.0, 5: 45.0,  # SW, NE
+                        2: 0.0, 6: 0.0,  # E, W
+                        3: -45.0, 7: -45.0}  # SE, NW
+
+DEBRIS_TYPES_KEYS = ['Rod', 'Compact', 'Sheet']
+WIND_DIR = ['S', 'SW', 'W', 'NW', 'N', 'NE', 'E', 'SE', 'RANDOM']
+DEBRIS_TYPES_ATTS = ['mass', 'frontal_area', 'cdav', 'ratio', 'flight_time']
 
 
 class Config(object):
@@ -130,9 +137,6 @@ class Config(object):
 
     """
     # lookup table mapping (0-7) to wind direction (8: random)
-    wind_dir = ['S', 'SW', 'W', 'NW', 'N', 'NE', 'E', 'SE', 'RANDOM']
-    debris_types_keys = ['Rod', 'Compact', 'Sheet']
-    debris_types_atts = ['mass', 'frontal_area', 'cdav', 'ratio', 'flight_time']
     dominant_opening_ratio_thresholds = [0.5, 1.5, 2.5, 6.0]
     cpi_table_for_dominant_opening = \
         {0: {'windward': -0.3, 'leeward': -0.3, 'side1': -0.3, 'side2': -0.3},
@@ -151,9 +155,6 @@ class Config(object):
                              1: ('partial', 0.95),
                              2: ('no', 1.0)}
     shielding_multiplier_thresholds = np.array([63, 78])
-
-    rho_air = 1.2  # air density (kg/m^3)
-    g_const = 9.81  # acceleration of gravity (m/sec^2)
 
     # model dependent attributes
 
@@ -821,13 +822,15 @@ class Config(object):
         self.set_water_ingress_costings()
 
         self.costing_to_group = defaultdict(list)
+        msg = 'damage scenario for {group} is {scenario}, ' \
+              'but not defined in {file}'
         for key, value in df_groups['damage_scenario'].to_dict().items():
-            if value:
-                if value in self.costings:
-                    self.costing_to_group[value].append(key)
-                else:
-                    raise Exception('{} is not defined in {}'.format(
-                        value, FILE_DAMAGE_COSTING_DATA))
+            if value in self.costings:
+                self.costing_to_group[value].append(key)
+            else:
+                logging.warning(msg.format(group=key,
+                                           scenario=value,
+                                           file=FILE_DAMAGE_COSTING_DATA))
 
         if self.coverages is not None:
             self.costing_to_group['Wall debris damage'] = ['debris']
@@ -1009,7 +1012,7 @@ class Config(object):
         for item in ['costing_area', 'lognormal_strength', 'lognormal_dead_load']:
             _df[item] = _df['type_name'].apply(lambda x: types.loc[x, item])
 
-        _df['grid_raw'] = _df['zone_loc'].apply(Zone.get_grid_from_zone_location)
+        _df['grid_raw'] = _df['zone_loc'].apply(get_grid_from_zone_location)
         _df = _df.join(_df.groupby('sub_group')['grid_raw'].apply(
             lambda x: tuple(map(min, *x))), on='sub_group', rsuffix='_min')
 
@@ -1227,10 +1230,10 @@ class Config(object):
 
         _debris_region = self.debris_regions[self.region_name]
         self.debris_types_ratio = []
-        for key in self.__class__.debris_types_keys:
+        for key in DEBRIS_TYPES_KEYS:
 
             self.debris_types[key] = {}
-            for item in self.__class__.debris_types_atts:
+            for item in DEBRIS_TYPES_ATTS:
 
                 if item in ['frontal_area', 'mass', 'flight_time']:
                     _mean = _debris_region['{0}_{1}_mean'.format(key, item)]
@@ -1245,7 +1248,7 @@ class Config(object):
 
     def set_wind_dir_index(self):
         try:
-            self.wind_dir_index = self.__class__.wind_dir.index(self.wind_direction.upper())
+            self.wind_dir_index = WIND_DIR.index(self.wind_direction.upper())
         except ValueError:
             logging.warning('8(i.e., RANDOM) is set for wind_dir_index')
             self.wind_dir_index = 8
@@ -1262,7 +1265,7 @@ class Config(object):
         config.set(key, 'model_name', self.model_name)
         config.set(key, 'random_seed', self.random_seed)
 
-        config.set(key, 'wind_direction', self.__class__.wind_dir[self.wind_dir_index])
+        config.set(key, 'wind_direction', WIND_DIR[self.wind_dir_index])
         config.set(key, 'wind_speed_min', self.wind_speed_min)
         config.set(key, 'wind_speed_max', self.wind_speed_max)
         config.set(key, 'wind_speed_increment', self.wind_speed_increment)

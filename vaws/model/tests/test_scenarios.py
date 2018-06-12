@@ -15,11 +15,10 @@ def simulation(house, wind_speeds, conn_capacity={}, list_connections=[],
                coverage_capacity={}, list_coverages=[]):
 
     # compute zone pressures
-    house.wind_dir_index = 0
-    house.terrain_height_multiplier = 1.0  # profile: 6, height: 4.5
-    house.construction_level = 'medium'
-    house.cpi = 0.0
-    house.debris.damage_incr = 0.0
+    house._wind_dir_index = 0
+    house._terrain_height_multiplier = 1.0  # profile: 6, height: 4.5
+    house._construction_level = 'medium'
+    house.damage_incr = 0.0
 
     for wind_speed in wind_speeds:
 
@@ -29,9 +28,11 @@ def simulation(house, wind_speeds, conn_capacity={}, list_connections=[],
 
         for _, _zone in house.zones.items():
 
-            _zone.cpe = _zone.cpe_mean[house.wind_dir_index]
-            _zone.cpe_str = _zone.cpe_str_mean[house.wind_dir_index]
-            _zone.cpe_eave = _zone.cpe_eave_mean[house.wind_dir_index]
+            _zone._cpe = _zone.cpe_mean[house.wind_dir_index]
+            _zone._cpe_str = _zone.cpe_str_mean[house.wind_dir_index]
+            _zone._cpe_eave = _zone.cpe_eave_mean[house.wind_dir_index]
+            _zone._differential_shielding = 1.0
+            _zone.shielding_multiplier = 1.0
 
             _zone.calc_zone_pressure(house.cpi, house.qz, house.combination_factor)
 
@@ -40,23 +41,13 @@ def simulation(house, wind_speeds, conn_capacity={}, list_connections=[],
                 _ps['coverage'].check_damage(
                     house.qz, house.cpi, house.combination_factor, wind_speed)
 
-        for _, _connection in house.connections.items():
-            _connection.compute_load()
-
         # check damage by connection type group
-        for _, _group in house.groups.items():
+        [_group.check_damage(wind_speed) for _, _group in house.groups.items()]
 
-            _group.check_damage(wind_speed)
-            _group.compute_damaged_area()
-
-            if _group.damage_dist:
-                _group.update_influence(house)
+        [_group.update_influence(house) for _, _group in house.groups.items()
+         if _group.damage_dist]
 
         house.check_internal_pressurisation(wind_speed)
-
-        if house.coverages is not None:
-            house.coverages['breached_area'] = \
-                house.coverages['coverage'].apply(lambda x: x.breached_area)
 
         house.compute_damage_index(wind_speed)
 
@@ -130,9 +121,11 @@ class TestScenario1(unittest.TestCase):
 
         for _, _zone in self.house.zones.items():
 
-            _zone.cpe = _zone.cpe_mean[0]
-            _zone.cpe_str = _zone.cpe_str_mean[0]
-            _zone.cpe_eave = _zone.cpe_eave_mean[0]
+            _zone._cpe = _zone.cpe_mean[0]
+            _zone._cpe_str = _zone.cpe_str_mean[0]
+            _zone._cpe_eave = _zone.cpe_eave_mean[0]
+            _zone.shielding_multiplier = 1.0
+
             _zone.calc_zone_pressure(cpi, qz, self.house.combination_factor)
 
         ref_load = {1: -0.0049, 11: -0.1944, 15: -0.0194, 21: -0.0194,
@@ -140,8 +133,6 @@ class TestScenario1(unittest.TestCase):
                     45: -0.0632, 51: -0.0194, 60: -0.0097}
 
         for _, _conn in self.house.connections.items():
-
-            _conn.compute_load()
 
             try:
                 self.assertAlmostEqual(ref_load[_conn.name], _conn.load,
@@ -608,8 +599,10 @@ class TestScenario14(unittest.TestCase):
     def setUpClass(cls):
 
         path = os.sep.join(__file__.split(os.sep)[:-1])
-        cfg = Config(cfg_file=os.path.join(
-            path, 'test_scenarios', 'test_scenario14', 'test_scenario14.cfg'))
+        cfg_file = os.path.join(
+            path, 'test_scenarios', 'test_scenario14', 'test_scenario14.cfg')
+
+        cfg = Config(cfg_file=cfg_file)
 
         cls.house = House(cfg, seed=0)
 
@@ -637,8 +630,13 @@ class TestScenario15(unittest.TestCase):
     def setUpClass(cls):
 
         path = os.sep.join(__file__.split(os.sep)[:-1])
-        cfg = Config(cfg_file=os.path.join(
-            path, 'test_scenarios', 'test_scenario15', 'test_scenario15.cfg'))
+        cfg_file = os.path.join(
+            path, 'test_scenarios', 'test_scenario15', 'test_scenario15.cfg')
+
+        # set up logging
+        # set_logger(os.path.dirname(cfg_file), logging_level='debug')
+        cfg = Config(cfg_file)
+
         cls.house = House(cfg, seed=0)
 
     def test_damage_sheeting_batten_rafter(self):
@@ -798,7 +796,7 @@ class TestScenario19(unittest.TestCase):
                 conn_capacity2.update({_id: speed})
 
         # compute zone pressures
-        self.house.terrain_height_multiplier = 1.0  # profile: 6, height: 4.5
+        self.house._terrain_height_multiplier = 1.0  # profile: 6, height: 4.5
 
         for wind_speed in wind_speeds:
 
@@ -972,7 +970,7 @@ class TestScenario22b(unittest.TestCase):
     def test_directional_strength_wind_direction_N(self):
 
         assert self.house.wind_dir_index == 4
-        self.house.terrain_height_multiplier = 1.0  # profile: 6, height: 4.5
+        self.house._terrain_height_multiplier = 1.0  # profile: 6, height: 4.5
 
         # change it to conn to speed
         coverage_capacity = {34.0: [4],
@@ -1004,7 +1002,7 @@ class TestScenario23a(unittest.TestCase):
     def test_directional_strength_wind_direction_S(self):
 
         assert self.house.wind_dir_index == 0
-        self.house.terrain_height_multiplier = 1.0  # profile: 6, height: 4.5
+        self.house._terrain_height_multiplier = 1.0  # profile: 6, height: 4.5
 
         # change it to conn to speed
         coverage_capacity = {34.0: [2],
@@ -1038,7 +1036,7 @@ class TestScenario23b(unittest.TestCase):
     def test_directional_strength_wind_direction_SE(self):
 
         assert self.house.wind_dir_index == 1
-        self.house.terrain_height_multiplier = 1.0  # profile: 6, height: 4.5
+        self.house._terrain_height_multiplier = 1.0  # profile: 6, height: 4.5
 
         # change it to conn to speed
         coverage_capacity = {28.0: [2],
@@ -1072,7 +1070,7 @@ class TestScenario23c(unittest.TestCase):
     def test_directional_strength_wind_direction_E(self):
 
         assert self.house.wind_dir_index == 2
-        self.house.terrain_height_multiplier = 1.0  # profile: 6, height: 4.5
+        self.house._terrain_height_multiplier = 1.0  # profile: 6, height: 4.5
 
         # change it to conn to speed
         coverage_capacity = {34.0: [4],

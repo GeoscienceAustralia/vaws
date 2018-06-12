@@ -15,7 +15,7 @@ class MyTestCase(unittest.TestCase):
                                 'test_sheeting_batten.cfg')
         cls.cfg = Config(cfg_file=cfg_file)
 
-    def test_compute_prop_damaged(self):
+    def test_prop_damaged(self):
 
         house = House(self.cfg, 1)
         group = house.groups['sheeting0']  # sheeting
@@ -42,7 +42,8 @@ class MyTestCase(unittest.TestCase):
         # costing area by group
         self.assertAlmostEqual(group.costing_area, 18.27, places=2)
 
-        group.compute_damaged_area()
+        #group.compute_damaged_area()
+        # self.assertAlmostEqual(group.damaged_area, 3.465, places=4)
         self.assertAlmostEqual(group.damaged_area, 3.465, places=4)
 
     def test_compute_load(self):
@@ -53,14 +54,13 @@ class MyTestCase(unittest.TestCase):
         assert house.wind_dir_index == 3
         cpi = 0.0
         qz = 0.8187
-        Ms = 1.0
-        building_spacing = 0
         combination_factor = house.combination_factor
 
         _zone = house.zones['A1']
-        _zone.cpe = _zone.cpe_mean[0]  # originally randomly generated
-        _zone.cpe_eave = _zone.cpe_eave_mean[0]
-        _zone.cpe_str = _zone.cpe_str_mean[0]
+        _zone._cpe = _zone.cpe_mean[0]  # originally randomly generated
+        _zone._cpe_eave = _zone.cpe_eave_mean[0]
+        _zone._cpe_str = _zone.cpe_str_mean[0]
+        _zone.shielding_multiplier = 1.0
 
         _zone.calc_zone_pressure(cpi, qz, combination_factor)
 
@@ -77,9 +77,7 @@ class MyTestCase(unittest.TestCase):
 
         # init
         self.assertEqual(_conn.damaged, False)
-        self.assertEqual(_conn.load, None)
         self.assertAlmostEqual(_conn.dead_load, 0.01013, places=4)
-        _conn.compute_load()
 
         # load = influence.pz * influence.coeff * influence.area + dead_load
         # ref_cpe = qz * (_zone.cpe - _zone.cpe_eave)
@@ -101,15 +99,15 @@ class MyTestCase(unittest.TestCase):
         wind_dir_index = 3
         cpi = 0.0
         qz = 0.6 * 1.0e-3 * (wind_speed * mzcat) ** 2
-        Ms = 1.0
         building_spacing = 0
         combination_factor = house.combination_factor
 
         # compute pz using constant cpe
         for _zone in house.zones.itervalues():
-            _zone.cpe = _zone.cpe_mean[0]
-            _zone.cpe_eave = _zone.cpe_eave_mean[0]
-            _zone.cpe_str = _zone.cpe_str_mean[0]
+            _zone._cpe = _zone.cpe_mean[0]
+            _zone._cpe_eave = _zone.cpe_eave_mean[0]
+            _zone._cpe_str = _zone.cpe_str_mean[0]
+            _zone.shielding_multiplier = 1.0
             _zone.calc_zone_pressure(cpi, qz, combination_factor)
             ref_cpe = qz * (_zone.cpe_mean[0] - _zone.cpe_eave_mean[0])
             ref_cpe_str = qz * (_zone.cpe_str_mean[0] - _zone.cpe_eave_mean[0])
@@ -120,11 +118,9 @@ class MyTestCase(unittest.TestCase):
         for _conn in house.connections.itervalues():
             _conn.lognormal_dead_load = _conn.lognormal_dead_load[0], 0.0
             _conn.lognormal_strength = _conn.lognormal_strength[0], 0.0
-
-            _conn.sample_dead_load(house.rnd_state)
-            _conn.sample_strength(mean_factor=1.0, cv_factor=0.0,
-                                  rnd_state=house.rnd_state)
-            _conn.compute_load()
+            _conn.mean_factor = 1.0
+            _conn.cv_factor = 0.0
+            _conn.rnd_state = house.rnd_state
 
             self.assertAlmostEqual(_conn.dead_load,
                                    np.exp(_conn.lognormal_dead_load[0]),

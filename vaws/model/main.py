@@ -45,7 +45,7 @@ def simulate_wind_damage_to_houses(cfg, call_back=None):
 
             logging.info('model {}'.format(ihouse))
 
-            house.debris.damage_incr = damage_incr
+            house.damage_incr = damage_incr
 
             result = house.run_simulation(wind_speed)
 

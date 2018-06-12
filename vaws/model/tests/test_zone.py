@@ -3,12 +3,14 @@ import numpy as np
 import StringIO
 import pandas as pd
 
-from vaws.model.zone import Zone, str2num
+from vaws.model.zone import Zone, str2num, get_grid_from_zone_location, get_zone_location_from_grid
 
 
 class MyTestCase(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
+
+        cls.rnd_state = np.random.RandomState(seed=13)
 
         item = dict(area=0.2025,
                     cpi_alpha=0.0,
@@ -20,14 +22,21 @@ class MyTestCase(unittest.TestCase):
                     cpe_str_mean={k: -0.05 for k in range(8)},
                     cpe_eave_mean={k: 0.0 for k in range(8)},
                     is_roof_edge={k: 1 for k in range(8)},
-                    )
+                    cpe_cv=0.12,
+                    cpe_k=0.1,
+                    big_a=0.486,
+                    big_b=1.145,
+                    cpe_str_cv=0.07,
+                    cpe_str_k=0.1,
+                    big_a_str=0.486,
+                    big_b_str=1.145,
+                    rnd_state=cls.rnd_state)
 
         cls.zone = Zone(name='N12', **item)
 
-        cls.rnd_state = np.random.RandomState(seed=13)
 
     def test_get_grid(self):
-        col, row = self.zone.get_grid_from_zone_location(self.zone.name)
+        col, row = get_grid_from_zone_location(self.zone.name)
         self.assertEquals(col, 13)  # N
         self.assertEquals(row, 11)  # 12
         # self.assertEquals(self.zone.get_zone_location_from_grid((col, row)),
@@ -37,15 +46,7 @@ class MyTestCase(unittest.TestCase):
     #     self.assertEqual(self.zone.is_wall_zone, False)
 
     def test_calc_zone_pressures(self):
-        self.zone.sample_cpe(cpe_cv=0.12,
-                             cpe_k=0.1,
-                             big_a=0.486,
-                             big_b=1.145,
-                             cpe_str_cv=0.07,
-                             cpe_str_k=0.1,
-                             big_a_str=0.486,
-                             big_b_str=1.145,
-                             rnd_state=self.rnd_state)
+        # self.zone.sample_cpe(
 
         self.assertAlmostEqual(self.zone.cpe, -0.1084, places=4)
         self.assertAlmostEqual(self.zone.cpe_eave, 0.0000, places=4)
@@ -100,9 +101,9 @@ FALSE, 20, 0.85, 0, 1, Diff shielding not considered""")
 
         for irow, row in reference_data.iterrows():
 
-            item = dict(wind_dir_index= 0,
-                        shielding_multiplier = row['Ms'],
-                        building_spacing = row['Building spacing'],
+            item = dict(wind_dir_index=0,
+                        shielding_multiplier=row['Ms'],
+                        building_spacing=row['Building spacing'],
                         flag_differential_shielding = row['Differential shielding flag'],
                         is_roof_edge={0: row['Zone_edge_flag']})
 

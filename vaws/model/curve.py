@@ -7,7 +7,7 @@ from __future__ import division, print_function
 import logging
 import warnings
 
-from numpy import exp, log, sqrt, diag, newaxis, ones
+import numpy as np
 from scipy.optimize import curve_fit, OptimizeWarning
 from scipy.stats import weibull_min, lognorm
 from collections import OrderedDict
@@ -24,7 +24,7 @@ def fit_vulnerability_curve(cfg, df_dmg_idx):
 
     """
     # array changed to vector
-    xdata = (cfg.speeds[:, newaxis] * ones((1, cfg.no_models))).flatten()
+    xdata = (cfg.speeds[:, np.newaxis] * np.ones((1, cfg.no_models))).flatten()
     ydata = df_dmg_idx.flatten()
 
     fitted_curve = {}
@@ -72,7 +72,7 @@ def fit_fragility_curves(cfg, df_dmg_idx):
             logging.warning(e.message + ' at {} damage state fragility fitting'.
                             format(state))
         else:
-            _sigma = sqrt(diag(pcov))
+            _sigma = np.sqrt(np.diag(pcov))
             frag_counted[state] = dict(param1=popt[0],
                                        param2=popt[1],
                                        sigma1=_sigma[0],
@@ -110,7 +110,7 @@ def vulnerability_weibull(x, alpha_, beta_):
     """
     # convert alpha and beta to shape and scale respectively
     shape_ = 1 / alpha_
-    scale_ = exp(beta_)
+    scale_ = np.exp(beta_)
 
     return weibull_min.cdf(x, shape_, loc=0, scale=scale_)
 
@@ -127,7 +127,7 @@ def vulnerability_weibull_pdf(x, alpha_, beta_):
     """
     # convert alpha and beta to shape and scale respectively
     shape_ = 1 / alpha_
-    scale_ = exp(beta_)
+    scale_ = np.exp(beta_)
 
     return weibull_min.pdf(x, shape_, loc=0, scale=scale_)
 
