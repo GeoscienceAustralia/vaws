@@ -28,7 +28,7 @@ def simulate_wind_damage_to_houses(cfg, call_back=None):
     # simulator main_loop
     tic = time.time()
 
-    damage_incr = 0.0
+    damage_increment = 0.0
     bucket = init_bucket(cfg)
 
     logging.info('Starting simulation in serial')
@@ -37,31 +37,31 @@ def simulate_wind_damage_to_houses(cfg, call_back=None):
     list_house_damage = [House(cfg, i + cfg.random_seed)
                          for i in range(cfg.no_models)]
 
-    for ispeed, wind_speed in enumerate(cfg.speeds):
+    for ispeed, wind_speed in enumerate(cfg.wind_speeds):
 
         results_by_speed = []
 
         for ihouse, house in enumerate(list_house_damage):
 
-            logging.info('model {}'.format(ihouse))
+            # logging.info('model {}'.format(ihouse))
 
-            house.damage_incr = damage_incr
+            house.damage_increment = damage_increment
 
             result = house.run_simulation(wind_speed)
 
             results_by_speed.append(result)
 
         bucket = update_bucket(cfg, bucket, results_by_speed, ispeed)
-        damage_incr = compute_damage_increment(bucket, ispeed)
+        damage_increment = compute_damage_increment(bucket, ispeed)
 
-        logging.debug('damage index increment {}'.format(damage_incr))
+        logging.debug('damage index increment {}'.format(damage_increment))
 
         if not call_back:
             sys.stdout.write('{} out of {} completed \n'.format(
-                ispeed + 1, len(cfg.speeds)))
+                ispeed + 1, len(cfg.wind_speeds)))
             sys.stdout.flush()
         else:
-            percent_done = 100.0 * (ispeed + 1) / len(cfg.speeds)
+            percent_done = 100.0 * (ispeed + 1) / len(cfg.wind_speeds)
             if not call_back(int(percent_done)):  # stop triggered
                 return
 
@@ -75,35 +75,32 @@ def simulate_wind_damage_to_houses(cfg, call_back=None):
 
 def init_bucket(cfg):
 
-    bucket = {item: {} for item in ['house', 'debris']}
-
-    for item in ['house', 'debris']:
-        bucket[item] = {}
-        for att in getattr(cfg, '{}_bucket'.format(item)):
-            if att in cfg.att_time_invariant:
-                if att in cfg.att_non_float:
-                    bucket[item][att] = np.zeros(shape=(1, cfg.no_models),
-                                                 dtype=str)
-                else:
-                    bucket[item][att] = np.zeros(shape=(1, cfg.no_models),
-                                                 dtype=float)
+    bucket = {'house': {}}
+    for att, flag_time in cfg.house_bucket:
+        if flag_time:
+            bucket['house'][att] = np.zeros(
+                shape=(cfg.wind_speed_steps, cfg.no_models), dtype=float)
+        else:
+            if att in cfg.att_non_float:
+                bucket['house'][att] = np.zeros(shape=(1, cfg.no_models),
+                                                dtype=str)
             else:
-                bucket[item][att] = np.zeros(
-                    shape=(cfg.wind_speed_steps, cfg.no_models), dtype=float)
+                bucket['house'][att] = np.zeros(shape=(1, cfg.no_models),
+                                                dtype=float)
 
     # components: group, connection, zone, coverage
     for comp in cfg.list_components:
         bucket[comp] = {}
-        for att in getattr(cfg, '{}_bucket'.format(comp)):
+        for att, flag_time in getattr(cfg, '{}_bucket'.format(comp)):
             bucket[comp][att] = {}
             try:
                 for item in getattr(cfg, 'list_{}s'.format(comp)):
-                    if att in cfg.att_time_invariant:
-                        bucket[comp][att][item] = np.zeros(
-                            shape=(1, cfg.no_models), dtype=float)
-                    else:
+                    if flag_time:
                         bucket[comp][att][item] = np.zeros(
                             shape=(cfg.wind_speed_steps, cfg.no_models), dtype=float)
+                    else:
+                        bucket[comp][att][item] = np.zeros(
+                            shape=(1, cfg.no_models), dtype=float)
             except TypeError:
                 pass
     return bucket
@@ -111,32 +108,28 @@ def init_bucket(cfg):
 
 def update_bucket(cfg, bucket, results_by_speed, ispeed):
 
-    for item in ['house', 'debris']:
-        for att in getattr(cfg, '{}_bucket'.format(item)):
-            if att not in cfg.att_time_invariant:
-                bucket[item][att][ispeed] = [x[item][att] for x in results_by_speed]
+    for att, flag_time in cfg.house_bucket:
+        if flag_time:
+            bucket['house'][att][ispeed] = [x['house'][att] for x in results_by_speed]
 
     for comp in cfg.list_components:
-        for att, chunk in bucket[comp].items():
-            if att not in cfg.att_time_invariant:
-                for item in chunk.iterkeys():
-                    bucket[comp][att][item][ispeed] = \
-                        [x[comp][att][item] for x in results_by_speed]
+        for att, flag_time in getattr(cfg, '{}_bucket'.format(comp)):
+            if flag_time:
+                for item, value in bucket[comp][att].items():
+                    value[ispeed] = [x[comp][att][item] for x in results_by_speed]
 
     # save time invariant attribute
     if ispeed == cfg.wind_speed_steps-1:
 
-        for item in ['house', 'debris']:
-            for att in getattr(cfg, '{}_bucket'.format(item)):
-                if att in cfg.att_time_invariant:
-                    bucket[item][att] = [x[item][att] for x in results_by_speed]
+        for att, flag_time in cfg.house_bucket:
+            if not flag_time:
+                bucket['house'][att] = [x['house'][att] for x in results_by_speed]
 
         for comp in cfg.list_components:
-            for att, chunk in bucket[comp].items():
-                if att in cfg.att_time_invariant:
-                    for item in chunk.iterkeys():
-                        bucket[comp][att][item] = \
-                            [x[comp][att][item] for x in results_by_speed]
+            for att, flag_time in getattr(cfg, '{}_bucket'.format(comp)):
+                if not flag_time:
+                    for item, value in bucket[comp][att].items():
+                        value[0] = [x[comp][att][item] for x in results_by_speed]
 
     return bucket
 
@@ -171,10 +164,9 @@ def save_results_to_files(cfg, bucket):
     # file_house
     with h5py.File(cfg.file_results, 'w') as hf:
 
-        for item in ['house', 'debris']:
-            _group = hf.create_group(item)
-            for att, value in bucket[item].items():
-                _group.create_dataset(att, data=value)
+        _group = hf.create_group('house')
+        for att, value in bucket['house'].items():
+            _group.create_dataset(att, data=value)
 
         for comp in cfg.list_components:
             _group = hf.create_group(comp)
@@ -269,7 +261,7 @@ def set_logger(path_cfg, logging_level=None):
         try:
             fh.setLevel(getattr(logging, logging_level.upper()))
         except (AttributeError, TypeError):
-            logging.warning('{} is not valid; WARNING is set instead'.format(
+            logging.warning('Invalid logging level {}; WARNING is used instead'.format(
                 logging_level))
             fh.setLevel(logging.WARNING)
 
@@ -283,7 +275,7 @@ def process_commandline():
                       metavar="FILE")
     parser.add_option("-v", "--verbose",
                       dest="verbose",
-                      default=False,
+                      default=None,
                       metavar="logging_level",
                       help="set logging level")
     return parser

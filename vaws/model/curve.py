@@ -24,7 +24,7 @@ def fit_vulnerability_curve(cfg, df_dmg_idx):
 
     """
     # array changed to vector
-    xdata = (cfg.speeds[:, np.newaxis] * np.ones((1, cfg.no_models))).flatten()
+    xdata = (cfg.wind_speeds[:, np.newaxis] * np.ones((1, cfg.no_models))).flatten()
     ydata = df_dmg_idx.flatten()
 
     fitted_curve = {}
@@ -41,7 +41,7 @@ def fit_vulnerability_curve(cfg, df_dmg_idx):
             except OptimizeWarning as e:
                 logging.warning(e.message + ' at {} curve fitting'.format(key))
             else:
-                _sigma = sqrt(diag(pcov))
+                _sigma = np.sqrt(np.diag(pcov))
                 fitted_curve[key] = dict(param1=popt[0],
                                          param2=popt[1],
                                          sigma1=_sigma[0],
@@ -67,7 +67,7 @@ def fit_fragility_curves(cfg, df_dmg_idx):
         counted = (df_dmg_idx > value['threshold']).sum(axis=1) / cfg.no_models
 
         try:
-            popt, pcov = curve_fit(vulnerability_lognorm, cfg.speeds, counted)
+            popt, pcov = curve_fit(vulnerability_lognorm, cfg.wind_speeds, counted)
         except RuntimeError as e:
             logging.warning(e.message + ' at {} damage state fragility fitting'.
                             format(state))
@@ -81,13 +81,13 @@ def fit_fragility_curves(cfg, df_dmg_idx):
     return frag_counted
 
 
-def vulnerability_weibull(x, alpha_, beta_):
+def vulnerability_weibull(x, alpha, beta):
     """Return vulnerability in Weibull CDF
 
     Args:
         x: 3sec gust wind speed at 10m height
-        _alpha: parameter value used in defining vulnerability curve
-        _beta: ditto
+        alpha: parameter value used in defining vulnerability curve
+        beta: ditto
 
     Returns: weibull_min.cdf(x, shape, loc=0, scale)
 
@@ -109,27 +109,27 @@ def vulnerability_weibull(x, alpha_, beta_):
 
     """
     # convert alpha and beta to shape and scale respectively
-    shape_ = 1 / alpha_
-    scale_ = np.exp(beta_)
+    shape = 1 / alpha
+    scale = np.exp(beta)
 
-    return weibull_min.cdf(x, shape_, loc=0, scale=scale_)
+    return weibull_min.cdf(x, shape, loc=0, scale=scale)
 
 
-def vulnerability_weibull_pdf(x, alpha_, beta_):
+def vulnerability_weibull_pdf(x, alpha, beta):
     """Return PDF of vulnerability curve in Weibull
 
     Args:
         x: 3sec gust wind speed at 10m height
-        alpha_: parameter value used in defining vulnerability curve
-        beta_: ditto
+        alpha: parameter value used in defining vulnerability curve
+        beta: ditto
 
     Returns: weibull_min.cdf(x, shape, loc=0, scale)
     """
     # convert alpha and beta to shape and scale respectively
-    shape_ = 1 / alpha_
-    scale_ = np.exp(beta_)
+    shape = 1 / alpha
+    scale = np.exp(beta)
 
-    return weibull_min.pdf(x, shape_, loc=0, scale=scale_)
+    return weibull_min.pdf(x, shape, loc=0, scale=scale)
 
 
 def vulnerability_lognorm(x, med, std):

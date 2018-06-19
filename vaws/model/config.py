@@ -56,6 +56,9 @@ from scipy import stats
 from matplotlib import patches
 from shapely import geometry
 
+from vaws.model.constants import (WIND_DIR, FLAGS_PRESSURE, FLAGS_DIST_DIR,
+                                  DEBRIS_TYPES_KEYS, DEBRIS_TYPES_ATTS,
+                                  COVERAGE_FAILURE_KEYS)
 from vaws.model.stats import compute_logarithmic_mean_stddev, calc_big_a_b_values
 from vaws.model.damage_costing import Costing, WaterIngressCosting
 from vaws.model.zone import get_grid_from_zone_location
@@ -84,18 +87,6 @@ FILE_FOOTPRINT = 'footprint.csv'
 FILE_FRONT_FACING_WALLS = 'front_facing_walls.csv'
 FILE_DEBRIS = 'debris.csv'
 FILE_RESULTS = 'results.h5'
-
-G_CONST = 9.81  # acceleration of gravity (m/sec^2)
-RHO_AIR = 1.2  # air density (kg/m^3)
-
-ROTATION_BY_WIND_IDX = {0: 90.0, 4: 90.0,  # S, N
-                        1: 45.0, 5: 45.0,  # SW, NE
-                        2: 0.0, 6: 0.0,  # E, W
-                        3: -45.0, 7: -45.0}  # SE, NW
-
-DEBRIS_TYPES_KEYS = ['Rod', 'Compact', 'Sheet']
-WIND_DIR = ['S', 'SW', 'W', 'NW', 'N', 'NE', 'E', 'SE', 'RANDOM']
-DEBRIS_TYPES_ATTS = ['mass', 'frontal_area', 'cdav', 'ratio', 'flight_time']
 
 
 class Config(object):
@@ -137,56 +128,66 @@ class Config(object):
 
     """
     # lookup table mapping (0-7) to wind direction (8: random)
-    dominant_opening_ratio_thresholds = [0.5, 1.5, 2.5, 6.0]
-    cpi_table_for_dominant_opening = \
-        {0: {'windward': -0.3, 'leeward': -0.3, 'side1': -0.3, 'side2': -0.3},
-         1: {'windward': 0.2, 'leeward': -0.3, 'side1': -0.3, 'side2': -0.3},
-         2: {'windward': 0.7, 'leeward': 1.0, 'side1': 1.0, 'side2': 1.0},
-         3: {'windward': 0.85, 'leeward': 1.0, 'side1': 1.0, 'side2': 1.0},
-         4: {'windward': 1.0, 'leeward': 1.0, 'side1': 1.0, 'side2': 1.0}}
-    flags_pressure = ['cpe_str', 'cpe']
-    flags_dist_dir = ['row', 'col', 'patch', 'none']
-    coverage_failure_keys = ['failure_strength_in', 'failure_strength_out',
-                             'failure_momentum']
     header_for_cpe = ['name', 0, 1, 2, 3, 4, 5, 6, 7]
 
-    # prob. dist. and shielding categories
-    shielding_multipliers = {0: ('full', 0.85),
-                             1: ('partial', 0.95),
-                             2: ('no', 1.0)}
-    shielding_multiplier_thresholds = np.array([63, 78])
-
     # model dependent attributes
-
-    house_bucket = ['profile_index', 'wind_dir_index', 'construction_level',
-                    'terrain_height_multiplier', 'shielding_multiplier',
-                    'mean_factor', 'cv_factor', 'qz', 'cpi',
-                    'collapse', 'di', 'di_except_water', 'repair_cost',
-                    'water_ingress_cost', 'window_breached_by_debris']
+    # time variant: 1
+    house_bucket = [('profile_index', 0),
+                    ('wind_dir_index', 0),
+                    ('construction_level', 0),
+                    ('terrain_height_multiplier', 0),
+                    ('shielding_multiplier', 0),
+                    ('mean_factor', 0),
+                    ('cv_factor', 0),
+                    ('qz', 1),
+                    ('cpi', 1),
+                    ('collapse', 0),
+                    ('di', 1),
+                    ('di_except_water', 1),
+                    ('repair_cost', 1),
+                    ('water_ingress_cost', 1),
+                    ('window_breached', 1),
+                    ('no_debris_items', 1),
+                    ('no_debris_impacts', 1),
+                    ('breached_area', 1),
+                    ('mean_no_debris_items', 1)]
 
     att_non_float = ['construction_level']
-
-    debris_bucket = ['no_items', 'no_impacts', 'damaged_area']
 
     # model and wind dependent attributes
     list_components = ['group', 'connection', 'zone', 'coverage']
 
-    group_bucket = ['damaged_area', 'prop_damaged']
+    group_bucket = [('damaged_area', 1), ('prop_damaged', 1)]
 
-    connection_bucket = ['damaged', 'capacity', 'load', 'strength', 'dead_load']
+    connection_bucket = [('damaged', 1),
+                         ('capacity', 0),
+                         ('load', 1),
+                         ('strength', 0),
+                         ('dead_load', 0)]
 
-    zone_bucket = ['pressure_cpe', 'pressure_cpe_str', 'cpe', 'cpe_str',
-                   'cpe_eave']
+    zone_bucket = [('pressure_cpe', 1),
+                   ('pressure_cpe_str', 1),
+                   ('cpe', 0),
+                   ('cpe_str', 0),
+                   ('cpe_eave', 0),
+                   ('differential_shielding', 0)]
 
-    coverage_bucket = ['strength_negative', 'strength_positive', 'load',
-                       'breached', 'breached_area', 'capacity']
+    coverage_bucket = [('strength_negative', 0),
+                       ('strength_positive', 0),
+                       ('momentum_capacity', 0),
+                       ('capacity', 0),
+                       ('load', 1),
+                       ('breached', 1),
+                       ('breached_area', 1)]
 
-    att_time_invariant = ['strength', 'strength_negative', 'strength_positive',
-                          'dead_load', 'cpe', 'cpe_str', 'cpe_eave', 'capacity',
-                          'collapse', 'profile_index', 'wind_dir_index',
-                          'construction_level', 'terrain_height_multiplier',
-                          'shielding_multiplier', 'mean_factor',
-                          'cv_factor']
+    # debris_bucket = [('mass', 1),
+    #                  ('frontal_area', 0),
+    #                  ('flight_time', 0),
+    #                  ('momentum', 0),
+    #                  ('flight_distance', 1),
+    #                  ('impact', 1),
+    #                  ('landing.x', 1),
+    #                  ('landing.y', 1)]
 
     dic_obj_for_fitting = {'weibull': 'vulnerability_weibull',
                            'lognorm': 'vulnerability_lognorm'}
@@ -207,18 +208,18 @@ class Config(object):
         self.wind_speed_max = 0.0
         self.wind_speed_increment = 0.0
         self.wind_speed_steps = None  # set_wind_speeds
-        self.speeds = None  # set_wind_speeds
+        self.wind_speeds = None  # set_wind_speeds
         self.regional_shielding_factor = 1.0
         self.file_wind_profiles = None
         self.wind_profiles = None
         self.profile_heights = None
         self.wind_dir_index = None
 
-        self.construction_levels = OrderedDict()
-        self.construction_levels_i_levels = ['low', 'medium', 'high']
-        self.construction_levels_i_mean_factors = [0.9, 1.0, 1.1]
-        self.construction_levels_i_cv_factors = [0.58, 0.58, 0.58]
-        self.construction_levels_i_probs = [0.33, 0.34, 0.33]
+        self.construction_levels = {}
+        self.construction_levels_levels = ['medium']
+        self.construction_levels_probs = [1.0]
+        self.construction_levels_mean_factors = [1.0]
+        self.construction_levels_cv_factors = [0.58]
 
         self.fragility = None
         self.fragility_i_states = ['slight', 'medium', 'severe', 'complete']
@@ -416,10 +417,10 @@ class Config(object):
         self.wind_speed_steps = int(
             (self.wind_speed_max - self.wind_speed_min) /
             self.wind_speed_increment) + 1
-        self.speeds = np.linspace(start=self.wind_speed_min,
-                                  stop=self.wind_speed_max,
-                                  num=self.wind_speed_steps,
-                                  endpoint=True)
+        self.wind_speeds = np.linspace(start=self.wind_speed_min,
+                                       stop=self.wind_speed_max,
+                                       num=self.wind_speed_steps,
+                                       endpoint=True)
 
     def read_water_ingress(self, conf, key):
         """
@@ -513,7 +514,7 @@ class Config(object):
                     raise ValueError(
                         'Invalid coverage_type for coverages: {}'.format(not_good))
 
-                for _key in self.coverage_failure_keys:
+                for _key in COVERAGE_FAILURE_KEYS:
                     _df = self.coverages.apply(self.get_lognormal_tuple,
                                                args=(coverage_types, _key,),
                                                axis=1)
@@ -614,22 +615,19 @@ class Config(object):
         self.fragility['color'] = ['b', 'g', 'y', 'r']
 
     def read_construction_levels(self, conf, key):
-        if self.flags[key]:
-            for k in ['levels', 'probabilities', 'mean_factors', 'cv_factors']:
-                setattr(self, 'construction_levels_i_{}'.format(k),
+        try:
+            for k in ['levels', 'probs', 'mean_factors', 'cv_factors']:
+                setattr(self, 'construction_levels_{}'.format(k),
                         self.read_column_separated_entry(conf.get(key, k)))
-        else:
-            logging.info('default construction levels is used')
+        except ConfigParser.NoSectionError:
+            logging.info('construction level medium is used')
 
     def set_construction_levels(self):
-        self.construction_levels = OrderedDict()
-        for _level, _prob, _mean, _cov in zip(
-                self.construction_levels_i_levels,
-                self.construction_levels_i_probs,
-                self.construction_levels_i_mean_factors,
-                self.construction_levels_i_cv_factors):
-            self.construction_levels[_level] = {'probability': _prob,
-                                                'mean_factor': _mean,
+        for _level, _mean, _cov in zip(
+                self.construction_levels_levels,
+                self.construction_levels_mean_factors,
+                self.construction_levels_cv_factors):
+            self.construction_levels[_level] = {'mean_factor': _mean,
                                                 'cv_factor': _cov}
 
     @staticmethod
@@ -640,11 +638,11 @@ class Config(object):
             return [x.strip() for x in value.split(',')]
 
     def read_heatmap(self, conf, key):
-        for item in ['vmin', 'vmax', 'vstep']:
-            try:
+        try:
+            for item in ['vmin', 'vmax', 'vstep']:
                 setattr(self, 'heatmap_{}'.format(item), conf.getfloat(key, item))
-            except ConfigParser.NoSectionError:
-                logging.info('default value is used for heatmap')
+        except ConfigParser.NoSectionError:
+            logging.info('default value is used for heatmap')
 
     @staticmethod
     def return_norm_cdf(row):
@@ -701,14 +699,14 @@ class Config(object):
             self.groups = df_groups.to_dict('index')
             df_groups.sort_values(by='dist_order', inplace=True)
 
-            if (~df_groups['flag_pressure'].isin(self.flags_pressure)).sum():
+            if (~df_groups['flag_pressure'].isin(FLAGS_PRESSURE)).sum():
                 msg = 'flag_pressure should be either {} or {}'.format(
-                    *self.flags_pressure)
+                    *FLAGS_PRESSURE)
                 raise Exception(msg)
 
-            if (~df_groups['dist_dir'].isin(self.flags_dist_dir)).sum():
+            if (~df_groups['dist_dir'].isin(FLAGS_DIST_DIR)).sum():
                 msg = 'dist_dir should be either {}, {}, {} or {}'.format(
-                    *self.flags_dist_dir)
+                    *FLAGS_DIST_DIR)
                 raise Exception(msg)
 
         return df_groups
@@ -1303,13 +1301,13 @@ class Config(object):
         key = 'construction_levels'
         config.add_section(key)
         config.set(key, 'levels',
-                   ', '.join(self.construction_levels_i_levels))
+                   ', '.join(self.construction_levels))
         config.set(key, 'probabilities',
-                   ', '.join(str(x) for x in self.construction_levels_i_probs))
+                   ', '.join(str(x) for x in self.construction_levels_probs))
         config.set(key, 'mean_factors',
-                   ', '.join(str(x) for x in self.construction_levels_i_mean_factors))
+                   ', '.join(str(x) for x in self.construction_levels_mean_factors))
         config.set(key, 'cv_factors',
-                   ', '.join(str(x) for x in self.construction_levels_i_cv_factors))
+                   ', '.join(str(x) for x in self.construction_levels_cv_factors))
 
         key = 'water_ingress'
         config.add_section(key)

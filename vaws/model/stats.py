@@ -1,10 +1,10 @@
 
 import logging
 import math
-from scipy.stats import genextreme, lognorm
+from scipy.stats import genextreme
 
 
-def sample_lognormal(mu_lnx, std_lnx, rnd_state=None):
+def sample_lognormal(mu_lnx, std_lnx, rnd_state):
     """
     draw a sample from a lognormal distribution with mu, std of logarithmic x
     If std is zero, just return exp(mu_lnx)
@@ -12,16 +12,15 @@ def sample_lognormal(mu_lnx, std_lnx, rnd_state=None):
     Args:
         mu_lnx: mean of log x
         std_lnx: std of log x
-        rnd_state: None, integer or np.random.RandomState
+        rnd_state: numpy.random.RandomState
 
     Returns:
 
     """
-    med = math.exp(mu_lnx)
     try:
-        return lognorm.rvs(std_lnx, loc=0, scale=med, random_state=rnd_state)
+        return rnd_state.lognormal(mean=mu_lnx, sigma=std_lnx)
     except ValueError:  # no sampling
-        return med
+        return math.exp(mu_lnx)
 
 
 def sample_gev(mean_est, cov_est, shape_k, big_a, big_b, rnd_state=None):
@@ -133,15 +132,15 @@ def sample_lognorm_given_mean_stddev(m, stddev, rnd_state):
     Args:
         m: mean of x
         stddev: std of x
-        rnd_state: None, integer or np.random.RandomState
+        rnd_state: np.random.RandomState
         size: size of rv (default: 1)
 
     Returns:
 
     """
-    mu_, std_ = compute_logarithmic_mean_stddev(m, stddev)
+    mu, std = compute_logarithmic_mean_stddev(m, stddev)
 
-    return sample_lognormal(mu_, std_, rnd_state)
+    return sample_lognormal(mu, std, rnd_state)
 
 
 def compute_arithmetic_mean_stddev(m, stddev):

@@ -287,6 +287,7 @@ class TestDistributeMultiSwitchesOn(unittest.TestCase):
     #     consistency_wind_debris(self.path_reference, self.path_output)
 """
 
+
 class TestHouseDamage(unittest.TestCase):
 
     @classmethod
@@ -313,7 +314,7 @@ class TestHouseDamage(unittest.TestCase):
             ref_area[key] = np.array(value).sum()
 
         # # iteration over wind speed list
-        for id_speed, wind_speed in enumerate(self.house.cfg.speeds):
+        for id_speed, wind_speed in enumerate(self.house.cfg.wind_speeds):
 
             # simulate sampled house
             self.house.run_simulation(wind_speed)
@@ -333,8 +334,8 @@ class TestHouseDamage(unittest.TestCase):
                                                            ref_area[key]))
                     self.assertEqual(0, 1)
 
-    def test_cal_damage_index(self):
-        pass
+    # def test_cal_damage_index(self):
+    #     pass
     # check cal_damage_index esp. factors_costing
 
 if __name__ == '__main__':

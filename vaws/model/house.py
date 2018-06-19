@@ -1,17 +1,21 @@
 import copy
 import logging
 import numpy as np
-import numbers
+# import numbers
 import collections
 from shapely import geometry, affinity
-from scipy import stats
 import pandas as pd
-import parmap
 
-from vaws.model.config import Config, ROTATION_BY_WIND_IDX, DEBRIS_TYPES_KEYS, WIND_DIR
+from vaws.model.constants import (WIND_DIR, ROTATION_BY_WIND_IDX,
+                                  SHIELDING_MULTIPLIERS_KEYS,
+                                  SHIELDING_MULTIPLIERS_PROB,
+                                  SHIELDING_MULTIPLIERS,
+                                  DOMINANT_OPENING_RATIO_THRESHOLDS,
+                                  CPI_TABLE_FOR_DOMINANT_OPENING, RHO_AIR)
+from vaws.model.config import Config
 from vaws.model.connection import ConnectionTypeGroup
 from vaws.model.zone import Zone
-from vaws.model.debris import Debris, determine_impact_by_debris
+from vaws.model.debris import generate_debris_items
 from vaws.model.coverage import Coverage
 from vaws.model.damage_costing import compute_water_ingress_given_damage
 
@@ -43,10 +47,13 @@ class House(object):
         self.big_b_str = None
 
         # debris related
-        self.debris = None
-        self._damage_incr = None
-        self._windward_coverages = None
-        self._windward_coverages_area = None
+        self._footprint = None
+        self._damage_increment = None  # compute mean_no_debris_items
+        self._debris_coverages = None
+        self._debris_coverages_area = None
+        self._debris_coverages_area_ratio = None
+        self._front_facing_walls = None
+        self._boundary = None
 
         # random variables
         self._wind_dir_index = None  # 0 to 7
@@ -63,7 +70,6 @@ class House(object):
 
         # vary over wind speeds
         self.qz = None
-        self.cpi = 0.0
         self.collapse = False
         self.repair_cost = 0.0
         self.water_ingress_cost = 0.0
@@ -75,27 +81,25 @@ class House(object):
 
         # init house
         self.set_house_data()
-
-        # house is consisting of connections, coverages, and zones
         self.set_coverages()
         self.set_zones()
         self.set_connections()
 
     @property
-    def damage_incr(self):
-        return self._damage_incr
+    def damage_increment(self):
+        return self._damage_increment
 
-    @damage_incr.setter
-    def damage_incr(self, value):
-        assert isinstance(value, numbers.Number)
+    @damage_increment.setter
+    def damage_increment(self, value):
+        # assert isinstance(value, numbers.Number)
+        self._damage_increment = value
         try:
-            del self._mean_no_items
+            del self._mean_no_debris_items
         except AttributeError:
             pass
-        self._damage_incr = value
 
     @property
-    def mean_no_items(self):
+    def mean_no_debris_items(self):
         """
         dN = f * dD
         where dN: incr. number of debris items,
@@ -106,11 +110,12 @@ class House(object):
                  dN = f * (dD/dV) * dV
         """
         try:
-            return self._mean_no_items
+            return self._mean_no_debris_items
         except AttributeError:
-            mean_no_items = np.rint(self.cfg.source_items * self._damage_incr)
-            self._mean_no_items = mean_no_items
-            return mean_no_items
+            mean_no_debris_items = np.rint(self.cfg.source_items *
+                                           self._damage_increment)
+            self._mean_no_debris_items = mean_no_debris_items
+            return mean_no_debris_items
 
     @property
     def footprint(self):
@@ -123,16 +128,23 @@ class House(object):
         :return:
             self.footprint, self.front_facing_walls
         """
-        return affinity.rotate(
-            self.cfg.footprint, ROTATION_BY_WIND_IDX[self.wind_dir_index])
+        if self._footprint is None:
+            self._footprint = affinity.rotate(
+                self.cfg.footprint, ROTATION_BY_WIND_IDX[self.wind_dir_index])
+        return self._footprint
 
     @property
     def front_facing_walls(self):
-        return self.cfg.front_facing_walls[WIND_DIR[self.wind_dir_index]]
+        if self._front_facing_walls is None:
+            self._front_facing_walls = self.cfg.front_facing_walls[
+                WIND_DIR[self.wind_dir_index]]
+        return self._front_facing_walls
 
     @property
     def boundary(self):
-        return geometry.Point(0, 0).buffer(self.cfg.boundary_radius)
+        if self._boundary is None:
+            self._boundary = geometry.Point(0, 0).buffer(self.cfg.boundary_radius)
+        return self._boundary
 
     @property
     def combination_factor(self):
@@ -180,9 +192,9 @@ class House(object):
         """
         if self._shielding_multiplier is None:
             if self.cfg.regional_shielding_factor <= 0.85:  # urban area
-                idx = (self.cfg.shielding_multiplier_thresholds <=
-                       self.rnd_state.random_integers(0, 100)).sum()
-                self._shielding_multiplier = self.cfg.shielding_multipliers[idx][1]
+                key = self.rnd_state.choice(SHIELDING_MULTIPLIERS_KEYS,
+                                            p=SHIELDING_MULTIPLIERS_PROB)
+                self._shielding_multiplier = SHIELDING_MULTIPLIERS[key]
             else:  #
                 self._shielding_multiplier = 1.0
         return self._shielding_multiplier
@@ -190,36 +202,62 @@ class House(object):
     @property
     def no_debris_items(self):
         """total number of generated debris items"""
-        return len(self.debris_items)
+        try:
+            return len(self.debris_items)
+        except TypeError:
+            return None
 
     @property
-    def no_debris_impact(self):
+    def no_debris_impacts(self):
         """total number of impacted debris items"""
-        return sum([x.impact for x in self.debris_items])
+        try:
+            return sum([x.impact for x in self.debris_items])
+        except TypeError:
+            return None
 
     @property
     def debris_momentums(self):
         """list of momentums of generated debris items"""
-        return np.array([x.momentum for x in self.debris_items])
+        try:
+            return np.array([x.momentum for x in self.debris_items])
+        except TypeError:
+            return None
 
     @property
-    def windward_coverages(self):
-        if self._windward_coverages is None:
-            self._windward_coverages = self.coverages.loc[
-                self.coverages.direction == 'windward']
-        return self._windward_coverages
+    def debris_coverages(self):
+        if not self.coverages.empty and self._debris_coverages is None:
+            self._debris_coverages = self.coverages.loc[
+                self.coverages.direction == 'windward', 'coverage'].tolist()
+        return self._debris_coverages
 
     @property
-    def windward_coverages_area(self):
-        if self._windward_coverages_area is None:
-            self._windward_coverages_area = sum(
-                [x.coverage.area for _, x in self.windward_coverages.iterrows()])
-        return self._windward_coverages_area
+    def debris_coverages_area(self):
+        if self.debris_coverages and self._debris_coverages_area is None:
+            self._debris_coverages_area = sum([x.area for x in self.debris_coverages])
+        return self._debris_coverages_area
 
     @property
-    def window_breached_by_debris(self):
-        return sum([x.coverage.breached for _, x in self.coverages.iterrows()
-                    if x.coverage.description == 'window']) > 0
+    def debris_coverages_area_ratio(self):
+        if self.debris_coverages and self._debris_coverages_area_ratio is None:
+            self._debris_coverages_area_ratio = [
+                x.area/self.debris_coverages_area for x in self.debris_coverages]
+        return self._debris_coverages_area_ratio
+
+    @property
+    def window_breached(self):
+        if self.coverages is not None:
+            return sum([x.coverage.breached for _, x in self.coverages.iterrows()
+                        if x.coverage.description == 'window']) > 0
+        else:
+            return None
+
+    @property
+    def breached_area(self):
+        if self.coverages is not None:
+            return sum([x.coverage.breached_area for _, x in
+                        self.coverages.iterrows()])
+        else:
+            return None
 
     @property
     def wind_dir_index(self):
@@ -245,14 +283,84 @@ class House(object):
 
         """
         if self._construction_level is None:
-            rv = self.rnd_state.random_integers(0, 100)
-            key, value, cum_prob = None, None, 0.0
-            for key, value in self.cfg.construction_levels.items():
-                cum_prob += value['probability'] * 100.0
-                if rv <= cum_prob:
-                    break
-            self._construction_level = key
+            self._construction_level = self.rnd_state.choice(
+                self.cfg.construction_levels_levels,
+                p=self.cfg.construction_levels_probs)
         return self._construction_level
+
+    @property
+    def cpi(self):
+        try:
+            return self._cpi
+        except AttributeError:
+            cpi = 0.0
+
+            if self.coverages is not None:
+
+                # self.coverages['breached_area'] = \
+                #     self.coverages['coverage'].apply(lambda x: x.breached_area)
+
+                # self.debris.damaged_area = self.coverages['breached_area'].sum()
+
+                # breached_area_by_wall = \
+                #     self.coverages.groupby('direction').apply(
+                #         lambda x: x.coverage.breached_area, axis=1).sum()
+
+                breached_area_by_wall = self.coverages.groupby('direction').apply(
+                    lambda x: x.coverage).apply(lambda x: x.breached_area).sum(
+                    level='direction')
+
+                # check if opening is dominant or non-dominant
+                max_breached = breached_area_by_wall[breached_area_by_wall ==
+                                                     breached_area_by_wall.max()]
+
+                # cpi
+                if len(max_breached) == 1:  # dominant opening
+
+                    area_else = breached_area_by_wall.sum() - max_breached.iloc[0]
+                    if area_else:
+                        ratio = max_breached.iloc[0] / area_else
+                        row = (DOMINANT_OPENING_RATIO_THRESHOLDS <= ratio).sum()
+                    else:
+                        row = 4
+
+                    direction = max_breached.index[0]
+                    cpi = CPI_TABLE_FOR_DOMINANT_OPENING[row][direction]
+
+                    if row > 1:  # factor with Cpe
+
+                        # cpe where the largest opening
+                        breached_area = self.coverages.loc[
+                            self.coverages['direction'] == direction].apply(
+                            lambda x: x.coverage.breached_area, axis=1)
+
+                        max_area = breached_area[breached_area == breached_area.max()]
+                        cpe_array = np.array([self.coverages.loc[i, 'coverage'].cpe
+                                             for i in max_area.keys()])
+                        max_cpe = max(cpe_array.min(), cpe_array.max(), key=abs)
+                        cpi *= max_cpe
+
+                    logging.debug('cpi for bldg with dominant opening: {}'.format(cpi))
+
+                elif len(max_breached) == len(breached_area_by_wall):  # all equal openings
+                    if max_breached.iloc[0]:
+                        cpi = -0.3
+                    else:  # in case no opening
+                        cpi = 0.0
+
+                    logging.debug('cpi for bldg without dominant opening: {}'.format(cpi))
+
+                else:
+                    if breached_area_by_wall['windward']:
+                        cpi = 0.2
+                    else:
+                        cpi = -0.3
+
+                    logging.debug('cpi for bldg without dominant opening: {}'.format(cpi))
+
+            self._cpi = cpi
+
+            return cpi
 
     def run_simulation(self, wind_speed):
 
@@ -264,25 +372,27 @@ class House(object):
             self.compute_qz(wind_speed)
 
             for _, _zone in self.zones.items():
-                _zone.calc_zone_pressure(self.cpi, self.qz,
-                                         self.combination_factor)
+                _zone.calc_zone_pressure(cpi=self.cpi,
+                                         qz=self.qz,
+                                         combination_factor=self.combination_factor)
 
             if self.coverages is not None:
-                for _, _ps in self.coverages.iterrows():
-                    _ps['coverage'].check_damage(self.qz, self.cpi,
-                                                 self.combination_factor,
-                                                 wind_speed)
+                for _, _coverage in self.coverages['coverage'].iteritems():
+                    _coverage.check_damage(qz=self.qz,
+                                           cpi=self.cpi,
+                                           combination_factor=self.combination_factor,
+                                           wind_speed=wind_speed)
 
             # check damage by connection type group
             for _, _group in self.groups.items():
-                _group.check_damage(wind_speed)
+                _group.check_damage(wind_speed=wind_speed)
 
             # change influence / influence patch
             for _, _group in self.groups.items():
                 if _group.damage_dist:
-                    _group.update_influence(self)
+                    _group.update_influence(house_inst=self)
 
-            self.check_house_collapse(wind_speed)
+            self.check_house_collapse(wind_speed=wind_speed)
 
             # cpi is computed here for the next step
             self.check_internal_pressurisation(wind_speed)
@@ -296,15 +406,14 @@ class House(object):
     def init_bucket(self):
 
         # house
-        for item in ['house', 'debris']:
-            self.bucket[item] = {}
-            for att in getattr(self.cfg, '{}_bucket'.format(item)):
-                self.bucket[item][att] = None
+        self.bucket['house'] = {}
+        for att, _ in self.cfg.house_bucket:
+            self.bucket['house'][att] = None
 
         # components
         for comp in self.cfg.list_components:
             self.bucket[comp] = {}
-            for att in getattr(self.cfg, '{}_bucket'.format(comp)):
+            for att, _ in getattr(self.cfg, '{}_bucket'.format(comp)):
                 self.bucket[comp][att] = {}
                 try:
                     for item in getattr(self.cfg, 'list_{}s'.format(comp)):
@@ -315,25 +424,21 @@ class House(object):
     def fill_bucket(self):
 
         # house
-        for att in self.cfg.house_bucket:
+        for att, _ in self.cfg.house_bucket:
             self.bucket['house'][att] = getattr(self, att)
-
-        if self.cfg.flags['debris']:
-            for att in self.cfg.debris_bucket:
-                self.bucket['debris'][att] = getattr(self.debris, att)
 
         # components
         for comp in self.cfg.list_components:
             if comp == 'coverage':
                 try:
                     for item, value in self.coverages['coverage'].iteritems():
-                        for att in self.cfg.coverage_bucket:
+                        for att, _ in self.cfg.coverage_bucket:
                             self.bucket[comp][att][item] = getattr(value, att)
                 except TypeError:
                     pass
             else:
                 _dic = getattr(self, '{}s'.format(comp))
-                for att in getattr(self.cfg, '{}_bucket'.format(comp)):
+                for att, _ in getattr(self.cfg, '{}_bucket'.format(comp)):
                     for item, value in _dic.items():
                         self.bucket[comp][att][item] = getattr(value, att)
 
@@ -349,29 +454,29 @@ class House(object):
 
         """
 
-        self.qz = 0.5 * self.cfg.rho_air * (
+        self.qz = 0.5 * RHO_AIR * (
             wind_speed *
             self.terrain_height_multiplier *
             self.shielding_multiplier) ** 2 * 1.0E-3
 
-    def determine_breach(self, row):
-
-        # Complementary CDF of impact momentum
-        ccdf = (self.debris_momentums >
-                row.coverage.momentum_capacity).sum() / self.no_debris_items
-        poisson_rate = (self.no_debris_impact * row.coverage.area /
-                        self.windward_coverages_area * ccdf)
-
-        if row.coverage.description == 'window':
-            prob_damage = 1.0 - np.exp(-1.0 * poisson_rate)
-            rv = self.rnd_state.rand()
-            if rv < prob_damage:
-                row.coverage.breached_area = row.coverage.area
-                row.coverage.breached = 1
-        else:
-            # assume area: no_impacts * size(1) * amplification_factor(1)
-            sampled_impacts = self.rnd_state.poisson(poisson_rate)
-            row.coverage.breached_area = min(sampled_impacts, row.coverage.area)
+    # def determine_breach(self, row):
+    #
+    #     # Complementary CDF of impact momentum
+    #     ccdf = (self.debris_momentums >
+    #             row.coverage.momentum_capacity).sum() / self.no_debris_items
+    #     poisson_rate = (self.no_debris_impact * row.coverage.area /
+    #                     self.debris_coverages_area * ccdf)
+    #
+    #     if row.coverage.description == 'window':
+    #         prob_damage = 1.0 - np.exp(-1.0 * poisson_rate)
+    #         rv = self.rnd_state.rand()
+    #         if rv < prob_damage:
+    #             row.coverage.breached_area = row.coverage.area
+    #             row.coverage.breached = 1
+    #     else:
+    #         # assume area: no_impacts * size(1) * amplification_factor(1)
+    #         sampled_impacts = self.rnd_state.poisson(poisson_rate)
+    #         row.coverage.breached_area = min(sampled_impacts, row.coverage.area)
 
     def check_internal_pressurisation(self, wind_speed):
         """
@@ -385,22 +490,23 @@ class House(object):
 
         """
 
+        try:
+            del self._cpi
+        except AttributeError:
+            pass
+
         if self.cfg.flags['debris'] and wind_speed:
 
-            self.set_debris(wind_speed)
+            self.debris_items = generate_debris_items(cfg=self.cfg,
+                                                      mean_no_debris_items=self.mean_no_debris_items,
+                                                      wind_speed=wind_speed,
+                                                      rnd_state=self.rnd_state)
 
-            self.debris_items = parmap.map(determine_impact_by_debris,
-                                           self.debris_items, self.footprint,
-                                           self.boundary)
-
-            self.windward_coverages.apply(self.determine_breach, axis=1)
-
-                # logging.debug('coverage {} breached by debris b/c {:.3f} < {:.3f} -> area: {:.3f}'.format(
-                #     _coverage.name, _capacity, item_momentum, _coverage.breached_area))
-
-        # area of breached coverages
-        if self.coverages is not None:
-            self.cpi = self.compute_damaged_area_and_assign_cpi()
+            for item in self.debris_items:
+                item.check_impact(footprint=self.footprint,
+                                  boundary=self.boundary)
+                item.check_coverages(coverages=self.debris_coverages,
+                                     prob_coverages=self.debris_coverages_area_ratio)
 
     def check_house_collapse(self, wind_speed):
         """
@@ -562,8 +668,7 @@ class House(object):
 
         # include DEBRIS when debris is ON
         if self.cfg.coverages_area:
-            area_by_group['debris'] = sum([x.coverage.breached_area
-                                           for _, x in self.coverages.iterrows()])
+            area_by_group['debris'] = self.breached_area
             total_area_by_group['debris'] = self.cfg.coverages_area
 
         return area_by_group, total_area_by_group
@@ -677,29 +782,6 @@ class House(object):
         except KeyError:
             pass
 
-    def set_debris(self, wind_speed):
-
-        self.debris_items = []
-
-        no_items_by_source = self.rnd_state.poisson(
-            self.mean_no_items, size=len(self.cfg.debris_sources))
-
-        for no_item, source in zip(no_items_by_source, self.cfg.debris_sources):
-            _debris_types = self.rnd_state.choice(DEBRIS_TYPES_KEYS,
-                                                  size=no_item,
-                                                  replace=True,
-                                                  p=self.cfg.debris_types_ratio)
-
-            for debris_type in _debris_types:
-
-                _debris = Debris(debris_source=source,
-                                 debris_type=debris_type,
-                                 debris_property=self.cfg.debris_types[debris_type],
-                                 wind_speed=wind_speed,
-                                 rnd_state=self.rnd_state)
-
-                self.debris_items.append(_debris)
-
     def set_coverages(self):
 
         if self.cfg.coverages is not None:
@@ -710,7 +792,6 @@ class House(object):
                 self.assign_windward)
 
             self.coverages = df_coverages[['direction', 'wall_name']].copy()
-            #self.coverages['breached_area'] = np.zeros_like(self.coverages.direction)
 
             new_item = {
                 'wind_dir_index': self.wind_dir_index,
@@ -759,68 +840,3 @@ class House(object):
         elif wall_name in side2:
             return 'side2'
 
-    def compute_damaged_area_and_assign_cpi(self):
-
-        # self.coverages['breached_area'] = \
-        #     self.coverages['coverage'].apply(lambda x: x.breached_area)
-
-        # self.debris.damaged_area = self.coverages['breached_area'].sum()
-
-        # breached_area_by_wall = \
-        #     self.coverages.groupby('direction').apply(
-        #         lambda x: x.coverage.breached_area, axis=1).sum()
-
-        breached_area_by_wall = self.coverages.groupby('direction').apply(
-            lambda x: x.coverage).apply(lambda x: x.breached_area).sum(
-            level='direction')
-
-        # check if opening is dominant or non-dominant
-        max_breached = breached_area_by_wall[breached_area_by_wall ==
-                                             breached_area_by_wall.max()]
-
-        # cpi
-        if len(max_breached) == 1:  # dominant opening
-
-            area_else = breached_area_by_wall.sum() - max_breached.iloc[0]
-            if area_else:
-                ratio = max_breached.iloc[0] / area_else
-                row = (self.cfg.dominant_opening_ratio_thresholds <= ratio).sum()
-            else:
-                row = 4
-
-            direction = max_breached.index[0]
-
-            cpi = self.cfg.cpi_table_for_dominant_opening[row][direction]
-
-            if row > 1:  # factor with Cpe
-
-                # cpe where the largest opening
-                breached_area = self.coverages.loc[
-                    self.coverages['direction'] == direction].apply(
-                    lambda x: x.coverage.breached_area, axis=1)
-
-                max_area = breached_area[breached_area == breached_area.max()]
-                cpe_array = np.array([self.coverages.loc[i, 'coverage'].cpe
-                                     for i in max_area.keys()])
-                max_cpe = max(cpe_array.min(), cpe_array.max(), key=abs)
-                cpi *= max_cpe
-
-            logging.debug('cpi for bldg with dominant opening: {}'.format(cpi))
-
-        elif len(max_breached) == len(breached_area_by_wall):  # all equal openings
-            if max_breached.iloc[0]:
-                cpi = -0.3
-            else:  # in case no opening
-                cpi = 0.0
-
-            logging.debug('cpi for bldg without dominant opening: {}'.format(cpi))
-
-        else:
-            if breached_area_by_wall['windward']:
-                cpi = 0.2
-            else:
-                cpi = -0.3
-
-            logging.debug('cpi for bldg without dominant opening: {}'.format(cpi))
-
-        return cpi

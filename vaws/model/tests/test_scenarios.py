@@ -812,7 +812,7 @@ class TestScenario19(unittest.TestCase):
 
                 # ignore cpi refinement
                 if _ps['coverage'].breached:
-                    self.house.cpi = 0.7
+                    self.house._cpi = 0.7
 
         # compare with reference capacity
         for _id, _coverage in self.house.coverages['coverage'].iteritems():

@@ -94,7 +94,7 @@ def plot_damage_show(fig, grouped, values_grid, xlim_max, ylim_max,
     else:
         axPlot.set_title('Heatmap of failure wind speed for {} of model {} '.format(group_key,
                                                                                     house_number))
-    axPlot.format_coord = format_coord
+    # axPlot.format_coord = format_coord
 
     fig.canvas.draw()
 
@@ -137,10 +137,10 @@ def plot_fragility_show(mp_widget, num_iters, Vmin, Vmax):
     mp_widget.axes.figure.canvas.draw()
 
 
-def format_coord(x, y):
-    col = int(x + 0.5)
-    row = int(y + 0.5)
-    return Zone.get_zone_location_from_grid((col, row,))
+# def format_coord(x, y):
+#     col = int(x + 0.5)
+#     row = int(y + 0.5)
+#     return Zone.get_zone_location_from_grid((col, row,))
 
 
 def plot_influence(fig, cfg, conn_name, file_name=None):

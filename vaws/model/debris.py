@@ -17,20 +17,10 @@ import logging
 import numpy as np
 import math
 from shapely import geometry
-from scipy import stats
 
-from vaws.model.config import G_CONST, RHO_AIR
+from vaws.model.constants import (RHO_AIR, G_CONST, FLIGHT_DISTANCE_POWER,
+                                  FLIGHT_DISTANCE_COEFF, DEBRIS_TYPES_KEYS)
 from vaws.model.stats import sample_lognormal
-
-FLIGHT_DISTANCE_COEFF = {2: {'Compact': [0.011, 0.2060],
-                             'Sheet': [0.3456, 0.072],
-                             'Rod': [0.2376, 0.0723]},
-                         5: {'Compact': [0.405, -0.036, -0.052, 0.008],
-                             'Sheet': [0.456, -0.148, 0.024, -0.0014],
-                             'Rod': [0.4005, -0.16, 0.036, -0.0032]}}
-
-FLIGHT_DISTANCE_POWER = {2: [1, 2],
-                         5: [2, 3, 4, 5]}
 
 
 class Debris(object):
@@ -89,12 +79,10 @@ class Debris(object):
         if self._landing is None:
             # determine landing location for a debris item
             # sigma_x, y are taken from Wehner et al. (2010)
-            x = stats.norm.rvs(loc=0,
-                               scale=self.flight_distance / 3.0,
-                               random_state=self.rnd_state)
-            y = stats.norm.rvs(loc=0,
-                               scale=self.flight_distance / 12.0,
-                               random_state=self.rnd_state)
+            x = self.rnd_state.normal(loc=0,
+                                      scale=self.flight_distance / 3.0)
+            y = self.rnd_state.normal(loc=0,
+                                      scale=self.flight_distance / 12.0)
 
             # cov_matrix = [[pow(sigma_x, 2.0), 0.0], [0.0, pow(sigma_y, 2.0)]]
             # x, y = self.rnd_state.multivariate_normal(mean=[0.0, 0.0],
@@ -162,33 +150,35 @@ class Debris(object):
 
         """
         if self._flight_distance is None:
+
             self._flight_distance = 0.0
+
             if self.wind_speed > 0:
+
                 # dimensionless time
                 t_star = G_CONST * self.flight_time / self.wind_speed
 
                 # Tachikawa Number: rho*(V**2)/(2*g*h_m*rho_m)
                 # assume h_m * rho_m == mass / frontal_area
-                k_star = RHO_AIR * math.pow(self.wind_speed, 2.0) / (
+                k_star = RHO_AIR * self.wind_speed ** 2 / (
                     2.0 * G_CONST * self.mass / self.frontal_area)
                 kt_star = k_star * t_star
 
-                kt_star_powered = np.array(
-                    [math.pow(kt_star, i) for i in
-                     FLIGHT_DISTANCE_POWER[self.flag_poly]])
-                coeff = np.array(FLIGHT_DISTANCE_COEFF[self.flag_poly][self.type])
-                less_dis = (coeff * kt_star_powered).sum()
+                kt_star_powered = [kt_star ** i for i in
+                                   FLIGHT_DISTANCE_POWER[self.flag_poly]]
+                coeff = FLIGHT_DISTANCE_COEFF[self.flag_poly][self.type]
+                less_dis = sum([x*y for x, y in zip(coeff, kt_star_powered)])
 
                 # dimensionless hor. displacement
                 # k*x_star = k*g*x/V**2
                 # x = (k*x_star)*(V**2)/(k*g)
-                convert_to_dim = math.pow(self.wind_speed, 2.0) / (
-                    k_star * G_CONST)
+                convert_to_dim = self.wind_speed ** 2 / (k_star * G_CONST)
                 self._flight_distance = convert_to_dim * less_dis
 
         return self._flight_distance
 
-    def determine_impact(self, footprint, boundary):
+    def check_impact(self, footprint, boundary):
+
         land_within_footprint = footprint.contains(self.landing)
         intersect_within_boundary = (self.trajectory.intersects(footprint)
                                      and boundary.contains(self.landing))
@@ -196,6 +186,29 @@ class Debris(object):
             self.impact = 1
         else:
             self.impact = 0
+
+    def check_coverages(self, coverages, prob_coverages):
+
+        msg = '{coverage} breached by debris with {momentum:.3f} -> {area:.3f}'
+
+        if self.impact:
+
+            _coverage = self.rnd_state.choice(coverages, p=prob_coverages)
+
+            # check impact using failure momentum
+            if _coverage.momentum_capacity < self.momentum:
+                # history of coverage is ignored
+                if _coverage.description == 'window':
+                    _coverage.breached_area = _coverage.area
+                    _coverage.breached = 1
+                else:
+                    _coverage.breached_area = min(
+                        # frontal_area * self.__class__.amplification_factor,
+                        1.0, _coverage.area)
+
+                logging.debug(msg.format(coverage=_coverage.name,
+                                         momentum=self.momentum,
+                                         area=_coverage.area))
 
     def compute_coeff_beta_dist(self):
         """
@@ -251,18 +264,55 @@ class Debris(object):
         return _mean * dispersion, dispersion * (1.0 - _mean)
 
 
-def determine_impact_by_debris(debris_item, footprint, boundary):
-    """
+def generate_debris_items(cfg, mean_no_debris_items, wind_speed, rnd_state):
 
-    :param debris_item:
-    :param footprint:
-    :param boundary:
-    :return:
-    """
+    debris_items = []
 
-    debris_item.determine_impact(footprint=footprint, boundary=boundary)
+    for source in cfg.debris_sources:
 
-    return debris_item
+        no_items = rnd_state.poisson(mean_no_debris_items)
+
+        debris_types = rnd_state.choice(DEBRIS_TYPES_KEYS,
+                                        size=no_items,
+                                        replace=True,
+                                        p=cfg.debris_types_ratio)
+
+        for debris_type in debris_types:
+
+            _debris = Debris(debris_source=source,
+                             debris_type=debris_type,
+                             debris_property=cfg.debris_types[debris_type],
+                             wind_speed=wind_speed,
+                             rnd_state=rnd_state)
+
+            debris_items.append(_debris)
+
+    return debris_items
+
+
+def check_coverages(debris_items, coverages, rnd_state, coverage_area):
+    # Complementary CDF of impact momentum
+
+    debris_momentums = np.array([x.momentum for x in debris_items])
+    no_debris_items = len(debris_items)
+    no_debris_impacts = sum([x.impact for x in debris_items])
+
+    for _coverage in coverages:
+
+        # Complementary CDF of impact momentum
+        ccdf = (debris_momentums > _coverage.momentum_capacity).sum()/no_debris_items
+        poisson_rate = no_debris_impacts * _coverage.area / coverage_area * ccdf
+
+        if _coverage.description == 'window':
+            prob_damage = 1.0 - math.exp(-1.0*poisson_rate)
+            rv = rnd_state.rand()
+            if rv < prob_damage:
+                _coverage.breached_area = _coverage.area
+                _coverage.breached = 1
+        else:
+            # assume area: no_impacts * size(1) * amplification_factor(1)
+            sampled_impacts = rnd_state.poisson(poisson_rate)
+            _coverage.breached_area = min(sampled_impacts, _coverage.area)
 
 
 def create_sources(radius, angle, bldg_spacing, flag_staggered,
@@ -327,220 +377,20 @@ def create_sources(radius, angle, bldg_spacing, flag_staggered,
 
     return sources
 
-'''
-class Debris(object):
 
-    def __init__(self, cfg, seed, wind_dir_idx, coverages):
-
-        assert isinstance(cfg, Config)
-        assert isinstance(seed, int)
-        assert wind_dir_idx in range(8)
-        assert isinstance(coverages, dict)
-
-        self.cfg = cfg
-        self.seed = seed
-        self.rnd_state = np.random.RandomState(seed)
-        self.wind_dir_idx = wind_dir_idx
-        self.coverages = coverages
-
-        self._damage_incr = None
-
-        self.items = None  # container of items over wind steps
-        self.momentums = None  # container of momentums in a wind step
-
-        # vary over wind speeds
-        self.no_items = 0  # total number of generated debris items
-        self.no_impacts = 0  # total number of impacted debris items
-        self.damaged_area = 0.0  # total damaged area by debris items
-
-
-
-
-    @property
-    def area(self):
-        return sum([x.area for _, x in self.coverages.items()])
-
-    def run(self, wind_speed):
-        """
-
-        Args:
-            wind_speed:
-
-        Returns:
-
-        """
-
-        # sample a poisson for each source
-        no_items_by_source = stats.poisson.rvs(mu=self.mean_no_items,
-                                               size=len(self.cfg.debris_sources),
-                                               random_state=self.seed)
-
-        self.no_items = no_items_by_source.sum()
-        logging.debug('no_item_by_source at speed {:.3f}: {} sampled with {}'.format(
-            wind_speed, self.no_items, self.mean_no_items))
-
-        debris_type_per_source = self.generate_debris_type_per_source(
-            no_items_by_source)
-
-        out_tuples = parmap.map(generate_debris_item_per_source,
-                                debris_type_per_source, self.cfg.debris_types,
-                                self.footprint, self.boundary, wind_speed,
-                                self.seed)
-
-        _df = pd.DataFrame.from_records(out_tuples,
-                                        columns=['debris_type', 'trajectory',
-                                                 'flag_impact', 'momentum'])
-
-        self.no_impacts = _df['flag_impact'].sum()
-        self.momentums = _df['momentum'].values
-        self.items = _df[['debris_type', 'trajectory']].values.tolist()
-
-        if self.no_impacts:
-            self.check_debris_impact()
-
-    def generate_debris_type_per_source(self, no_items_by_source):
-        debris_type_per_source = []
-        for no_item, source in zip(no_items_by_source, self.cfg.debris_sources):
-            _debris_types = self.rnd_state.choice(self.cfg.debris_types_keys,
-                                                  size=no_item, replace=True,
-                                                  p=self.cfg.debris_types_ratio)
-            for _type in _debris_types:
-                debris_type_per_source.append((source, _type))
-
-        return debris_type_per_source
-
-    def check_debris_impact(self):
-        """
-
-        Args:
-            frontal_area:
-            item_momentum:
-
-        Returns:
-            self.breached
-
-        """
-
-        for _id, _coverage in self.coverages.items():
-
-            _capacity = sample_lognormal(*_coverage.log_failure_momentum,
-                                         rnd_state=self.seed)
-
-            # Complementary CDF of impact momentum
-            ccdf = (self.momentums > _capacity).sum()/self.no_items
-            poisson_rate = self.no_impacts * _coverage.area / self.area * ccdf
-
-            if _coverage.description == 'window':
-                prob_damage = 1.0 - math.exp(-1.0*poisson_rate)
-                if self.rnd_state.rand() < prob_damage:
-                    _coverage.breached_area = _coverage.area
-                    _coverage.breached = 1
-            else:
-                # assume area: no_impacts * size(1) * amplification_factor(1)
-                sampled_impacts = self.rnd_state.poisson(poisson_rate)
-                _coverage.breached_area = min(sampled_impacts, _coverage.area)
-
-            # logging.debug('coverage {} breached by debris b/c {:.3f} < {:.3f} -> area: {:.3f}'.format(
-            #     _coverage.name, _capacity, item_momentum, _coverage.breached_area))
-
-'''
-
-
-
-
-'''
-def generate_debris_item(debris_item, footprint, boundary, wind_speed, rnd_state):
+def check_impact_by_debris(debris_item, footprint, boundary):
     """
 
-    :param source_and_debris_type:
-    :param debris_types:
+    :param debris_item:
     :param footprint:
     :param boundary:
-    :param wind_speed:
-    :param rnd_state: None, integer or np.random.RandomState
     :return:
     """
 
-    assert isinstance(source_and_debris_type, tuple)
-    source, debris_type = source_and_debris_type
+    debris_item.check_impact(footprint=footprint, boundary=boundary)
 
-    debris_property = debris_types[debris_type].copy()
-
-    for item in ['mass', 'frontal_area', 'flight_time']:
-
-        debris_property[item] = sample_lognormal(
-            mu_lnx=debris_property['{}_mu'.format(item)],
-            std_lnx=debris_property['{}_std'.format(item)],
-            rnd_state=rnd_state)
-
-    flight_distance = compute_flight_distance(debris_type=debris_type,
-                                              debris_property=debris_property,
-                                              wind_speed=wind_speed)
-    debris_property['flight_distance']
-
-    # logging.debug('debris type:{}, area:{}, time:{}, distance:{}'.format(
-    #    debris_type_str, frontal_area, flight_time, flight_distance))
-
-    # determine landing location for a debris item
-    # sigma_x, y are taken from Wehner et al. (2010)
-    x = stats.norm.rvs(loc=0, scale=flight_distance / 3.0, random_state=rnd_state)
-    y = stats.norm.rvs(loc=0, scale=flight_distance / 12.0, random_state=rnd_state)
-
-    # cov_matrix = [[pow(sigma_x, 2.0), 0.0], [0.0, pow(sigma_y, 2.0)]]
-    # x, y = self.rnd_state.multivariate_normal(mean=[0.0, 0.0],
-    #                                           cov=cov_matrix)
-    # reference point: target house
-    landing = geometry.Point(x + source.x - flight_distance,
-                             y + source.y)
-    trajectory = geometry.LineString([source, landing])
-
-    debris_momentum = compute_debris_momentum(debris_property=debris_property,
-                                              wind_speed=wind_speed,
-                                              rnd_state=rnd_state)
-
-    flag_impact = 0
-    if footprint.contains(landing) or (trajectory.intersects(footprint)
-                                       and boundary.contains(landing)):
-        flag_impact = 1
-
-    return debris_type, trajectory, flag_impact, debris_momentum
-'''
+    return debris_item
 
 
-"""
-mean_no_items = 0.5
-
-no_items_by_source = stats.poisson.rvs(mu=mean_no_items,
-                                       size=len(cfg.debris_sources),
-                                       random_state=rnd_state)
-
-debris_items = []
-for no_item, source in zip(no_items_by_source, cfg.debris_sources):
-    _debris_types = rnd_state.choice(DEBRIS_TYPES_KEYS,
-                                          size=no_item,
-                                          replace=True,
-                                          p=cfg.debris_types_ratio)
-
-    for debris_type in _debris_types:
-        _debris = Debris(debris_source=source,
-                         debris_type=debris_type,
-                         debris_property=cfg.debris_types[debris_type],
-                         wind_speed=wind_speed,
-                         rnd_state=rnd_state)
-
-        debris_items.append(_debris)
 
 
-class Dummy(object):
-
-    def __init__(self, x):
-        self.x = x
-
-    @property
-    def y(self):
-        return self.x + 1
-
-    @property
-    def y2(self, value=4):
-        return self.y + value
-"""

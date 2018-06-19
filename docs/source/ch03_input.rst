@@ -73,8 +73,7 @@ The configuration file consists of a number of sections, among which *main* and 
     debris = True
     differential_shielding = False
     water_ingress = True
-    construction_levels = True
-    save_heatmaps = True
+        save_heatmaps = True
 
     [debris]
     region_name = Capital_city
@@ -87,7 +86,7 @@ The configuration file consists of a number of sections, among which *main* and 
 
     [construction_levels]
     levels = low, medium, high
-    probabilities = 0.33, 0.34, 0.33
+    probs = 0.33, 0.34, 0.33
     mean_factors = 0.9, 1.0, 1.1
     cv_factors = 0.58, 0.58, 0.58
 
@@ -538,12 +537,12 @@ This file defines zones and parameter values of the each zone. An example is sho
 .. code-block:: none
    :caption: Example zones.csv
 
-    name,area,cpi_alpha,wall_dir,coords,
-    A1,0.2025,0,0,0,0,0.2,0,0.2,0.5,0,0.5
-    A2,0.405,0.5,0,0,0.5,0.2,0.5,0.2,1,0,1
-    A3,0.405,1,0,0,1,0.2,1,0.2,1.5,0,1.5
-    A4,0.405,1,0,0,1.5,0.2,1.5,0.2,2,0,2
-    A5,0.405,1,0,0,2,0.2,2,0.2,2.5,0,2.5
+    name,area,cpi_alpha,coords,
+    A1,0.2025,0,0,0,0.2,0,0.2,0.5,0,0.5
+    A2,0.405,0.5,0,0.5,0.2,0.5,0.2,1,0,1
+    A3,0.405,1,0,1,0.2,1,0.2,1.5,0,1.5
+    A4,0.405,1,0,1.5,0.2,1.5,0.2,2,0,2
+    A5,0.405,1,0,2,0.2,2,0.2,2.5,0,2.5
 
 
 .. tabularcolumns:: |p{1.5cm}|p{1.0cm}|p{12.0cm}|

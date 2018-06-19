@@ -8,28 +8,22 @@ import logging
 import warnings
 
 import matplotlib.pyplot as plt
-from matplotlib.patches import Polygon as patches_Polygon
-
+import h5py
+import numpy as np
+from matplotlib import patches
 from collections import OrderedDict
-
 from mpl_toolkits.axes_grid.parasite_axes import SubplotHost
-
 from PyQt4.QtCore import SIGNAL, QTimer, Qt, QSettings, QVariant, QString, QFile
 from PyQt4.QtGui import QProgressBar, QLabel, QMainWindow, QApplication, QTableWidget, QPixmap,\
                         QTableWidgetItem, QDialog, QCheckBox, QFileDialog, QIntValidator,\
                         QDoubleValidator, QMessageBox, QTreeWidgetItem, QInputDialog, QSplashScreen
-from numpy import ones, where, float32, mean, nanmean, empty, array, \
-    count_nonzero, nan, append, ones_like, nan_to_num, newaxis, zeros
 
-import pandas as pd
-import h5py
+from vaws.model.constants import WIND_DIR, DEBRIS_TYPES_KEYS
 from vaws.model.house import House
 from vaws.gui.house import HouseViewer
 from vaws.model.curve import vulnerability_lognorm, vulnerability_weibull, \
     vulnerability_weibull_pdf
 from vaws.model.stats import compute_arithmetic_mean_stddev, sample_lognorm_given_mean_stddev
-
-from numpy.random import RandomState
 
 from vaws.gui.main_ui import Ui_main
 from vaws.model.main import process_commandline, set_logger, \
@@ -179,7 +173,7 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
         self.init_debris_region()
 
         self.ui.windDirection.clear()
-        self.ui.windDirection.addItems(self.cfg.wind_dir)
+        self.ui.windDirection.addItems(WIND_DIR)
 
         self.ui.buildingSpacing.clear()
         self.ui.buildingSpacing.addItems(('20.0', '40.0'))
@@ -270,14 +264,14 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
         self.ui.mplvuln.axes.hold(True)
 
         plot_wind_event_show(self.ui.mplvuln, self.cfg.no_models,
-                             self.cfg.speeds[0], self.cfg.speeds[-1])
+                             self.cfg.wind_speeds[0], self.cfg.wind_speeds[-1])
 
-        mean_cols = mean(_array.T, axis=0)
-        plot_wind_event_mean(self.ui.mplvuln, self.cfg.speeds, mean_cols)
+        mean_cols = _array.T.mean(axis=0)
+        plot_wind_event_mean(self.ui.mplvuln, self.cfg.wind_speeds, mean_cols)
 
         # plot the individuals
         for col in _array.T:
-            plot_wind_event_damage(self.ui.mplvuln, self.cfg.speeds, col)
+            plot_wind_event_damage(self.ui.mplvuln, self.cfg.wind_speeds, col)
 
         with h5py.File(self.cfg.file_results, "r") as f:
             try:
@@ -287,12 +281,12 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
                 pass
             else:
                 try:
-                    y = vulnerability_weibull(self.cfg.speeds, param1, param2)
+                    y = vulnerability_weibull(self.cfg.wind_speeds, param1, param2)
                 except KeyError as msg:
                     logging.warning(msg)
                 else:
                     plot_fitted_curve(self.ui.mplvuln,
-                                      self.cfg.speeds,
+                                      self.cfg.wind_speeds,
                                       y,
                                       col='r',
                                       label="Weibull")
@@ -307,12 +301,12 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
                 pass
             else:
                 try:
-                    y = vulnerability_lognorm(self.cfg.speeds, param1, param2)
+                    y = vulnerability_lognorm(self.cfg.wind_speeds, param1, param2)
                 except KeyError as msg:
                     logging.warning(msg)
                 else:
                     plot_fitted_curve(self.ui.mplvuln,
-                                      self.cfg.speeds,
+                                      self.cfg.wind_speeds,
                                       y,
                                       col='b',
                                       label="Lognormal")
@@ -329,10 +323,10 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
 
     def updateFragCurve(self, _array):
         plot_fragility_show(self.ui.mplfrag, self.cfg.no_models,
-                            self.cfg.speeds[0], self.cfg.speeds[-1])
+                            self.cfg.wind_speeds[0], self.cfg.wind_speeds[-1])
 
         self.ui.mplfrag.axes.hold(True)
-        self.ui.mplfrag.axes.plot(self.cfg.speeds, _array, 'k+', 0.3)
+        self.ui.mplfrag.axes.plot(self.cfg.wind_speeds, _array, 'k+', 0.3)
 
         with h5py.File(self.cfg.file_results, "r") as f:
 
@@ -343,9 +337,9 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
                 except KeyError as msg:
                     logging.warning(msg)
                 else:
-                    y = vulnerability_lognorm(self.cfg.speeds, param1, param2)
+                    y = vulnerability_lognorm(self.cfg.wind_speeds, param1, param2)
 
-                    plot_fitted_curve(self.ui.mplfrag, self.cfg.speeds, y,
+                    plot_fitted_curve(self.ui.mplfrag, self.cfg.wind_speeds, y,
                                       col=value['color'], label=ds)
 
         self.ui.mplfrag.axes.legend(loc=2,
@@ -373,7 +367,7 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
 
         no_values = len(self.cfg.debris_types[self.cfg.debris_types.keys()[0]])
 
-        for i, key in enumerate(self.cfg.debris_types_keys):
+        for i, key in enumerate(DEBRIS_TYPES_KEYS):
 
             _list = [(k, v) for k, v in _debris_region.items() if key in k]
 
@@ -642,18 +636,18 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
                                               group_widget[group_name][1],
                                               group_widget[group_name][3])
 
-            _array = array([bucket['connection']['capacity'][i]
+            _array = np.array([bucket['connection']['capacity'][i]
                             for i in grouped.index])
-            _array[_array == -1] = nan
+            _array[_array == -1] = np.nan
             if house_number == 0:
                 if len(_array) > 0:
-                    mean_connection_capacity = nanmean(_array, axis=1)
+                    mean_connection_capacity = np.nanmean(_array, axis=1)
                 else:
-                    mean_connection_capacity = zeros(1)
+                    mean_connection_capacity = np.zeros(1)
             else:
                 mean_connection_capacity = _array[:, house_number-1]
 
-            mean_connection_capacity = nan_to_num(mean_connection_capacity)
+            mean_connection_capacity = np.nan_to_num(mean_connection_capacity)
 
             plot_damage_show(group_widget[group_name][0], grouped,
                              mean_connection_capacity,
@@ -764,15 +758,15 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
 
         self.ui.wateringress_plot.axes.hold(True)
         self.ui.wateringress_plot.axes.scatter(
-            self.cfg.speeds[:, newaxis] * ones(shape=(1, self.cfg.no_models)),
+            self.cfg.wind_speeds[:, np.newaxis] * np.ones(shape=(1, self.cfg.no_models)),
             _array, c='k', s=8, marker='+', label='_nolegend_')
-        self.ui.wateringress_plot.axes.plot(self.cfg.speeds, wi_means, c='b', marker='o')
+        self.ui.wateringress_plot.axes.plot(self.cfg.wind_speeds, wi_means, c='b', marker='o')
         self.ui.wateringress_plot.axes.set_title('Water Ingress By Wind Speed')
         self.ui.wateringress_plot.axes.set_xlabel('Impact Wind speed (m/s)')
         self.ui.wateringress_plot.axes.set_ylabel('Water Ingress Cost')
         self.ui.wateringress_plot.axes.figure.canvas.draw()
-        self.ui.wateringress_plot.axes.set_xlim(self.cfg.speeds[0],
-                                                self.cfg.speeds[-1])
+        self.ui.wateringress_plot.axes.set_xlim(self.cfg.wind_speeds[0],
+                                                self.cfg.wind_speeds[-1])
         # self.ui.wateringress_plot.axes.set_ylim(0)
         
     def updateBreachPlot(self, bucket):
@@ -780,9 +774,9 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
         self.ui.breaches_plot.axes.figure.clf()
         # we'll have three seperate y axis running at different scales
 
-        breaches = bucket['house']['window_breached_by_debris'].sum(axis=1) / self.cfg.no_models
-        nv_means = bucket['debris']['no_impacts'].mean(axis=1)
-        num_means = bucket['debris']['no_items'].mean(axis=1)
+        breaches = bucket['house']['window_breached'].sum(axis=1) / self.cfg.no_models
+        nv_means = bucket['house']['no_debris_impacts'].mean(axis=1)
+        num_means = bucket['house']['no_debris_items'].mean(axis=1)
 
         host = SubplotHost(self.ui.breaches_plot.axes.figure, 111)
         par1 = host.twinx()
@@ -800,13 +794,13 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
         host.set_ylabel('Perc Breached')
         host.set_xlabel('Wind Speed (m/s)')
         par1.set_ylabel('Impacts')
-        host.set_xlim(self.cfg.speeds[0], self.cfg.speeds[-1])
+        host.set_xlim(self.cfg.wind_speeds[0], self.cfg.wind_speeds[-1])
                 
-        p1, = host.plot(self.cfg.speeds, breaches, label='Breached', c='b')
-        p2, = par1.plot(self.cfg.speeds, nv_means, label='Impacts', c='g')
-        p2b = par1.plot(self.cfg.speeds, nv_means.cumsum(), label='_nolegend_', c='g')
-        p3, = par2.plot(self.cfg.speeds, num_means, label='Supply', c='r')
-        p3b = par2.plot(self.cfg.speeds, num_means.cumsum(), label='_nolegend_', c='r')
+        p1, = host.plot(self.cfg.wind_speeds, breaches, label='Breached', c='b')
+        p2, = par1.plot(self.cfg.wind_speeds, nv_means, label='Impacts', c='g')
+        p2b = par1.plot(self.cfg.wind_speeds, nv_means.cumsum(), label='_nolegend_', c='g')
+        p3, = par2.plot(self.cfg.wind_speeds, num_means, label='Supply', c='r')
+        p3b = par2.plot(self.cfg.wind_speeds, num_means.cumsum(), label='_nolegend_', c='r')
         
         host.axis['left'].label.set_color(p1.get_color())
         par1.axis['right'].label.set_color(p2.get_color())
@@ -820,10 +814,10 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
         
         xlabels = []
         for _id, (type_name, grouped) in enumerate(self.cfg.connections.groupby('type_name')):
-            _array = array([bucket['connection']['strength'][i] for i in grouped.index]).flatten()
+            _array = np.array([bucket['connection']['strength'][i] for i in grouped.index]).flatten()
 
             self.ui.connection_type_plot.axes.scatter(
-                _id * ones_like(_array), _array, s=8, marker='+')
+                _id * np.ones_like(_array), _array, s=8, marker='+')
             self.ui.connection_type_plot.axes.hold(True)
             self.ui.connection_type_plot.axes.scatter(_id, _array.mean(), s=20,
                                                       c='r', marker='o')
@@ -842,14 +836,14 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
 
         xlabels = []
         for _id, (type_name, grouped) in enumerate(self.cfg.connections.groupby('type_name')):
-            _array = array([bucket['connection']['capacity'][i] for i in grouped.index]).flatten()
-            _array[_array == -1] = nan
+            _array = np.array([bucket['connection']['capacity'][i] for i in grouped.index]).flatten()
+            _array[_array == -1] = np.nan
 
             self.ui.connection_type_damages_plot.axes.scatter(
-                _id * ones_like(_array), _array, s=8, marker='+')
+                _id * np.ones_like(_array), _array, s=8, marker='+')
             self.ui.connection_type_damages_plot.axes.hold(True)
             self.ui.connection_type_damages_plot.axes.scatter(_id,
-                                                              nanmean(_array),
+                                                              np.nanmean(_array),
                                                               s=20,
                                                               c='r',
                                                               marker='o')
@@ -873,19 +867,19 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
         connections_damaged = bucket['connection']['damaged']
         for irow, item in enumerate(self.cfg.connections.iterrows()):
             conn_id = item[0]
-            failure_count = count_nonzero(connections_damaged[conn_id])
-            failure_mean = mean(connections_damaged[conn_id])
+            failure_count = np.count_nonzero(connections_damaged[conn_id])
+            failure_mean = np.mean(connections_damaged[conn_id])
             self.ui.connections.setItem(irow, 4, QTableWidgetItem('{:.3}'.format(failure_mean)))
             self.ui.connections.setItem(irow, 5, QTableWidgetItem('{}'.format(failure_count)))
 
     def determine_capacities(self, bucket):
 
-        _array = array([bucket['connection']['capacity'][i]
+        _array = np.array([bucket['connection']['capacity'][i]
                         for i in self.cfg.list_connections])
 
-        _array[_array == -1] = nan
+        _array[_array == -1] = np.nan
 
-        return nanmean(_array, axis=1)
+        return np.nanmean(_array, axis=1)
 
     def updateHouseResultsTable(self, bucket):
 
@@ -900,7 +894,7 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
         for i in range(self.cfg.no_models):
             parent = QTreeWidgetItem(self.ui.zoneResults,
                                      ['H{} ({}/{})'.format(i + 1,
-                                                           self.cfg.wind_dir[wind_dir[i]],
+                                                           WIND_DIR[wind_dir[i]],
                                                            construction_level[i]), '', '', ''])
             for zr_key in self.cfg.zones:
                 QTreeWidgetItem(parent, ['',
@@ -922,7 +916,7 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
         for i in range(self.cfg.no_models):
             parent = QTreeWidgetItem(self.ui.connectionResults,
                                      ['H{} ({}/{})'.format(i + 1,
-                                                           self.cfg.wind_dir[wind_dir[i]],
+                                                           WIND_DIR[wind_dir[i]],
                                                            construction_level[i]), '', '', ''])
 
             for _id, value in self.cfg.connections.iterrows():
@@ -1095,13 +1089,13 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
             # construction levels
             self.ui.constructionEnabled.setChecked(self.cfg.flags['construction_levels'])
             self.ui.constLevels.setText(
-                ', '.join(self.cfg.construction_levels_i_levels))
+                ', '.join(self.cfg.construction_levels_levels))
             self.ui.constProbs.setText(
-                ', '.join([str(x) for x in self.cfg.construction_levels_i_probabilities]))
+                ', '.join([str(x) for x in self.cfg.construction_levels_probs]))
             self.ui.constMeans.setText(
-                ', '.join([str(x) for x in self.cfg.construction_levels_i_mean_factors]))
+                ', '.join([str(x) for x in self.cfg.construction_levels_mean_factors]))
             self.ui.constCovs.setText(
-                ', '.join([str(x) for x in self.cfg.construction_levels_i_cv_factors]))
+                ', '.join([str(x) for x in self.cfg.construction_levels_cv_factors]))
 
             # water ingress
             self.ui.waterThresholds.setText(
@@ -1146,7 +1140,7 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
         new_cfg.wind_speed_max = self.ui.windMax.value()
         new_cfg.wind_speed_increment = float(self.ui.windIncrement.text())
         # new_cfg.set_wind_speeds()
-        new_cfg.wind_direction = self.cfg.wind_dir[
+        new_cfg.wind_direction = WIND_DIR[
             self.ui.windDirection.currentIndex()]
 
         # Debris section
@@ -1175,13 +1169,13 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
 
         # construction section
         new_cfg.flags['construction_levels'] = self.ui.constructionEnabled.isChecked()
-        new_cfg.construction_levels_i_levels = [
+        new_cfg.construction_levels_levels = [
             x.strip() for x in str(self.ui.constLevels.text()).split(',')]
-        new_cfg.construction_levels_i_probs = [
+        new_cfg.construction_levels_probs = [
             float(x) for x in unicode(self.ui.constProbs.text()).split(',')]
-        new_cfg.construction_levels_i_mean_factors = [
+        new_cfg.construction_levels_mean_factors = [
             float(x) for x in unicode(self.ui.constMeans.text()).split(',')]
-        new_cfg.construction_levels_i_cov_factors = [
+        new_cfg.construction_levels_cov_factors = [
             float(x) for x in unicode(self.ui.constCovs.text()).split(',')]
 
         # fragility section
@@ -1251,7 +1245,7 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
 
             house = House(self.cfg, seed=1)
 
-            incr_speed = self.cfg.speeds[1] - self.cfg.speeds[0]
+            incr_speed = self.cfg.wind_speeds[1] - self.cfg.wind_speeds[0]
 
             damage_incr = vulnerability_weibull_pdf(
                 x=wind_speed,
@@ -1273,10 +1267,10 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
             ax.scatter(0, 0, label='target', color='r')
 
             # add footprint
-            _array = array(house.debris.footprint.exterior.xy).T
+            _array = np.array(house.debris.footprint.exterior.xy).T
 
-            ax.add_patch(patches_Polygon(_array, alpha=0.5))
-            ax.add_patch(patches_Polygon(house.debris.boundary.exterior, alpha=0.5))
+            ax.add_patch(patches.Polygon(_array, alpha=0.5))
+            ax.add_patch(patches.Polygon(house.debris.boundary.exterior, alpha=0.5))
 
             for debris_type, line_string in house.debris.items:
                 _x, _y = line_string.xy
@@ -1348,17 +1342,17 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
 
             di_array.append(0.5*(dic_thresholds[i][0] + dic_thresholds[i][1]))
 
-        a = zeros((len(di_array), len(self.cfg.speeds)))
+        a = np.zeros((len(di_array), len(self.cfg.wind_speeds)))
 
         for i, di in enumerate(di_array):
-            for j, speed in enumerate(self.cfg.speeds):
+            for j, speed in enumerate(self.cfg.wind_speeds):
                 a[i, j] = 100.0 * compute_water_ingress_given_damage(
                     di, speed, self.cfg.water_ingress)
 
         fig = plt.figure()
         ax = fig.add_subplot(111)
         for j in range(a.shape[0]):
-            ax.plot(self.cfg.speeds, a[j, :],
+            ax.plot(self.cfg.wind_speeds, a[j, :],
                     label='{:.1f} <= DI < {:.1f}'.format(*dic_thresholds[j]))
 
         ax.legend(loc=1)

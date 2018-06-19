@@ -62,7 +62,7 @@ class TestConfig(unittest.TestCase):
         _speeds = linspace(self.cfg.wind_speed_min,
                            self.cfg.wind_speed_max,
                            self.cfg.wind_speed_steps)
-        assert_array_equal(self.cfg.speeds, _speeds)
+        assert_array_equal(self.cfg.wind_speeds, _speeds)
 
         self.assertEquals(self.cfg.wind_dir_index, 0)
 
@@ -329,10 +329,10 @@ rafter,3,patch,Loss of roof structure,0,0,3
 
     def test_get_construction_level(self):
 
-        ref = {'low': (0.33, 0.9, 0.58),
-               'medium': (0.34, 1.0, 0.58),
-               'high': (0.33, 1.1, 0.58)}
-        keys = ['probability', 'mean_factor', 'cv_factor']
+        ref = {'low': (0.9, 0.58),
+               'medium': (1.0, 0.58),
+               'high': (1.1, 0.58)}
+        keys = ['mean_factor', 'cv_factor']
         for key, values in ref.items():
             for sub_key, value in zip(keys, values):
                 self.assertEqual(value,
@@ -340,16 +340,15 @@ rafter,3,patch,Loss of roof structure,0,0,3
 
     def test_set_construction_levels(self):
 
-        self.cfg.construction_levels_i_levels = ['dummy']
-        self.cfg.construction_levels_i_probs = [0.5]
-        self.cfg.construction_levels_i_mean_factors = [0.5]
-        self.cfg.construction_levels_i_cv_factors = [0.5]
+        self.cfg.construction_levels_levels = ['dummy']
+        self.cfg.construction_levels_probs = [1.0]
+        self.cfg.construction_levels_mean_factors = [0.5]
+        self.cfg.construction_levels_cv_factors = [0.5]
 
         self.cfg.set_construction_levels()
 
         self.assertDictEqual(self.cfg.construction_levels['dummy'],
-                             {'probability': 0.5,
-                              'mean_factor': 0.5,
+                             {'mean_factor': 0.5,
                               'cv_factor': 0.5})
 
     def test_save_config(self):

@@ -9,30 +9,33 @@ import numpy as np
 import logging
 
 from vaws.model.zone import Zone
-from vaws.model.stats import compute_arithmetic_mean_stddev, sample_lognormal, \
-    sample_lognorm_given_mean_stddev
+from vaws.model.stats import (compute_arithmetic_mean_stddev, sample_lognormal,
+                              sample_lognorm_given_mean_stddev)
 
 
 def compute_load_by_zone(flag_pressure, dic_influences):
 
-    load = 0.0
+    msg1 = 'load by {name}: {coeff:.2f} * {area:.3f} * {pressure:.3f}'
+    msg2 = 'load by {name}: {coeff:.2f} * {load:.3f}'
 
+    load = 0.0
     for _, _inf in dic_influences.items():
 
         if isinstance(_inf.source, Zone):
             _pressure = getattr(_inf.source, 'pressure_{}'.format(flag_pressure))
             load += _inf.coeff * _inf.source.area * _pressure
 
-            logging.debug(
-                'load by {}: {:.2f} * {:.3f} * {:.3f}'.format(
-                    _inf.source.name, _inf.coeff, _inf.source.area, _pressure))
+            logging.debug(msg1.format(name=_inf.source.name,
+                                      coeff=_inf.coeff,
+                                      area=_inf.source.area,
+                                      pressure=_pressure))
 
         else:
             _load_by_zone = compute_load_by_zone(flag_pressure, _inf.source.influences)
             load += _inf.coeff * _load_by_zone
-            logging.debug(
-                'load by {}: {:.2f} * {:.3f}'.format(
-                    _inf.source.name, _inf.coeff, _load_by_zone))
+            logging.debug(msg2.format(name=_inf.source.name,
+                                      coeff=_inf.coeff,
+                                      load=_load_by_zone))
 
     return load
 
@@ -111,7 +114,8 @@ class Connection(object):
             mu, std = compute_arithmetic_mean_stddev(*self.lognormal_strength)
             mu *= self.mean_factor
             std *= self.cv_factor * self.mean_factor
-            self._strength = sample_lognorm_given_mean_stddev(mu, std, self.rnd_state)
+            self._strength = sample_lognorm_given_mean_stddev(
+                mu, std, self.rnd_state)
         return self._strength
 
     @property
@@ -121,8 +125,8 @@ class Connection(object):
 
         """
         if self._dead_load is None:
-            self._dead_load = sample_lognormal(*(self.lognormal_dead_load +
-                                               (self.rnd_state,)))
+            self._dead_load = sample_lognormal(*self.lognormal_dead_load,
+                                               rnd_state=self.rnd_state)
         return self._dead_load
 
     @property
@@ -132,16 +136,17 @@ class Connection(object):
         Returns: load
 
         """
+        msg1 = 'load at conn {}'
+        msg2 = 'dead load: {:.3f}'
 
         load = 0.0
         if not self.damaged:
-            logging.debug('computing load at conn: {}'.format(self.name))
+            logging.debug(msg1.format(self.name))
 
             load = compute_load_by_zone(self.flag_pressure, self.influences)
-
-            logging.debug('dead load: {:.3f}'.format(self.dead_load))
-
             load += self.dead_load
+
+            logging.debug(msg2.format(self.dead_load))
 
         return load
 

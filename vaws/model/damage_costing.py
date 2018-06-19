@@ -6,8 +6,6 @@
 """
 import logging
 
-from math import pow
-
 
 class Costing(object):
 
@@ -67,16 +65,19 @@ class Costing(object):
 
     def compute_cost(self, x):
         assert 0.0 <= x <= 1.0
-        envelop_costing = self.envelope_repair(x,
-                                               self.envelope_coeff1,
-                                               self.envelope_coeff2,
-                                               self.envelope_coeff3)
-        internal_costing = self.internal_repair(x,
-                                                self.internal_coeff1,
-                                                self.internal_coeff2,
-                                                self.internal_coeff3)
-        return x * (self.surface_area * envelop_costing * self.envelope_repair_rate +
-                    internal_costing * self.internal_repair_rate)
+        if x:
+            envelop_costing = self.envelope_repair(x=x,
+                                                   c1=self.envelope_coeff1,
+                                                   c2=self.envelope_coeff2,
+                                                   c3=self.envelope_coeff3)
+            internal_costing = self.internal_repair(x=x,
+                                                    c1=self.internal_coeff1,
+                                                    c2=self.internal_coeff2,
+                                                    c3=self.internal_coeff3)
+            return x * (self.surface_area * envelop_costing * self.envelope_repair_rate +
+                        internal_costing * self.internal_repair_rate)
+        else:
+            return 0.0
 
     @staticmethod
     def type1(x, c1, c2, c3):
@@ -106,9 +107,9 @@ class Costing(object):
         Returns: c1*x**c2
 
         """
-        try:
-            return c1 * pow(x, c2)
-        except ValueError:
+        if x:
+            return c1 * x ** c2
+        else:
             return 0.0
 
 

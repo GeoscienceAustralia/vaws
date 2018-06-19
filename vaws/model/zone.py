@@ -108,11 +108,11 @@ class Zone(object):
 
         """
 
-        self.pressure_cpe = qz * combination_factor * (
-            self.cpe - self.cpi_alpha * cpi - self.cpe_eave) * self.differential_shielding
+        self.pressure_cpe = qz * combination_factor * self.differential_shielding * (
+            self.cpe - self.cpi_alpha * cpi - self.cpe_eave)
 
-        self.pressure_cpe_str = qz * combination_factor * (
-            self.cpe_str - self.cpi_alpha * cpi - self.cpe_eave) * self.differential_shielding
+        self.pressure_cpe_str = qz * combination_factor * self.differential_shielding * (
+            self.cpe_str - self.cpi_alpha * cpi - self.cpe_eave)
 
     @property
     def differential_shielding(self):

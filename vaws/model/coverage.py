@@ -88,7 +88,7 @@ class Coverage(Zone):
 
         """
 
-        assert isinstance(value, Number)
+        # assert isinstance(value, Number)
 
         # breached area can be accumulated but not exceeding area
         self._breached_area += value
@@ -98,14 +98,14 @@ class Coverage(Zone):
     def strength_positive(self):
         if self._strength_positive is None:
             self._strength_positive = sample_lognormal(
-                *(self.log_failure_strength_in + (self.rnd_state,)))
+                *self.log_failure_strength_in, rnd_state=self.rnd_state)
         return self._strength_positive
 
     @property
     def strength_negative(self):
         if self._strength_negative is None:
             self._strength_negative = -1.0 * sample_lognormal(
-                *(self.log_failure_strength_out + (self.rnd_state,)))
+                *self.log_failure_strength_out, rnd_state=self.rnd_state)
         return self._strength_negative
 
     def check_damage(self, qz, cpi, combination_factor, wind_speed):

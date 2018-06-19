@@ -40,16 +40,9 @@ class MyTestCase(unittest.TestCase):
         self.assertAlmostEqual(self.house.cv_factor, 0.58)
 
     def test_construction_levels(self):
-        self.house.cfg.construction_levels = OrderedDict(
-            [('low', {'cv_factor': 0.58,
-                      'mean_factor': 0.9,
-                      'probability': 0.3}),
-             ('medium', {'cv_factor': 0.58,
-                         'mean_factor': 1.0,
-                         'probability': 0.6}),
-             ('high', {'cv_factor': 0.58,
-                       'mean_factor': 1.1,
-                       'probability': 0.1})])
+        self.house.cfg.construction_levels_levels = ['low', 'medium', 'high']
+        self.house.cfg.construction_levels_probs = [0.3, 0.6, 0.1]
+
         tmp = []
         for i in range(1000):
             tmp.append(self.house.construction_level)
@@ -298,14 +291,14 @@ class TestHouseCoverage(unittest.TestCase):
             house.coverages['breached_area'] = \
                 house.coverages['coverage'].apply(lambda x: x.breached_area)
 
-            _cpi = house.compute_damaged_area_and_assign_cpi()
-
             try:
-                self.assertEqual(_cpi, expected_cpi[key])
+                self.assertEqual(house.cpi, expected_cpi[key])
             except AssertionError:
                 print([house.coverages.loc[k, 'coverage'].breached_area
                        for k in range(1, 9)])
-                print('cpi should be {}, but {}'.format(expected_cpi[key], _cpi))
+                print('cpi should be {}, but {}'.format(expected_cpi[key], house.cpi))
+
+            del house._cpi
 
     def test_assign_cpi(self):
 
@@ -348,14 +341,14 @@ class TestHouseCoverage(unittest.TestCase):
             house.coverages['breached_area'] = \
                 house.coverages['coverage'].apply(lambda x: x.breached_area)
 
-            _cpi = house.compute_damaged_area_and_assign_cpi()
-
             try:
-                self.assertEqual(_cpi, item[-1])
+                self.assertEqual(house.cpi, item[-1])
             except AssertionError:
                 print([house.coverages.loc[k, 'coverage'].breached_area
                        for k in range(1, 9)])
-                print('cpi should be {}, but {}'.format(item[-1], _cpi))
+                print('cpi should be {}, but {}'.format(item[-1], house.cpi))
+
+            del house._cpi
 
 
 class TestHouseDamage(unittest.TestCase):
