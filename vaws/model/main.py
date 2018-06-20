@@ -299,8 +299,8 @@ def main():
         set_logger(path_cfg, options.verbose)
 
         conf = Config(cfg_file=options.config_file)
-        _ = simulate_wind_damage_to_houses(conf)
-
+        elapsed, _ = simulate_wind_damage_to_houses(conf)
+        print('Simulation completed: {}'.format(elapsed))
     else:
         print('Error: Must provide a config file to run')
         parser.print_help()
