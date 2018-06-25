@@ -14,35 +14,44 @@ from vaws.model.stats import (compute_arithmetic_mean_stddev, sample_lognormal,
 
 
 def compute_load_by_zone(flag_pressure, dic_influences):
+    """
 
-    msg1 = 'load by {name}: {coeff:.2f} * {area:.3f} * {pressure:.3f}'
-    msg2 = 'load by {name}: {coeff:.2f} * {load:.3f}'
+    :param flag_pressure:
+    :param dic_influences:
+    :return:
+    """
+
+    # msg1 = 'load by {name}: {coeff:.2f} * {area:.3f} * {pressure:.3f}'
+    # msg2 = 'load by {name}: {coeff:.2f} * {load:.3f}'
+
+    logger = logging.getLogger(__name__)
 
     load = 0.0
-    for _, _inf in dic_influences.items():
+    for _, inf in dic_influences.items():
 
-        if isinstance(_inf.source, Zone):
-            _pressure = getattr(_inf.source, 'pressure_{}'.format(flag_pressure))
-            load += _inf.coeff * _inf.source.area * _pressure
+        if isinstance(inf.source, Zone):
+            pressure = getattr(inf.source, 'pressure_{}'.format(flag_pressure))
+            load += inf.coeff * inf.source.area * pressure
 
-            logging.debug(msg1.format(name=_inf.source.name,
-                                      coeff=_inf.coeff,
-                                      area=_inf.source.area,
-                                      pressure=_pressure))
+            # logger.debug(msg1.format(name=inf.source.name,
+            #                           coeff=inf.coeff,
+            #                           area=inf.source.area,
+            #                           pressure=pressure))
 
         else:
-            _load_by_zone = compute_load_by_zone(flag_pressure, _inf.source.influences)
-            load += _inf.coeff * _load_by_zone
-            logging.debug(msg2.format(name=_inf.source.name,
-                                      coeff=_inf.coeff,
-                                      load=_load_by_zone))
+            load_by_zone = compute_load_by_zone(flag_pressure, inf.source.influences)
+            load += inf.coeff * load_by_zone
+
+            # logger.debug(msg2.format(name=inf.source.name,
+            #                           coeff=inf.coeff,
+            #                           load=load_by_zone))
 
     return load
 
 
 class Connection(object):
 
-    def __init__(self, name=None, **kwargs):
+    def __init__(self, name=None, logger=None, **kwargs):
         """
 
         Args:
@@ -50,6 +59,7 @@ class Connection(object):
         """
 
         self.name = name
+        self.logger = logger or logging.getLogger(__name__)
 
         self.type_name = None
         self.zone_loc = None
@@ -76,11 +86,16 @@ class Connection(object):
 
         self._strength = None
         self._dead_load = None
+        self.load = None
         self.capacity = -1.0  # default
         self.damaged = 0
 
     @property
     def influences(self):
+        """
+
+        :return:
+        """
         return self._influences
 
     @influences.setter
@@ -92,6 +107,10 @@ class Connection(object):
 
     @property
     def influence_patch(self):
+        """
+
+        :return:
+        """
         return self._influence_patch
 
     @influence_patch.setter
@@ -101,14 +120,8 @@ class Connection(object):
 
     @property
     def strength(self):
-        """Return a sampled strength from lognormal distribution
-
-        Args:
-            mean_factor: factor adjusting arithmetic mean strength
-            cv_factor: factor adjusting arithmetic cv
-            rnd_state: None, integer or np.random.RandomState
-
-        Returns: sample of strength following log normal dist.
+        """
+        :return: a sampled strength from lognormal distribution
         """
         if self._strength is None:
             mu, std = compute_arithmetic_mean_stddev(*self.lognormal_strength)
@@ -121,34 +134,13 @@ class Connection(object):
     @property
     def dead_load(self):
         """
-        Returns: sample of dead load following log normal dist.
+        Returns: sample of dead load following lognormal dist.
 
         """
         if self._dead_load is None:
             self._dead_load = sample_lognormal(*self.lognormal_dead_load,
                                                rnd_state=self.rnd_state)
         return self._dead_load
-
-    @property
-    def load(self):
-        """
-
-        Returns: load
-
-        """
-        msg1 = 'load at conn {}'
-        msg2 = 'dead load: {:.3f}'
-
-        load = 0.0
-        if not self.damaged:
-            logging.debug(msg1.format(self.name))
-
-            load = compute_load_by_zone(self.flag_pressure, self.influences)
-            load += self.dead_load
-
-            logging.debug(msg2.format(self.dead_load))
-
-        return load
 
     def check_damage(self, wind_speed):
         """
@@ -158,55 +150,65 @@ class Connection(object):
         Returns:
 
         """
-        msg = 'connection {name} of {group} damaged at {speed:.3f} ' \
-              'b/c {strength:.3f} < {load:.3f}'
+        msg1 = 'load at conn {name}: {load:.3f} + {dead:.3f}'
+        msg3 = 'connection {name} of {group} damaged at {speed:.3f} ' \
+               'b/c {strength:.3f} < {load:.3f}'
 
-        # if load is negative, check failure
-        if self.load < -1.0 * self.strength:
+        self.load = 0.0
 
-            logging.info(msg.format(name=self.name,
-                                    group=self.sub_group,
-                                    speed=wind_speed,
-                                    strength=self.strength,
-                                    load=self.load))
+        if not self.damaged:
 
-            self.damaged = 1
-            self.capacity = wind_speed
+            self.load = compute_load_by_zone(self.flag_pressure, self.influences)
+
+            self.logger.debug(msg1.format(name=self.name,
+                                          load=self.load,
+                                          dead=self.dead_load))
+
+            self.load += self.dead_load
+
+            # if load is negative, check failure
+            if self.load < -1.0 * self.strength:
+
+                self.logger.debug(msg3.format(name=self.name,
+                                         group=self.sub_group,
+                                         speed=wind_speed,
+                                         strength=self.strength,
+                                         load=self.load))
+
+                self.damaged = 1
+                self.capacity = wind_speed
 
     def update_influence(self, source_connection, influence_coeff):
         """
 
         Args:
             source_connection: source connection (sheeting)
-            infl_coeff:
+            influence_coeff:
 
         Returns: load
 
         """
 
         # looking at influences
-        for _id, _influence in source_connection.influences.items():
+        for _id, influence in source_connection.influences.items():
 
             # update influence coeff
-            updated_coeff = influence_coeff * _influence.coeff
+            updated_coeff = influence_coeff * influence.coeff
 
             if _id in self.influences:
                 self.influences[_id].coeff += updated_coeff
-
             else:
                 self.influences.update(
                     {_id: Influence(coeff=updated_coeff, name=_id)})
-                self.influences[_id].source = _influence.source
+                self.influences[_id].source = influence.source
 
-        # logging.debug('influences of {}:{:.2f}'.format(self.name,
+        # self.logger.debug('influences of {}:{:.2f}'.format(self.name,
         #                                                _inf.coeff))
 
 
 class ConnectionTypeGroup(object):
 
-    grid_idx_by_dist_dir = {'col': 0, 'row': 1}
-
-    def __init__(self, name=None, **kwargs):
+    def __init__(self, name=None, logger=None, **kwargs):
         """
 
         Args:
@@ -214,7 +216,7 @@ class ConnectionTypeGroup(object):
         """
 
         self.name = name
-
+        self.logger = logger or logging.getLogger(__name__)
         self.dist_order = None
         self.dist_dir = None
         self.damage_dist = None  # flag for damage distribution (0 or 1)
@@ -245,13 +247,13 @@ class ConnectionTypeGroup(object):
         return self._connections
 
     @connections.setter
-    def connections(self, _dic):
-        assert isinstance(_dic, dict)
+    def connections(self, dic):
+        assert isinstance(dic, dict)
 
-        for key, value in _dic.items():
-            _connection = Connection(name=key, **value)
-            self._connections[key] = _connection
-            self.costing_area += _connection.costing_area
+        for key, value in dic.items():
+            connection = Connection(name=key, **value)
+            self._connections[key] = connection
+            self.costing_area += connection.costing_area
             self.no_connections += 1
 
     @property
@@ -276,12 +278,12 @@ class ConnectionTypeGroup(object):
         return self._connection_by_grid
 
     @connection_by_grid.setter
-    def connection_by_grid(self, _tuple):
+    def connection_by_grid(self, value):
 
-        assert isinstance(_tuple, tuple)
-        _connection_grid, _connection = _tuple
+        assert isinstance(value, tuple)
+        connection_grid, connection = value
 
-        self._connection_by_grid[_connection_grid] = _connection
+        self._connection_by_grid[connection_grid] = connection
 
     @property
     def damaged_area(self):
@@ -290,13 +292,13 @@ class ConnectionTypeGroup(object):
         Returns: prop_damaged_group, prop_damaged_area
 
         """
-        if self._damaged_area < self.costing_area and self.no_connections:
+        if self.no_connections:
             self._damaged_area = sum([x.damaged * x.costing_area for
                                       _, x in self.connections.items()])
         else:
             self._damaged_area = 0.0
 
-        logging.info('group {}: damaged area: {:.3f}'.format(
+        self.logger.debug('group {}: damaged area: {:.3f}'.format(
             self.name, self._damaged_area))
 
         return self._damaged_area
@@ -308,13 +310,13 @@ class ConnectionTypeGroup(object):
         Returns: prop_damaged_group, prop_damaged_area
 
         """
-        if self._prop_damaged < 1 and self.no_connections:
-            no_damaged = sum([x.damaged for _, x in self.connections.items()])
-            self._prop_damaged = no_damaged / self.no_connections
+        if self.no_connections:
+            self._prop_damaged = sum([x.damaged for _, x in
+                                      self.connections.items()]) / self.no_connections
         else:
             self._prop_damaged = 0
 
-        logging.info('group {}: prop damaged: {:.3f}'.format(
+        self.logger.debug('group {}: prop damaged: {:.3f}'.format(
             self.name, self._prop_damaged))
 
         return self._prop_damaged
@@ -330,13 +332,13 @@ class ConnectionTypeGroup(object):
 
         self.damage_grid_previous = self.damage_grid.copy()
 
-        for _, _connection in self.connections.items():
+        for _, connection in self.connections.items():
 
-            _connection.check_damage(wind_speed)
+            connection.check_damage(wind_speed)
 
-            if _connection.damaged:
+            if connection.damaged:
 
-                self.damage_grid[_connection.grid] = 1
+                self.damage_grid[connection.grid] = 1
 
         self.damage_grid_index = zip(*np.where(
             self.damage_grid - self.damage_grid_previous))
@@ -347,7 +349,7 @@ class ConnectionTypeGroup(object):
         """
         
         Args:
-            house_connections: 
+            house_inst: instance of House class
 
         Returns:
 
@@ -358,6 +360,8 @@ class ConnectionTypeGroup(object):
             dist_dir == 'row': coeff will be distributed over the same number
             row: chr, col: number
         """
+
+        msg = 'Influence of conn {id1} updated: conn {id2} with {coeff:.2f}'
 
         if self.dist_dir == 'patch':
 
@@ -402,7 +406,7 @@ class ConnectionTypeGroup(object):
                     except IndexError:
                         pass
 
-                logging.debug('row/col of intact zones: {}'.format(intact))
+                self.logger.debug('row/col of intact zones: {}'.format(intact))
 
                 if intact_left.size * intact_right.size > 0:
                     influence_coeff = 0.5
@@ -413,15 +417,14 @@ class ConnectionTypeGroup(object):
                     try:
                         target_connection = self.connection_by_grid[intact_grid]
                     except IndexError:
-                        logging.error('wrong intact_grid {} for {}'.format(
+                        self.logger.error('wrong intact_grid {} for {}'.format(
                             intact_grid, self.name))
                     else:
                         target_connection.update_influence(source_connection,
                                                            influence_coeff)
-                        logging.debug('Influence of connection {} is updated: '
-                                      'connection {} with {:.2f}'.format(target_connection.name,
-                                                                   source_connection.name,
-                                                                   influence_coeff))
+                        self.logger.debug(msg.format(id1=target_connection.name,
+                                                 id2=source_connection.name,
+                                                 coeff=influence_coeff))
 
                 # empty the influence of source connection
                 source_connection.influences.clear()
@@ -436,25 +439,28 @@ class ConnectionTypeGroup(object):
         
         Args:
             damaged_connection: damaged_connection
+            house_inst: instance of House class
 
         Returns:
 
         """
-        for _name, _dic in damaged_connection.influence_patch.items():
+        msg1 = 'target conn {target} is not found when {damaged} is damaged'
+        msg2 = 'Influence of conn {target} is updated by conn {damaged}'
+
+        for name, dic in damaged_connection.influence_patch.items():
 
             try:
-                target_connection = house_inst.connections[_name]
+                target_connection = house_inst.connections[name]
             except KeyError:
-                logging.error('target connection {} is not found'
-                              'when {} is damaged'.format(_name, damaged_connection.name))
+                house_inst.logger.error(msg1.format(target=name,
+                                        damaged=damaged_connection.name))
             else:
-                if target_connection.damaged == 0 or (
-                                target_connection.damaged == 1 and damaged_connection.name == _name):
-                    target_connection.influences = _dic
+                if target_connection.damaged == 0 or (target_connection.damaged == 1
+                                                      and damaged_connection.name == name):
+                    target_connection.influences = dic
                     house_inst.link_connection_to_influence(target_connection)
-                    logging.debug(
-                        'Influence of connection {} is updated by connection {}'
-                        .format(_name, damaged_connection.name))
+                    house_inst.logger.debug(msg2.format(target=name,
+                                            damaged=damaged_connection.name))
 
 
 class Influence(object):

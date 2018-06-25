@@ -47,3 +47,6 @@ FLIGHT_DISTANCE_COEFF = {2: {'Compact': [0.011, 0.2060],
 
 FLIGHT_DISTANCE_POWER = {2: [1, 2],
                          5: [2, 3, 4, 5]}
+
+
+COSTING_FORMULA_TYPES = [1, 2]

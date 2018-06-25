@@ -1,9 +1,6 @@
 """
 Debris Module - adapted from JDH Consulting and Martin's work
-    - given sim:wind_speed, sim:wind_dir,
-            scen:h:target_height, scen:h:target_width,
-            scen:building_spacing, scen:debris_angle, scen:debris_radius,
-            scen:flighttime_mean, scen:flighttime_stddev
+    - An instance of Debris class represents a debris item
     - generate sources of debris.
     - generate debris items from those sources.
     - track items and sample target collisions.
@@ -26,7 +23,9 @@ from vaws.model.stats import sample_lognormal
 class Debris(object):
 
     def __init__(self, debris_source, debris_type, debris_property, wind_speed,
-                 rnd_state, flag_poly=2):
+                 rnd_state, logger=None, flag_poly=2):
+
+        self.logger = logger or logging.getLogger(__name__)
 
         self.source = debris_source
         self.type = debris_type
@@ -99,13 +98,6 @@ class Debris(object):
     @property
     def momentum(self):
         """
-        calculate momentum of debris object
-
-        Args:
-            debris_property:
-            rnd_state: None, integer, or np.random.RandomState
-            wind_speed:
-
         Returns: momentum of debris object
 
         Notes:
@@ -134,15 +126,8 @@ class Debris(object):
     @property
     def flight_distance(self):
         """
-        calculate flight distance based on the methodology in Appendix of
+        Returns: flight distance based on the methodology in Appendix of
         Lin and Vanmarcke (2008)
-
-        Args:
-            debris_type:
-            debris_property:
-            wind_speed:
-
-        Returns:
 
         Notes:
             The coefficients of fifth order polynomials are from
@@ -193,35 +178,29 @@ class Debris(object):
 
         if self.impact:
 
-            _coverage = self.rnd_state.choice(coverages, p=prob_coverages)
+            coverage = self.rnd_state.choice(coverages, p=prob_coverages)
 
             # check impact using failure momentum
-            if _coverage.momentum_capacity < self.momentum:
+            if coverage.momentum_capacity < self.momentum:
                 # history of coverage is ignored
-                if _coverage.description == 'window':
-                    _coverage.breached_area = _coverage.area
-                    _coverage.breached = 1
+                if coverage.description == 'window':
+                    coverage.breached_area = coverage.area
+                    coverage.breached = 1
                 else:
-                    _coverage.breached_area = min(
-                        # frontal_area * self.__class__.amplification_factor,
-                        1.0, _coverage.area)
+                    # assume area: size(1) * amplification_factor(1)
+                    coverage.breached_area = 1.0
+                    # coverage.breached_area = min(
+                    #     # frontal_area * self.__class__.amplification_factor,
+                    #     1.0, coverage.area)
 
-                logging.debug(msg.format(coverage=_coverage.name,
+                self.logger.debug(msg.format(coverage=coverage.name,
                                          momentum=self.momentum,
-                                         area=_coverage.area))
+                                         area=coverage.area))
 
     def compute_coeff_beta_dist(self):
         """
-        calculate momentum of debris object
 
-        Args:
-            debris_property:
-                cdav: average drag coefficient
-                frontal_area:
-                flight_distance:
-                mass:
-
-        Returns: momentum of debris object
+        Returns: parameters of beta distribution
 
         Notes:
          The ratio of horizontal velocity of the windborne debris object
@@ -241,30 +220,38 @@ class Debris(object):
 
         # calculate um/vs, ratio of hor. vel. of debris to local wind speed
         param_b = math.sqrt(RHO_AIR * self.cdav * self.frontal_area / self.mass)
-        _mean = 1.0 - math.exp(-param_b * math.sqrt(self.flight_distance))
+        mean = 1.0 - math.exp(-param_b * math.sqrt(self.flight_distance))
 
         # dispersion here means a + b of Beta(a, b)
         try:
-            assert 0.0 <= _mean <= 1.0
+            assert 0.0 <= mean <= 1.0
         except AssertionError:
-            logging.warning('invalid mean of beta dist.: {} with b: {},'
-                            'flight_distance: {}'.format(_mean, param_b,
+            self.logger.warning('invalid mean of beta dist.: {} with b: {},'
+                            'flight_distance: {}'.format(mean, param_b,
                                                          self.flight_distance))
 
         try:
-            dispersion = max(1.0 / _mean, 1.0 / (1.0 - _mean)) + 3.0
+            dispersion = max(1.0 / mean, 1.0 / (1.0 - mean)) + 3.0
         except ZeroDivisionError:
             dispersion = 4.0
-            _mean -= 0.001
+            mean -= 0.001
 
         # mu = a / (a+b), var = (a*b)/[(a+b)**2*(a+b+1)]
-        # beta_a = _mean * dispersion
-        # beta_b = dispersion * (1.0 - _mean)
+        # beta_a = mean * dispersion
+        # beta_b = dispersion * (1.0 - mean)
 
-        return _mean * dispersion, dispersion * (1.0 - _mean)
+        return mean * dispersion, dispersion * (1.0 - mean)
 
 
 def generate_debris_items(cfg, mean_no_debris_items, wind_speed, rnd_state):
+    """
+
+    :param cfg: instance of Config
+    :param mean_no_debris_items: mean no. of debris items
+    :param wind_speed: wind speed
+    :param rnd_state: instance of mtrand.RandomState
+    :return:
+    """
 
     debris_items = []
 
@@ -279,13 +266,13 @@ def generate_debris_items(cfg, mean_no_debris_items, wind_speed, rnd_state):
 
         for debris_type in debris_types:
 
-            _debris = Debris(debris_source=source,
-                             debris_type=debris_type,
-                             debris_property=cfg.debris_types[debris_type],
-                             wind_speed=wind_speed,
-                             rnd_state=rnd_state)
+            debris = Debris(debris_source=source,
+                            debris_type=debris_type,
+                            debris_property=cfg.debris_types[debris_type],
+                            wind_speed=wind_speed,
+                            rnd_state=rnd_state)
 
-            debris_items.append(_debris)
+            debris_items.append(debris)
 
     return debris_items
 
@@ -297,22 +284,21 @@ def check_coverages(debris_items, coverages, rnd_state, coverage_area):
     no_debris_items = len(debris_items)
     no_debris_impacts = sum([x.impact for x in debris_items])
 
-    for _coverage in coverages:
+    for coverage in coverages:
 
         # Complementary CDF of impact momentum
-        ccdf = (debris_momentums > _coverage.momentum_capacity).sum()/no_debris_items
-        poisson_rate = no_debris_impacts * _coverage.area / coverage_area * ccdf
+        ccdf = (debris_momentums > coverage.momentum_capacity).sum()/no_debris_items
+        poisson_rate = no_debris_impacts * coverage.area / coverage_area * ccdf
 
-        if _coverage.description == 'window':
+        if coverage.description == 'window':
             prob_damage = 1.0 - math.exp(-1.0*poisson_rate)
             rv = rnd_state.rand()
             if rv < prob_damage:
-                _coverage.breached_area = _coverage.area
-                _coverage.breached = 1
+                coverage.breached_area = coverage.area
+                coverage.breached = 1
         else:
             # assume area: no_impacts * size(1) * amplification_factor(1)
-            sampled_impacts = rnd_state.poisson(poisson_rate)
-            _coverage.breached_area = min(sampled_impacts, _coverage.area)
+            coverage.breached_area = rnd_state.poisson(poisson_rate)
 
 
 def create_sources(radius, angle, bldg_spacing, flag_staggered,

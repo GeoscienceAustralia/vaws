@@ -1,7 +1,8 @@
 import sys
 import os
 import time
-import logging
+import logging.config
+# import json
 
 import h5py
 import numpy as np
@@ -25,13 +26,13 @@ def simulate_wind_damage_to_houses(cfg, call_back=None):
 
     """
 
+    logger = logging.getLogger(__name__)
+
     # simulator main_loop
     tic = time.time()
 
     damage_increment = 0.0
     bucket = init_bucket(cfg)
-
-    logging.info('Starting simulation in serial')
 
     # generate instances of house
     list_house_damage = [House(cfg, i + cfg.random_seed)
@@ -43,7 +44,7 @@ def simulate_wind_damage_to_houses(cfg, call_back=None):
 
         for ihouse, house in enumerate(list_house_damage):
 
-            # logging.info('model {}'.format(ihouse))
+            logger.debug('model {}'.format(ihouse))
 
             house.damage_increment = damage_increment
 
@@ -54,21 +55,22 @@ def simulate_wind_damage_to_houses(cfg, call_back=None):
         bucket = update_bucket(cfg, bucket, results_by_speed, ispeed)
         damage_increment = compute_damage_increment(bucket, ispeed)
 
-        logging.debug('damage index increment {}'.format(damage_increment))
-
+        logger.debug('damage index increment {}'.format(damage_increment))
+        percent_done = 100.0 * (ispeed + 1) / len(cfg.wind_speeds)
+        int_percent = int(percent_done)
         if not call_back:
-            sys.stdout.write('{} out of {} completed \n'.format(
-                ispeed + 1, len(cfg.wind_speeds)))
+            sys.stdout.write(
+                ('=' * int_percent) + ('' * (100 - int_percent)) +
+                ("\r [ %d" % percent_done + "% ] "))
             sys.stdout.flush()
         else:
-            percent_done = 100.0 * (ispeed + 1) / len(cfg.wind_speeds)
-            if not call_back(int(percent_done)):  # stop triggered
+            if not call_back(int_percent):  # stop triggered
                 return
 
     save_results_to_files(cfg, bucket)
 
     elapsed = time.time()-tic
-    logging.info('Time taken for simulation {}'.format(elapsed))
+    logging.info('Simulation completed: {:.4f}'.format(elapsed))
 
     return elapsed, bucket
 
@@ -136,18 +138,20 @@ def update_bucket(cfg, bucket, results_by_speed, ispeed):
 
 def compute_damage_increment(bucket, ispeed):
 
+    logger = logging.getLogger(__name__)
+
     # compute damage index increment
-    damage_incr = 0.0  # default value
+    damage_increment = 0.0  # default value
 
     if ispeed:
-        damage_incr = (bucket['house']['di'][ispeed].mean(axis=0) -
-                       bucket['house']['di'][ispeed - 1].mean(axis=0))
+        damage_increment = (bucket['house']['di'][ispeed].mean(axis=0) -
+                            bucket['house']['di'][ispeed - 1].mean(axis=0))
 
-        if damage_incr < 0:
-            logging.warning('damage increment is less than zero')
-            damage_incr = 0.0
+        if damage_increment < 0:
+            logger.warning('damage increment is less than zero')
+            damage_increment = 0.0
 
-    return damage_incr
+    return damage_increment
 
 
 def save_results_to_files(cfg, bucket):
@@ -164,35 +168,36 @@ def save_results_to_files(cfg, bucket):
     # file_house
     with h5py.File(cfg.file_results, 'w') as hf:
 
-        _group = hf.create_group('house')
+        group = hf.create_group('house')
         for att, value in bucket['house'].items():
-            _group.create_dataset(att, data=value)
+            group.create_dataset(att, data=value)
 
         for comp in cfg.list_components:
-            _group = hf.create_group(comp)
+            group = hf.create_group(comp)
             for att, chunk in bucket[comp].items():
-                _subgroup = _group.create_group(att)
+                subgroup = group.create_group(att)
                 for item, value in chunk.items():
-                    _subgroup.create_dataset(str(item), data=value)
+                    subgroup.create_dataset(str(item), data=value)
 
         # fragility curves
         if cfg.no_models > 1:
             frag_counted = fit_fragility_curves(cfg, bucket['house']['di'])
 
             if frag_counted:
-                _group = hf.create_group('fragility')
+                group = hf.create_group('fragility')
                 for key, value in frag_counted.items():
                     for sub_key, sub_value in value.items():
-                        _group.create_dataset('{}/{}'.format(key, sub_key),
-                                              data=sub_value)
+                        group.create_dataset('{}/{}'.format(key, sub_key),
+                                             data=sub_value)
 
         # vulnerability curves
         fitted_curve = fit_vulnerability_curve(cfg, bucket['house']['di'])
 
-        _group = hf.create_group('vulnearbility')
+        group = hf.create_group('vulnerability')
         for key, value in fitted_curve.items():
             for sub_key, sub_value in value.items():
-                _group.create_dataset('{}/{}'.format(key, sub_key), data=sub_value)
+                group.create_dataset('{}/{}'.format(key, sub_key),
+                                     data=sub_value)
 
     if cfg.flags['save_heatmaps']:
 
@@ -201,7 +206,7 @@ def save_results_to_files(cfg, bucket):
             for id_sim in range(cfg.no_models):
 
                 value = np.array([bucket['connection']['capacity'][i][id_sim]
-                               for i in grouped.index])
+                                 for i in grouped.index])
 
                 file_name = os.path.join(cfg.path_output,
                                          '{}_id{}'.format(group_name,
@@ -217,53 +222,58 @@ def save_results_to_files(cfg, bucket):
 
 
 def set_logger(path_cfg, logging_level=None):
-    """
-        
-    Args:
-        path_cfg: path of configuration file 
-        logging_level: Level of messages that will be logged
-    Returns:
-    """
+    """debug, info, warning, error, critical"""
 
-    # create logger
-    logger = logging.getLogger()
-    logger.setLevel(logging.NOTSET)
-    formatter = logging.Formatter('%(levelname)s - %(message)s')
+    config_dic = {
+        "version": 1,
+        "disable_existing_loggers": False,
+        "formatters": {
+            "simple": {
+                "format": "[%(levelname)s] %(name)s: %(message)s"
+            }
+        },
 
-    add_stream = True
-    for h in list(logger.handlers):
-        if h.__class__.__name__ == 'StreamHandler':
-            add_stream = False
-            break
+        "handlers": {
+            "console": {
+                "class": "logging.StreamHandler",
+                "level": "INFO",
+                "formatter": "simple",
+                "stream": "ext://sys.stdout"
+            },
 
-    if add_stream:
-        # create console handler and set level to WARNING
-        ch = logging.StreamHandler()
-        ch.setFormatter(formatter)
-        ch.setLevel(logging.WARNING)
-        logger.addHandler(ch)
+        },
+
+        "loggers": {
+        },
+
+        "root": {
+            "level": "INFO",
+            "handlers": ["console"]
+        }
+    }
 
     if logging_level:
 
-        # create file handler
-        path_logger = os.path.join(path_cfg, 'output')
-        if not os.path.exists(path_logger):
-            os.makedirs(path_logger)
-        fh = logging.FileHandler(os.path.join(path_logger, 'log.txt'), mode='w')
-        fh.setFormatter(formatter)
-
-        for h in list(logger.handlers):
-            if h.__class__.__name__ == 'FileHandler':
-                logger.removeHandler(h)
-                break
-        logger.addHandler(fh)
-
         try:
-            fh.setLevel(getattr(logging, logging_level.upper()))
+            level = getattr(logging, logging_level.upper())
         except (AttributeError, TypeError):
-            logging.warning('Invalid logging level {}; WARNING is used instead'.format(
-                logging_level))
-            fh.setLevel(logging.WARNING)
+            logging_level = 'DEBUG'
+            level = 'DEBUG'
+        finally:
+            file_log = os.path.join(path_cfg, 'output', '{}.log'.format(logging_level))
+            added_file_handler = {"added_file_handler": {
+                                  "class": "logging.handlers.RotatingFileHandler",
+                                  "level": level,
+                                  "formatter": "simple",
+                                  "filename": file_log,
+                                  "encoding": "utf8",
+                                  "mode": "w"}
+                            }
+            config_dic['handlers'].update(added_file_handler)
+            config_dic['root']['handlers'].append('added_file_handler')
+            config_dic['root']['level'] = "DEBUG"
+
+    logging.config.dictConfig(config_dic)
 
 
 def process_commandline():
@@ -290,9 +300,8 @@ def main():
         path_cfg = os.path.dirname(os.path.realpath(options.config_file))
         set_logger(path_cfg, options.verbose)
 
-        conf = Config(cfg_file=options.config_file)
-        elapsed, _ = simulate_wind_damage_to_houses(conf)
-        print('Simulation completed: {}'.format(elapsed))
+        conf = Config(file_cfg=options.config_file)
+        _ = simulate_wind_damage_to_houses(conf)
     else:
         print('Error: Must provide a config file to run')
         parser.print_help()

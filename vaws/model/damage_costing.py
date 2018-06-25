@@ -4,14 +4,13 @@
         - imported from house
         - referenced by damage module to cost damages
 """
-import logging
+
+from vaws.model.constants import COSTING_FORMULA_TYPES
 
 
 class Costing(object):
 
-    dic_costing = {1: 'type1', 2: 'type2'}
-
-    def __init__(self, costing_name=None, **kwargs):
+    def __init__(self, name=None, **kwargs):
         """
 
         Args:
@@ -19,19 +18,19 @@ class Costing(object):
             **kwargs:
         """
 
-        assert isinstance(costing_name, str)
-        self.name = costing_name
+        assert isinstance(name, str)
+        self.name = name
 
         self.surface_area = None
 
-        self.envelope_repair = None
+        self._envelope_repair = None
         self.envelope_repair_rate = None
         self.envelope_factor_formula_type = None
         self.envelope_coeff1 = None
         self.envelope_coeff2 = None
         self.envelope_coeff3 = None
 
-        self.internal_repair = None
+        self._internal_repair = None
         self.internal_repair_rate = None
         self.internal_factor_formula_type = None
         self.internal_coeff1 = None
@@ -41,30 +40,25 @@ class Costing(object):
         for key, value in kwargs.items():
             setattr(self, key, value)
 
-        for key in ['internal', 'envelope']:
-            self.assign_costing_function(key)
+    @property
+    def envelope_repair(self):
+        msg = 'Invalid envelope factor formula type'
+        if self._envelope_repair is None:
+            assert self.envelope_factor_formula_type in COSTING_FORMULA_TYPES, msg
+            self._envelope_repair = getattr(
+                self, 'type{}'.format(int(self.envelope_factor_formula_type)))
+        return self._envelope_repair
 
-    def assign_costing_function(self, key):
-
-        try:
-            _value = getattr(self, '{}_factor_formula_type'.format(key))
-            setattr(self, '{}_factor_formula_type'.format(key), int(_value))
-        except ValueError:
-            logging.error('Invalid {}_factor_formula_type: {}'.format(
-                key, _value))
-        else:
-            try:
-                _value = getattr(self, '{}_factor_formula_type'.format(key))
-                assert _value in self.__class__.dic_costing
-            except AssertionError:
-                logging.error('Invalid {}_factor_formula_type: {}'.format(
-                    key, _value))
-            else:
-                setattr(self, '{}_repair'.format(key),
-                        getattr(self, self.__class__.dic_costing[_value]))
+    @property
+    def internal_repair(self):
+        msg = 'Invalid internal factor formula type'
+        if self._internal_repair is None:
+            assert self.internal_factor_formula_type in COSTING_FORMULA_TYPES, msg
+            self._internal_repair = getattr(
+                self, 'type{}'.format(int(self.internal_factor_formula_type)))
+        return self._internal_repair
 
     def compute_cost(self, x):
-        assert 0.0 <= x <= 1.0
         if x:
             envelop_costing = self.envelope_repair(x=x,
                                                    c1=self.envelope_coeff1,
@@ -115,9 +109,7 @@ class Costing(object):
 
 class WaterIngressCosting(object):
 
-    dic_costing = {1: 'type1', 2: 'type2'}
-
-    def __init__(self, costing_name=None, **kwargs):
+    def __init__(self, name=None, **kwargs):
         """
 
         Args:
@@ -125,9 +117,9 @@ class WaterIngressCosting(object):
             **kwargs:
         """
 
-        assert isinstance(costing_name, str)
-        self.name = costing_name
-        self.cost = None
+        assert isinstance(name, str)
+        self.name = name
+        self._cost = None
         self.base_cost = None
         self.water_ingress = None
         self.formula_type = None
@@ -138,28 +130,22 @@ class WaterIngressCosting(object):
         for key, value in kwargs.items():
             setattr(self, key, value)
 
-        self.assign_costing_function()
+    @property
+    def cost(self):
+        msg = 'Invalid formula type'
+        if self._cost is None:
+            assert self.formula_type in COSTING_FORMULA_TYPES, msg
+            self._cost = getattr(Costing, 'type{}'.format(int(self.formula_type)))
+        return self._cost
 
-    def assign_costing_function(self):
-
-        try:
-            self.formula_type = int(self.formula_type)
-        except ValueError:
-            logging.error('Invalid formula_type: {}'.format(self.formula_type))
+    def compute_cost(self, x):
+        if x:
+            return self.base_cost * self.cost(x=x,
+                                              c1=self.coeff1,
+                                              c2=self.coeff2,
+                                              c3=self.coeff3)
         else:
-            try:
-                assert self.formula_type in self.__class__.dic_costing
-            except AssertionError:
-                logging.error(
-                    'Invalid formula_type: {}'.format(self.formula_type))
-            else:
-                self.cost = getattr(
-                    Costing, self.__class__.dic_costing[self.formula_type])
-
-    def compute_cost(self, damage_index):
-        assert 0.0 <= damage_index <= 1.0
-        return (self.cost(damage_index, self.coeff1, self.coeff2, self.coeff3) *
-                self.base_cost)
+            return 0.0
 
 
 def compute_water_ingress_given_damage(damage_index, wind_speed,

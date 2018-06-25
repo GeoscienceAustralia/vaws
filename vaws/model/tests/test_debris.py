@@ -1,15 +1,15 @@
 from __future__ import division, print_function
 import unittest
 import os
-import copy
+# import copy
 import numpy as np
-import pandas as pd
+# import pandas as pd
 import parmap
 import matplotlib.pyplot as plt
 from matplotlib import patches
 import logging
 import time
-from scipy import stats
+# from scipy import stats
 
 import numbers
 import math
@@ -676,8 +676,8 @@ def set_coverages_for_debris(cfg, wind_dir_idx, rnd_state):
     return coverages
 
 
-@unittest.skip("showing class skipping")
-class CompareCase1(unittest.TestCase):
+@unittest.skip("comparison cases")
+class CompareCase(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
@@ -685,8 +685,8 @@ class CompareCase1(unittest.TestCase):
         cls.path_scenario = os.path.join(
             path, 'test_scenarios', 'test_roof_sheeting')
 
-        cfg_file = os.path.join(cls.path_scenario, 'test_roof_sheeting.cfg')
-        cls.cfg = Config(cfg_file=cfg_file)
+        file_cfg = os.path.join(cls.path_scenario, 'test_roof_sheeting.cfg')
+        cls.cfg = Config(file_cfg=file_cfg)
 
         # key = 'Capital_city'
         key = 'Tropical_town'
@@ -728,8 +728,8 @@ class CompareCase1(unittest.TestCase):
             rnd_state = np.random.RandomState(i)
 
             coverages = set_coverages_for_debris(cfg=cls.cfg,
-                                                     wind_dir_idx=0,
-                                                     rnd_state=rnd_state)
+                                                 wind_dir_idx=0,
+                                                 rnd_state=rnd_state)
 
             debris = DebrisOriginal(cfg=cls.cfg,
                                     rnd_state=rnd_state,
@@ -926,11 +926,11 @@ class CompareCase1(unittest.TestCase):
                     rnd_state=rnd_state,
                     wind_speed=wind_speed,
                     cfg=cls.cfg,
-                    mean_no_items=mean_no_items)
+                    mean_no_debris_items=mean_no_items)
 
                 for item in debris_items:
-                    item.determine_impact(boundary=cls.boundary,
-                                          footprint=cls.footprint_rotated)
+                    item.check_impact(boundary=cls.boundary,
+                                      footprint=cls.footprint_rotated)
                     item.check_coverages(coverages=coverages,
                                          prob_coverages=coverage_prob)
 
@@ -993,8 +993,8 @@ class CompareCase1(unittest.TestCase):
         plt.ylabel('No. of debris supply')
         plt.legend(loc=4, numpoints=1)
         plt.grid(1)
-        plt.pause(1.0)
-        # plt.show()
+        # plt.pause(1.0)
+        plt.savefig('compare_1.png')
         plt.close()
 
         plt.figure()
@@ -1008,8 +1008,8 @@ class CompareCase1(unittest.TestCase):
         plt.ylabel('% of model with window breach')
         plt.legend(loc=4, numpoints=1)
         plt.grid(1)
-        plt.pause(1.0)
-        # plt.show()
+        # plt.pause(1.0)
+        plt.savefig('compare_2.png')
         plt.close()
 
         plt.figure()
@@ -1023,8 +1023,8 @@ class CompareCase1(unittest.TestCase):
         plt.ylabel('No of debris impacts')
         plt.legend(loc=4, numpoints=1)
         plt.grid(1)
-        plt.pause(1.0)
-        # plt.show()
+        # plt.pause(1.0)
+        plt.savefig('compare_3.png')
         plt.close()
 
         plt.figure()
@@ -1038,8 +1038,8 @@ class CompareCase1(unittest.TestCase):
         plt.ylabel('Damaged area')
         plt.legend(loc=4, numpoints=1)
         plt.grid(1)
-        plt.pause(1.0)
-        # plt.show()
+        # plt.pause(1.0)
+        plt.savefig('compare_4.png')
         plt.close()
 
 
@@ -1057,8 +1057,8 @@ class MyTestCase(unittest.TestCase):
                             level=logging.DEBUG,
                             format='%(levelname)s %(message)s')
 
-        cfg_file = os.path.join(cls.path_scenario, 'test_roof_sheeting.cfg')
-        cls.cfg = Config(cfg_file=cfg_file)
+        file_cfg = os.path.join(cls.path_scenario, 'test_roof_sheeting.cfg')
+        cls.cfg = Config(file_cfg=file_cfg)
 
         cls.rnd_state = np.random.RandomState(1)
         cls.radius = 24.0
@@ -1416,20 +1416,20 @@ class MyTestCase(unittest.TestCase):
         items_all = []
         no_impacts = 0
         no_generated = 0
-        for wind_speed in self.cfg.speeds:
+        for wind_speed in self.cfg.wind_speeds:
 
             damage_incr = vulnerability_weibull_pdf(
                 x=wind_speed,
                 alpha=VUL_DIC[key]['alpha'],
                 beta=VUL_DIC[key]['beta']) * self.cfg.wind_speed_increment
 
-            mean_no_items = np.rint(self.cfg.source_items * damage_incr)
+            mean_no_debris_items = np.rint(self.cfg.source_items * damage_incr)
 
             debris_items = generate_debris_items(
                 rnd_state=self.rnd_state,
                 wind_speed=wind_speed,
                 cfg=self.cfg,
-                mean_no_items=mean_no_items)
+                mean_no_debris_items=mean_no_debris_items)
 
             for item in debris_items:
                 item.check_impact(boundary=self.boundary,

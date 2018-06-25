@@ -67,11 +67,13 @@ def calc_parameters_gev(mean_est, cov_est, big_a, big_b):
     Returns:
 
     """
+    logger = logging.getLogger(__name__)
+
     try:
         a_est = abs(mean_est) * cov_est / big_b
         u_est = abs(mean_est) - a_est * big_a
     except TypeError:
-        logging.warning('mean_est:{}, cov_est:{}, big_a:{}, big_b:{}'.format(
+        logger.warning('mean_est:{}, cov_est:{}, big_a:{}, big_b:{}'.format(
             mean_est, cov_est, big_a, big_b))
     else:
         return a_est, u_est

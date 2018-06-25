@@ -23,6 +23,8 @@ def fit_vulnerability_curve(cfg, df_dmg_idx):
     Returns: dict of fitted_curve
 
     """
+    logger = logging.getLogger(__name__)
+
     # array changed to vector
     xdata = (cfg.wind_speeds[:, np.newaxis] * np.ones((1, cfg.no_models))).flatten()
     ydata = df_dmg_idx.flatten()
@@ -37,15 +39,15 @@ def fit_vulnerability_curve(cfg, df_dmg_idx):
             try:
                 popt, pcov = curve_fit(eval(func_), xdata, ydata)
             except RuntimeError as e:
-                logging.warning(e.message + ' at {} curve fitting'.format(key))
+                logger.warning(e.message + ' at {} curve fitting'.format(key))
             except OptimizeWarning as e:
-                logging.warning(e.message + ' at {} curve fitting'.format(key))
+                logger.warning(e.message + ' at {} curve fitting'.format(key))
             else:
-                _sigma = np.sqrt(np.diag(pcov))
+                sigma = np.sqrt(np.diag(pcov))
                 fitted_curve[key] = dict(param1=popt[0],
                                          param2=popt[1],
-                                         sigma1=_sigma[0],
-                                         sigma2=_sigma[1])
+                                         sigma1=sigma[0],
+                                         sigma2=sigma[1])
 
     return fitted_curve
 
@@ -60,6 +62,7 @@ def fit_fragility_curves(cfg, df_dmg_idx):
     Returns: dict with keys of damage state
 
     """
+    logger = logging.getLogger(__name__)
 
     # calculate damage probability
     frag_counted = OrderedDict()
@@ -69,7 +72,7 @@ def fit_fragility_curves(cfg, df_dmg_idx):
         try:
             popt, pcov = curve_fit(vulnerability_lognorm, cfg.wind_speeds, counted)
         except RuntimeError as e:
-            logging.warning(e.message + ' at {} damage state fragility fitting'.
+            logger.warning(e.message + ' at {} damage state fragility fitting'.
                             format(state))
         else:
             _sigma = np.sqrt(np.diag(pcov))

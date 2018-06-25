@@ -11,9 +11,9 @@ class MyTestCase(unittest.TestCase):
     def setUpClass(cls):
 
         path = os.sep.join(__file__.split(os.sep)[:-1])
-        cfg_file = os.path.join(path, 'test_scenarios', 'test_sheeting_batten',
+        file_cfg = os.path.join(path, 'test_scenarios', 'test_sheeting_batten',
                                 'test_sheeting_batten.cfg')
-        cls.cfg = Config(cfg_file=cfg_file)
+        cls.cfg = Config(file_cfg=file_cfg)
 
     def test_prop_damaged(self):
 
@@ -74,6 +74,7 @@ class MyTestCase(unittest.TestCase):
         #self.assertAlmostEqual(house.zones['A1'].pressure, -1.0234, places=4)
 
         _conn = house.connections[1]
+        _conn.check_damage(20.0)
 
         # init
         self.assertEqual(_conn.damaged, False)
@@ -160,10 +161,10 @@ class MyTestCaseConnectionGroup(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         path = os.sep.join(__file__.split(os.sep)[:-1])
-        cfg_file = os.path.join(path, 'test_scenarios',
+        file_cfg = os.path.join(path, 'test_scenarios',
                                 'test_scenario16',
                                 'test_scenario16.cfg')
-        cls.cfg = Config(cfg_file=cfg_file)
+        cls.cfg = Config(file_cfg=file_cfg)
 
     def assert_influence_coeff(self, _dic, house_inst):
 

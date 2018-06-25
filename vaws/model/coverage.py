@@ -5,7 +5,6 @@
 """
 
 import logging
-from numbers import Number
 
 from vaws.model.zone import Zone
 from vaws.model.stats import sample_lognormal
@@ -13,12 +12,14 @@ from vaws.model.stats import sample_lognormal
 
 class Coverage(Zone):
 
-    def __init__(self, name=None, **kwargs):
+    def __init__(self, name=None, logger=None, **kwargs):
 
         try:
             assert isinstance(name, str)
         except AssertionError:
             name = str(name)
+
+        self.logger = logger or logging.getLogger(__name__)
 
         self.area = None
         self.cpe_mean = {}
@@ -130,24 +131,24 @@ class Coverage(Zone):
 
             self.load = qz * (self.cpe - cpi) * self.area * combination_factor
 
-            logging.debug(msg1.format(name=self.name,
-                                      qz=qz,
-                                      cpe=self.cpe,
-                                      cpi=cpi,
-                                      area=self.area))
+            self.logger.debug(msg1.format(name=self.name,
+                                          qz=qz,
+                                          cpe=self.cpe,
+                                          cpi=cpi,
+                                          area=self.area))
 
             if (self.load > self.strength_positive) or (
                         self.load < self.strength_negative):
 
                 self.breached = 1
 
-                self._breached_area = self.area
+                self.breached_area = self.area
 
                 self.capacity = wind_speed
 
-                logging.info(msg2.format(name=self.name,
-                                         speed=wind_speed,
-                                         positive=self.strength_positive,
-                                         negative=self.strength_negative,
-                                         load=self.load,
-                                         area=self.breached_area))
+                self.logger.debug(msg2.format(name=self.name,
+                                              speed=wind_speed,
+                                              positive=self.strength_positive,
+                                              negative=self.strength_negative,
+                                              load=self.load,
+                                              area=self.breached_area))

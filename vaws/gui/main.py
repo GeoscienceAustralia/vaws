@@ -979,7 +979,7 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
     def save_scenario(self):
         self.update_config_from_ui()
         self.cfg.save_config()
-        self.ui.statusbar.showMessage('Saved to file {}'.format(self.cfg.cfg_file))
+        self.ui.statusbar.showMessage('Saved to file {}'.format(self.cfg.file_cfg))
         # self.update_ui_from_config()
         
     def save_as_scenario(self):
@@ -1013,7 +1013,7 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
             settings = QSettings()
             settings.setValue("ScenarioFolder", QVariant(QString(path_cfg)))
             self.cfg.path_cfg = path_cfg
-            self.cfg.cfg_file = os.path.join(path_cfg, file_suffix_name)
+            self.cfg.file_cfg = os.path.join(path_cfg, file_suffix_name)
             self.cfg.output_path = os.path.join(path_cfg, OUTPUT_DIR)
 
             self.cfg.save_config()
@@ -1034,9 +1034,9 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
 
     def closeEvent(self, event):
         if self.okToContinue():
-            if self.cfg.cfg_file and QFile.exists(self.cfg.cfg_file):
+            if self.cfg.file_cfg and QFile.exists(self.cfg.file_cfg):
                 settings = QSettings()
-                filename = QVariant(QString(self.cfg.cfg_file))
+                filename = QVariant(QString(self.cfg.file_cfg))
                 settings.setValue("LastFile", filename)
             self.storeSizePosToSettings()
         else:
@@ -1122,9 +1122,9 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
 
             self.ui.actionRun.setEnabled(True)
 
-            if self.cfg.cfg_file:
+            if self.cfg.file_cfg:
                 self.statusBarScenarioLabel.setText(
-                    'Scenario: {}'.format(os.path.basename(self.cfg.cfg_file)))
+                    'Scenario: {}'.format(os.path.basename(self.cfg.file_cfg)))
         else:
             self.statusBarScenarioLabel.setText('Scenario: None')
         
@@ -1377,7 +1377,7 @@ def run_gui():
     else:
         set_logger(path_cfg)
 
-    initial_config = Config(cfg_file=initial_scenario)
+    initial_config = Config(file_cfg=initial_scenario)
 
     app = QApplication(sys.argv)
     app.setOrganizationName("Geoscience Australia")

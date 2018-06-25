@@ -4,6 +4,7 @@ from numpy import linspace
 import pandas as pd
 from pandas.util.testing import assert_frame_equal
 import os
+import logging
 import StringIO
 import tempfile
 
@@ -18,7 +19,9 @@ class TestConfig(unittest.TestCase):
         path = os.sep.join(__file__.split(os.sep)[:-1])
         scenario_filename1 = os.path.abspath(os.path.join(
             path, 'test_scenarios', 'test_house', 'test_house.cfg'))
-        cls.cfg = Config(cfg_file=scenario_filename1)
+        logging.basicConfig(level=logging.INFO)
+        logger = logging.getLogger(__name__)
+        cls.cfg = Config(file_cfg=scenario_filename1, logger=logger)
         cls.path_cfg = os.path.dirname(os.path.realpath(scenario_filename1))
 
     def test_debris(self):
@@ -352,7 +355,7 @@ rafter,3,patch,Loss of roof structure,0,0,3
                               'cv_factor': 0.5})
 
     def test_save_config(self):
-        self.cfg.cfg_file += '.copy'
+        self.cfg.file_cfg += '.copy'
         self.cfg.save_config()
 
 
@@ -364,7 +367,7 @@ class TestInputChecks(unittest.TestCase):
         path = os.sep.join(__file__.split(os.sep)[:-1])
         scenario_filename1 = os.path.abspath(os.path.join(
             path, 'test_scenarios', 'test_house', 'test_house.cfg'))
-        cls.cfg = Config(cfg_file=scenario_filename1)
+        cls.cfg = Config(file_cfg=scenario_filename1)
         cls.path_cfg = os.path.dirname(os.path.realpath(scenario_filename1))
 
     def test_flag_pressure(self):

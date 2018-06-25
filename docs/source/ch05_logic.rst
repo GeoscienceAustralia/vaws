@@ -82,17 +82,17 @@ House module
 
 .. _sample_wind_direction_section:
 
-sample wind direction (:py:meth:`.House.set_wind_dir_index`)
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+sample wind direction (:py:attr:`.House.wind_dir_index`)
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 The wind direction is set up at the time of model creation, and kept constant during the simulation over a range of wind speeds. If `wind_direction` (:numref:`section_main_table`) is 'RANDOM', then wind direction is randomly sampled among the eight directions.
 
 .. _sample_construction_level_section:
 
-sample construction quality level (:py:meth:`.House.set_construction_level`)
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+sample construction quality level (:py:attr:`.House.construction_level`)
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-A set of mean and coefficient of variation (CV) factors for connection strength is defined for each construction quality level with likelihood as listed in :numref:`section_construction_levels_table`. Construction level for each model is determined from a random sampling, and the corresponding mean and CV factors are later multiplied to arithmetic mean and standard deviation of conneciton strength as :eq:`mean_cv_factors_eq`:
+A set of mean and coefficient of variation (CV) factors for connection strength is defined for each construction quality level with likelihood as listed in :numref:`section_construction_levels_table`. Construction level for each model is determined from a random sampling, and the corresponding mean and CV factors are later multiplied to arithmetic mean and standard deviation of connection strength as :eq:`mean_cv_factors_eq`:
 
 .. math::
     :label: mean_cv_factors_eq
@@ -104,23 +104,23 @@ where :math:`\mu_{adj}` and :math:`\sigma_{adj}`: adjusted mean and standard dev
 
 .. _sample_wind_profile_section:
 
-sample wind profile (:py:meth:`.House.set_profile_index`)
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+sample wind profile (:py:attr:`.House.profile_index`)
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 A set of gust envelope wind profiles is read from `wind_profiles` (:numref:`section_main_table`). Note that each profile is a normalized profile whose value is normalized to 1 at 10 metres height. An example profile is shown in :numref:`wind_profile_fig`. One profile is randomly chosen for each model and kept constant during the simulation over a range of wind speeds.
 
 .. _set_terrain_height_section:
 
-set terrain height multiplier (:py:meth:`.House.set_terrain_height_multiplier`)
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+set terrain height multiplier (:py:attr:`.House.terrain_height_multiplier`)
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 The terrain height multiplier (|Mz,cat|) value at the model height is calculated by the interpolation using the selected wind profile over height.
 
 
 .. _set_shielding_section:
 
-set shielding multiplier (:py:meth:`.House.set_shielding_multiplier`)
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+set shielding multiplier (:py:attr:`.House.shielding_multiplier`)
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 The shielding multiplier (|Ms|) value is determined based on the location. If the value of `regional_shielding_factor` is less or equal to 0.85, which means that the model is located in Australian urban areas, then |Ms| value is sampled based on the proportion of each type of shielding listed in :numref:`shielding_table`. Otherwise, |Ms| value is set to be 1.0, which corresponds to `No shielding`. The proportion of shielding type is adopted following the recommendation in JDH Consulting, 2010 :cite:`JDH2010`.
 
@@ -279,8 +279,8 @@ where :math:`S`: number of damage scenario, :math:`C_i`: damage cost for :math:`
 Zone module (:py:class:`.Zone`)
 -------------------------------
 
-sample Cpe (:py:meth:`.Zone.sample_cpe`)
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+sample Cpe (:py:attr:`.Zone.cpe`)
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 The external pressure coefficient, :math:`C_{pe}` is used in computing zone pressures, and is sampled from Type III extreme value distribution (:py:meth:`.stats.sample_gev`) which has the cumulative distribution function and probability density as :eq:`cdf_gev` and :eq:`pdf_gev`, respectively.
 
@@ -371,7 +371,7 @@ Connection module (:py:class:`.Connection` and :py:class:`.ConnectionTypeGroup`)
 
 .. _compute_connection_load_section:
 
-calculate connection load (:py:meth:`.Connection.compute_load`)
+calculate connection load (:py:meth:`.Connection.check_damage`)
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 The load applied for each of connections are calculated as :eq:`connection_load_eq`:
@@ -384,6 +384,7 @@ The load applied for each of connections are calculated as :eq:`connection_load_
 
 where :math:`L_{i}`: applied load for :math:`i` th connection, :math:`D_{i}`: dead load of :math:`i` th connection, :math:`N_{z}`: number of zones associated with the :math:`i` th connection, :math:`N_{c}`: number of connections associated with the :math:`i` th connection, :math:`A_{j}`: area of :math:`j` th zone, :math:`P_{j}`: wind pressure on :math:`j` th zone, :math:`I_{ji}`: influence coefficient from :math:`j` th either zone or connection to :math:`i` th connection.
 
+If the load applied for a connection is less than the negative value of its strength, then the connection is considered damaged.
 
 .. _check_connection_damage_section:
 

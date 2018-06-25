@@ -19,12 +19,10 @@ class MyTestCase(unittest.TestCase):
         filename = 'damage_costing_data.csv'
         df_costing = pd.read_csv(os.path.join(
             path, 'test_scenarios', 'test_roof_sheeting', 'input', 'house', filename))
-        adic = df_costing.loc[0].to_dict()
-        cls.costing1 = Costing(costing_name=adic['name'],
-                               **adic)
-        adic = df_costing.loc[4].to_dict()
-        cls.costing2 = Costing(costing_name=adic['name'],
-                               **adic)
+        dic = df_costing.loc[0].to_dict()
+        cls.costing1 = Costing(costing_name=dic['name'], **dic)
+        dic = df_costing.loc[4].to_dict()
+        cls.costing2 = Costing(costing_name=dic['name'], **dic)
 
     def test_env_func_type1(self):
         assert self.costing1.envelope_factor_formula_type == 1
@@ -78,7 +76,7 @@ class WaterIngressTestCase(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         path = os.sep.join(__file__.split(os.sep)[:-1])
-        cls.cfg = Config(cfg_file=os.path.join(
+        cls.cfg = Config(file_cfg=os.path.join(
             path, 'test_scenarios', 'test_scenario16', 'test_scenario16.cfg'))
 
     def test_compute_water_ingress_given_damage(self):
