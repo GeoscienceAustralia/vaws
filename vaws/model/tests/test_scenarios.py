@@ -14,6 +14,8 @@ import logging
 def simulation(house, wind_speeds, conn_capacity={}, list_connections=[], 
                coverage_capacity={}, list_coverages=[]):
 
+    logger = logging.getLogger(__name__)
+
     # compute zone pressures
     house._wind_dir_index = 0
     house._terrain_height_multiplier = 1.0  # profile: 6, height: 4.5
@@ -22,7 +24,7 @@ def simulation(house, wind_speeds, conn_capacity={}, list_connections=[],
 
     for wind_speed in wind_speeds:
 
-        logging.info('wind speed {:.3f}'.format(wind_speed))
+        logger.debug('wind speed {:.3f}'.format(wind_speed))
 
         house.compute_qz(wind_speed)
 
@@ -853,7 +855,7 @@ class TestScenario19(unittest.TestCase):
 
         for wind_speed in wind_speeds:
 
-            logging.info('wind speed {:.3f}'.format(wind_speed))
+            logging.debug('wind speed {:.3f}'.format(wind_speed))
 
             self.house.compute_qz(wind_speed)
 
