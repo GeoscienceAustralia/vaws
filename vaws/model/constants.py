@@ -50,3 +50,6 @@ FLIGHT_DISTANCE_POWER = {2: [1, 2],
 
 
 COSTING_FORMULA_TYPES = [1, 2]
+
+VUL_DIC = {'Capital_city': {'alpha': 0.1586, 'beta': 3.8909},
+           'Tropical_town': {'alpha': 0.1030, 'beta': 4.1825}}

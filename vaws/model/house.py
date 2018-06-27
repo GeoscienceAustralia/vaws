@@ -57,7 +57,6 @@ class House(object):
         self._debris_coverages_area = None
         self._debris_coverages_area_ratio = None
         self._front_facing_walls = None
-        self._boundary = None
 
         # random variables
         self._wind_dir_index = None  # 0 to 7
@@ -138,12 +137,14 @@ class House(object):
     def mean_no_debris_items(self):
         """
         dN = f * dD
-        where dN: incr. number of debris items,
-              dD: incr in vulnerability (or damage index)
-              f : a constant factor
+        where
+            dN: incr. number of debris items,
+            dD: incr in vulnerability (or damage index)
+            f : a constant factor
 
-              if we use dD/dV (pdf of vulnerability), then
-                 dN = f * (dD/dV) * dV
+        if we use dD/dV (pdf of vulnerability), then dN = f * (dD/dV) * dV
+
+        :return:
         """
         try:
             return self._mean_no_debris_items
@@ -177,12 +178,6 @@ class House(object):
             self._front_facing_walls = self.cfg.front_facing_walls[
                 WIND_DIR[self.wind_dir_index]]
         return self._front_facing_walls
-
-    @property
-    def boundary(self):
-        if self._boundary is None:
-            self._boundary = geometry.Point(0, 0).buffer(self.cfg.boundary_radius)
-        return self._boundary
 
     @property
     def combination_factor(self):
@@ -438,7 +433,7 @@ class House(object):
             self.check_house_collapse(wind_speed=wind_speed)
 
             # cpi is computed here for the next step
-            self.check_internal_pressurisation(wind_speed)
+            self.run_debris_and_update_cpi(wind_speed)
 
             self.compute_damage_index(wind_speed)
 
@@ -472,17 +467,17 @@ class House(object):
 
         # components
         for comp in self.cfg.list_components:
-            if comp == 'coverage':
+            if comp == 'coverage':  # pd.DataFrame
                 try:
                     for item, value in self.coverages['coverage'].iteritems():
                         for att, _ in self.cfg.coverage_bucket:
                             self.bucket[comp][att][item] = getattr(value, att)
                 except TypeError:
                     pass
-            else:
-                _dic = getattr(self, '{}s'.format(comp))
+            else:  # dictionary
+                dic = getattr(self, '{}s'.format(comp))
                 for att, _ in getattr(self.cfg, '{}_bucket'.format(comp)):
-                    for item, value in _dic.items():
+                    for item, value in dic.items():
                         self.bucket[comp][att][item] = getattr(value, att)
 
     def compute_qz(self, wind_speed):
@@ -502,7 +497,7 @@ class House(object):
             self.terrain_height_multiplier *
             self.shielding_multiplier) ** 2 * 1.0E-3
 
-    def check_internal_pressurisation(self, wind_speed):
+    def run_debris_and_update_cpi(self, wind_speed):
         """
 
         Args:
@@ -528,7 +523,7 @@ class House(object):
 
             for item in self.debris_items:
                 item.check_impact(footprint=self.footprint,
-                                  boundary=self.boundary)
+                                  boundary=self.cfg.impact_boundary)
                 item.check_coverages(coverages=self.debris_coverages,
                                      prob_coverages=self.debris_coverages_area_ratio)
 

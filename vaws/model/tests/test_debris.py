@@ -16,7 +16,7 @@ import math
 from shapely import geometry, affinity
 
 from vaws.model.constants import (WIND_DIR, DEBRIS_TYPES_KEYS,
-                                  FLIGHT_DISTANCE_POWER,
+                                  FLIGHT_DISTANCE_POWER, VUL_DIC,
                                   FLIGHT_DISTANCE_COEFF, RHO_AIR, G_CONST)
 from vaws.model.config import Config
 from vaws.model.debris import Debris, generate_debris_items, create_sources, \
@@ -24,9 +24,6 @@ from vaws.model.debris import Debris, generate_debris_items, create_sources, \
 from vaws.model.coverage import Coverage
 from vaws.model.curve import vulnerability_weibull_pdf
 from vaws.model.house import House
-
-VUL_DIC = {'Capital_city': {'alpha': 0.1586, 'beta': 3.8909},
-           'Tropical_town': {'alpha': 0.1030, 'beta': 4.1825}}
 
 REF04 = geometry.Polygon([(-24.0, 6.5), (4.0, 6.5), (4.0, -6.5),
                           (-24.0, -6.5), (-24.0, 6.5)])

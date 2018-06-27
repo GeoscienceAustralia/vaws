@@ -10,7 +10,6 @@ import warnings
 import matplotlib.pyplot as plt
 import h5py
 import numpy as np
-from matplotlib import patches
 from collections import OrderedDict
 from mpl_toolkits.axes_grid.parasite_axes import SubplotHost
 from PyQt4.QtCore import SIGNAL, QTimer, Qt, QSettings, QVariant, QString, QFile
@@ -18,8 +17,9 @@ from PyQt4.QtGui import QProgressBar, QLabel, QMainWindow, QApplication, QTableW
                         QTableWidgetItem, QDialog, QCheckBox, QFileDialog, QIntValidator,\
                         QDoubleValidator, QMessageBox, QTreeWidgetItem, QInputDialog, QSplashScreen
 
-from vaws.model.constants import WIND_DIR, DEBRIS_TYPES_KEYS
+from vaws.model.constants import WIND_DIR, DEBRIS_TYPES_KEYS, VUL_DIC
 from vaws.model.house import House
+from vaws.model.debris import generate_debris_items
 from vaws.gui.house import HouseViewer
 from vaws.model.curve import vulnerability_lognorm, vulnerability_weibull, \
     vulnerability_weibull_pdf
@@ -275,8 +275,8 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
 
         with h5py.File(self.cfg.file_results, "r") as f:
             try:
-                param1 = f['vulnearbility']['weibull']['param1'].value
-                param2 = f['vulnearbility']['weibull']['param2'].value
+                param1 = f['vulnerability']['weibull']['param1'].value
+                param2 = f['vulnerability']['weibull']['param2'].value
             except KeyError:
                 pass
             else:
@@ -295,8 +295,8 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
                     self.ui.wb_coeff_2.setText('{:.3f}'.format(param2))
 
             try:
-                param1 = f['vulnearbility']['lognorm']['param1'].value
-                param2 = f['vulnearbility']['lognorm']['param2'].value
+                param1 = f['vulnerability']['lognorm']['param1'].value
+                param2 = f['vulnerability']['lognorm']['param2'].value
             except KeyError:
                 pass
             else:
@@ -637,7 +637,7 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
                                               group_widget[group_name][3])
 
             _array = np.array([bucket['connection']['capacity'][i]
-                            for i in grouped.index])
+                               for i in grouped.index])[:, 0, :]
             _array[_array == -1] = np.nan
             if house_number == 0:
                 if len(_array) > 0:
@@ -899,9 +899,9 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
             for zr_key in self.cfg.zones:
                 QTreeWidgetItem(parent, ['',
                                          zr_key,
-                                         '{:.3}'.format(bucket['zone']['cpe'][zr_key][i]),
-                                         '{:.3}'.format(bucket['zone']['cpe_str'][zr_key][i]),
-                                         '{:.3}'.format(bucket['zone']['cpe_eave'][zr_key][i])])
+                                         '{:.3}'.format(bucket['zone']['cpe'][zr_key][0, i]),
+                                         '{:.3}'.format(bucket['zone']['cpe_str'][zr_key][0, i]),
+                                         '{:.3}'.format(bucket['zone']['cpe_eave'][zr_key][0, i])])
                 
         self.ui.zoneResults.resizeColumnToContents(0)
         self.ui.zoneResults.resizeColumnToContents(1)
@@ -921,10 +921,10 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
 
             for _id, value in self.cfg.connections.iterrows():
 
-                capacity = bucket['connection']['capacity'][_id][i]
+                capacity = bucket['connection']['capacity'][_id][0, i]
                 # load = bucket['connection']['load'][_id][house_num]
-                dead_load = bucket['connection']['dead_load'][_id][i]
-                strength = bucket['connection']['strength'][_id][i]
+                dead_load = bucket['connection']['dead_load'][_id][0, i]
+                strength = bucket['connection']['strength'][_id][0, i]
 
                 load_last = bucket['connection']['load'][_id][-1, i]
                 if load_last:
@@ -1087,7 +1087,7 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
             self.ui.debris.setChecked(self.cfg.flags['debris'])
 
             # construction levels
-            self.ui.constructionEnabled.setChecked(self.cfg.flags['construction_levels'])
+            # self.ui.constructionEnabled.setChecked(self.cfg.flags['construction_levels'])
             self.ui.constLevels.setText(
                 ', '.join(self.cfg.construction_levels_levels))
             self.ui.constProbs.setText(
@@ -1168,7 +1168,7 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
         new_cfg.heatmap_vstep = float(self.ui.vStep.value())
 
         # construction section
-        new_cfg.flags['construction_levels'] = self.ui.constructionEnabled.isChecked()
+        # new_cfg.flags['construction_levels'] = self.ui.constructionEnabled.isChecked()
         new_cfg.construction_levels_levels = [
             x.strip() for x in str(self.ui.constLevels.text()).split(',')]
         new_cfg.construction_levels_probs = [
@@ -1233,9 +1233,6 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
         self.update_config_from_ui()
         self.cfg.process_config()
 
-        vul_dic = {'Capital_city': (0.1585, 3.8909),
-                   'Tropical_town': (0.10304, 4.18252)}
-
         shape_type = {'Compact': 'c', 'Sheet': 'g', 'Rod': 'r'}
 
         wind_speed, ok = QInputDialog.getInteger(
@@ -1243,42 +1240,43 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
 
         if ok:
 
-            house = House(self.cfg, seed=1)
-
+            rnd_state = np.random.RandomState(1)
             incr_speed = self.cfg.wind_speeds[1] - self.cfg.wind_speeds[0]
 
             damage_incr = vulnerability_weibull_pdf(
-                x=wind_speed,
-                alpha_=vul_dic[self.cfg.region_name][0],
-                beta_=vul_dic[self.cfg.region_name][1]) * incr_speed
+                x=wind_speed, **VUL_DIC[self.cfg.region_name]) * incr_speed
 
-            house.debris.damage_incr = damage_incr
+            mean_no_debris_items = np.rint(self.cfg.source_items * damage_incr)
 
-            house.debris.run(wind_speed)
+            debris_items = generate_debris_items(
+                rnd_state=rnd_state,
+                wind_speed=wind_speed,
+                cfg=self.cfg,
+                mean_no_debris_items=mean_no_debris_items)
 
             fig = plt.figure()
             ax = fig.add_subplot(111)
 
-            source_x, source_y = [], []
-            for source in self.cfg.debris_sources:
-                source_x.append(source.x)
-                source_y.append(source.y)
-            ax.scatter(source_x, source_y, label='source', color='b')
-            ax.scatter(0, 0, label='target', color='r')
+            # source_x, source_y = [], []
+            # for source in self.cfg.debris_sources:
+            #     source_x.append(source.x)
+            #     source_y.append(source.y)
+            # ax.scatter(source_x, source_y, label='source', color='b')
+            # ax.scatter(0, 0, label='target', color='r')
 
             # add footprint
-            _array = np.array(house.debris.footprint.exterior.xy).T
+            # _array = np.array(house.debris.footprint.exterior.xy).T
+            #
+            # ax.add_patch(patches.Polygon(_array, alpha=0.5))
+            # ax.add_patch(patches.Polygon(self.cfg.impact_boundary.exterior, alpha=0.5))
 
-            ax.add_patch(patches.Polygon(_array, alpha=0.5))
-            ax.add_patch(patches.Polygon(house.debris.boundary.exterior, alpha=0.5))
+            for item in debris_items:
+                _x, _y = item.trajectory.xy[0][1], item.trajectory.xy[1][1]
+                ax.scatter(_x, _y, color=shape_type[item.type], alpha=0.2)
 
-            for debris_type, line_string in house.debris.items:
-                _x, _y = line_string.xy
-                ax.plot(_x, _y,
-                        linestyle='-',
-                        color=shape_type[debris_type],
-                        alpha=0.5,
-                        label=debris_type)
+            for source in self.cfg.debris_sources:
+                ax.scatter(source.x, source.y, color='b', label='source')
+            ax.scatter(0, 0, label='target', color='r')
 
             handles, labels = ax.get_legend_handles_labels()
             by_label = OrderedDict(zip(labels, handles))
@@ -1303,7 +1301,6 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
         if ok:
 
             house = House(self.cfg, seed=1)
-            house.set_construction_level()
             lognormal_strength = self.cfg.types['{}'.format(selected_type)]['lognormal_strength']
             mu, std = compute_arithmetic_mean_stddev(*lognormal_strength)
             mu *= house.mean_factor
@@ -1324,7 +1321,6 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
                         'construction level: {1}, mean: {2:.2f}, std: {3:.2f}'.format(
                 selected_type, house.construction_level, _mean, _std)
             ax.set_title(title_str)
-            # fig.canvas.draw()
             fig.show()
 
     def testWaterIngress(self):

@@ -229,6 +229,7 @@ class Config(object):
         self.staggered_sources = None
         self.source_items = 0
         self.boundary_radius = 0.0
+        self.impact_boundary = None
         self.building_spacing = None
         self.debris_radius = 0.0
         self.debris_angle = 0.0
@@ -569,6 +570,7 @@ class Config(object):
         self.staggered_sources = conf.getboolean(key, 'staggered_sources')
         self.source_items = conf.getint(key, 'source_items')
         self.boundary_radius = conf.getfloat(key, 'boundary_radius')
+        self.impact_boundary = geometry.Point(0, 0).buffer(self.boundary_radius)
         for item in ['building_spacing', 'debris_radius', 'debris_angle']:
             setattr(self, item, conf.getfloat(key, item))
 
@@ -1289,6 +1291,7 @@ class Config(object):
         config.set(key, 'source_items', self.source_items)
         config.set(key, 'building_spacing', self.building_spacing)
         config.set(key, 'debris_radius', self.debris_radius)
+        config.set(key, 'boundary_radius', self.boundary_radius)
         config.set(key, 'debris_angle', self.debris_angle)
         # config.set(key, 'flight_time_mean', self.flight_time_mean)
         # config.set(key, 'flight_time_stddev', self.flight_time_stddev)
@@ -1296,8 +1299,8 @@ class Config(object):
         key = 'construction_levels'
         config.add_section(key)
         config.set(key, 'levels',
-                   ', '.join(self.construction_levels))
-        config.set(key, 'probabilities',
+                   ', '.join(self.construction_levels_levels))
+        config.set(key, 'probs',
                    ', '.join(str(x) for x in self.construction_levels_probs))
         config.set(key, 'mean_factors',
                    ', '.join(str(x) for x in self.construction_levels_mean_factors))

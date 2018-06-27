@@ -49,7 +49,7 @@ def simulation(house, wind_speeds, conn_capacity={}, list_connections=[],
         [group.update_influence(house) for _, group in house.groups.items()
          if group.damage_dist]
 
-        house.check_internal_pressurisation(wind_speed)
+        house.run_debris_and_update_cpi(wind_speed)
 
         house.compute_damage_index(wind_speed)
 

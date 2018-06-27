@@ -194,8 +194,8 @@ class Debris(object):
                     #     1.0, coverage.area)
 
                 self.logger.debug(msg.format(coverage=coverage.name,
-                                         momentum=self.momentum,
-                                         area=coverage.area))
+                                             momentum=self.momentum,
+                                             area=coverage.area))
 
     def compute_coeff_beta_dist(self):
         """
