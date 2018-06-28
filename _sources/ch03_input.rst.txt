@@ -73,8 +73,7 @@ The configuration file consists of a number of sections, among which *main* and 
     debris = True
     differential_shielding = False
     water_ingress = True
-    construction_levels = True
-    save_heatmaps = True
+        save_heatmaps = True
 
     [debris]
     region_name = Capital_city
@@ -84,12 +83,10 @@ The configuration file consists of a number of sections, among which *main* and 
     building_spacing = 20.0
     debris_radius = 200
     debris_angle = 45
-    flight_time_mean = 2.0
-    flight_time_stddev = 0.8
 
     [construction_levels]
     levels = low, medium, high
-    probabilities = 0.33, 0.34, 0.33
+    probs = 0.33, 0.34, 0.33
     mean_factors = 0.9, 1.0, 1.1
     cv_factors = 0.58, 0.58, 0.58
 
@@ -172,8 +169,6 @@ Parameters of the debris section are listed in :numref:`section_debris_table`. N
     debris_angle, Angle, included angle (in degree) of the sector in which debris sources exist
     source_items, Source items, number of debris items per debris sources
     boundary_radius, Boundary, radius (in metre) of boundary for debris impact assessment
-    flight_time_mean, Flight time mean, mean flight time of debris items
-    flight_time_stddev, Flight time std, standard deviation of flight time of debris items
     staggered_sources, Staggered sources, "if True then staggered sources are used. Otherwise, a grid pattern of debris sources are used."
 
 
@@ -302,18 +297,24 @@ An example `debris.csv` is shown in :numref:`debris.csv`, in which debris parame
     Compact_frontal_area_mean,0.002,0.002
     Compact_frontal_area_stddev,0.001,0.001
     Compact_cdav,0.65,0.65
+    Compact_flight_time_mean, 2.0, 2.0
+    Compact_flight_time_stddev, 0.8, 0.8
     Rod_ratio,30,40
     Rod_mass_mean,4,4
     Rod_mass_stddev,2,2
     Rod_frontal_area_mean,0.1,0.1
     Rod_frontal_area_stddev,0.03,0.03
     Rod_cdav,0.8,0.8
+    Rod_flight_time_mean, 2.0, 2.0
+    Rod_flight_time_stddev, 0.8, 0.8
     Sheet_ratio,50,45
     Sheet_mass_mean,3,10
     Sheet_mass_stddev,0.9,5
     Sheet_frontal_area_mean,0.1,1
     Sheet_frontal_area_stddev,0.03,0.3
     Sheet_cdav,0.9,0.9
+    Sheet_flight_time_mean, 2.0, 2.0
+    Sheet_flight_time_stddev, 0.8, 0.8
 
 
 .. _debris_types_table:
@@ -339,6 +340,8 @@ The parameter values should be provided for each of the debris types as set out 
     frontal_area_mean, "mean of frontal area (:math:`\text{m}^2`)"
     frontal_area_stddev, "standard deviation of frontal area (:math:`\text{m}^2`)"
     cdav, "average drag coefficient"
+    flight_time_mean, "mean of flight time"
+    frontal_area_stddev, "standard deviation of flight time"
 
 
 .. _envelope_profiles_section:
@@ -534,12 +537,12 @@ This file defines zones and parameter values of the each zone. An example is sho
 .. code-block:: none
    :caption: Example zones.csv
 
-    name,area,cpi_alpha,wall_dir,coords,
-    A1,0.2025,0,0,0,0,0.2,0,0.2,0.5,0,0.5
-    A2,0.405,0.5,0,0,0.5,0.2,0.5,0.2,1,0,1
-    A3,0.405,1,0,0,1,0.2,1,0.2,1.5,0,1.5
-    A4,0.405,1,0,0,1.5,0.2,1.5,0.2,2,0,2
-    A5,0.405,1,0,0,2,0.2,2,0.2,2.5,0,2.5
+    name,area,cpi_alpha,coords,
+    A1,0.2025,0,0,0,0.2,0,0.2,0.5,0,0.5
+    A2,0.405,0.5,0,0.5,0.2,0.5,0.2,1,0,1
+    A3,0.405,1,0,1,0.2,1,0.2,1.5,0,1.5
+    A4,0.405,1,0,1.5,0.2,1.5,0.2,2,0,2
+    A5,0.405,1,0,2,0.2,2,0.2,2.5,0,2.5
 
 
 .. tabularcolumns:: |p{1.5cm}|p{1.0cm}|p{12.0cm}|

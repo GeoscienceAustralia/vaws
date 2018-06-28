@@ -82,7 +82,7 @@ In the terminal client, enter the following to install the code.
 
   .. code-block:: bash
 
-    conda install -c crankymax vaws
+    conda install -c dynaryu vaws
 
 In case you see `PackageNotFoundError: Packages missing in current channels:` then enter the following in the terminal client and try above command again.
 
@@ -98,7 +98,7 @@ In case new version of the code is available, you may update the code. The conda
   .. code-block:: bash
 
     conda remove vaws
-    conda install -c crankymax vaws
+    conda install -c dynaryu vaws
 
 
 Running through GUI

@@ -28,9 +28,8 @@ The program is built around the following high level sequence:
     * :ref:`set terrain height multiplier <set_terrain_height_section>`
     * :ref:`set shielding multiplier <set_shielding_section>`
     * :ref:`set up coverages <set_coverages_section>`
-    * :ref:`set up connections <set_connections_section>`
     * :ref:`set up zones <set_zones_section>`
-    * :ref:`set up debris model <set_debris_section>`
+    * :ref:`set up connections <set_connections_section>`
 
 2. Calculate damage indices of the models over a range of wind speeds
 
@@ -82,17 +81,17 @@ House module
 
 .. _sample_wind_direction_section:
 
-sample wind direction (:py:meth:`.House.set_wind_dir_index`)
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+sample wind direction (:py:attr:`.House.wind_dir_index`)
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 The wind direction is set up at the time of model creation, and kept constant during the simulation over a range of wind speeds. If `wind_direction` (:numref:`section_main_table`) is 'RANDOM', then wind direction is randomly sampled among the eight directions.
 
 .. _sample_construction_level_section:
 
-sample construction quality level (:py:meth:`.House.set_construction_level`)
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+sample construction quality level (:py:attr:`.House.construction_level`)
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-A set of mean and coefficient of variation (CV) factors for connection strength is defined for each construction quality level with likelihood as listed in :numref:`section_construction_levels_table`. Construction level for each model is determined from a random sampling, and the corresponding mean and CV factors are later multiplied to arithmetic mean and standard deviation of conneciton strength as :eq:`mean_cv_factors_eq`:
+A set of mean and coefficient of variation (CV) factors for connection strength is defined for each construction quality level with likelihood as listed in :numref:`section_construction_levels_table`. Construction level for each model is determined from a random sampling, and the corresponding mean and CV factors are later multiplied to arithmetic mean and standard deviation of connection strength as :eq:`mean_cv_factors_eq`:
 
 .. math::
     :label: mean_cv_factors_eq
@@ -104,23 +103,23 @@ where :math:`\mu_{adj}` and :math:`\sigma_{adj}`: adjusted mean and standard dev
 
 .. _sample_wind_profile_section:
 
-sample wind profile (:py:meth:`.House.set_profile_index`)
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+sample wind profile (:py:attr:`.House.profile_index`)
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 A set of gust envelope wind profiles is read from `wind_profiles` (:numref:`section_main_table`). Note that each profile is a normalized profile whose value is normalized to 1 at 10 metres height. An example profile is shown in :numref:`wind_profile_fig`. One profile is randomly chosen for each model and kept constant during the simulation over a range of wind speeds.
 
 .. _set_terrain_height_section:
 
-set terrain height multiplier (:py:meth:`.House.set_terrain_height_multiplier`)
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+set terrain height multiplier (:py:attr:`.House.terrain_height_multiplier`)
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 The terrain height multiplier (|Mz,cat|) value at the model height is calculated by the interpolation using the selected wind profile over height.
 
 
 .. _set_shielding_section:
 
-set shielding multiplier (:py:meth:`.House.set_shielding_multiplier`)
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+set shielding multiplier (:py:attr:`.House.shielding_multiplier`)
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 The shielding multiplier (|Ms|) value is determined based on the location. If the value of `regional_shielding_factor` is less or equal to 0.85, which means that the model is located in Australian urban areas, then |Ms| value is sampled based on the proportion of each type of shielding listed in :numref:`shielding_table`. Otherwise, |Ms| value is set to be 1.0, which corresponds to `No shielding`. The proportion of shielding type is adopted following the recommendation in JDH Consulting, 2010 :cite:`JDH2010`.
 
@@ -168,13 +167,10 @@ A set of connection components (:py:class:`.Connection`) is defined using the in
 
 A set of connection type group (:py:class:`.ConnectionTypeGroup`) is also defined, and reference is created to relate a connection component to a connection type group. A connection type group is further divided into sub-group by section in order to represent load distribution area within the same group. For instance roof sheetings on a hip roof are divided into a number of sheeting sub-groups to represent areas divided by roof ridge lines.
 
+set footprint for debris impact (:py:attr:`.House.footprint`)
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-.. _set_debris_section:
-
-set up debris model (:py:meth:`.House.set_debris`)
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-A debris damage model is set up by referencing the wind direction and coverages of the model. Once the wind direction of the model is assigned to the debris model, the footprint for debris impact is created by rotating the model footprint with regard to the wind direction as set out in :numref:`rotation_angle_table` (:py:attr:`.Debris.footprint`). Note that all the debris sources are assumed to be located in the East of the model when debris impact to the model is simulated.
+Once the wind direction of the model is determined, the footprint for debris impact is created by rotating the model footprint with regard to the wind direction as set out in :numref:`rotation_angle_table` (:py:attr:`.House.footprint`). The boundary for debris impact assessment is also defined with the radius of boundary (:py:attr:`.Config.impact_boundary`). Note that all the debris sources are assumed to be located in the East of the model when debris impact to the model is simulated.
 
 .. tabularcolumns:: |p{3.5cm}|p{3.5cm}|
 .. _rotation_angle_table:
@@ -186,8 +182,10 @@ A debris damage model is set up by referencing the wind direction and coverages 
     E or W, 0
     SE or NW, -45
 
+set up coverages for debris impact (:py:attr:`.House.debris_coverages`)
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Also walls and coverage components subject to debris impact are selected based on the wind direction (:py:attr:`.Debris.front_facing_walls`). The boundary for debris impact assessment is also defined with the radius of boundary (:py:attr:`.Debris.boundary`)
+Once the wind direction of the model is determined, the coverages for debris impact are selected based on the wind direction.
 
 .. _compute_qz_section:
 
@@ -213,8 +211,8 @@ The model is deemed to be collapsed if the proportion of damaged components out 
 
 .. _update_cpi_section:
 
-run debris model and update |Cpi| (:py:meth:`.House.check_internal_pressurisation`)
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+run debris model and update |Cpi| (:py:meth:`.House.run_debris_and_update_cpi`)
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 If the value of *debris* is *True* (see :numref:`section_options_table`), then debris impact to the model is simulated. See :ref:`Debris module <debris_module_section>` for more details.
 
@@ -279,8 +277,8 @@ where :math:`S`: number of damage scenario, :math:`C_i`: damage cost for :math:`
 Zone module (:py:class:`.Zone`)
 -------------------------------
 
-sample Cpe (:py:meth:`.Zone.sample_cpe`)
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+sample Cpe (:py:attr:`.Zone.cpe`)
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 The external pressure coefficient, :math:`C_{pe}` is used in computing zone pressures, and is sampled from Type III extreme value distribution (:py:meth:`.stats.sample_gev`) which has the cumulative distribution function and probability density as :eq:`cdf_gev` and :eq:`pdf_gev`, respectively.
 
@@ -371,7 +369,7 @@ Connection module (:py:class:`.Connection` and :py:class:`.ConnectionTypeGroup`)
 
 .. _compute_connection_load_section:
 
-calculate connection load (:py:meth:`.Connection.compute_load`)
+calculate connection load (:py:meth:`.Connection.check_damage`)
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 The load applied for each of connections are calculated as :eq:`connection_load_eq`:
@@ -384,6 +382,7 @@ The load applied for each of connections are calculated as :eq:`connection_load_
 
 where :math:`L_{i}`: applied load for :math:`i` th connection, :math:`D_{i}`: dead load of :math:`i` th connection, :math:`N_{z}`: number of zones associated with the :math:`i` th connection, :math:`N_{c}`: number of connections associated with the :math:`i` th connection, :math:`A_{j}`: area of :math:`j` th zone, :math:`P_{j}`: wind pressure on :math:`j` th zone, :math:`I_{ji}`: influence coefficient from :math:`j` th either zone or connection to :math:`i` th connection.
 
+If the load applied for a connection is less than the negative value of its strength, then the connection is considered damaged.
 
 .. _check_connection_damage_section:
 
@@ -432,7 +431,7 @@ The methdology of modelling damage from wind-borne debris implemented in the cod
 debris source generation
 ^^^^^^^^^^^^^^^^^^^^^^^^
 
-The debris sources are generated by calling :py:meth:`.Debris.create_sources`, which requires a number of parameters as shown in the :numref:`debris_source_parameters_fig`.
+The debris sources are generated by calling :py:func:`.create_sources`, which requires a number of parameters as shown in the :numref:`debris_source_parameters_fig`.
 
 .. _debris_source_parameters_fig:
 .. figure:: _static/image/debris_source_parameters.png
@@ -461,7 +460,7 @@ Depending on the value of *staggered_sources*, different layout of debris source
 debris generation
 ^^^^^^^^^^^^^^^^^
 
-The mean number of debris items to be generated (:math:`N_{mean}`) is calculated by :eq:`number_of_debris_items_eq`.
+For each wind speed, a group of debris items are generated by calling :py:func:`.generate_debris_items`. The mean number of debris items to be generated (:math:`N_{mean}`) is calculated by :eq:`number_of_debris_items_eq`.
 
 .. math::
     :label: number_of_debris_items_eq
@@ -475,7 +474,7 @@ The number of generated debris items is assumed to follow the Poisson distributi
 debris trajectory
 ^^^^^^^^^^^^^^^^^
 
-For each generated debris item, mass, frontal area, and flight time are sampled from the lognormal distribution with parameter values provided in :ref:`3.1.3 <debris_section>` and :ref:`3.2 <debris.csv_section>`. The flight distance is calculated based on the methodology presented in the Appendix of Lin and Vanmarcke, 2008 :cite:`Lin2008`. Note that the original fifth polynomial functions are replaced with quadratic one with the coefficients as listed in :numref:`flight_distance_table`. The computed flight distance by debris type using the fitth and quadratic polynomials is shown in :numref:`flight_distance_fig`.
+For each generated debris item, mass (:py:attr:`.Debris.mass`), frontal area ((:py:attr:`.Debris.frontal_area`), and flight time (:py:attr:`.Debris.flight_time`) are sampled from the lognormal distribution with parameter values provided in :ref:`3.1.3 <debris_section>` and :ref:`3.2 <debris.csv_section>`. The flight distance (:py:attr:`.Debris.flight_distance`) is calculated based on the methodology presented in the Appendix of Lin and Vanmarcke, 2008 :cite:`Lin2008`. Note that the original fifth polynomial functions are replaced with quadratic one with the coefficients as listed in :numref:`flight_distance_table`. The computed flight distance by debris type using the fifth and quadratic polynomials is shown in :numref:`flight_distance_fig`.
 
 .. _flight_distance_fig:
 .. figure:: _static/image/flight_distance.png
@@ -502,16 +501,6 @@ The probability distribution of point of landing of the debris in a horizontal p
 
 
 where :math:`x` and :math:`y` are the coordinates of the landing position of the debris, :math:`\sigma_x` and :math:`\sigma_y`: standard deviation for the coordinates of the landing position, and :math:`d`: expected flight distance. The value of :math:`\sigma_x` and :math:`\sigma_y` are set to be :math:`d/3` and :math:`d/12`, respectively.
-
-Either if the landing point is within the footprint of the model or if the line linking the source to the landing point intersects with the footprint of the model and the landing point is within the boundary, then it is assumed that an impact has occurred. The criteria of debris impact is illustrated in the :numref:`debris_impact_criteria_fig` where blue line represents debris trajectory with impact while red line represents one without impact.
-
-.. _debris_impact_criteria_fig:
-.. figure:: _static/image/debris_impact.png
-    :align: center
-    :width: 70 %
-
-    Graphical presentation of debris impact criteria
-
 
 Following Lin and Vanmarcke 2008, the ratio of horizontal velocity of the windborne debris object to the wind gust velocity is modelled as a random variable with a Beta distribution as :eq:`beta_dist`.
 
@@ -547,7 +536,7 @@ where :math:`x`: the flight distance, :math:`b`: a dimensional parameter calucal
 
 where :math:`\rho_a`: the air density, :math:`C_{D,av}`: an average drag coefficient, :math:`A`: the frontal area, and :math:`m`: the mass of the object.
 
-The momentum :math:`\xi` is calculated using the sampled value of the ratio, :math:`\frac{u_m}{V_s}` as :eq:`momentum`.
+The momentum :math:`\xi` (:py:attr:`.Debris.momentum`) is calculated using the sampled value of the ratio, :math:`\frac{u_m}{V_s}` as :eq:`momentum`.
 
 .. math::
     :label: momentum
@@ -556,6 +545,15 @@ The momentum :math:`\xi` is calculated using the sampled value of the ratio, :ma
 
 debris impact
 ^^^^^^^^^^^^^
+
+Either if the landing point is within the footprint of the model or if the line linking the source to the landing point intersects with the footprint of the model and the landing point is within the boundary, then it is assumed that an impact has occurred. The criteria of debris impact is illustrated in the :numref:`debris_impact_criteria_fig` where blue line represents debris trajectory with impact while red line represents one without impact.
+
+.. _debris_impact_criteria_fig:
+.. figure:: _static/image/debris_impact.png
+    :align: center
+    :width: 70 %
+
+    Graphical presentation of debris impact criteria
 
 Based on the methodology presented in HAZUS and Lin and Vanmacke (2008), the number of impact :math:`N` is assumed to follow a Poisson distribution as :eq:`poisson_eqn`.
 
@@ -574,7 +572,12 @@ The probability of damage can be calculated based on the Poisson distribution as
 
     P_D = 1 - P(N=0) = 1-\exp\left[-\lambda\right]
 
-:math:`q` and :math:`F_{\xi}(\xi>\xi_d)` are estimated for each coverage. If the material of the coverage is glass, then :math:`P_D` is computed and compared against a random value sampled from unit uniform distribution to determine whether the coverage is damaged or not. For coverage with non-glass material, a random value of number of impact is sampled from the Poisson distribution with :math:`\lambda`, and damaged coverage area is then computed assuming that the area requiring repairs due to debris impact is 1.
+:math:`q` and :math:`F_{\xi}(\xi>\xi_d)` are estimated for each coverage. 
+
+If the material of the coverage is glass, then :math:`P_D` is computed and compared against a random value sampled from unit uniform distribution to determine whether the coverage is damaged or not. If the coverage is damaged, then damaged area is set to be equal to the coverage area.
+For coverage with non-glass material, a random value of number of impact is sampled from the Poisson distribution with :math:`\lambda`, and damaged coverage area is then computed assuming that the area requiring repairs due to debris impact is 1.
+
+Since version 2.2 of the code, a Monte Carlo based approach is implemented (:py:meth:`.Debris.check_coverages`). For each debris item, a coverage component is chosen based on the ratio of the area out of the total area of the coverages, once debris impact is assumed to occur. If the computed momentum exceeds the momentum capacity of the coverage, then damaged coverage area is computed depending on the material of the coverage as explained above.
 
 damage_costing module (:py:class:`.Costing`)
 --------------------------------------------
