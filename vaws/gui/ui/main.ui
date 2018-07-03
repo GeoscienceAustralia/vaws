@@ -1585,7 +1585,7 @@
        </sizepolicy>
       </property>
       <property name="currentIndex">
-       <number>1</number>
+       <number>4</number>
       </property>
       <widget class="QWidget" name="tab_influence">
        <attribute name="title">
@@ -1992,7 +1992,7 @@
            <enum>QTabWidget::East</enum>
           </property>
           <property name="currentIndex">
-           <number>0</number>
+           <number>4</number>
           </property>
           <widget class="QWidget" name="tab_2">
            <attribute name="title">
@@ -2065,6 +2065,60 @@
            <layout class="QHBoxLayout" name="horizontalLayout_11">
             <item>
              <widget class="MatplotlibWidget" name="breaches_plot" native="true"/>
+            </item>
+           </layout>
+          </widget>
+          <widget class="QWidget" name="tab_55">
+           <attribute name="title">
+            <string>Cpi</string>
+           </attribute>
+           <layout class="QHBoxLayout" name="horizontalLayout_132">
+            <item>
+             <layout class="QVBoxLayout" name="verticalLayout_102">
+              <item>
+               <layout class="QHBoxLayout" name="horizontalLayout_108">
+                <property name="topMargin">
+                 <number>5</number>
+                </property>
+                <property name="rightMargin">
+                 <number>1</number>
+                </property>
+                <item>
+                 <widget class="QLabel" name="label_52">
+                  <property name="text">
+                   <string>Model id (0 for mean): </string>
+                  </property>
+                 </widget>
+                </item>
+                <item>
+                 <widget class="QLabel" name="cpi_houseLabel">
+                  <property name="text">
+                   <string>100</string>
+                  </property>
+                 </widget>
+                </item>
+                <item>
+                 <widget class="QSlider" name="cpi_house">
+                  <property name="singleStep">
+                   <number>0</number>
+                  </property>
+                  <property name="orientation">
+                   <enum>Qt::Horizontal</enum>
+                  </property>
+                  <property name="tickPosition">
+                   <enum>QSlider::TicksBelow</enum>
+                  </property>
+                  <property name="tickInterval">
+                   <number>1</number>
+                  </property>
+                 </widget>
+                </item>
+               </layout>
+              </item>
+              <item>
+               <widget class="MatplotlibWidget" name="cpi_plot" native="true"/>
+              </item>
+             </layout>
             </item>
            </layout>
           </widget>

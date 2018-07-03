@@ -161,6 +161,10 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
         self.connect(self.ui.slider_patch, SIGNAL("valueChanged(int)"),
                      lambda x: self.onSliderChanged(self.ui.slider_patchLabel, x))
 
+        self.connect(self.ui.cpi_house, SIGNAL("valueChanged(int)"),
+                     lambda x: self.onSliderChanged(self.ui.cpi_houseLabel, x))
+        self.ui.cpi_house.valueChanged.connect(self.cpi_plot_change)
+
         self.statusBar().showMessage('Loading')
         self.stopTriggered = False
         self.selected_zone = None
@@ -541,6 +545,13 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
         self.ui.breaches_plot.axes.cla()
         self.ui.breaches_plot.axes.figure.canvas.draw()
 
+        self.ui.cpi_house.setRange(0, self.cfg.no_models)
+        self.ui.cpi_house.setValue(0)
+        self.ui.cpi_houseLabel.setText('{:d}'.format(0))
+
+        self.ui.cpi_plot.axes.cla()
+        self.ui.cpi_plot.axes.figure.canvas.draw()
+
         self.ui.wateringress_plot.axes.cla()
         self.ui.wateringress_plot.axes.figure.canvas.draw()
 
@@ -575,6 +586,7 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
                 self.updateHeatmap(bucket)
                 self.updateWaterIngressPlot(bucket)
                 self.updateBreachPlot(bucket)
+                self.updateCpiPlot(bucket)
                 self.has_run = True
 
         except IOError:
@@ -600,6 +612,12 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
             house_number = self.ui.heatmap_house.value()
             bucket = self.results_dict
             self.updateHeatmap(bucket, house_number)
+
+    def cpi_plot_change(self):
+        if self.has_run:
+            house_number = self.ui.cpi_house.value()
+            bucket = self.results_dict
+            self.updateCpiPlot(bucket, house_number)
 
     def updateHeatmap(self, bucket, house_number=0):
         red_v = self.ui.redV.value()
@@ -768,7 +786,30 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
         self.ui.wateringress_plot.axes.set_xlim(self.cfg.wind_speeds[0],
                                                 self.cfg.wind_speeds[-1])
         # self.ui.wateringress_plot.axes.set_ylim(0)
-        
+
+    def updateCpiPlot(self, bucket, house_number=0):
+        self.statusBar().showMessage('Plotting Cpi')
+
+        _array = bucket['house']['cpi']
+        _means = _array.mean(axis=1)
+
+        self.ui.cpi_plot.axes.plot(self.cfg.wind_speeds, _means, c='b', marker='o', label='mean')
+
+        if house_number:
+            self.ui.cpi_plot.axes.hold(True)
+            self.ui.cpi_plot.axes.plot(self.cfg.wind_speeds, _array[:, house_number-1],
+                                       c='r', marker='+', label='{:d}'.format(house_number))
+
+        self.ui.cpi_plot.axes.set_title('Internal Pressure Coefficient')
+        self.ui.cpi_plot.axes.set_xlabel('Wind speed (m/s)')
+        self.ui.cpi_plot.axes.set_ylabel('Cpi')
+        self.ui.cpi_plot.axes.legend(loc=2, scatterpoints=1)
+        self.ui.cpi_plot.axes.set_xlim(self.cfg.wind_speeds[0],
+                                       self.cfg.wind_speeds[-1])
+        self.ui.cpi_plot.axes.figure.canvas.draw()
+        self.ui.cpi_plot.axes.hold(False)
+        # self.ui.wateringress_plot.axes.set_ylim(0)
+
     def updateBreachPlot(self, bucket):
         self.statusBar().showMessage('Plotting Debris Results')
         self.ui.breaches_plot.axes.figure.clf()
