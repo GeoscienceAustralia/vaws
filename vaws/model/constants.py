@@ -16,6 +16,8 @@ DEBRIS_TYPES_KEYS = ['Rod', 'Compact', 'Sheet']
 # debris attributes
 DEBRIS_TYPES_ATTS = ['mass', 'frontal_area', 'cdav', 'ratio', 'flight_time']
 
+BLDG_SPACING = [20.0, 40.0]  # building spacing for debris impact model
+
 FLAGS_PRESSURE = ['cpe_str', 'cpe']
 FLAGS_DIST_DIR = ['row', 'col', 'patch', 'none']
 COVERAGE_FAILURE_KEYS = ['failure_strength_in', 'failure_strength_out',

@@ -58,7 +58,8 @@ from shapely import geometry
 
 from vaws.model.constants import (WIND_DIR, FLAGS_PRESSURE, FLAGS_DIST_DIR,
                                   DEBRIS_TYPES_KEYS, DEBRIS_TYPES_ATTS,
-                                  COVERAGE_FAILURE_KEYS, COSTING_FORMULA_TYPES)
+                                  COVERAGE_FAILURE_KEYS, COSTING_FORMULA_TYPES,
+                                  BLDG_SPACING)
 from vaws.model.stats import compute_logarithmic_mean_stddev, calc_big_a_b_values
 from vaws.model.damage_costing import Costing, WaterIngressCosting
 from vaws.model.zone import get_grid_from_zone_location
@@ -252,6 +253,7 @@ class Config(object):
         self.influence_patches = None
 
         self.list_groups = None
+        self.list_subgroups = None
         self.list_connections = None
         self.list_zones = None
         self.list_coverages = None
@@ -373,7 +375,7 @@ class Config(object):
                 self.building_spacing,
                 self.staggered_sources)
 
-            self.set_debris_types()
+        self.set_debris_types()
 
         self.set_wawter_ingress()
         self.set_fragility_thresholds()
@@ -575,7 +577,7 @@ class Config(object):
             setattr(self, item, conf.getfloat(key, item))
 
         try:
-            assert self.building_spacing in [20, 40]
+            assert self.building_spacing in BLDG_SPACING
         except AssertionError:
             self.logger.error('building_spacing should be either 20 or 40')
 
@@ -751,12 +753,12 @@ class Config(object):
 
             self.damage_grid_by_sub_group = self.connections.groupby('sub_group')['grid_max'].apply(
                 lambda x: x.unique()[0]).to_dict()
-            list_groups = df_groups.index.tolist()
+            self.list_groups = df_groups.index.tolist()
             self.connections['group_idx'] = self.connections['group_name'].apply(
-                lambda x: list_groups.index(x))
+                lambda x: self.list_groups.index(x))
             self.connections['flag_pressure'] = self.connections['group_name'].apply(
                 lambda x: df_groups.loc[x, 'flag_pressure'])
-            self.list_groups = self.connections['sub_group'].unique().tolist()
+            self.list_subgroups = self.connections['sub_group'].unique().tolist()
 
     def set_influences(self):
 

@@ -17,7 +17,7 @@ from PyQt4.QtGui import QProgressBar, QLabel, QMainWindow, QApplication, QTableW
                         QTableWidgetItem, QDialog, QCheckBox, QFileDialog, QIntValidator,\
                         QDoubleValidator, QMessageBox, QTreeWidgetItem, QInputDialog, QSplashScreen
 
-from vaws.model.constants import WIND_DIR, DEBRIS_TYPES_KEYS, VUL_DIC
+from vaws.model.constants import WIND_DIR, DEBRIS_TYPES_KEYS, VUL_DIC, BLDG_SPACING
 from vaws.model.house import House
 from vaws.model.debris import generate_debris_items
 from vaws.gui.house import HouseViewer
@@ -35,7 +35,7 @@ from vaws.model.damage_costing import compute_water_ingress_given_damage
 from vaws.gui.output import plot_wind_event_damage, plot_wind_event_mean, \
                         plot_wind_event_show, plot_fitted_curve, \
                         plot_fragility_show, plot_damage_show, plot_influence, \
-                        plot_influence_patch
+                        plot_influence_patch, plot_load_show, plot_pressure_show
 
 from mixins import PersistSizePosMixin, setupTable, finiTable
 
@@ -65,7 +65,9 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
     def __init__(self, parent=None, init_scenario=None):
         super(MyForm, self).__init__(parent)
         PersistSizePosMixin.__init__(self, "MainWindow")
-        
+
+        self.logger = logging.getLogger(__name__)
+
         self.ui = Ui_main()
         self.ui.setupUi(self)
 
@@ -117,6 +119,7 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
                      self.save_as_scenario)
         self.connect(self.ui.actionHouse_Info, SIGNAL("triggered()"),
                      self.showHouseInfoDlg)
+        # TODO: actionNew missing
 
         # test panel
         self.connect(self.ui.testDebrisButton, SIGNAL("clicked()"),
@@ -150,39 +153,42 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
         self.connect(self.ui.applyDisplayChangesButton, SIGNAL("clicked()"),
                      self.updateDisplaySettings)
 
-        self.connect(self.ui.heatmap_house, SIGNAL("valueChanged(int)"),
-                     lambda x: self.onSliderChanged(self.ui.heatmap_houseLabel, x))
-        self.ui.heatmap_house.valueChanged.connect(self.heatmap_house_change)
-
-        self.connect(self.ui.slider_influence, SIGNAL("valueChanged(int)"),
-                     lambda x: self.onSliderChanged(self.ui.slider_influenceLabel, x))
-        self.ui.slider_influence.valueChanged.connect(self.updateInfluence)
-
-        self.connect(self.ui.slider_patch, SIGNAL("valueChanged(int)"),
-                     lambda x: self.onSliderChanged(self.ui.slider_patchLabel, x))
-
-        self.connect(self.ui.cpi_house, SIGNAL("valueChanged(int)"),
-                     lambda x: self.onSliderChanged(self.ui.cpi_houseLabel, x))
-        self.ui.cpi_house.valueChanged.connect(self.cpi_plot_change)
-
         self.statusBar().showMessage('Loading')
         self.stopTriggered = False
-        self.selected_zone = None
-        self.selected_conn = None
-        self.selected_plotKey = None
+        # self.selected_zone = None
+        # self.selected_conn = None
+        # self.selected_plotKey = None
 
         # self.ui.sourceItems.setValue(-1)
-        # initial setting
+        # scenario
         self.init_terrain_category()
-        self.init_debris_region()
-
         self.ui.windDirection.clear()
         self.ui.windDirection.addItems(WIND_DIR)
 
+        # debris
+        self.init_debris_region()
         self.ui.buildingSpacing.clear()
-        self.ui.buildingSpacing.addItems(('20.0', '40.0'))
+        self.ui.buildingSpacing.addItems([str(x) for x in BLDG_SPACING])
+
+        # RHS window
+        self.init_pressure()
 
         self.init_influence_and_patch()
+
+        self.init_heatmap_group()
+
+        self.init_load_plot()
+
+        # self.connect(self.ui.slider_influence, SIGNAL("valueChanged(int)"),
+        #              lambda x: self.onSliderChanged(self.ui.slider_influenceLabel, x))
+
+        # self.connect(self.ui.slider_patch, SIGNAL("valueChanged(int)"),
+        #              lambda x: self.onSliderChanged(self.ui.slider_patchLabel, x))
+
+        # self.connect(self.ui.cpi_house, SIGNAL("valueChanged(int)"),
+        #              lambda x: self.onSliderChanged(self.ui.cpi_houseLabel, x))
+        self.ui.spinBox_cpi.valueChanged.connect(self.cpi_plot_change)
+
         self.update_ui_from_config()
         # QTimer.singleShot(0, self.set_scenario)
 
@@ -210,40 +216,91 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
                      SIGNAL("currentIndexChanged(QString)"),
                      self.updateDebrisRegionsTable)
 
+    def init_heatmap_group(self):
+
+        self.disconnect(self.ui.comboBox_heatmap,
+                        SIGNAL("currentIndexChanged(QString)"),
+                        self.heatmap_house_change)
+        self.ui.comboBox_heatmap.clear()
+        self.ui.comboBox_heatmap.addItems(self.cfg.list_groups)
+        self.connect(self.ui.comboBox_heatmap,
+                     SIGNAL("currentIndexChanged(QString)"),
+                     self.heatmap_house_change)
+
+        self.ui.spinBox_heatmap.valueChanged.connect(self.heatmap_house_change)
+
+    def init_pressure(self):
+
+        pressure_keys = ['cpe_mean', 'cpe_str_mean', 'cpe_eave_mean', 'cpi_alpha', 'edge']
+        self.ui.mplpressure.figure.clear()
+        self.ui.mplpressure.axes.cla()
+        self.ui.mplpressure.axes.figure.canvas.draw()
+
+        # init combobox
+        self.disconnect(self.ui.comboBox_pressure,
+                        SIGNAL("currentIndexChanged(QString)"),
+                        self.updatePressurePlot)
+        self.ui.comboBox_pressure.clear()
+        self.ui.comboBox_pressure.addItems(pressure_keys)
+        self.connect(self.ui.comboBox_pressure,
+                     SIGNAL("currentIndexChanged(QString)"),
+                     self.updatePressurePlot)
+
+        if str(self.ui.comboBox_pressure.currentText()) == pressure_keys[0]:
+            self.updatePressurePlot()
+        else:
+            self.ui.comboBox_pressure.setValue(pressure_keys[0])
+
+        # init combobox2
+        self.disconnect(self.ui.comboBox2_pressure,
+                        SIGNAL("currentIndexChanged(QString)"),
+                        self.updatePressurePlot)
+        self.ui.comboBox2_pressure.clear()
+        self.ui.comboBox2_pressure.addItems(WIND_DIR[:-1])
+        self.connect(self.ui.comboBox2_pressure,
+                     SIGNAL("currentIndexChanged(QString)"),
+                     self.updatePressurePlot)
+
+        if str(self.ui.comboBox2_pressure.currentText()) == WIND_DIR[0]:
+            self.updatePressurePlot()
+        else:
+            self.ui.comboBox2_pressure.setValue(WIND_DIR[0])
+
     def init_influence_and_patch(self):
         # init_influence
         self.ui.mplinfluecnes.figure.clear()
         self.ui.mplinfluecnes.axes.cla()
         self.ui.mplinfluecnes.axes.figure.canvas.draw()
 
-        _list = self.cfg.connections.index.tolist()
-        self.ui.slider_influence.setRange(_list[0], _list[-1])
-        if self.ui.slider_influence.value() == _list[0]:
-            self.onSliderChanged(self.ui.slider_influenceLabel, _list[0])
+        self.ui.spinBox_influence.valueChanged.connect(self.updateInfluence)
+
+        self.ui.spinBox_influence.setRange(self.cfg.list_connections[0],
+                                           self.cfg.list_connections[-1])
+        if self.ui.spinBox_influence.value() == self.cfg.list_connections[0]:
             self.updateInfluence()
         else:
-            self.ui.slider_influence.setValue(_list[0])
+            self.ui.spinBox_influence.setValue(self.cfg.list_connections[0])
 
         # init_patch
         self.ui.mplpatches.figure.clear()
         self.ui.mplpatches.axes.cla()
         self.ui.mplpatches.axes.figure.canvas.draw()
 
-        self.disconnect(self.ui.slider_patch, SIGNAL("valueChanged(int)"),
-                        self.updateComboBox)
-
         _list = sorted(self.cfg.influence_patches.keys())
 
         if _list:
-            self.connect(self.ui.slider_patch, SIGNAL("valueChanged(int)"),
-                         self.updateComboBox)
+            self.ui.spinBox_patch.valueChanged.connect(self.updateComboBox_patch)
 
-            self.ui.slider_patch.setRange(_list[0], _list[-1])
-            if self.ui.slider_patch.value() == _list[0]:
-                self.onSliderChanged(self.ui.slider_patchLabel, _list[0])
-                self.updateComboBox()
+            self.ui.spinBox_patch.setRange(_list[0], _list[-1])
+            if self.ui.spinBox_patch.value() == _list[0]:
+                self.updateComboBox_patch()
             else:
-                self.ui.slider_patch.setValue(_list[0])
+                self.ui.spinBox_patch.setValue(_list[0])
+        else:
+            self.logger.info('patch is not defined')
+
+        # self.disconnect(self.ui.slider_patch, SIGNAL("valueChanged(int)"),
+        #                 self.updateComboBox)
 
     # def onZoneSelected(self, z, plotKey):
     #     self.selected_zone = z
@@ -261,10 +318,28 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
     #             self.ui.zones.setCurrentCell(irow, 0)
     #             break
 
+    def init_load_plot(self):
+
+        self.disconnect(self.ui.comboBox_load,
+                        SIGNAL("currentIndexChanged(QString)"),
+                        self.load_connection_change)
+        self.ui.comboBox_load.clear()
+        self.ui.comboBox_load.addItems(self.cfg.list_groups)
+        self.connect(self.ui.comboBox_load,
+                     SIGNAL("currentIndexChanged(QString)"),
+                     self.load_connection_change)
+
+        self.ui.spinBox_load.valueChanged.connect(self.load_connection_change)
+
+        self.ui.doubleSpinBox_load.valueChanged.connect(self.load_connection_change)
+
     def onSliderChanged(self, label, x):
         label.setText('{:d}'.format(x))
 
-    def updateVulnCurve(self, _array):
+    def updateVulnCurve(self):
+
+        _array = self.results_dict['house']['di']
+
         self.ui.mplvuln.axes.hold(True)
 
         plot_wind_event_show(self.ui.mplvuln, self.cfg.no_models,
@@ -287,7 +362,7 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
                 try:
                     y = vulnerability_weibull(self.cfg.wind_speeds, param1, param2)
                 except KeyError as msg:
-                    logging.warning(msg)
+                    self.logger.warning(msg)
                 else:
                     plot_fitted_curve(self.ui.mplvuln,
                                       self.cfg.wind_speeds,
@@ -307,7 +382,7 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
                 try:
                     y = vulnerability_lognorm(self.cfg.wind_speeds, param1, param2)
                 except KeyError as msg:
-                    logging.warning(msg)
+                    self.logger.warning(msg)
                 else:
                     plot_fitted_curve(self.ui.mplvuln,
                                       self.cfg.wind_speeds,
@@ -325,7 +400,9 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
 
             self.ui.mplvuln.axes.figure.canvas.draw()
 
-    def updateFragCurve(self, _array):
+    def updateFragCurve(self):
+
+        _array = self.results_dict['house']['di']
         plot_fragility_show(self.ui.mplfrag, self.cfg.no_models,
                             self.cfg.wind_speeds[0], self.cfg.wind_speeds[-1])
 
@@ -339,7 +416,7 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
                     param1 = f['fragility'][ds]['param1'].value
                     param2 = f['fragility'][ds]['param2'].value
                 except KeyError as msg:
-                    logging.warning(msg)
+                    self.logger.warning(msg)
                 else:
                     y = vulnerability_lognorm(self.cfg.wind_speeds, param1, param2)
 
@@ -435,17 +512,17 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
                 irow, 0, QTableWidgetItem(index))
             self.ui.zones.setItem(
                 irow, 1, QTableWidgetItem('{:.3f}'.format(z['area'])))
-            self.ui.zones.setItem(
-                irow, 2, QTableWidgetItem('{:.3f}'.format(z['cpi_alpha'])))
-            for _dir in range(8):
-                self.ui.zones.setItem(
-                    irow, 3 + _dir, QTableWidgetItem('{:.3f}'.format(z['cpe_mean'][_dir])))
-            for _dir in range(8):
-                self.ui.zones.setItem(
-                    irow, 11 + _dir, QTableWidgetItem('{:.3f}'.format(z['cpe_str_mean'][_dir])))
-            for _dir in range(8):
-                self.ui.zones.setItem(
-                    irow, 19 + _dir, QTableWidgetItem('{:.3f}'.format(z['cpe_eave_mean'][_dir])))
+            # self.ui.zones.setItem(
+            #     irow, 2, QTableWidgetItem('{:.3f}'.format(z['cpi_alpha'])))
+            # for _dir in range(8):
+            #     self.ui.zones.setItem(
+            #         irow, 3 + _dir, QTableWidgetItem('{:.3f}'.format(z['cpe_mean'][_dir])))
+            # for _dir in range(8):
+            #     self.ui.zones.setItem(
+            #         irow, 11 + _dir, QTableWidgetItem('{:.3f}'.format(z['cpe_str_mean'][_dir])))
+            # for _dir in range(8):
+            #     self.ui.zones.setItem(
+            #         irow, 19 + _dir, QTableWidgetItem('{:.3f}'.format(z['cpe_eave_mean'][_dir])))
         finiTable(self.ui.zones)
     
     def updateConnectionGroupTable(self):
@@ -525,19 +602,20 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
         self.update_config_from_ui()
         self.cfg.process_config()
 
-        # self.ui.heatmap_house.setMaximum(self.cfg.no_models)
-        self.ui.heatmap_house.setRange(0, self.cfg.no_models)
-        self.ui.heatmap_house.setValue(0)
-        self.ui.heatmap_houseLabel.setText('{:d}'.format(0))
+        self.ui.spinBox_heatmap.setRange(0, self.cfg.no_models)
+        #self.ui.heatmap_houseLabel.setText('{:d}'.format(0))
+
+        self.ui.spinBox_load.setRange(1, self.cfg.no_models)
+        self.ui.doubleSpinBox_load.setRange(self.cfg.wind_speeds[0], self.cfg.wind_speeds[-1])
 
         self.ui.mplsheeting.axes.cla()
         self.ui.mplsheeting.axes.figure.canvas.draw()
 
-        self.ui.mplbatten.axes.cla()
-        self.ui.mplbatten.axes.figure.canvas.draw()
-
-        self.ui.mplrafter.axes.cla()
-        self.ui.mplrafter.axes.figure.canvas.draw()
+        # self.ui.mplbatten.axes.cla()
+        # self.ui.mplbatten.axes.figure.canvas.draw()
+        #
+        # self.ui.mplrafter.axes.cla()
+        # self.ui.mplrafter.axes.figure.canvas.draw()
 
         self.ui.connection_type_plot.axes.cla()
         self.ui.connection_type_plot.axes.figure.canvas.draw()
@@ -545,9 +623,9 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
         self.ui.breaches_plot.axes.cla()
         self.ui.breaches_plot.axes.figure.canvas.draw()
 
-        self.ui.cpi_house.setRange(0, self.cfg.no_models)
-        self.ui.cpi_house.setValue(0)
-        self.ui.cpi_houseLabel.setText('{:d}'.format(0))
+        self.ui.spinBox_cpi.setRange(0, self.cfg.no_models)
+        # self.ui.cpi_house.setValue(0)
+        # self.ui.cpi_houseLabel.setText('{:d}'.format(0))
 
         self.ui.cpi_plot.axes.cla()
         self.ui.cpi_plot.axes.figure.canvas.draw()
@@ -570,23 +648,23 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
 
         # attempt to run the simulator, being careful with exceptions...
         try:
-            run_time, bucket = simulate_wind_damage_to_houses(self.cfg,
+            run_time, self.results_dict = simulate_wind_damage_to_houses(self.cfg,
                                                               call_back=progress_callback)
 
             if run_time is not None:
                 self.statusBar().showMessage(
                     unicode('Simulation complete in {:0.3f}'.format(run_time)))
 
-                self.results_dict = bucket
-                self.updateVulnCurve(bucket['house']['di'])
-                self.updateFragCurve(bucket['house']['di'])
-                self.updateHouseResultsTable(bucket)
-                self.updateConnectionTable_with_results(bucket)
-                self.updateConnectionTypePlots(bucket)
-                self.updateHeatmap(bucket)
-                self.updateWaterIngressPlot(bucket)
-                self.updateBreachPlot(bucket)
-                self.updateCpiPlot(bucket)
+                # self.results_dict = bucket
+                self.updateVulnCurve()
+                self.updateFragCurve()
+                self.updateHouseResultsTable()
+                self.updateConnectionTable_with_results()
+                self.updateConnectionTypePlots()
+                self.updateHeatmap()
+                self.updateWaterIngressPlot()
+                self.updateBreachPlot()
+                self.updateCpiPlot()
                 self.has_run = True
 
         except IOError:
@@ -608,71 +686,103 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
             self.statusBar().showMessage('Ready')
 
     def heatmap_house_change(self):
-        if self.has_run:
-            house_number = self.ui.heatmap_house.value()
-            bucket = self.results_dict
-            self.updateHeatmap(bucket, house_number)
 
-    def cpi_plot_change(self):
         if self.has_run:
-            house_number = self.ui.cpi_house.value()
-            bucket = self.results_dict
-            self.updateCpiPlot(bucket, house_number)
+            # idx = self.ui.comboBox_heatmap.findText(self.cfg.list_groups[0])
+            # if self.ui.comboBox_heatmap.currentIndex() == idx:
+            self.updateHeatmap()
+            # else:
+            #     self.ui.comboBox_heatmap.setCurrentIndex(idx)
 
-    def updateHeatmap(self, bucket, house_number=0):
+    def load_connection_change(self):
+
+        if self.has_run:
+            # idx = self.ui.comboBox_heatmap.findText(self.cfg.list_groups[0])
+            # if self.ui.comboBox_heatmap.currentIndex() == idx:
+            self.updateLoadPlot()
+            # else:
+            #     self.ui.comboBox_heatmap.setCurrentIndex(idx)
+
+    def updateHeatmap(self):
+
+        # group_name = self.cfg.list_groups[
+        #     self.ui.comboBox_heatmap.currentIndex()]
+
+        group_name = str(self.ui.comboBox_heatmap.currentText())
+        house_number = self.ui.spinBox_heatmap.value()
+
+        grouped = self.cfg.connections.loc[
+            self.cfg.connections.group_name == group_name]
+
+        capacity = np.array([self.results_dict['connection']['capacity'][i]
+                             for i in grouped.index])[:, 0, :]
+
+        capacity[capacity == -1] = np.nan
+        if house_number == 0:
+            if len(capacity) > 0:
+                mean_connection_capacity = np.nanmean(capacity, axis=1)
+            else:
+                mean_connection_capacity = np.zeros(1)
+        else:
+            mean_connection_capacity = capacity[:, house_number - 1]
+
+        mean_connection_capacity = np.nan_to_num(mean_connection_capacity)
+
         red_v = self.ui.redV.value()
         blue_v = self.ui.blueV.value()
         vstep = self.ui.vStep.value()
-        self.ui.damages_tab.setUpdatesEnabled(False)
 
-        group_widget = {
-            'sheeting': [self.ui.mplsheeting, self.ui.tab_19, 0, "Sheeting"],
-            'batten': [self.ui.mplbatten, self.ui.tab_20, 1, "Batten"],
-            'rafter': [self.ui.mplrafter, self.ui.tab_21, 2, "Rafter"],
-            'piersgroup': [self.ui.mplpiers, self.ui.tab_27, 3, "PiersGroup"],
-            'wallcladding': [self.ui.mplwallcladding, self.ui.tab_26, 4, "WallCladding"],
-            'wallracking_cladding': [self.ui.mplwallracking_cladding, self.ui.tab_25, 5, "WallRackingCladding"],
-            'wallracking_bracing': [self.ui.mplwallracking_bracing, self.ui.tab_35, 6, "WallRackingBracing"],
-            'wallcollapse': [self.ui.mplwallcollapse, self.ui.tab_29, 7, "WallCollapse"],
-            'tiles': [self.ui.mpltile, self.ui.tab_32, 8, "Tiles"],
-            'truss': [self.ui.mpltruss, self.ui.tab_31, 9, "Truss"],
-        }
+        plot_damage_show(self.ui.mplsheeting, grouped,
+                         mean_connection_capacity,
+                         self.cfg.house['length'],
+                         self.cfg.house['width'],
+                         red_v, blue_v, vstep,
+                         house_number)
 
-        for group_name, widget in group_widget.items():
-            tab_index = self.ui.damages_tab.indexOf(widget[1])
-            if group_name not in self.cfg.connections['group_name'].values and tab_index >= 0:
-                self.ui.damages_tab.removeTab(tab_index)
+    def updatePressurePlot(self):
 
-        for group_name, grouped in self.cfg.connections.groupby('group_name'):
-            if group_name not in group_widget:
-                continue
+        pressure_key = str(self.ui.comboBox_pressure.currentText())
+        wind_dir_idx = int(self.ui.comboBox2_pressure.currentIndex())
 
-            base_tab = group_widget[group_name][1]
+        coords = [(key, value['coords'], value['centroid'])
+                  for key, value in self.cfg.zones.items()]
 
-            if self.ui.damages_tab.indexOf(base_tab) == -1:
-                self.ui.damages_tab.insertTab(group_widget[group_name][2],
-                                              group_widget[group_name][1],
-                                              group_widget[group_name][3])
+        if pressure_key == 'cpi_alpha':
+            pressure_value = np.array([value[pressure_key]
+                                       for _, value in self.cfg.zones.items()])
+        else:
+            pressure_value = np.array([value[pressure_key][wind_dir_idx]
+                                       for _, value in self.cfg.zones.items()])
 
-            _array = np.array([bucket['connection']['capacity'][i]
-                               for i in grouped.index])[:, 0, :]
-            _array[_array == -1] = np.nan
-            if house_number == 0:
-                if len(_array) > 0:
-                    mean_connection_capacity = np.nanmean(_array, axis=1)
-                else:
-                    mean_connection_capacity = np.zeros(1)
+        if pressure_key == 'edge':
+            v_min = 0.0
+            v_max = 1.0
+        else:
+            _min, _max = min(pressure_value), max(pressure_value)
+
+            if _min == _max:
+                v_min = -1.0 + _min
+                v_max = 1.0 + _max
             else:
-                mean_connection_capacity = _array[:, house_number-1]
+                v_min = _min - np.sign(_min) * 0.05*_min
+                v_max = _max + np.sign(_max) * 0.05*_max
 
-            mean_connection_capacity = np.nan_to_num(mean_connection_capacity)
+        try:
+            plot_pressure_show(self.ui.mplpressure,
+                               coords,
+                               pressure_value,
+                               self.cfg.house['length'],
+                               self.cfg.house['width'],
+                               v_min=v_min,
+                               v_max=v_max)
+        except ValueError:
+            self.logger.warning('Can not plot {}'.format(pressure_key))
 
-            plot_damage_show(group_widget[group_name][0], grouped,
-                             mean_connection_capacity,
-                             self.cfg.house['length'],
-                             self.cfg.house['width'],
-                             red_v, blue_v, vstep,
-                             house_number)
+    def cpi_plot_change(self):
+        if self.has_run:
+            house_number = self.ui.spinBox_cpi.value()
+            self.updateCpiPlot(house_number)
+
 
         # wall_major_rows = 2
         # wall_major_cols = self.cfg.house['roof_cols']
@@ -730,48 +840,52 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
         #                           v_east_grid, wall_major_cols, wall_major_rows,
         #                           wall_minor_cols, wall_minor_rows,red_v, blue_v)
 
-        self.ui.damages_tab.setUpdatesEnabled(True)
+        # self.ui.damages_tab.setUpdatesEnabled(True)
 
     def updateInfluence(self):
-        conn_name = self.ui.slider_influence.value()
+        conn_name = int(self.ui.spinBox_influence.value())
         plot_influence(self.ui.mplinfluecnes, self.cfg, conn_name)
 
-    def updateComboBox(self):
+    def updateComboBox_patch(self):
 
-        failed_conn_name = self.ui.slider_patch.value()
+        failed_conn_name = int(self.ui.spinBox_patch.value())
 
         try:
-            _sub_list = sorted(self.cfg.influence_patches[failed_conn_name].keys())
+            sub_list = sorted(self.cfg.influence_patches[failed_conn_name].keys())
         except KeyError:
-            pass
+            self.logger.info('patch is not defined for conn {}'.format(failed_conn_name))
+            self.ui.comboBox_patch.clear()
         else:
-            _sub_list = [str(x) for x in _sub_list]
-            self.disconnect(self.ui.comboBox,
+            sub_list = [str(x) for x in sub_list]
+            self.disconnect(self.ui.comboBox_patch,
                             SIGNAL("currentIndexChanged(QString)"),
                             self.updatePatch)
-            self.ui.comboBox.clear()
-            self.ui.comboBox.addItems(_sub_list)
-            self.connect(self.ui.comboBox,
+            self.ui.comboBox_patch.clear()
+            self.ui.comboBox_patch.addItems(sub_list)
+            self.connect(self.ui.comboBox_patch,
                          SIGNAL("currentIndexChanged(QString)"),
                          self.updatePatch)
 
-            idx = self.ui.comboBox.findText(_sub_list[0])
-            if self.ui.comboBox.currentIndex() == idx:
+            idx = self.ui.comboBox_patch.findText(sub_list[0])
+            if self.ui.comboBox_patch.currentIndex() == idx:
                 self.updatePatch()
             else:
-                self.ui.comboBox.setCurrentIndex(idx)
+                self.ui.comboBox_patch.setCurrentIndex(idx)
 
     def updatePatch(self):
-        failed_conn_name = self.ui.slider_patch.value()
-        conn_name = int(self.ui.comboBox.currentText())
-
-        plot_influence_patch(self.ui.mplpatches, self.cfg, failed_conn_name,
+        failed_conn_name = self.ui.spinBox_patch.value()
+        try:
+            conn_name = int(self.ui.comboBox_patch.currentText())
+        except ValueError:
+            pass
+        else:
+            plot_influence_patch(self.ui.mplpatches, self.cfg, failed_conn_name,
                              conn_name)
 
-    def updateWaterIngressPlot(self, bucket):
+    def updateWaterIngressPlot(self):
         self.statusBar().showMessage('Plotting Water Ingress')
 
-        _array = bucket['house']['water_ingress_cost']
+        _array = self.results_dict['house']['water_ingress_cost']
         wi_means = _array.mean(axis=1)
 
         self.ui.wateringress_plot.axes.hold(True)
@@ -787,10 +901,10 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
                                                 self.cfg.wind_speeds[-1])
         # self.ui.wateringress_plot.axes.set_ylim(0)
 
-    def updateCpiPlot(self, bucket, house_number=0):
+    def updateCpiPlot(self, house_number=0):
         self.statusBar().showMessage('Plotting Cpi')
 
-        _array = bucket['house']['cpi']
+        _array = self.results_dict['house']['cpi']
         _means = _array.mean(axis=1)
 
         self.ui.cpi_plot.axes.plot(self.cfg.wind_speeds, _means, c='b', marker='o', label='mean')
@@ -803,21 +917,21 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
         self.ui.cpi_plot.axes.set_title('Internal Pressure Coefficient')
         self.ui.cpi_plot.axes.set_xlabel('Wind speed (m/s)')
         self.ui.cpi_plot.axes.set_ylabel('Cpi')
-        self.ui.cpi_plot.axes.legend(loc=2, scatterpoints=1)
+        self.ui.cpi_plot.axes.legend(loc=0, scatterpoints=1)
         self.ui.cpi_plot.axes.set_xlim(self.cfg.wind_speeds[0],
                                        self.cfg.wind_speeds[-1])
         self.ui.cpi_plot.axes.figure.canvas.draw()
         self.ui.cpi_plot.axes.hold(False)
         # self.ui.wateringress_plot.axes.set_ylim(0)
 
-    def updateBreachPlot(self, bucket):
+    def updateBreachPlot(self):
         self.statusBar().showMessage('Plotting Debris Results')
         self.ui.breaches_plot.axes.figure.clf()
         # we'll have three seperate y axis running at different scales
 
-        breaches = bucket['house']['window_breached'].sum(axis=1) / self.cfg.no_models
-        nv_means = bucket['house']['no_debris_impacts'].mean(axis=1)
-        num_means = bucket['house']['no_debris_items'].mean(axis=1)
+        breaches = self.results_dict['house']['window_breached'].sum(axis=1) / self.cfg.no_models
+        nv_means = self.results_dict['house']['no_debris_impacts'].mean(axis=1)
+        num_means = self.results_dict['house']['no_debris_items'].mean(axis=1)
 
         host = SubplotHost(self.ui.breaches_plot.axes.figure, 111)
         par1 = host.twinx()
@@ -850,12 +964,12 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
         host.legend(loc=2)
         self.ui.breaches_plot.axes.figure.canvas.draw()
 
-    def updateStrengthPlot(self, bucket):
+    def updateStrengthPlot(self):
         self.ui.connection_type_plot.axes.hold(False)
         
         xlabels = []
         for _id, (type_name, grouped) in enumerate(self.cfg.connections.groupby('type_name')):
-            _array = np.array([bucket['connection']['strength'][i] for i in grouped.index]).flatten()
+            _array = np.array([self.results_dict['connection']['strength'][i] for i in grouped.index]).flatten()
 
             self.ui.connection_type_plot.axes.scatter(
                 _id * np.ones_like(_array), _array, s=8, marker='+')
@@ -871,13 +985,13 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
         self.ui.connection_type_plot.axes.figure.canvas.draw()     
         self.ui.connection_type_plot.axes.set_xlim((-0.5, len(xlabels)))
 
-    def updateTypeDamagePlot(self, bucket):
+    def updateTypeDamagePlot(self):
 
         self.ui.connection_type_damages_plot.axes.hold(False)
 
         xlabels = []
         for _id, (type_name, grouped) in enumerate(self.cfg.connections.groupby('type_name')):
-            _array = np.array([bucket['connection']['capacity'][i] for i in grouped.index]).flatten()
+            _array = np.array([self.results_dict['connection']['capacity'][i] for i in grouped.index]).flatten()
             _array[_array == -1] = np.nan
 
             self.ui.connection_type_damages_plot.axes.scatter(
@@ -897,15 +1011,46 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
         self.ui.connection_type_damages_plot.axes.figure.canvas.draw()     
         self.ui.connection_type_damages_plot.axes.set_xlim((-0.5, len(xlabels)))
 
-    def updateConnectionTypePlots(self, bucket):
-        self.statusBar().showMessage('Plotting Connection Types')
-        self.updateStrengthPlot(bucket)
-        self.updateTypeDamagePlot(bucket)
+    def updateLoadPlot(self):
 
-    def updateConnectionTable_with_results(self, bucket):
+        self.statusBar().showMessage('updating connection load')
+
+        group_name = str(self.ui.comboBox_load.currentText())
+        house_number = self.ui.spinBox_load.value()
+        ispeed = np.argmin(np.abs(self.cfg.wind_speeds-self.ui.doubleSpinBox_load.value()))
+
+        grouped = self.cfg.connections.loc[
+            self.cfg.connections.group_name == group_name]
+
+        load = np.array([self.results_dict['connection']['load'][i]
+                         for i in grouped.index])[:, ispeed, house_number-1]
+
+        _min, _max = min(load), max(load)
+        v_min = _min - np.sign(_min) * 0.05 * _min
+        v_max = _max + np.sign(_max) * 0.05 * _max
+
+        load[load == 0.0] = -1.0 * np.inf
+
+        try:
+            plot_load_show(self.ui.mplload, grouped,
+                           load,
+                           self.cfg.house['length'],
+                           self.cfg.house['width'],
+                           v_min=v_min,
+                           v_max=v_max)
+        except ValueError:
+            self.logger.warning('Can not plot connection load')
+
+    def updateConnectionTypePlots(self):
+        self.statusBar().showMessage('Plotting Connection Types')
+        self.updateStrengthPlot()
+        self.updateTypeDamagePlot()
+        self.updateLoadPlot()
+
+    def updateConnectionTable_with_results(self):
         self.statusBar().showMessage('Updating Connections Table')
 
-        connections_damaged = bucket['connection']['damaged']
+        connections_damaged = self.results_dict['connection']['damaged']
         for irow, item in enumerate(self.cfg.connections.iterrows()):
             conn_id = item[0]
             failure_count = np.count_nonzero(connections_damaged[conn_id])
@@ -913,36 +1058,36 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
             self.ui.connections.setItem(irow, 4, QTableWidgetItem('{:.3}'.format(failure_mean)))
             self.ui.connections.setItem(irow, 5, QTableWidgetItem('{}'.format(failure_count)))
 
-    def determine_capacities(self, bucket):
+    # def determine_capacities(self):
+    #
+    #     _array = np.array([self.results_dict['connection']['capacity'][i]
+    #                     for i in self.cfg.list_connections])
+    #
+    #     _array[_array == -1] = np.nan
+    #
+    #     return np.nanmean(_array, axis=1)
 
-        _array = np.array([bucket['connection']['capacity'][i]
-                        for i in self.cfg.list_connections])
-
-        _array[_array == -1] = np.nan
-
-        return np.nanmean(_array, axis=1)
-
-    def updateHouseResultsTable(self, bucket):
+    def updateHouseResultsTable(self):
 
         self.statusBar().showMessage('Updating Zone Results')
         self.ui.zoneResults.clear()
 
-        wind_dir = [bucket['house']['wind_dir_index'][i]
+        wind_dir = [self.results_dict['house']['wind_dir_index'][i]
                     for i in range(self.cfg.no_models)]
-        construction_level = [bucket['house']['construction_level'][i]
+        construction_level = [self.results_dict['house']['construction_level'][i]
                               for i in range(self.cfg.no_models)]
 
         for i in range(self.cfg.no_models):
             parent = QTreeWidgetItem(self.ui.zoneResults,
-                                     ['H{} ({}/{})'.format(i + 1,
+                                     ['#{} ({}/{})'.format(i + 1,
                                                            WIND_DIR[wind_dir[i]],
                                                            construction_level[i]), '', '', ''])
             for zr_key in self.cfg.zones:
                 QTreeWidgetItem(parent, ['',
                                          zr_key,
-                                         '{:.3}'.format(bucket['zone']['cpe'][zr_key][0, i]),
-                                         '{:.3}'.format(bucket['zone']['cpe_str'][zr_key][0, i]),
-                                         '{:.3}'.format(bucket['zone']['cpe_eave'][zr_key][0, i])])
+                                         '{:.3}'.format(self.results_dict['zone']['cpe'][zr_key][0, i]),
+                                         '{:.3}'.format(self.results_dict['zone']['cpe_str'][zr_key][0, i]),
+                                         '{:.3}'.format(self.results_dict['zone']['cpe_eave'][zr_key][0, i])])
                 
         self.ui.zoneResults.resizeColumnToContents(0)
         self.ui.zoneResults.resizeColumnToContents(1)
@@ -956,18 +1101,18 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
         self.ui.connectionResults.clear()
         for i in range(self.cfg.no_models):
             parent = QTreeWidgetItem(self.ui.connectionResults,
-                                     ['H{} ({}/{})'.format(i + 1,
+                                     ['#{} ({}/{})'.format(i + 1,
                                                            WIND_DIR[wind_dir[i]],
                                                            construction_level[i]), '', '', ''])
 
             for _id, value in self.cfg.connections.iterrows():
 
-                capacity = bucket['connection']['capacity'][_id][0, i]
-                # load = bucket['connection']['load'][_id][house_num]
-                dead_load = bucket['connection']['dead_load'][_id][0, i]
-                strength = bucket['connection']['strength'][_id][0, i]
+                capacity = self.results_dict['connection']['capacity'][_id][0, i]
+                # load = self.results_dict['connection']['load'][_id][house_num]
+                dead_load = self.results_dict['connection']['dead_load'][_id][0, i]
+                strength = self.results_dict['connection']['strength'][_id][0, i]
 
-                load_last = bucket['connection']['load'][_id][-1, i]
+                load_last = self.results_dict['connection']['load'][_id][-1, i]
                 if load_last:
                     load_desc = '{:.3}'.format(load_last)
                 else:
@@ -1251,7 +1396,7 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
             self.update_ui_from_config()
             self.statusBar().showMessage('Ready')
         except Exception as excep:
-            logging.exception("Loading configuration caused exception")
+            self.logger.exception("Loading configuration caused exception")
 
             msg = 'Unable to load previous scenario: %s\nLoad cancelled.' % fname
             QMessageBox.warning(self, "VAWS Program Warning", unicode(msg))

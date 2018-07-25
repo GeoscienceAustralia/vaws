@@ -23,6 +23,8 @@ def simulate_wind_damage_to_houses(cfg, call_back=None):
         call_back: used by gui
 
     Returns:
+        elapsed: float: elapsed time
+        bucket: list: list of results
 
     """
 
@@ -205,8 +207,8 @@ def save_results_to_files(cfg, bucket):
 
             for id_sim in range(cfg.no_models):
 
-                value = np.array([bucket['connection']['capacity'][i][id_sim]
-                                 for i in grouped.index])
+                value = np.array([bucket['connection']['capacity'][i]
+                                 for i in grouped.index])[:, 0, id_sim]
 
                 file_name = os.path.join(cfg.path_output,
                                          '{}_id{}'.format(group_name,
