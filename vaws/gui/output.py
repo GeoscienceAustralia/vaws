@@ -71,6 +71,7 @@ def plot_damage_show(fig, grouped, values_grid, xlim_max, ylim_max,
         logger.warning('Heatmap can not be drawn due to missing coordinates')
     else:
         p.set_array(values_grid)
+        p.set_edgecolor('black')
         axPlot.add_collection(p)
 
         for irow, row in grouped.iterrows():
@@ -139,6 +140,7 @@ def plot_load_show(fig, grouped, values_grid, xlim_max, ylim_max, v_min, v_max, 
         logger.warning('Plot can not be drawn due to missing coordinates')
     else:
         p.set_array(values_grid)
+        p.set_edgecolor('black')
         axPlot.add_collection(p)
 
         for irow, row in grouped.iterrows():
@@ -208,6 +210,7 @@ def plot_pressure_show(fig, groups, values, xlim_max, ylim_max, v_min, v_max, v_
         logger.warning('Plot can not be drawn due to missing coordinates')
     else:
         p.set_array(values)
+        p.set_edgecolor('black')
         axPlot.add_collection(p)
 
         for item in groups:
