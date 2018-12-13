@@ -174,8 +174,6 @@ class Debris(object):
 
     def check_coverages(self, coverages, prob_coverages):
 
-        msg = '{coverage} breached by debris with {momentum:.3f} -> {area:.3f}'
-
         if self.impact:
 
             coverage = self.rnd_state.choice(coverages, p=prob_coverages)
@@ -183,9 +181,13 @@ class Debris(object):
             # check impact using failure momentum
             if coverage.momentum_capacity < self.momentum:
                 # history of coverage is ignored
+                # breached_area can not exceed coverage.area
                 if coverage.description == 'window':
                     coverage.breached_area = coverage.area
                     coverage.breached = 1
+
+                    msg = '{coverage} breached at {speed:.3f} with {momentum:.3f} -> {area:.3f}'
+
                 else:
                     # assume area: size(1) * amplification_factor(1)
                     coverage.breached_area = 1.0
@@ -193,7 +195,10 @@ class Debris(object):
                     #     # frontal_area * self.__class__.amplification_factor,
                     #     1.0, coverage.area)
 
+                    msg = '{coverage} at {speed:.3f} with {momentum:.3f} -> {area:.3f}'
+
                 self.logger.debug(msg.format(coverage=coverage.name,
+                                             speed=self.wind_speed,
                                              momentum=self.momentum,
                                              area=coverage.area))
 

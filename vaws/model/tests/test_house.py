@@ -3,6 +3,7 @@ from __future__ import print_function
 
 import unittest
 import os
+import logging
 from collections import Counter, OrderedDict
 import StringIO
 import pandas as pd
@@ -19,7 +20,9 @@ class MyTestCase(unittest.TestCase):
         path = os.sep.join(__file__.split(os.sep)[:-1])
         file_cfg = os.path.join(
             path, 'test_scenarios', 'test_sheeting_batten', 'test_sheeting_batten.cfg')
-        cfg = Config(file_cfg=file_cfg)
+        logging.basicConfig(level=logging.WARNING)
+        logger = logging.getLogger(__name__)
+        cfg = Config(file_cfg=file_cfg, logger=logger)
         cls.house = House(cfg, 1)
 
     def test_set_house_wind_params(self):
@@ -206,7 +209,9 @@ class TestHouseCoverage(unittest.TestCase):
         path = os.sep.join(__file__.split(os.sep)[:-1])
         cls.file_cfg = os.path.join(
             path, 'test_scenarios', 'test_scenario19', 'test_scenario19.cfg')
-        cls.cfg = Config(file_cfg=cls.file_cfg)
+        logging.basicConfig(level=logging.WARNING)
+        logger = logging.getLogger(__name__)
+        cls.cfg = Config(file_cfg=cls.file_cfg, logger=logger)
         cls.house = House(cls.cfg, 1)
 
     def test_assign_windward(self):
@@ -369,10 +374,11 @@ class TestHouseDamage(unittest.TestCase):
 
         path = os.sep.join(__file__.split(os.sep)[:-1])
         cls.path_reference = path
-
-        cls.cfg = Config(
-            file_cfg=os.path.join(
-                path, 'test_scenarios', 'test_scenario15', 'test_scenario15.cfg'))
+        file_cfg = os.path.join(path, 'test_scenarios', 'test_scenario15',
+                                'test_scenario15.cfg')
+        logging.basicConfig(level=logging.WARNING)
+        logger = logging.getLogger(__name__)
+        cls.cfg = Config(file_cfg=file_cfg, logger=logger)
 
         cls.house = House(cfg=cls.cfg, seed=1)
         cls.house.replace_cost = 45092.97
@@ -581,8 +587,11 @@ class TestHouseDamage2(unittest.TestCase):
         path = os.sep.join(__file__.split(os.sep)[:-1])
         cls.path_reference = path
 
-        cls.cfg = Config(file_cfg=os.path.join(
-            path, 'test_scenarios', 'test_house', 'test_house.cfg'))
+        logging.basicConfig(level=logging.WARNING)
+        logger = logging.getLogger(__name__)
+        file_cfg = os.path.join(path, 'test_scenarios', 'test_house',
+                                'test_house.cfg')
+        cls.cfg = Config(file_cfg=file_cfg, logger=logger)
 
         cls.house = House(cfg=cls.cfg, seed=1)
         cls.house.replace_cost = 198859.27

@@ -222,8 +222,8 @@ class Config(object):
 
         self.water_ingress = None
         self.water_ingress_i_thresholds = [0.1, 0.2, 0.5]
-        self.water_ingress_i_speed_at_zero_wi = [50.0, 35.0, 0.0, -20.0]
-        self.water_ingress_i_speed_at_full_wi = [75.0, 55.0, 40.0, 20.0]
+        self.water_ingress_i_speed_at_zero_wi = [40.0, 35.0, 0.0, -20.0]
+        self.water_ingress_i_speed_at_full_wi = [60.0, 55.0, 40.0, 20.0]
 
         # debris related
         self.region_name = None
@@ -759,6 +759,14 @@ class Config(object):
             self.connections['flag_pressure'] = self.connections['group_name'].apply(
                 lambda x: df_groups.loc[x, 'flag_pressure'])
             self.list_subgroups = self.connections['sub_group'].unique().tolist()
+
+            # no of connections and total costing area by group
+            _df = self.connections.groupby('group_name')
+            costing_area = _df['costing_area'].apply(sum).to_dict()
+            no_connections = _df.apply(len).to_dict()
+            for key, value in no_connections.items():
+                self.groups[key].update({'no_connections': value,
+                                         'costing_area': costing_area[key]})
 
     def set_influences(self):
 

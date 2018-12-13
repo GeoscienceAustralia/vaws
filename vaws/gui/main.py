@@ -102,7 +102,7 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
         self.statusBar().addPermanentWidget(self.statusBarScenarioLabel)
         
         self.dirty_scenario = False         # means scenario has changed
-        self.dirty_conntypes = False        # means connection_types have been modified
+        # self.dirty_conntypes = False        # means connection_types have been modified
         self.has_run = False
         self.initSizePosFromSettings()
 

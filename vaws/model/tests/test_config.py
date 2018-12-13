@@ -297,8 +297,8 @@ rafter,3,patch,Loss of roof structure,0,0,3
     def test_read_water_ingress(self):
         thresholds = [0.1, 0.2, 0.5]
         index = [0.1, 0.2, 0.5, 1.1]
-        speed_zero = [50.0, 35.0, 0.0, -20.0]
-        speed_full = [75.0, 55.0, 40.0, 20.0]
+        speed_zero = [40.0, 35.0, 0.0, -20.0]
+        speed_full = [60.0, 55.0, 40.0, 20.0]
 
         assert_array_equal(self.cfg.water_ingress_i_thresholds, thresholds)
         assert_array_equal(self.cfg.water_ingress.index, index)

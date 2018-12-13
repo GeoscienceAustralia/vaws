@@ -49,6 +49,7 @@ class House(object):
 
         self._cv_factor = None
         self._mean_factor = None
+        self._total_area_by_group = None
 
         # debris related
         self._footprint = None
@@ -91,6 +92,20 @@ class House(object):
         self.set_coverages()
         self.set_zones()
         self.set_connections()
+
+    @property
+    def total_area_by_group(self):
+        if self._total_area_by_group is None:
+
+            self._total_area_by_group = {}
+            for key, value in self.cfg.groups.items():
+                if value['costing_area'] > 0:
+                    self._total_area_by_group[key] = value['costing_area']
+
+            if self.cfg.coverages_area:
+                self._total_area_by_group['debris'] = self.cfg.coverages_area
+
+        return self._total_area_by_group
 
     @property
     def windward_walls(self):
@@ -474,6 +489,8 @@ class House(object):
                             self.bucket[comp][att][item] = getattr(value, att)
                 except TypeError:
                     pass
+            elif comp == 'group':
+                pass
             else:  # dictionary
                 dic = getattr(self, '{}s'.format(comp))
                 for att, _ in getattr(self.cfg, '{}_bucket'.format(comp)):
@@ -572,14 +589,19 @@ class House(object):
               'di except water:{di_except_water:.3f}, di: {di:.3f}'
 
         # sum of damaged area by group
-        area_by_group, total_area_by_group = self.compute_area_by_group()
+        area_by_group, prop_by_group = self.compute_area_by_group()
 
         # apply damage factoring
         revised_area_by_group = self.apply_damage_factoring(area_by_group)
 
+        # assign damaged area by group
+        for key, value in revised_area_by_group.items():
+            self.bucket['group']['damaged_area'][key] = value
+            if key != 'debris':
+                self.bucket['group']['prop_damaged'][key] = prop_by_group[key] / self.cfg.groups[key]['no_connections']
+
         # sum of area by scenario
-        prop_area_by_scenario = self.compute_area_by_scenario(
-            revised_area_by_group, total_area_by_group)
+        prop_area_by_scenario = self.compute_area_by_scenario(revised_area_by_group)
 
         _list = []
         for key, value in prop_area_by_scenario.items():
@@ -657,14 +679,14 @@ class House(object):
 
         return revised
 
-    def compute_area_by_scenario(self, revised_area, total_area_by_group):
+    def compute_area_by_scenario(self, revised_area):
         area_by_scenario = collections.defaultdict(int)
         total_area_by_scenario = collections.defaultdict(int)
         for scenario, _list in self.cfg.costing_to_group.items():
             for group in _list:
                 if group in revised_area:
                     area_by_scenario[scenario] += max(revised_area[group], 0.0)
-                    total_area_by_scenario[scenario] += total_area_by_group[group]
+                    total_area_by_scenario[scenario] += self.total_area_by_group[group]
 
         # prop_area_by_scenario
         prop_area_by_scenario = {key: value / total_area_by_scenario[key]
@@ -674,24 +696,17 @@ class House(object):
     def compute_area_by_group(self):
 
         area_by_group = collections.defaultdict(int)
-        total_area_by_group = collections.defaultdict(int)
+        prop_by_group = collections.defaultdict(int)
 
         for _, group in self.groups.items():
+            prop_by_group[group.name] += group.prop_damaged * group.no_connections
             area_by_group[group.name] += group.damaged_area
-            total_area_by_group[group.name] += group.costing_area
-
-        # remove group with zero costing area
-        for key, value in total_area_by_group.items():
-            if value == 0:
-                total_area_by_group.pop(key, None)
-                area_by_group.pop(key, None)
 
         # include DEBRIS when debris is ON
         if self.cfg.coverages_area:
             area_by_group['debris'] = self.breached_area
-            total_area_by_group['debris'] = self.cfg.coverages_area
 
-        return area_by_group, total_area_by_group
+        return area_by_group, prop_by_group
 
     def set_house_data(self):
 
