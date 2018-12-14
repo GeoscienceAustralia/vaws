@@ -85,9 +85,9 @@ class House(object):
         self.di_except_water = None
 
         self.bucket = {}
-        self.init_bucket()
 
         # init house
+        self.init_bucket()
         self.set_house_data()
         self.set_coverages()
         self.set_zones()
@@ -466,13 +466,17 @@ class House(object):
         # components
         for comp in self.cfg.list_components:
             self.bucket[comp] = {}
-            for att, _ in getattr(self.cfg, '{}_bucket'.format(comp)):
-                self.bucket[comp][att] = {}
-                try:
-                    for item in getattr(self.cfg, 'list_{}s'.format(comp)):
-                        self.bucket[comp][att][item] = None
-                except TypeError:
-                    pass
+            if comp == 'debris':
+                for att, _ in getattr(self.cfg, '{}_bucket'.format(comp)):
+                    self.bucket[comp][att] = None
+            else:
+                for att, _ in getattr(self.cfg, '{}_bucket'.format(comp)):
+                    self.bucket[comp][att] = {}
+                    try:
+                        for item in getattr(self.cfg, 'list_{}s'.format(comp)):
+                            self.bucket[comp][att][item] = None
+                    except TypeError:
+                        pass
 
     def fill_bucket(self):
 
@@ -491,6 +495,11 @@ class House(object):
                     pass
             elif comp == 'group':
                 pass
+            elif comp == 'debris':
+                if self.cfg.flags['debris']:
+                    for att, _ in self.cfg.debris_bucket:
+                        self.bucket[comp][att] = [getattr(x, att)
+                                                  for x in self.debris_items]
             else:  # dictionary
                 dic = getattr(self, '{}s'.format(comp))
                 for att, _ in getattr(self.cfg, '{}_bucket'.format(comp)):

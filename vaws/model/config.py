@@ -149,7 +149,7 @@ class Config(object):
     att_non_float = ['construction_level']
 
     # model and wind dependent attributes
-    list_components = ['group', 'connection', 'zone', 'coverage']
+    list_components = ['group', 'connection', 'zone', 'coverage', 'debris']
 
     group_bucket = [('damaged_area', 1), ('prop_damaged', 1)]
 
@@ -174,14 +174,14 @@ class Config(object):
                        ('breached', 1),
                        ('breached_area', 1)]
 
-    # debris_bucket = [('mass', 1),
-    #                  ('frontal_area', 0),
-    #                  ('flight_time', 0),
-    #                  ('momentum', 0),
-    #                  ('flight_distance', 1),
-    #                  ('impact', 1),
-    #                  ('landing.x', 1),
-    #                  ('landing.y', 1)]
+    debris_bucket = [('mass', 1),
+                     ('frontal_area', 1),
+                     ('flight_time', 1),
+                     ('momentum', 1),
+                     ('flight_distance', 1),
+                     ('impact', 1)]
+                     # ('landing.x', 1),
+                     # ('landing.y', 1)]
 
     dic_obj_for_fitting = {'weibull': 'vulnerability_weibull',
                            'lognorm': 'vulnerability_lognorm'}

@@ -14,6 +14,8 @@ from vaws.model.curve import fit_fragility_curves, fit_vulnerability_curve
 from vaws.model.output import plot_heatmap
 from vaws.model.version import VERSION_DESC
 
+DT = h5py.special_dtype(vlen=str)
+
 
 def simulate_wind_damage_to_houses(cfg, call_back=None):
     """
@@ -95,18 +97,23 @@ def init_bucket(cfg):
     # components: group, connection, zone, coverage
     for comp in cfg.list_components:
         bucket[comp] = {}
-        for att, flag_time in getattr(cfg, '{}_bucket'.format(comp)):
-            bucket[comp][att] = {}
-            try:
-                for item in getattr(cfg, 'list_{}s'.format(comp)):
-                    if flag_time:
-                        bucket[comp][att][item] = np.zeros(
-                            shape=(cfg.wind_speed_steps, cfg.no_models), dtype=float)
-                    else:
-                        bucket[comp][att][item] = np.zeros(
-                            shape=(1, cfg.no_models), dtype=float)
-            except TypeError:
-                pass
+        if comp == 'debris':
+            for att, _ in getattr(cfg, '{}_bucket'.format(comp)):
+                bucket[comp][att] = np.zeros(
+                    shape=(cfg.wind_speed_steps, cfg.no_models), dtype=object)
+        else:
+            for att, flag_time in getattr(cfg, '{}_bucket'.format(comp)):
+                bucket[comp][att] = {}
+                try:
+                    for item in getattr(cfg, 'list_{}s'.format(comp)):
+                        if flag_time:
+                            bucket[comp][att][item] = np.zeros(
+                                shape=(cfg.wind_speed_steps, cfg.no_models), dtype=float)
+                        else:
+                            bucket[comp][att][item] = np.zeros(
+                                shape=(1, cfg.no_models), dtype=float)
+                except TypeError:
+                    pass
     return bucket
 
 
@@ -117,10 +124,15 @@ def update_bucket(cfg, bucket, results_by_speed, ispeed):
             bucket['house'][att][ispeed] = [x['house'][att] for x in results_by_speed]
 
     for comp in cfg.list_components:
-        for att, flag_time in getattr(cfg, '{}_bucket'.format(comp)):
-            if flag_time:
-                for item, value in bucket[comp][att].items():
-                    value[ispeed] = [x[comp][att][item] for x in results_by_speed]
+        if comp == 'debris':
+            for att, flag_time in cfg.debris_bucket:
+                bucket['debris'][att][ispeed] = [x['debris'][att] for x in results_by_speed]
+        else:
+            for att, flag_time in getattr(cfg, '{}_bucket'.format(comp)):
+                if flag_time:
+                    for item, value in bucket[comp][att].items():
+                        value[ispeed] = [x[comp][att][item] for x in
+                                         results_by_speed]
 
     # save time invariant attribute
     if ispeed == cfg.wind_speed_steps-1:
@@ -176,10 +188,14 @@ def save_results_to_files(cfg, bucket):
 
         for comp in cfg.list_components:
             group = hf.create_group(comp)
-            for att, chunk in bucket[comp].items():
-                subgroup = group.create_group(att)
-                for item, value in chunk.items():
-                    subgroup.create_dataset(str(item), data=value)
+            if comp == 'debris':
+                for att, value in bucket[comp].items():
+                    group.create_dataset(att, data=value, dtype=DT)
+            else:
+                for att, chunk in bucket[comp].items():
+                    subgroup = group.create_group(att)
+                    for item, value in chunk.items():
+                        subgroup.create_dataset(str(item), data=value)
 
         # fragility curves
         if cfg.no_models > 1:
