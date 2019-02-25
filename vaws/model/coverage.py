@@ -128,7 +128,8 @@ class Coverage(Zone):
         self.load = 0.0
 
         # only skip breached window
-        if not (self.breached and self.description == 'window'):
+        if (not (self.breached and self.description == 'window') and
+                (self.breached_area < self.area)):
 
             self.load = qz * (self.cpe - cpi) * self.area * combination_factor
 

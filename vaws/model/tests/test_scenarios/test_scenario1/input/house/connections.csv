@@ -1,5 +1,5 @@
 conn_name,type_name,zone_loc,section,x_coord,y_coord,,,,,,
-1,sheetingcorner,A1,0,0,0,0.8,0,0.8,0.75,0,0.75
+1,sheetingcorner,AB11,0,0,0,0.8,0,0.8,0.75,0,0.75
 2,sheetinggable,A2,0,0,0.75,0.8,0.75,0.8,1.5,0,1.5
 3,sheetinggable,A3,0,0,1.5,0.8,1.5,0.8,2.25,0,2.25
 4,sheetinggable,A4,0,0,2.25,0.8,2.25,0.8,3,0,3
@@ -29,7 +29,7 @@ conn_name,type_name,zone_loc,section,x_coord,y_coord,,,,,,
 28,sheeting,E4,0,3.2,2.25,4,2.25,4,3,3.2,3
 29,sheeting,E5,0,3.2,3,4,3,4,3.75,3.2,3.75
 30,sheetingeave,E6,0,3.2,3.75,4,3.75,4,4.5,3.2,4.5
-31,battencorner,A1,0,0,0,0.8,0,0.8,0.75,0,0.75
+31,battencorner,AB11,0,0,0,0.8,0,0.8,0.75,0,0.75
 32,battenend,A2,0,0,0.75,0.8,0.75,0.8,1.5,0,1.5
 33,battenend,A3,0,0,1.5,0.8,1.5,0.8,2.25,0,2.25
 34,battenend,A4,0,0,2.25,0.8,2.25,0.8,3,0,3

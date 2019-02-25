@@ -826,11 +826,13 @@ class TestScenario19(unittest.TestCase):
     def setUpClass(cls):
 
         path = os.sep.join(__file__.split(os.sep)[:-1])
-        logging.basicConfig(level=logging.WARNING)
-        logger = logging.getLogger(__name__)
-        file_cfg = os.path.join(path, 'test_scenarios',
-                                'test_scenario19', 'test_scenario19.cfg')
-        cfg = Config(file_cfg=file_cfg, logger=logger)
+        path_cfg = os.path.join(path, 'test_scenarios', 'test_scenario19')
+        file_cfg = os.path.join(path_cfg, 'test_scenario19.cfg')
+        set_logger(path_cfg=path_cfg, logging_level='debug')
+        # logging.basicConfig(level=logging.WARNING)
+        # logger = logging.getLogger(__name__)
+        #cfg = Config(file_cfg=file_cfg, logger=logger)
+        cfg = Config(file_cfg=file_cfg)
         cls.house = House(cfg, seed=0)
 
     def test_damage_coverage(self):
@@ -1232,6 +1234,6 @@ class TestScenario27(unittest.TestCase):
                    list_connections=range(1, 36))
 
 if __name__ == '__main__':
-    #suite = unittest.TestLoader().loadTestsFromTestCase(TestScenario27)
-    #unittest.TextTestRunner(verbosity=2).run(suite)
-    unittest.main(verbosity=2)
+    suite = unittest.TestLoader().loadTestsFromTestCase(TestScenario1)
+    unittest.TextTestRunner(verbosity=2).run(suite)
+    #unittest.main(verbosity=2)

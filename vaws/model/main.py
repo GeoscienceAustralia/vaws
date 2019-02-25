@@ -182,6 +182,8 @@ def save_results_to_files(cfg, bucket):
     # file_house
     with h5py.File(cfg.file_results, 'w') as hf:
 
+        hf.create_dataset('wind_speeds', data=cfg.wind_speeds)
+
         group = hf.create_group('house')
         for att, value in bucket['house'].items():
             group.create_dataset(att, data=value)
@@ -199,23 +201,33 @@ def save_results_to_files(cfg, bucket):
 
         # fragility curves
         if cfg.no_models > 1:
-            frag_counted = fit_fragility_curves(cfg, bucket['house']['di'])
+            frag_counted, df_counted = fit_fragility_curves(cfg, bucket['house']['di'])
 
-            if frag_counted:
-                group = hf.create_group('fragility')
-                for key, value in frag_counted.items():
-                    for sub_key, sub_value in value.items():
-                        group.create_dataset('{}/{}'.format(key, sub_key),
-                                             data=sub_value)
+            group = hf.create_group('fragility')
+            bucket['fragility'] = {}
+            group.create_dataset('counted', data=df_counted)
+            group['counted'].attrs['column_names'] = df_counted.columns.tolist()
+            bucket['fragility']['counted'] = df_counted
+
+            for fitting in ['MLE', 'OLS']:
+                if frag_counted[fitting]:
+                    for key, value in frag_counted[fitting].items():
+                        for sub_key, sub_value in value.items():
+                            name = '{}/{}/{}'.format(fitting, key, sub_key)
+                            group.create_dataset(name=name, data=sub_value)
+                            bucket['fragility'].setdefault(fitting, {}).setdefault(key, {})[sub_key] = sub_value
 
         # vulnerability curves
         fitted_curve = fit_vulnerability_curve(cfg, bucket['house']['di'])
 
         group = hf.create_group('vulnerability')
+        bucket['vulnerability'] = {}
         for key, value in fitted_curve.items():
             for sub_key, sub_value in value.items():
                 group.create_dataset('{}/{}'.format(key, sub_key),
                                      data=sub_value)
+                bucket['vulnerability'].setdefault(key, {})[
+                    sub_key] = sub_value
 
     if cfg.flags['save_heatmaps']:
 

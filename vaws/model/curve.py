@@ -8,9 +8,43 @@ import logging
 import warnings
 
 import numpy as np
-from scipy.optimize import curve_fit, OptimizeWarning
-from scipy.stats import weibull_min, lognorm
+import pandas as pd
+from scipy.optimize import curve_fit, OptimizeWarning, minimize
+from scipy.stats import weibull_min, lognorm, multinomial
 from collections import OrderedDict
+
+SMALL_VALUE = 1.0e-2
+
+
+def no_within_bounds(row, bounds):
+    freq = np.histogram(row, bins=bounds)[0]
+    return pd.Series({'n{}'.format(i): freq[i] for i in range(5)})
+
+
+def compute_pe(row, denom):
+    _dic = {}
+    for i in range(1, 5):
+        _dic['pe{}'.format(i)] = np.sum([row['n{}'.format(j)] for j in range(4, i-1, -1)]) / denom
+    return pd.Series(_dic)
+
+
+def likelihood(param, data, idx):
+    """
+
+    :param param: med, std
+    :param data: pd.DataFrame with speed(index), pe1, pe2, pe3, pe4
+    :param idx: index from 1 to 4
+    :return:
+    """
+    med, std = param[0], param[1]
+    pe = 'pe{}'.format(idx)
+    temp = 0.0
+
+    for speed, row in data.iterrows():
+        p = lognorm.cdf(speed, std, loc=0, scale=med)
+        if (p > 0) and (p < 1):
+            temp += row[pe] * np.log(p) + (1.0 - row[pe]) * np.log(1 - p)
+    return -1.0*temp
 
 
 def fit_vulnerability_curve(cfg, df_dmg_idx):
@@ -52,7 +86,71 @@ def fit_vulnerability_curve(cfg, df_dmg_idx):
     return fitted_curve
 
 
-def fit_fragility_curves(cfg, df_dmg_idx):
+def fit_fragility_curves(cfg, dmg_idx):
+    """
+
+    Args:
+        cfg:
+        dmg_idx: numpy array
+
+    Returns: dict with keys of damage state
+
+    """
+    logger = logging.getLogger(__name__)
+
+    bounds = cfg.fragility_i_thresholds[:]
+    bounds.append(1.0)
+    bounds.insert(0, 0.0)
+
+    df = pd.DataFrame(dmg_idx).apply(no_within_bounds, args=(bounds,), axis=1)
+    df.index = cfg.wind_speeds
+    df = df.merge(df.apply(compute_pe, args=(cfg.no_models,), axis=1),
+                  left_index=True, right_index=True)
+
+    # calculate damage probability
+    frag_counted = {'OLS': OrderedDict(), 'MLE': OrderedDict()}
+    use_old = False
+    for i, (state, value) in enumerate(cfg.fragility.iterrows(), 1):
+        pe = 'pe{}'.format(i)
+
+        # OLS
+        try:
+            popt, pcov = curve_fit(vulnerability_lognorm, cfg.wind_speeds, df[pe])
+        except RuntimeError as e:
+            logger.warning(e.message + ' at {} damage state fragility fitting'.
+                            format(state))
+        else:
+            _sigma = np.sqrt(np.diag(pcov))
+            frag_counted['OLS'][state] = dict(param1=popt[0],
+                                              param2=popt[1],
+                                              sigma1=_sigma[0],
+                                              sigma2=_sigma[1])
+
+        # MLE
+        lower = df.loc[df[pe] == 0.0].index.min()
+        upper = df[pe].argmax()
+        max_zero = df.loc[df[pe] == 0.0].index.max()
+        med0 = 0.5*(lower + upper)
+        std0 = (upper - max_zero) / 6.0
+        if use_old:
+            bounds_med = (max(lower*0.9, results.x[0]), upper*1.1)
+        else:
+            bounds_med = (lower*0.9, upper*1.1)
+        bounds_sig = tuple(np.array([1.0e-2, 1.2]) * std0)
+
+        results = minimize(likelihood, method='L-BFGS-B', x0=[med0, std0],
+                           args=(df, i,), bounds=[bounds_med, bounds_sig])
+
+        if results.success:
+            frag_counted['MLE'][state] = dict(param1=results.x[0],
+                                              param2=results.x[1])
+            use_old = True
+        else:
+            use_old = False
+    return frag_counted, df
+
+
+def fit_fragility_curves_using_mle(cfg, df_dmg_idx):
     """
 
     Args:
@@ -64,25 +162,46 @@ def fit_fragility_curves(cfg, df_dmg_idx):
     """
     logger = logging.getLogger(__name__)
 
+    bounds = cfg.fragility.threshold.values
+    bounds = np.append(bounds, 1.0)
+    bounds = np.insert(bounds, 0, 0.0)
+
+    df = df_dmg_idx.apply(no_within_bounds, args=(bounds,), axis=1)
+    df['speed'] = cfg.wind_speeds
+    df = df.merge(df.apply(compute_pe, args=(cfg.no_models,), axis=1),
+                  left_index=True, right_index=True)
     # calculate damage probability
-    frag_counted = OrderedDict()
-    for state, value in cfg.fragility.iterrows():
-        counted = (df_dmg_idx > value['threshold']).sum(axis=1) / cfg.no_models
-
-        try:
-            popt, pcov = curve_fit(vulnerability_lognorm, cfg.wind_speeds, counted)
-        except RuntimeError as e:
-            logger.warning(e.message + ' at {} damage state fragility fitting'.
-                            format(state))
+    plt.figure()
+    for i in range(1, 5):
+        pe = 'pe{}'.format(i)
+        lower = df.loc[df[pe] == 0.0, 'speed'].min()
+        upper = df.loc[df[pe].argmax(), 'speed']
+        max_zero = df.loc[df[pe] == 0.0, 'speed'].max()
+        med0 = 0.5*(lower + upper)
+        std0 = (upper - max_zero) / 6.0
+        if i > 1:
+            if results.success:
+                bounds_med = (max(lower*0.9, results.x[0]), upper*1.1)
         else:
-            _sigma = np.sqrt(np.diag(pcov))
-            frag_counted[state] = dict(param1=popt[0],
-                                       param2=popt[1],
-                                       sigma1=_sigma[0],
-                                       sigma2=_sigma[1])
+            bounds_med = (lower*0.9, upper*1.1)
+        bounds_sig = tuple(np.array([1.0e-2, 1.2]) * std0)
 
-    return frag_counted
+        results = minimize(likelihood, method='L-BFGS-B', x0=[med0, std0],
+                           args=(df, i,), bounds=[bounds_med, bounds_sig])
+        if results.success:
+            plt.plot(df.speed, df[pe], 'x')
+            plt.plot(df.speed, lognorm.cdf(df.speed, results.x[1], loc=0, scale=results.x[0]))
 
+        print(bounds_med)
+        print(bounds_sig)
+        print(results.success, results.x)
+
+    plt.savefig('./aaa.png')
+
+    results = minimize(likelihood_multinomial, x0=param0, args=df,
+                       bounds=[bounds_med, bounds_med, bounds_med, bounds_med, bounds_sig],
+                       constraints=constraints)
+    return results
 
 def vulnerability_weibull(x, alpha, beta):
     """Return vulnerability in Weibull CDF

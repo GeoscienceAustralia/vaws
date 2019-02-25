@@ -352,76 +352,90 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
         for col in _array.T:
             plot_wind_event_damage(self.ui.mplvuln, self.cfg.wind_speeds, col)
 
-        with h5py.File(self.cfg.file_results, "r") as f:
+        try:
+            param1 = self.results_dict['vulnerability']['weibull']['param1']
+            param2 = self.results_dict['vulnerability']['weibull']['param2']
+        except KeyError:
+            pass
+        else:
             try:
-                param1 = f['vulnerability']['weibull']['param1'].value
-                param2 = f['vulnerability']['weibull']['param2'].value
-            except KeyError:
-                pass
+                y = vulnerability_weibull(self.cfg.wind_speeds, param1, param2)
+            except KeyError as msg:
+                self.logger.warning(msg)
             else:
-                try:
-                    y = vulnerability_weibull(self.cfg.wind_speeds, param1, param2)
-                except KeyError as msg:
-                    self.logger.warning(msg)
-                else:
-                    plot_fitted_curve(self.ui.mplvuln,
-                                      self.cfg.wind_speeds,
-                                      y,
-                                      col='r',
-                                      label="Weibull")
+                plot_fitted_curve(self.ui.mplvuln,
+                                  self.cfg.wind_speeds,
+                                  y,
+                                  col='r',
+                                  label="Weibull")
 
-                    self.ui.wb_coeff_1.setText('{:.3f}'.format(param1))
-                    self.ui.wb_coeff_2.setText('{:.3f}'.format(param2))
+                self.ui.wb_coeff_1.setText('{:.3f}'.format(param1))
+                self.ui.wb_coeff_2.setText('{:.3f}'.format(param2))
 
+        try:
+            param1 = self.results_dict['vulnerability']['lognorm']['param1']
+            param2 = self.results_dict['vulnerability']['lognorm']['param2']
+        except KeyError:
+            pass
+        else:
             try:
-                param1 = f['vulnerability']['lognorm']['param1'].value
-                param2 = f['vulnerability']['lognorm']['param2'].value
-            except KeyError:
-                pass
+                y = vulnerability_lognorm(self.cfg.wind_speeds, param1, param2)
+            except KeyError as msg:
+                self.logger.warning(msg)
             else:
-                try:
-                    y = vulnerability_lognorm(self.cfg.wind_speeds, param1, param2)
-                except KeyError as msg:
-                    self.logger.warning(msg)
-                else:
-                    plot_fitted_curve(self.ui.mplvuln,
-                                      self.cfg.wind_speeds,
-                                      y,
-                                      col='b',
-                                      label="Lognormal")
+                plot_fitted_curve(self.ui.mplvuln,
+                                  self.cfg.wind_speeds,
+                                  y,
+                                  col='b',
+                                  label="Lognormal")
 
-                    self.ui.ln_coeff_1.setText('{:.3f}'.format(param1))
-                    self.ui.ln_coeff_2.setText('{:.3f}'.format(param2))
+                self.ui.ln_coeff_1.setText('{:.3f}'.format(param1))
+                self.ui.ln_coeff_2.setText('{:.3f}'.format(param2))
 
-            self.ui.mplvuln.axes.legend(loc=2,
-                                        fancybox=True,
-                                        shadow=True,
-                                        fontsize='small')
+        self.ui.mplvuln.axes.legend(loc=2,
+                                    fancybox=True,
+                                    shadow=True,
+                                    fontsize='small')
 
-            self.ui.mplvuln.axes.figure.canvas.draw()
+        self.ui.mplvuln.axes.figure.canvas.draw()
 
     def updateFragCurve(self):
 
-        _array = self.results_dict['house']['di']
         plot_fragility_show(self.ui.mplfrag, self.cfg.no_models,
                             self.cfg.wind_speeds[0], self.cfg.wind_speeds[-1])
 
         self.ui.mplfrag.axes.hold(True)
-        self.ui.mplfrag.axes.plot(self.cfg.wind_speeds, _array, 'k+', 0.3)
 
-        with h5py.File(self.cfg.file_results, "r") as f:
+        df_counted = self.results_dict['fragility']['counted'].values
 
-            for ds, value in self.cfg.fragility.iterrows():
+        for i, (ds, value) in enumerate(self.cfg.fragility.iterrows(), 1):
+
+            self.ui.mplfrag.axes.plot(self.cfg.wind_speeds,
+                                      df_counted[:, len(self.cfg.fragility_i_states) + i],
+                                      '{}+'.format(value['color']))
+
+            try:
+                param1 = self.results_dict['fragility']['MLE'][ds]['param1']
+                param2 = self.results_dict['fragility']['MLE'][ds]['param2']
+            except KeyError:
                 try:
-                    param1 = f['fragility'][ds]['param1'].value
-                    param2 = f['fragility'][ds]['param2'].value
+                    param1 = self.results_dict['fragility']['OLS'][ds]['param1']
+                    param2 = self.results_dict['fragility']['OLS'][ds]['param2']
                 except KeyError as msg:
-                    self.logger.warning(msg)
+                    self.logger.warning('Value of {} can not be determined'.format(ds))
+                    print(self.results_dict['fragility'])
                 else:
-                    y = vulnerability_lognorm(self.cfg.wind_speeds, param1, param2)
+                    y = vulnerability_lognorm(self.cfg.wind_speeds, param1,
+                                              param2)
 
-                    plot_fitted_curve(self.ui.mplfrag, self.cfg.wind_speeds, y,
+                    plot_fitted_curve(self.ui.mplfrag, self.cfg.wind_speeds,
+                                      y,
                                       col=value['color'], label=ds)
+            else:
+                y = vulnerability_lognorm(self.cfg.wind_speeds, param1, param2)
+
+                plot_fitted_curve(self.ui.mplfrag, self.cfg.wind_speeds, y,
+                                  col=value['color'], label=ds)
 
         self.ui.mplfrag.axes.legend(loc=2,
                                     fancybox=True,
