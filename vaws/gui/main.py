@@ -48,6 +48,9 @@ SCENARIOS_DIR = os.path.join(SCENARIOS_DIR, 'scenarios')
 CONFIG_TEMPL = "Scenarios (*.cfg)"
 DEFAULT_SCENARIO = os.path.join(SCENARIOS_DIR, 'default', 'default.cfg')
 
+PRESSURE_KEYS = ['cpe_mean', 'cpe_str_mean', 'cpe_eave_mean', 'cpi_alpha',
+                 'edge']
+
 warnings.filterwarnings("ignore")
 
 
@@ -231,7 +234,6 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
 
     def init_pressure(self):
 
-        pressure_keys = ['cpe_mean', 'cpe_str_mean', 'cpe_eave_mean', 'cpi_alpha', 'edge']
         self.ui.mplpressure.figure.clear()
         self.ui.mplpressure.axes.cla()
         self.ui.mplpressure.axes.figure.canvas.draw()
@@ -241,15 +243,15 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
                         SIGNAL("currentIndexChanged(QString)"),
                         self.updatePressurePlot)
         self.ui.comboBox_pressure.clear()
-        self.ui.comboBox_pressure.addItems(pressure_keys)
+        self.ui.comboBox_pressure.addItems(PRESSURE_KEYS)
         self.connect(self.ui.comboBox_pressure,
                      SIGNAL("currentIndexChanged(QString)"),
                      self.updatePressurePlot)
 
-        if str(self.ui.comboBox_pressure.currentText()) == pressure_keys[0]:
+        if str(self.ui.comboBox_pressure.currentText()) == PRESSURE_KEYS[0]:
             self.updatePressurePlot()
         else:
-            self.ui.comboBox_pressure.setValue(pressure_keys[0])
+            self.ui.comboBox_pressure.setValue(PRESSURE_KEYS[0])
 
         # init combobox2
         self.disconnect(self.ui.comboBox2_pressure,
@@ -406,36 +408,41 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
 
         self.ui.mplfrag.axes.hold(True)
 
-        df_counted = self.results_dict['fragility']['counted'].values
+        try:
+            df_counted = self.results_dict['fragility']['counted'].values
 
-        for i, (ds, value) in enumerate(self.cfg.fragility.iterrows(), 1):
+        except KeyError:
+            self.logger.warning('Fragility curve can not be constructed')
 
-            self.ui.mplfrag.axes.plot(self.cfg.wind_speeds,
-                                      df_counted[:, len(self.cfg.fragility_i_states) + i],
-                                      '{}+'.format(value['color']))
+        else:
 
-            try:
-                param1 = self.results_dict['fragility']['MLE'][ds]['param1']
-                param2 = self.results_dict['fragility']['MLE'][ds]['param2']
-            except KeyError:
+            for i, (ds, value) in enumerate(self.cfg.fragility.iterrows(), 1):
+
+                self.ui.mplfrag.axes.plot(self.cfg.wind_speeds,
+                                          df_counted[:, len(self.cfg.fragility_i_states) + i],
+                                          '{}+'.format(value['color']))
+
                 try:
-                    param1 = self.results_dict['fragility']['OLS'][ds]['param1']
-                    param2 = self.results_dict['fragility']['OLS'][ds]['param2']
-                except KeyError as msg:
-                    self.logger.warning('Value of {} can not be determined'.format(ds))
-                    print(self.results_dict['fragility'])
+                    param1 = self.results_dict['fragility']['MLE'][ds]['param1']
+                    param2 = self.results_dict['fragility']['MLE'][ds]['param2']
+                except KeyError:
+                    try:
+                        param1 = self.results_dict['fragility']['OLS'][ds]['param1']
+                        param2 = self.results_dict['fragility']['OLS'][ds]['param2']
+                    except KeyError as msg:
+                        self.logger.warning('Value of {} can not be determined'.format(ds))
+                    else:
+                        y = vulnerability_lognorm(self.cfg.wind_speeds, param1,
+                                                  param2)
+
+                        plot_fitted_curve(self.ui.mplfrag, self.cfg.wind_speeds,
+                                          y,
+                                          col=value['color'], label=ds)
                 else:
-                    y = vulnerability_lognorm(self.cfg.wind_speeds, param1,
-                                              param2)
+                    y = vulnerability_lognorm(self.cfg.wind_speeds, param1, param2)
 
-                    plot_fitted_curve(self.ui.mplfrag, self.cfg.wind_speeds,
-                                      y,
+                    plot_fitted_curve(self.ui.mplfrag, self.cfg.wind_speeds, y,
                                       col=value['color'], label=ds)
-            else:
-                y = vulnerability_lognorm(self.cfg.wind_speeds, param1, param2)
-
-                plot_fitted_curve(self.ui.mplfrag, self.cfg.wind_speeds, y,
-                                  col=value['color'], label=ds)
 
         self.ui.mplfrag.axes.legend(loc=2,
                                     fancybox=True,
@@ -790,7 +797,7 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
                                v_min=v_min,
                                v_max=v_max)
         except ValueError:
-            self.logger.warning('Can not plot {}'.format(pressure_key))
+            self.logger.warning('Cannot plot {}'.format(pressure_key))
 
     def cpi_plot_change(self):
         if self.has_run:
@@ -1406,6 +1413,7 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
             self.cfg = Config(fname)
             self.init_terrain_category()
             self.init_debris_region()
+            self.init_pressure()
             self.init_influence_and_patch()
             self.update_ui_from_config()
             self.statusBar().showMessage('Ready')
