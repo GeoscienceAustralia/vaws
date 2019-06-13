@@ -104,7 +104,7 @@ class MyTestCase(unittest.TestCase):
         combination_factor = house.combination_factor
 
         # compute pz using constant cpe
-        for _zone in house.zones.itervalues():
+        for _, _zone in house.zones.items():
             _zone._cpe = _zone.cpe_mean[0]
             _zone._cpe_eave = _zone.cpe_eave_mean[0]
             _zone._cpe_str = _zone.cpe_str_mean[0]
@@ -116,7 +116,7 @@ class MyTestCase(unittest.TestCase):
             self.assertAlmostEqual(_zone.pressure_cpe_str, ref_cpe_str, places=4)
 
         # compute dead_load and strength using constant values
-        for _conn in house.connections.itervalues():
+        for _, _conn in house.connections.items():
             _conn.lognormal_dead_load = _conn.lognormal_dead_load[0], 0.0
             _conn.lognormal_strength = _conn.lognormal_strength[0], 0.0
             _conn.mean_factor = 1.0

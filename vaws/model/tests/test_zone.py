@@ -1,6 +1,6 @@
 import unittest
 import numpy as np
-import StringIO
+from io import StringIO
 import pandas as pd
 
 from vaws.model.zone import Zone, str2num, get_grid_from_zone_location, get_zone_location_from_grid
@@ -34,12 +34,11 @@ class MyTestCase(unittest.TestCase):
 
         cls.zone = Zone(name='N12', **item)
 
-
     def test_get_grid(self):
         col, row = get_grid_from_zone_location(self.zone.name)
-        self.assertEquals(col, 13)  # N
-        self.assertEquals(row, 11)  # 12
-        # self.assertEquals(self.zone.get_zone_location_from_grid((col, row)),
+        self.assertEqual(col, 13)  # N
+        self.assertEqual(row, 11)  # 12
+        # self.assertEqual(self.zone.get_zone_location_from_grid((col, row)),
         #                  self.zone.name)
 
     # def test_is_wall(self):
@@ -71,7 +70,7 @@ class MyTestCase(unittest.TestCase):
 
     def test_set_differential_shieding(self):
 
-        reference_data = StringIO.StringIO("""Differential shielding flag,Building spacing,Ms,Zone_edge_flag,Expected factor,Comments
+        reference_data = StringIO("""Differential shielding flag,Building spacing,Ms,Zone_edge_flag,Expected factor,Comments
 TRUE, 40, 1, 1, 1, No shielding
 TRUE, 40, 1, 0, 1, No shielding
 TRUE, 40, 0.95, 1, 1, JDH recommendation 1 - retain shielding for leading edges of upwind roofs

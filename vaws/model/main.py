@@ -87,12 +87,12 @@ def init_bucket(cfg):
             bucket['house'][att] = np.zeros(
                 shape=(cfg.wind_speed_steps, cfg.no_models), dtype=float)
         else:
-            if att in cfg.att_non_float:
-                bucket['house'][att] = np.zeros(shape=(1, cfg.no_models),
-                                                dtype=str)
-            else:
-                bucket['house'][att] = np.zeros(shape=(1, cfg.no_models),
-                                                dtype=float)
+            # if att in cfg.att_non_float:
+            #     bucket['house'][att] = np.zeros(shape=(1, cfg.no_models),
+            #                                     dtype=str)
+            # else:
+            bucket['house'][att] = np.zeros(shape=(1, cfg.no_models),
+                                            dtype=float)
 
     # components: group, connection, zone, coverage
     for comp in cfg.list_components:
@@ -206,7 +206,11 @@ def save_results_to_files(cfg, bucket):
             group = hf.create_group('fragility')
             bucket['fragility'] = {}
             group.create_dataset('counted', data=df_counted)
-            group['counted'].attrs['column_names'] = df_counted.columns.tolist()
+            try:
+                group['counted'].attrs.create('column_names', df_counted.columns.tolist())
+            except TypeError:
+                print(df_counted.columns.tolist())
+
             bucket['fragility']['counted'] = df_counted
 
             for fitting in ['MLE', 'OLS']:

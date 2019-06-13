@@ -47,7 +47,7 @@ from __future__ import division, print_function
 import os
 import sys
 import logging
-import ConfigParser
+import configparser
 import pandas as pd
 
 from collections import OrderedDict, defaultdict
@@ -128,11 +128,11 @@ class Config(object):
     # time variant: 1
     house_bucket = [('profile_index', 0),
                     ('wind_dir_index', 0),
-                    ('construction_level', 0),
+                    # ('construction_level', 0),
                     ('terrain_height_multiplier', 0),
                     ('shielding_multiplier', 0),
-                    ('mean_factor', 0),
-                    ('cv_factor', 0),
+                    # ('mean_factor', 0),
+                    # ('cv_factor', 0),
                     ('qz', 1),
                     ('cpi', 1),
                     ('collapse', 0),
@@ -146,7 +146,7 @@ class Config(object):
                     ('breached_area', 1),
                     ('mean_no_debris_items', 1)]
 
-    att_non_float = ['construction_level']
+    # att_non_float = ['construction_level']
 
     # model and wind dependent attributes
     list_components = ['group', 'connection', 'zone', 'coverage', 'debris']
@@ -210,11 +210,11 @@ class Config(object):
         self.profile_heights = None
         self.wind_dir_index = None
 
-        self.construction_levels = {}
-        self.construction_levels_levels = ['medium']
-        self.construction_levels_probs = [1.0]
-        self.construction_levels_mean_factors = [1.0]
-        self.construction_levels_cv_factors = [0.58]
+        # self.construction_levels = {}
+        # self.construction_levels_levels = ['medium']
+        # self.construction_levels_probs = [1.0]
+        # self.construction_levels_mean_factors = [1.0]
+        # self.construction_levels_cv_factors = [0.58]
 
         self.fragility = None
         self.fragility_i_states = ['slight', 'medium', 'severe', 'complete']
@@ -336,14 +336,14 @@ class Config(object):
 
     def read_config(self):
 
-        conf = ConfigParser.ConfigParser()
+        conf = configparser.ConfigParser()
         conf.optionxform = str
         conf.read(self.file_cfg)
 
         self.read_main(conf, key='main')
         self.read_options(conf, key='options')
         self.read_heatmap(conf, key='heatmap')
-        self.read_construction_levels(conf, key='construction_levels')
+        # self.read_construction_levels(conf, key='construction_levels')
         self.read_fragility_thresholds(conf, key='fragility_thresholds')
         self.read_debris(conf, key='debris')
         self.read_water_ingress(conf, key='water_ingress')
@@ -379,7 +379,7 @@ class Config(object):
 
         self.set_wawter_ingress()
         self.set_fragility_thresholds()
-        self.set_construction_levels()
+        # self.set_construction_levels()
 
     def read_options(self, conf, key):
         for sub_key, value in conf.items(key):
@@ -399,7 +399,7 @@ class Config(object):
         self.no_models = conf.getint(key, 'no_models')
         try:
             self.random_seed = conf.getint(key, 'random_seed')
-        except ConfigParser.NoOptionError:
+        except configparser.NoOptionError:
             self.random_seed = 0
         self.wind_speed_min = conf.getfloat(key, 'wind_speed_min')
         self.wind_speed_max = conf.getfloat(key, 'wind_speed_max')
@@ -610,21 +610,21 @@ class Config(object):
                                       columns=['threshold'])
         self.fragility['color'] = ['b', 'g', 'y', 'r']
 
-    def read_construction_levels(self, conf, key):
-        try:
-            for k in ['levels', 'probs', 'mean_factors', 'cv_factors']:
-                setattr(self, 'construction_levels_{}'.format(k),
-                        self.read_column_separated_entry(conf.get(key, k)))
-        except ConfigParser.NoSectionError:
-            self.logger.warning('construction level medium is used')
+    # def read_construction_levels(self, conf, key):
+    #     try:
+    #         for k in ['levels', 'probs', 'mean_factors', 'cv_factors']:
+    #             setattr(self, 'construction_levels_{}'.format(k),
+    #                     self.read_column_separated_entry(conf.get(key, k)))
+    #     except configparser.NoSectionError:
+    #         self.logger.warning('construction level medium is used')
 
-    def set_construction_levels(self):
-        for level, mean, cov in zip(
-                self.construction_levels_levels,
-                self.construction_levels_mean_factors,
-                self.construction_levels_cv_factors):
-            self.construction_levels[level] = {'mean_factor': mean,
-                                               'cv_factor': cov}
+    # def set_construction_levels(self):
+    #     for level, mean, cov in zip(
+    #             self.construction_levels_levels,
+    #             self.construction_levels_mean_factors,
+    #             self.construction_levels_cv_factors):
+    #         self.construction_levels[level] = {'mean_factor': mean,
+    #                                            'cv_factor': cov}
 
     @staticmethod
     def read_column_separated_entry(value):
@@ -637,7 +637,7 @@ class Config(object):
         try:
             for item in ['vmin', 'vmax', 'vstep']:
                 setattr(self, 'heatmap_{}'.format(item), conf.getfloat(key, item))
-        except ConfigParser.NoSectionError:
+        except configparser.NoSectionError:
             self.logger.warning('default value is used for heatmap')
 
     @staticmethod
@@ -714,7 +714,7 @@ class Config(object):
             self.logger.error(msg, exc_info=True)
         else:
             # asert check values >= 0
-            not_good = df_types.loc[(df_types < 0).any(axis=1)].index.tolist()
+            not_good = df_types.loc[(df_types < 0).sum(axis=1) > 1].index.tolist()
             if not_good:
                 raise Exception('Invalid value(s) for type(s): {}'.format(
                     not_good))
@@ -837,12 +837,12 @@ class Config(object):
             self.costing_to_group['Wall debris damage'] = ['debris']
 
         # tidy up
-        for key in self.costings.keys():
+        for key in list(self.costings):
             if key not in self.costing_to_group:
                 del self.costings[key]
                 self.damage_order_by_water_ingress.remove(key)
 
-        for key in self.water_ingress_costings.keys():
+        for key in list(self.water_ingress_costings):
             if (key != 'WI only') and (key not in self.costing_to_group):
                 del self.water_ingress_costings[key]
 
@@ -910,7 +910,7 @@ class Config(object):
 
         msg = 'Coordinates should consist of at least 3 points: {}'
         dump = []
-        with open(file_zones, 'rU') as f:
+        with open(file_zones, 'r', newline=None) as f:
             next(f)  # skip the first line
             for line in f:
                 fields = line.strip().rstrip(',').split(',')
@@ -971,7 +971,7 @@ class Config(object):
 
         msg = 'Coordinates should consist of at least 3 points: {}'
         dump = []
-        with open(file_connections, 'rU') as f:
+        with open(file_connections, 'r', newline=None) as f:
             next(f)  # skip the first line
             for line in f:
                 fields = line.strip().rstrip(',').split(',')
@@ -1100,7 +1100,7 @@ class Config(object):
     @staticmethod
     def read_front_facing_walls(filename):
         _dic = {}
-        with open(filename, 'rU') as f:
+        with open(filename, 'r', newline=None) as f:
             next(f)  # skip the first line
             for line in f:
                 fields = line.strip().rstrip(',').split(',')
@@ -1128,7 +1128,7 @@ class Config(object):
 
         """
         _dic = {}
-        with open(filename, 'rU') as f:
+        with open(filename, 'r', newline=None) as f:
             next(f)  # skip the first line
             for line in f:
                 fields = line.strip().rstrip(',').split(',')
@@ -1148,7 +1148,7 @@ class Config(object):
         """
         _dic = {}
         msg = "infl coeff should be between -10 and 10, not {}"
-        with open(filename, 'rU') as f:
+        with open(filename, 'r', newline=None) as f:
             next(f)  # skip the first line
             for line in f:
                 key = None
@@ -1183,7 +1183,7 @@ class Config(object):
         """
         _dic = {}
         msg = "infl coeff should be between -10 and 10, not {}"
-        with open(filename, 'rU') as f:
+        with open(filename, 'r', newline=None) as f:
             next(f)  # skip the first line
             for line in f:
                 damaged_conn = None
@@ -1219,6 +1219,7 @@ class Config(object):
             assert value in self.debris_regions
         except AssertionError:
             self.logger.error('region_name {} is not defined'.format(value))
+            raise AssertionError('region_name {} is not defined'.format(value))
         else:
             self.region_name = value
 
@@ -1228,6 +1229,7 @@ class Config(object):
             df = pd.read_csv(_file, skiprows=1, header=None, index_col=0)
         except (IOError, ValueError):
             self.logger.error('invalid wind_profiles file: {}'.format(_file))
+            raise IOError('invalid wind_profiles file: {}'.format(_file))
         else:
             self.profile_heights = df.index.tolist()
             self.wind_profiles = df.to_dict('list')
@@ -1257,10 +1259,11 @@ class Config(object):
         except ValueError:
             self.logger.warning('8(i.e., RANDOM) is set for wind_dir_index')
             self.wind_dir_index = 8
+            raise ValueError('8(i.e., RANDOM) is set for wind_dir_index')
 
     def save_config(self, filename=None):
 
-        config = ConfigParser.RawConfigParser()
+        config = configparser.RawConfigParser()
 
         key = 'main'
         config.add_section(key)
@@ -1306,16 +1309,16 @@ class Config(object):
         # config.set(key, 'flight_time_mean', self.flight_time_mean)
         # config.set(key, 'flight_time_stddev', self.flight_time_stddev)
 
-        key = 'construction_levels'
-        config.add_section(key)
-        config.set(key, 'levels',
-                   ', '.join(self.construction_levels_levels))
-        config.set(key, 'probs',
-                   ', '.join(str(x) for x in self.construction_levels_probs))
-        config.set(key, 'mean_factors',
-                   ', '.join(str(x) for x in self.construction_levels_mean_factors))
-        config.set(key, 'cv_factors',
-                   ', '.join(str(x) for x in self.construction_levels_cv_factors))
+        # key = 'construction_levels'
+        # config.add_section(key)
+        # config.set(key, 'levels',
+        #            ', '.join(self.construction_levels_levels))
+        # config.set(key, 'probs',
+        #            ', '.join(str(x) for x in self.construction_levels_probs))
+        # config.set(key, 'mean_factors',
+        #            ', '.join(str(x) for x in self.construction_levels_mean_factors))
+        # config.set(key, 'cv_factors',
+        #            ', '.join(str(x) for x in self.construction_levels_cv_factors))
 
         key = 'water_ingress'
         config.add_section(key)

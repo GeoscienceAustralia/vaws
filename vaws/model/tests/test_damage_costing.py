@@ -2,7 +2,7 @@
 import unittest
 import pandas as pd
 import os
-import StringIO
+from io import StringIO
 import numpy as np
 import matplotlib.pyplot as plt
 
@@ -111,7 +111,7 @@ class WaterIngressTestCase(unittest.TestCase):
         self.assertEqual(self.cfg.damage_order_by_water_ingress,
                          damage_order)
 
-        repair_cost_by_group = StringIO.StringIO("""sheeting,batten,rafter,expected
+        repair_cost_by_group = StringIO("""sheeting,batten,rafter,expected
         0.0,0.0,0.0,WI only
         0.2,0.0,0.0,Loss of roof sheeting
         0.0,0.2,0.0,Loss of roof sheeting & purlins
@@ -152,7 +152,7 @@ class WaterIngressTestCase(unittest.TestCase):
 
         for wi, expected in dic_wi.items():
             idx = np.argsort(np.abs(_df.index - wi))[0]
-            self.assertEquals(_df.iloc[idx].name, expected)
+            self.assertEqual(_df.iloc[idx].name, expected)
 
     def test_water_ingress_costings(self):
 

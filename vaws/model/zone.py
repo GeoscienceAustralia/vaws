@@ -7,7 +7,7 @@
         - calculates Cpe pressure load from wind pressure.
 """
 
-from stats import sample_gev
+from vaws.model.stats import sample_gev
 
 
 class Zone(object):
