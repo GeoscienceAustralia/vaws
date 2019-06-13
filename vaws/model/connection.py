@@ -74,8 +74,8 @@ class Connection(object):
         self.costing_area = None
         self.lognormal_strength = None
         self.lognormal_dead_load = None
-        self.mean_factor = None
-        self.cv_factor = None
+        # self.mean_factor = None
+        # self.cv_factor = None
         self.rnd_state = None
 
         for key, value in kwargs.items():
@@ -125,8 +125,8 @@ class Connection(object):
         """
         if self._strength is None:
             mu, std = compute_arithmetic_mean_stddev(*self.lognormal_strength)
-            mu *= self.mean_factor
-            std *= self.cv_factor * self.mean_factor
+            # mu *= self.mean_factor
+            # std *= self.cv_factor * self.mean_factor
             self._strength = sample_lognorm_given_mean_stddev(
                 mu, std, self.rnd_state)
         return self._strength

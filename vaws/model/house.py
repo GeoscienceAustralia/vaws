@@ -47,8 +47,8 @@ class House(object):
         self.big_a_str = None
         self.big_b_str = None
 
-        self._cv_factor = None
-        self._mean_factor = None
+        # self._cv_factor = None
+        # self._mean_factor = None
         self._total_area_by_group = None
 
         # debris related
@@ -61,7 +61,7 @@ class House(object):
 
         # random variables
         self._wind_dir_index = None  # 0 to 7
-        self._construction_level = None
+        # self._construction_level = None
         self._profile_index = None
         self._terrain_height_multiplier = None
         self._shielding_multiplier = None
@@ -203,19 +203,19 @@ class House(object):
         """
         return 1.0 if abs(self.cpi) < 0.2 else 0.9
 
-    @property
-    def mean_factor(self):
-        if self._mean_factor is None:
-           self._mean_factor = self.cfg.construction_levels[
-               self.construction_level]['mean_factor']
-        return self._mean_factor
+    # @property
+    # def mean_factor(self):
+    #     if self._mean_factor is None:
+    #        self._mean_factor = self.cfg.construction_levels[
+    #            self.construction_level]['mean_factor']
+    #     return self._mean_factor
 
-    @property
-    def cv_factor(self):
-        if self._cv_factor is None:
-            self._cv_factor = self.cfg.construction_levels[
-                self.construction_level]['cv_factor']
-        return self._cv_factor
+    # @property
+    # def cv_factor(self):
+    #     if self._cv_factor is None:
+    #         self._cv_factor = self.cfg.construction_levels[
+    #             self.construction_level]['cv_factor']
+    #     return self._cv_factor
 
     @property
     def terrain_height_multiplier(self):
@@ -315,7 +315,7 @@ class House(object):
     def wind_dir_index(self):
         if self._wind_dir_index is None:
             if self.cfg.wind_dir_index == 8:
-                self._wind_dir_index = self.rnd_state.random_integers(0, 7)
+                self._wind_dir_index = self.rnd_state.randint(0, 7 + 1)
             else:
                 self._wind_dir_index = self.cfg.wind_dir_index
         return self._wind_dir_index
@@ -323,22 +323,22 @@ class House(object):
     @property
     def profile_index(self):
         if self._profile_index is None:
-            self._profile_index = self.rnd_state.random_integers(
-                1, len(self.cfg.wind_profiles))
+            self._profile_index = self.rnd_state.randint(
+                1, len(self.cfg.wind_profiles) + 1)
         return self._profile_index
 
-    @property
-    def construction_level(self):
-        """
-
-        Returns: construction_level
-
-        """
-        if self._construction_level is None:
-            self._construction_level = self.rnd_state.choice(
-                self.cfg.construction_levels_levels,
-                p=self.cfg.construction_levels_probs)
-        return self._construction_level
+    # @property
+    # def construction_level(self):
+    #     """
+    #
+    #     Returns: construction_level
+    #
+    #     """
+    #     if self._construction_level is None:
+    #         self._construction_level = self.rnd_state.choice(
+    #             self.cfg.construction_levels_levels,
+    #             p=self.cfg.construction_levels_probs)
+    #     return self._construction_level
 
     @property
     def cpi(self):
@@ -762,10 +762,13 @@ class House(object):
             group.damage_grid = self.cfg.damage_grid_by_sub_group[sub_group_name]
             group.costing = self.assign_costing(dic_group['damage_scenario'])
 
-            added = pd.DataFrame({'mean_factor': self.mean_factor,
-                                  'cv_factor': self.cv_factor,
-                                  'rnd_state': self.rnd_state},
+            added = pd.DataFrame({'rnd_state': self.rnd_state},
                                  index=connections_by_sub_group.index)
+            #
+            # added = pd.DataFrame({'mean_factor': self.mean_factor,
+            #                       'cv_factor': self.cv_factor,
+            #                       'rnd_state': self.rnd_state},
+            #                      index=connections_by_sub_group.index)
 
             df_connections = connections_by_sub_group.join(added)
             group.connections = df_connections.to_dict('index')

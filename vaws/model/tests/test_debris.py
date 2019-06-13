@@ -4,7 +4,7 @@ import os
 # import copy
 import numpy as np
 # import pandas as pd
-import parmap
+# import parmap
 import matplotlib.pyplot as plt
 from matplotlib import patches
 import logging
@@ -1092,7 +1092,7 @@ class MyTestCase(unittest.TestCase):
                                   angle=debris_angle,
                                   bldg_spacing=building_spacing,
                                   flag_staggered=False)
-        self.assertEquals(len(sources1), 13)
+        self.assertEqual(len(sources1), 13)
 
         plt.figure()
         source_x, source_y = [], []
@@ -1117,7 +1117,7 @@ class MyTestCase(unittest.TestCase):
                                   angle=debris_angle,
                                   bldg_spacing=building_spacing,
                                   flag_staggered=True)
-        self.assertEquals(len(sources2), 15)
+        self.assertEqual(len(sources2), 15)
 
         plt.figure()
         source_x, source_y = [], []

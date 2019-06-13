@@ -73,9 +73,9 @@ def fit_vulnerability_curve(cfg, df_dmg_idx):
             try:
                 popt, pcov = curve_fit(eval(func_), xdata, ydata)
             except RuntimeError as e:
-                logger.warning(e.message + ' at {} curve fitting'.format(key))
+                logger.warning(str(e) + ' at {} curve fitting'.format(key))
             except OptimizeWarning as e:
-                logger.warning(e.message + ' at {} curve fitting'.format(key))
+                logger.warning(str(e) + ' at {} curve fitting'.format(key))
             else:
                 sigma = np.sqrt(np.diag(pcov))
                 fitted_curve[key] = dict(param1=popt[0],
@@ -117,7 +117,7 @@ def fit_fragility_curves(cfg, dmg_idx):
         try:
             popt, pcov = curve_fit(vulnerability_lognorm, cfg.wind_speeds, df[pe])
         except RuntimeError as e:
-            logger.warning(e.message + ' at {} damage state fragility fitting'.
+            logger.warning(str(e) + ' at {} damage state fragility fitting'.
                             format(state))
         else:
             _sigma = np.sqrt(np.diag(pcov))
