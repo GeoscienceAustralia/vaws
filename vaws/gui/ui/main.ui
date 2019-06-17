@@ -26,7 +26,7 @@
    <string>Component Wind Simulator</string>
   </property>
   <property name="windowIcon">
-   <iconset resource="../windsim.qrc">
+   <iconset resource="../vaws.qrc">
     <normaloff>:/icons/images/home2.png</normaloff>:/icons/images/home2.png</iconset>
   </property>
   <widget class="QWidget" name="centralwidget">
@@ -464,170 +464,6 @@
            <widget class="QLabel" name="label_24">
             <property name="text">
              <string>Source items</string>
-            </property>
-            <property name="alignment">
-             <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-            </property>
-           </widget>
-          </item>
-         </layout>
-        </widget>
-        <widget class="QWidget" name="construction_tab">
-         <attribute name="title">
-          <string>Construction</string>
-         </attribute>
-         <layout class="QGridLayout" name="gridLayout">
-          <item row="1" column="0">
-           <widget class="QLabel" name="label_18">
-            <property name="sizePolicy">
-             <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
-              <horstretch>0</horstretch>
-              <verstretch>0</verstretch>
-             </sizepolicy>
-            </property>
-            <property name="text">
-             <string>Probabilities</string>
-            </property>
-            <property name="alignment">
-             <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-            </property>
-           </widget>
-          </item>
-          <item row="4" column="0">
-           <widget class="QLabel" name="label_26">
-            <property name="sizePolicy">
-             <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
-              <horstretch>0</horstretch>
-              <verstretch>0</verstretch>
-             </sizepolicy>
-            </property>
-            <property name="text">
-             <string/>
-            </property>
-            <property name="alignment">
-             <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-            </property>
-           </widget>
-          </item>
-          <item row="2" column="1">
-           <widget class="QLineEdit" name="constMeans"/>
-          </item>
-          <item row="7" column="0">
-           <widget class="QLabel" name="label_31">
-            <property name="sizePolicy">
-             <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
-              <horstretch>0</horstretch>
-              <verstretch>0</verstretch>
-             </sizepolicy>
-            </property>
-            <property name="text">
-             <string/>
-            </property>
-            <property name="alignment">
-             <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-            </property>
-           </widget>
-          </item>
-          <item row="0" column="1">
-           <widget class="QLineEdit" name="constLevels"/>
-          </item>
-          <item row="1" column="1">
-           <widget class="QLineEdit" name="constProbs"/>
-          </item>
-          <item row="3" column="0">
-           <widget class="QLabel" name="label_10">
-            <property name="sizePolicy">
-             <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
-              <horstretch>0</horstretch>
-              <verstretch>0</verstretch>
-             </sizepolicy>
-            </property>
-            <property name="text">
-             <string>Cov factors</string>
-            </property>
-            <property name="alignment">
-             <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-            </property>
-           </widget>
-          </item>
-          <item row="5" column="0">
-           <widget class="QLabel" name="label_39">
-            <property name="sizePolicy">
-             <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
-              <horstretch>0</horstretch>
-              <verstretch>0</verstretch>
-             </sizepolicy>
-            </property>
-            <property name="text">
-             <string/>
-            </property>
-            <property name="alignment">
-             <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-            </property>
-           </widget>
-          </item>
-          <item row="2" column="0">
-           <widget class="QLabel" name="label_9">
-            <property name="sizePolicy">
-             <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
-              <horstretch>0</horstretch>
-              <verstretch>0</verstretch>
-             </sizepolicy>
-            </property>
-            <property name="text">
-             <string>Mean factors</string>
-            </property>
-            <property name="alignment">
-             <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-            </property>
-           </widget>
-          </item>
-          <item row="3" column="1">
-           <widget class="QLineEdit" name="constCovs"/>
-          </item>
-          <item row="4" column="1">
-           <layout class="QHBoxLayout" name="horizontalLayout_20">
-            <item>
-             <widget class="QPushButton" name="testConstructionButton">
-              <property name="sizePolicy">
-               <sizepolicy hsizetype="Minimum" vsizetype="Minimum">
-                <horstretch>0</horstretch>
-                <verstretch>7</verstretch>
-               </sizepolicy>
-              </property>
-              <property name="text">
-               <string>Test</string>
-              </property>
-             </widget>
-            </item>
-           </layout>
-          </item>
-          <item row="0" column="0">
-           <widget class="QLabel" name="label_8">
-            <property name="sizePolicy">
-             <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
-              <horstretch>0</horstretch>
-              <verstretch>0</verstretch>
-             </sizepolicy>
-            </property>
-            <property name="text">
-             <string>Levels</string>
-            </property>
-            <property name="alignment">
-             <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-            </property>
-           </widget>
-          </item>
-          <item row="6" column="0">
-           <widget class="QLabel" name="label_32">
-            <property name="sizePolicy">
-             <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
-              <horstretch>0</horstretch>
-              <verstretch>0</verstretch>
-             </sizepolicy>
-            </property>
-            <property name="text">
-             <string/>
             </property>
             <property name="alignment">
              <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
@@ -1460,7 +1296,7 @@
        </sizepolicy>
       </property>
       <property name="currentIndex">
-       <number>0</number>
+       <number>5</number>
       </property>
       <widget class="QWidget" name="tab_cpe">
        <attribute name="title">
@@ -1867,7 +1703,7 @@
            <enum>QTabWidget::East</enum>
           </property>
           <property name="currentIndex">
-           <number>4</number>
+           <number>0</number>
           </property>
           <widget class="QWidget" name="tab_2">
            <attribute name="title">
@@ -1878,6 +1714,13 @@
              <layout class="QVBoxLayout" name="verticalLayout_2">
               <item>
                <layout class="QHBoxLayout" name="horizontalLayout_8">
+                <item>
+                 <widget class="QCheckBox" name="ln_checkBox">
+                  <property name="text">
+                   <string/>
+                  </property>
+                 </widget>
+                </item>
                 <item>
                  <widget class="QLabel" name="label_29">
                   <property name="text">
@@ -1890,6 +1733,13 @@
                 </item>
                 <item>
                  <widget class="QLineEdit" name="ln_coeff_2"/>
+                </item>
+                <item>
+                 <widget class="QCheckBox" name="wb_checkBox">
+                  <property name="text">
+                   <string/>
+                  </property>
+                 </widget>
                 </item>
                 <item>
                  <widget class="QLabel" name="label_30">
@@ -2063,7 +1913,7 @@
   </widget>
   <action name="actionOpen_Scenario">
    <property name="icon">
-    <iconset resource="../windsim.qrc">
+    <iconset resource="../vaws.qrc">
      <normaloff>:/icons/images/fileopen.png</normaloff>:/icons/images/fileopen.png</iconset>
    </property>
    <property name="text">
@@ -2075,7 +1925,7 @@
     <bool>false</bool>
    </property>
    <property name="icon">
-    <iconset resource="../windsim.qrc">
+    <iconset resource="../vaws.qrc">
      <normaloff>:/icons/images/forward.png</normaloff>:/icons/images/forward.png</iconset>
    </property>
    <property name="text">
@@ -2087,7 +1937,7 @@
     <bool>false</bool>
    </property>
    <property name="icon">
-    <iconset resource="../windsim.qrc">
+    <iconset resource="../vaws.qrc">
      <normaloff>:/icons/images/filequit.png</normaloff>:/icons/images/filequit.png</iconset>
    </property>
    <property name="text">
@@ -2096,7 +1946,7 @@
   </action>
   <action name="actionSave_Scenario">
    <property name="icon">
-    <iconset resource="../windsim.qrc">
+    <iconset resource="../vaws.qrc">
      <normaloff>:/icons/images/filesave.png</normaloff>:/icons/images/filesave.png</iconset>
    </property>
    <property name="text">
@@ -2105,7 +1955,7 @@
   </action>
   <action name="actionNew_Scenario">
    <property name="icon">
-    <iconset resource="../windsim.qrc">
+    <iconset resource="../vaws.qrc">
      <normaloff>:/icons/images/filenew.png</normaloff>:/icons/images/filenew.png</iconset>
    </property>
    <property name="text">
@@ -2114,7 +1964,7 @@
   </action>
   <action name="actionSave_Scenario_As">
    <property name="icon">
-    <iconset resource="../windsim.qrc">
+    <iconset resource="../vaws.qrc">
      <normaloff>:/icons/images/filesaveas.png</normaloff>:/icons/images/filesaveas.png</iconset>
    </property>
    <property name="text">
@@ -2123,7 +1973,7 @@
   </action>
   <action name="actionHouse_Info">
    <property name="icon">
-    <iconset resource="../windsim.qrc">
+    <iconset resource="../vaws.qrc">
      <normaloff>:/icons/images/home2.png</normaloff>:/icons/images/home2.png</iconset>
    </property>
    <property name="text">
@@ -2132,7 +1982,7 @@
   </action>
   <action name="actionTest_Debris_Settings">
    <property name="icon">
-    <iconset resource="../windsim.qrc">
+    <iconset resource="../vaws.qrc">
      <normaloff>:/icons/images/fan.png</normaloff>:/icons/images/fan.png</iconset>
    </property>
    <property name="text">
@@ -2141,7 +1991,7 @@
   </action>
   <action name="actionInfo">
    <property name="icon">
-    <iconset resource="../windsim.qrc">
+    <iconset resource="../vaws.qrc">
      <normaloff>:/icons/images/editzoom.png</normaloff>:/icons/images/editzoom.png</iconset>
    </property>
    <property name="text">
@@ -2195,7 +2045,7 @@
   <tabstop>seedRandom</tabstop>
  </tabstops>
  <resources>
-  <include location="../windsim.qrc"/>
+  <include location="../vaws.qrc"/>
  </resources>
  <connections/>
 </ui>

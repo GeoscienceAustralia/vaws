@@ -1,14 +1,15 @@
-from house_ui import Ui_Dialog
-import mixins 
 
-from PyQt4.QtCore import *
-from PyQt4.QtGui import *
+from PyQt5.QtCore import Qt
+from PyQt5.QtWidgets import QDialog, QTreeWidgetItem, QDialogButtonBox
+
+from vaws.gui.house_ui import Ui_Dialog
+from vaws.gui.mixins import PersistSizePosMixin
 
 
-class HouseViewer(QDialog, Ui_Dialog, mixins.PersistSizePosMixin):
+class HouseViewer(QDialog, Ui_Dialog, PersistSizePosMixin):
     def __init__(self, cfg, parent=None):
         super(HouseViewer, self).__init__(parent)
-        mixins.PersistSizePosMixin.__init__(self, "HouseViewer")
+        PersistSizePosMixin.__init__(self, "HouseViewer")
         self.setAttribute(Qt.WA_DeleteOnClose)
         self.ui = Ui_Dialog()
         self.ui.setupUi(self)

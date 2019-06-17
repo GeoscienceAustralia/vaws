@@ -7,7 +7,7 @@ from matplotlib.collections import PatchCollection
 import logging
 from numpy import ceil, linspace
 
-
+'''
 class PlotFlyoverCallback(object):
     def __init__(self, axes, data, statusbar, num_cols, num_rows):
         self.axes = axes
@@ -27,6 +27,7 @@ class PlotFlyoverCallback(object):
             return
         locStr = 'Average damage @ %.3f m/sec for Zone %s' % (self.data[row, col], zone.getZoneLocFromGrid(col, row))
         self.statusbar.showMessage(locStr)
+'''
 
 
 def plot_damage_show(fig, grouped, values_grid, xlim_max, ylim_max,
@@ -230,43 +231,40 @@ def plot_pressure_show(fig, groups, values, xlim_max, ylim_max, v_min, v_max, v_
     fig.canvas.draw()
 
 
-def plot_wind_event_damage(mp_widget, v, di):
-    mp_widget.axes.scatter(v, di, s=8, marker='+', label='_nolegend_')
+def plot_wind_event_damage(ax, v, di):
+    ax.scatter(v, di, s=8, c='k', marker='+', label='_nolegend_', alpha=0.8)
 
 
-def plot_wind_event_mean(mp_widget, v, di):
-    mp_widget.axes.scatter(v, di, s=20, c='r', marker='o', label="Means")
+def plot_wind_event_mean(ax, v, di):
+    ax.scatter(v, di, s=20, c='r', marker='o', label="Mean")
 
 
-def plot_fitted_curve(mp_widget, v, di, label="Fitted Curve", alpha=1.0, col='b'):
-    mp_widget.axes.plot(v, di, label=label, alpha=alpha, c=col, linestyle='-')
+def plot_fitted_curve(ax, v, di, label="Fitted Curve", alpha=1.0, col='b'):
+    ax.plot(v, di, label=label, alpha=alpha, c=col, linestyle='-')
 
 
-def plot_model_curve(mp_widget, v, di, label="Model Curve"):
-    mp_widget.axes.plot(v, di, label=label)
+def plot_model_curve(ax, v, di, label="Model Curve"):
+    ax.plot(v, di, label=label)
 
 
-def plot_wind_event_show(mp_widget, num_iters, Vmin, Vmax):
-    mp_widget.axes.set_title('Vulnerability Curve (n = %d)' % (num_iters))
-    mp_widget.axes.set_xlabel('Impact Wind speed (m/s)')
-    mp_widget.axes.set_ylabel('Damage Index')
-    mp_widget.axes.set_xlim((Vmin, Vmax))
-    mp_widget.axes.set_ylim((0.0, 1.1))
-    mp_widget.axes.figure.canvas.draw()
+def plot_wind_event_show(ax, num_iters, Vmin, Vmax):
+    ax.set_title('Vulnerability Curve (n = %d)' % (num_iters))
+    ax.set_xlabel('Impact Wind speed (m/s)')
+    ax.set_ylabel('Damage Index')
+    ax.set_xlim((Vmin, Vmax))
+    ax.set_ylim((0.0, 1.1))
+    # mp_widget.figure.canvas.draw()
 
 
-def plot_fragility_show(mp_widget, num_iters, Vmin, Vmax):
-    mp_widget.axes.set_title('Fragility Curve (n = {})'.format(num_iters))
-    mp_widget.axes.set_xlabel('Impact Wind speed (m/s)')
-    mp_widget.axes.set_ylabel('Probability of Damage State')
-    mp_widget.axes.set_xlim((Vmin, Vmax))
-    mp_widget.axes.set_ylim((0.0, 1.0))
-    mp_widget.axes.legend(loc=2,
-                          fancybox=True,
-                          shadow=True,
-                          fontsize='small')
+def plot_fragility_show(ax, num_iters, Vmin, Vmax):
 
-    mp_widget.axes.figure.canvas.draw()
+    ax.set_title('Fragility Curve (n = {})'.format(num_iters))
+    ax.set_xlabel('Impact Wind speed (m/s)')
+    ax.set_ylabel('Probability of Damage State')
+    ax.set_xlim((Vmin, Vmax))
+    ax.set_ylim((0.0, 1.0))
+    # ax.legend(loc=2, fancybox=True, shadow=True, fontsize='small')
+
 
 
 # def format_coord(x, y):

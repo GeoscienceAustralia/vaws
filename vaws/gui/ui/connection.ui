@@ -14,7 +14,7 @@
    <string>Connection Viewer</string>
   </property>
   <property name="windowIcon">
-   <iconset resource="../windsim.qrc">
+   <iconset>
     <normaloff>:/icons/images/editresize.png</normaloff>:/icons/images/editresize.png</iconset>
   </property>
   <layout class="QVBoxLayout" name="verticalLayout">
@@ -266,9 +266,7 @@
   <tabstop>connection_group</tabstop>
   <tabstop>connection_type</tabstop>
  </tabstops>
- <resources>
-  <include location="../windsim.qrc"/>
- </resources>
+ <resources/>
  <connections>
   <connection>
    <sender>buttonBox</sender>
