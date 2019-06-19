@@ -1,7 +1,7 @@
 
 package:
   name: "vaws"
-  version: "2.3"
+  version: "3.0"
 #  version: {{ environ['VERSION'] }}
 
 source:
@@ -22,62 +22,61 @@ requirements:
 
   run:
     - python
-    - cairo >=1.12.*
-    - backports_abc >=0.5.*  # [win]
-    - ca-certificates >=2017.1.* # [win]
-    - certifi >=2017.1.* # [win]
-    - cycler >=0.9.*
-    - dateutil >2.4.* # [unix]
-    - fontconfig >=2.11.* # [unix]
-    - freetype >=2.5.*
-    - functools32 >=3.2.* # [unix, win]
-    - h5py >=2.7.*
-    - hdf5 >=1.8.* # [unix]
-    - geos >=3.5.1 # [win]
+    - blas >=1.0 # [win]
+    - ca-certificates >=2019.3.* # [osx]
+    - ca-certificates >=2019.6.* # [win]
+    - certifi >=2019.3.*
+    - cycler >=0.10.*
+    - freetype >=2.10.*
+    - geos >=3.7.*
+    - h5py >=2.8.*
+    - hdf5 >=1.10.*
+    - icc_rt >=2019.0.* # [win]
     - icu >=58.1 # [win]
-    - jpeg >=9b # [win]
-    - libgcc >=5.2.* # [linux]
-    - libgfortran >=3.0.* # [not win]
-    - libiconv >=1.1
-    - libpng >=1.6.*
-    - libtiff >=4.0.6 # [win]
-    - libxml2 >=2.9.*
-    - matplotlib >=1.5.* # [not win]
-    - matplotlib >=2.0.0 # [win]
-    - mkl >=11.3.* # [not win]
-    - mkl >=2017.0.1 # [win]
-    - nose >=1.3.*
-    - numexpr >=2.5.*
-    - numpy >=1.11.*
-    - openblas >=0.2.* # [not win]
-    - openssl >=1.0.*
-    - pandas >=0.19.*
-    - pip >=8.1.*
-    - pixman >=0.32.*
-    - pycairo >=1.10.* # [unix, win]
-    - pyparsing >=2.0.*
-    - pyqt ==4.11.4 # [not win]
-    - pyqt <5.0 # [win]
-    - pytables >=3.3.*
-    - python >=2.7.*
-    - python-dateutil >=2.4.*
-    - pytz >=2015.*
-    - qt <5.0
-    - readline >=6.* # [not win]
-    - scipy >=0.17.*
-    - setuptools >=20.2.*
-    - shapely
-    - singledispatch >=3.4.0.3 # [win]
-    - sip >=4.16.*
-    - six >=1.10.*
-    - sqlite >=3.9.*
-    - ssl_match_hostname >=3.5.* # [win]
-    - tk >=8.5.*
-    - tornado >=4.4.3 # [win]
-    - vc >=9 # [win]
-    - vs2008_runtime >=9.00.30729.5054 # [win]
-    - wheel >=0.29.*
+    - icu >=58.2 # [osx]
+    - intel-openmp >=2019.* # [win]
+    - jpeg >=9c
+    - kiwisolver >=1.1.*
+    - libblas >=3.8.*
+    - libcblas >=3.8.*
+    - libcxx >=8.0.* # [osx]
+    - libcxxabi >=8.0.* # [osx]
+    - libffi >=3.2.* # [osx]
+    - libgfortran >=3.0.* [osx]
+    - liblapack >=3.8.*
+    - libpng >=1.6.* 
+    - matplotlib >=3.0.*
+    - matplotlib-base >=3.0.*
+    - mkl >=2019.4 # [win]
+    - ncurses >=6.1.* # [osx]
+    - numpy >=1.16.*
+    - openblas >=0.3.* # [osx]
+    - openssl >=1.1.*
+    - pandas >=0.23.*
+    - pip >=19.1.*
+    - pyparsing >=2.4.*
+    - pyqt >=5.6.* # [osx]
+    - pyqt >=5.9.* # [win]
+    - pyreadline >=2.1 # [win]
+    - python >=3.6.7
+    - python-dateutil >=2.8.*
+    - pytz >=2019.1
+    - qt >=5.6.* # [osx]
+    - qt >=5.9.* # [win]
+    - readline >=7.0.* # [osx]
+    - scipy >=1.2.*
+    - setuptools >=41.0.*
+    - shapely >=1.6.*
+    - sip >=4.19.*
+    - six >=1.12.*
+    - sqlite >=3.28.*
+    - tk >=8.6.* # [osx]
+    - tornado >=6.0.*
+    - vc >=14.* # [win]
+    - vs2015_runtime >=14.15.* # [win]
+    - wheel >=0.33.*
     - wincertstore >=0.2 # [win]
+    - xz >=5.2.* [osx]
     - zlib >=1.2.*
 
 about:
