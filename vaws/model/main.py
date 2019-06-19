@@ -57,7 +57,7 @@ def simulate_wind_damage_to_houses(cfg, call_back=None):
             results_by_speed.append(result)
 
         bucket = update_bucket(cfg, bucket, results_by_speed, ispeed)
-        damage_increment = compute_damage_increment(bucket, ispeed)
+        damage_increment = compute_damage_increment(cfg, bucket, ispeed)
 
         logger.debug('damage index increment {}'.format(damage_increment))
         percent_done = 100.0 * (ispeed + 1) / len(cfg.wind_speeds)
@@ -87,10 +87,6 @@ def init_bucket(cfg):
             bucket['house'][att] = np.zeros(
                 shape=(cfg.wind_speed_steps, cfg.no_models), dtype=float)
         else:
-            # if att in cfg.att_non_float:
-            #     bucket['house'][att] = np.zeros(shape=(1, cfg.no_models),
-            #                                     dtype=str)
-            # else:
             bucket['house'][att] = np.zeros(shape=(1, cfg.no_models),
                                             dtype=float)
 
@@ -150,20 +146,27 @@ def update_bucket(cfg, bucket, results_by_speed, ispeed):
     return bucket
 
 
-def compute_damage_increment(bucket, ispeed):
+def compute_damage_increment(cfg, bucket, ispeed):
 
     logger = logging.getLogger(__name__)
 
     # compute damage index increment
     damage_increment = 0.0  # default value
 
-    if ispeed:
-        damage_increment = (bucket['house']['di'][ispeed].mean(axis=0) -
-                            bucket['house']['di'][ispeed - 1].mean(axis=0))
+    if cfg.flags['debris_vulnerability']:
 
-        if damage_increment < 0:
-            logger.warning('damage increment is less than zero')
-            damage_increment = 0.0
+        if ispeed:
+            damage_increment = cfg.debris_vulnerability.cdf(cfg.wind_speeds[ispeed]) - \
+                               cfg.debris_vulnerability.cdf(cfg.wind_speeds[ispeed-1])
+    else:
+
+        if ispeed:
+            damage_increment = (bucket['house']['di'][ispeed].mean(axis=0) -
+                                bucket['house']['di'][ispeed - 1].mean(axis=0))
+
+            if damage_increment < 0:
+                logger.warning('damage increment is less than zero')
+                damage_increment = 0.0
 
     return damage_increment
 
@@ -206,11 +209,8 @@ def save_results_to_files(cfg, bucket):
             group = hf.create_group('fragility')
             bucket['fragility'] = {}
             group.create_dataset('counted', data=df_counted)
-            try:
-                group['counted'].attrs.create('column_names', df_counted.columns.tolist())
-            except TypeError:
-                print(df_counted.columns.tolist())
-
+            column_names = ','.join([x for x in df_counted.columns.tolist()])
+            group['counted'].attrs['column_names'] = column_names
             bucket['fragility']['counted'] = df_counted
 
             for fitting in ['MLE', 'OLS']:
@@ -337,8 +337,8 @@ def main():
         conf = Config(file_cfg=options.config_file)
         _ = simulate_wind_damage_to_houses(conf)
     else:
-        print('Error: Must provide a config file to run')
         parser.print_help()
+
 
 if __name__ == '__main__':
     main()

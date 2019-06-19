@@ -128,7 +128,7 @@ def fit_fragility_curves(cfg, dmg_idx):
 
         # MLE
         lower = df.loc[df[pe] == 0.0].index.min()
-        upper = df[pe].argmax()
+        upper = df[pe].idxmax()
         max_zero = df.loc[df[pe] == 0.0].index.max()
         med0 = 0.5*(lower + upper)
         std0 = (upper - max_zero) / 6.0
@@ -175,7 +175,7 @@ def fit_fragility_curves_using_mle(cfg, df_dmg_idx):
     for i in range(1, 5):
         pe = 'pe{}'.format(i)
         lower = df.loc[df[pe] == 0.0, 'speed'].min()
-        upper = df.loc[df[pe].argmax(), 'speed']
+        upper = df.loc[df[pe].idxmax(), 'speed']
         max_zero = df.loc[df[pe] == 0.0, 'speed'].max()
         med0 = 0.5*(lower + upper)
         std0 = (upper - max_zero) / 6.0
@@ -202,6 +202,7 @@ def fit_fragility_curves_using_mle(cfg, df_dmg_idx):
                        bounds=[bounds_med, bounds_med, bounds_med, bounds_med, bounds_sig],
                        constraints=constraints)
     return results
+
 
 def vulnerability_weibull(x, alpha, beta):
     """Return vulnerability in Weibull CDF

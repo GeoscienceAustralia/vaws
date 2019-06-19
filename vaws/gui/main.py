@@ -18,7 +18,7 @@ from PyQt5.QtWidgets import QProgressBar, QLabel, QMainWindow, QApplication, QTa
                         QTableWidgetItem, QFileDialog, \
                         QMessageBox, QTreeWidgetItem, QInputDialog, QSplashScreen
 
-from vaws.model.constants import WIND_DIR, DEBRIS_TYPES_KEYS, VUL_DIC, BLDG_SPACING
+from vaws.model.constants import WIND_DIR, DEBRIS_TYPES_KEYS, VUL_DIC, BLDG_SPACING, DEBRIS_VULNERABILITY
 from vaws.model.debris import generate_debris_items
 from vaws.gui.house import HouseViewer
 from vaws.model.curve import vulnerability_lognorm, vulnerability_weibull, vulnerability_weibull_pdf
@@ -160,6 +160,9 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
         self.init_debris_region()
         self.ui.buildingSpacing.clear()
         self.ui.buildingSpacing.addItems([str(x) for x in BLDG_SPACING])
+
+        # init combobox
+        self.init_debrisvuln()
 
         # RHS window
         self.init_pressure()
@@ -338,6 +341,23 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
     def showHouseInfoDlg(self):
         dlg = HouseViewer(self.cfg)
         dlg.exec_()
+
+    def init_debrisvuln(self):
+
+        try:
+            self.ui.comboBox_debrisVul.currentIndexChanged.disconnect(
+                self.updateDebrisVuln)
+        except TypeError:
+            pass
+        self.ui.comboBox_debrisVul.clear()
+        self.ui.comboBox_debrisVul.addItems(DEBRIS_VULNERABILITY)
+        self.ui.comboBox_debrisVul.currentIndexChanged.connect(self.updateDebrisVuln)
+
+    def updateDebrisVuln(self):
+
+        self.ui.debrisVul_param1.clear()
+        self.ui.debrisVul_param2.clear()
+
 
     def updateDebrisRegionsTable(self):
 
@@ -1182,7 +1202,7 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
         self.update_config_from_ui()
         current_parent, _ = os.path.split(self.cfg.path_cfg)
 
-        fname = QFileDialog.getSaveFileName(self, "VAWS - Save Scenario",
+        fname, _ = QFileDialog.getSaveFileName(self, "VAWS - Save Scenario",
                                             current_parent, CONFIG_TEMPL)
         if len(fname) > 0:
             if "." not in fname:
@@ -1277,6 +1297,19 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
             self.ui.staggeredDebrisSources.setChecked(self.cfg.staggered_sources)
             self.ui.debris.setChecked(self.cfg.flags['debris'])
 
+            if self.cfg.flags['debris_vulnerability']:
+                idx = self.ui.comboBox_debrisVul.findText(
+                    self.cfg.debris_vuln_input['function'].capitalize())
+                if self.ui.comboBox_debrisVul.currentIndex() == idx:
+                    self.updateDebrisVuln()
+                else:
+                    self.ui.comboBox_debrisVul.setCurrentIndex(idx)
+
+                self.ui.debrisVul_param1.setText(
+                    '{}'.format(self.cfg.debris_vuln_input['param1']))
+                self.ui.debrisVul_param2.setText(
+                    '{}'.format(self.cfg.debris_vuln_input['param2']))
+
             # construction levels
             # self.ui.constructionEnabled.setChecked(self.cfg.flags['construction_levels'])
             # self.ui.constLevels.setText(
@@ -1348,6 +1381,15 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
             new_cfg.boundary_radius = float(self.ui.debrisBoundary.text())
         new_cfg.staggered_sources = self.ui.staggeredDebrisSources.isChecked()
 
+        if self.ui.comboBox_debrisVul.currentText() == 'N/A':
+            new_cfg.flags['debris_vulnerability'] = False
+            new_cfg.debris_vuln_input = {}
+        else:
+            new_cfg.flags['debris_vulnerability'] = True
+            new_cfg.debris_vuln_input['function'] = self.ui.comboBox_debrisVul.currentText()
+            new_cfg.debris_vuln_input['param1'] = float(self.ui.debrisVul_param1.text())
+            new_cfg.debris_vuln_input['param2'] = float(self.ui.debrisVul_param2.text())
+
         new_cfg.flags['water_ingress'] = self.ui.waterEnabled.isChecked()
         new_cfg.flags['differential_shielding'] = self.ui.diffShielding.isChecked()
         new_cfg.flags['debris'] = self.ui.debris.isChecked()
@@ -1397,6 +1439,7 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
             self.cfg = Config(fname)
             self.init_terrain_category()
             self.init_debris_region()
+            self.init_debrisvuln()
             self.init_pressure()
             self.init_influence_and_patch()
             self.update_ui_from_config()

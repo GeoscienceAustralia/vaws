@@ -1234,6 +1234,6 @@ class TestScenario27(unittest.TestCase):
                    list_connections=range(1, 36))
 
 if __name__ == '__main__':
-    suite = unittest.TestLoader().loadTestsFromTestCase(TestScenario1)
+    suite = unittest.TestLoader().loadTestsFromTestCase(TestScenario27)
     unittest.TextTestRunner(verbosity=2).run(suite)
     #unittest.main(verbosity=2)

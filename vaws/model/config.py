@@ -88,6 +88,11 @@ FILE_FOOTPRINT = 'footprint.csv'
 FILE_FRONT_FACING_WALLS = 'front_facing_walls.csv'
 FILE_DEBRIS = 'debris.csv'
 FILE_RESULTS = 'results.h5'
+FLAGS_OPTIONS = ['water_ingress',
+                 'differential_shielding',
+                 'debris',
+                 'debris_vulnerability',
+                 'save_heatmaps']
 
 
 class Config(object):
@@ -239,6 +244,8 @@ class Config(object):
         self.debris_types = {}
         self.debris_types_ratio = []
         self.footprint = None
+        self.debris_vuln_input = {}
+        self.debris_vulnerability = None
 
         # house data
         self.house = None
@@ -365,6 +372,8 @@ class Config(object):
         self.set_influence_patches()
         self.set_costings(df_groups)
 
+        self.set_debris_vulnerability()
+
         if self.flags['debris']:
 
             from vaws.model.debris import create_sources
@@ -382,8 +391,11 @@ class Config(object):
         # self.set_construction_levels()
 
     def read_options(self, conf, key):
-        for sub_key, value in conf.items(key):
-            self.flags[sub_key] = conf.getboolean(key, sub_key)
+        for sub_key in FLAGS_OPTIONS:
+            try:
+                self.flags[sub_key] = conf.getboolean(key, sub_key)
+            except configparser.NoOptionError:
+                self.flags[sub_key] = False
 
     def read_main(self, conf, key):
         """
@@ -560,6 +572,22 @@ class Config(object):
                     self.coverages['cpe_mean'] = pd.Series(
                         coverages_cpe_mean.to_dict('index'))
 
+    def set_debris_vulnerability(self):
+
+        if self.flags['debris_vulnerability']:
+            func = self.debris_vuln_input['function'].capitalize()
+            param1 = self.debris_vuln_input['param1']
+            param2 = self.debris_vuln_input['param2']
+            if func == 'Lognorm':
+                self.debris_vulnerability = stats.lognorm(
+                    s=param2, loc=0, scale=param1)
+            elif func == 'Weibull':
+                self.debris_vulnerability = stats.weibull_min(
+                    c=1 / param1, loc=0, scale=np.exp(param2))
+            else:
+                self.logger.critical(
+                    'Invalid function defined in debris_vulnerability section')
+
     def read_debris(self, conf, key):
 
         # global data
@@ -584,6 +612,15 @@ class Config(object):
         self.set_region_name(conf.get(key, 'region_name'))
 
         self.set_footprint()
+
+        key = 'debris_vulnerability'
+        if self.flags[key]:
+            if conf.has_section(key):
+                self.debris_vuln_input['function'] = conf.get(key, 'function')
+                self.debris_vuln_input['param1'] = conf.getfloat(key, 'param1')
+                self.debris_vuln_input['param2'] = conf.getfloat(key, 'param2')
+            else:
+                self.logger.critical('debris_vulnerability section is missing')
 
     def set_footprint(self):
         try:
@@ -1328,6 +1365,12 @@ class Config(object):
                    ', '.join(str(x) for x in self.water_ingress_i_speed_at_zero_wi))
         config.set(key, 'speed_at_full_wi',
                    ', '.join(str(x) for x in self.water_ingress_i_speed_at_full_wi))
+
+        key = 'debris_vulnerability'
+        if self.flags[key]:
+            config.add_section(key)
+            for k, v in self.debris_vuln_input.items():
+                config.set(key, k, v)
 
         if filename:
             with open(filename, 'w') as configfile:
