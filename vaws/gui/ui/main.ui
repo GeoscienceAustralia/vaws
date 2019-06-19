@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1280</width>
-    <height>702</height>
+    <width>1219</width>
+    <height>723</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -26,20 +26,32 @@
    <string>Component Wind Simulator</string>
   </property>
   <property name="windowIcon">
-   <iconset resource="../windsim.qrc">
+   <iconset resource="../vaws.qrc">
     <normaloff>:/icons/images/home2.png</normaloff>:/icons/images/home2.png</iconset>
   </property>
   <widget class="QWidget" name="centralwidget">
-   <layout class="QGridLayout" name="gridLayout_6">
+   <layout class="QGridLayout" name="gridLayout">
     <item row="0" column="0">
-     <layout class="QVBoxLayout" name="verticalLayout">
-      <item>
+     <widget class="QSplitter" name="splitter_2">
+      <property name="orientation">
+       <enum>Qt::Horizontal</enum>
+      </property>
+      <widget class="QSplitter" name="splitter">
+       <property name="orientation">
+        <enum>Qt::Vertical</enum>
+       </property>
        <widget class="QTabWidget" name="scen_tab">
         <property name="sizePolicy">
-         <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+         <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
           <horstretch>0</horstretch>
           <verstretch>0</verstretch>
          </sizepolicy>
+        </property>
+        <property name="minimumSize">
+         <size>
+          <width>639</width>
+          <height>0</height>
+         </size>
         </property>
         <property name="maximumSize">
          <size>
@@ -48,7 +60,7 @@
          </size>
         </property>
         <property name="currentIndex">
-         <number>0</number>
+         <number>1</number>
         </property>
         <widget class="QWidget" name="scenario_tab">
          <attribute name="title">
@@ -237,58 +249,6 @@
           <string>Debris</string>
          </attribute>
          <layout class="QGridLayout" name="gridLayout_5">
-          <item row="14" column="0">
-           <widget class="QLabel" name="label_2">
-            <property name="text">
-             <string>Boundary</string>
-            </property>
-            <property name="alignment">
-             <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-            </property>
-           </widget>
-          </item>
-          <item row="16" column="1">
-           <layout class="QHBoxLayout" name="horizontalLayout_18">
-            <item>
-             <widget class="QCheckBox" name="debris">
-              <property name="sizePolicy">
-               <sizepolicy hsizetype="Minimum" vsizetype="Minimum">
-                <horstretch>0</horstretch>
-                <verstretch>0</verstretch>
-               </sizepolicy>
-              </property>
-              <property name="acceptDrops">
-               <bool>false</bool>
-              </property>
-              <property name="accessibleDescription">
-               <string/>
-              </property>
-              <property name="layoutDirection">
-               <enum>Qt::LeftToRight</enum>
-              </property>
-              <property name="text">
-               <string>Enabled</string>
-              </property>
-             </widget>
-            </item>
-            <item>
-             <widget class="QPushButton" name="testDebrisButton">
-              <property name="sizePolicy">
-               <sizepolicy hsizetype="Minimum" vsizetype="Minimum">
-                <horstretch>0</horstretch>
-                <verstretch>0</verstretch>
-               </sizepolicy>
-              </property>
-              <property name="layoutDirection">
-               <enum>Qt::LeftToRight</enum>
-              </property>
-              <property name="text">
-               <string>Test</string>
-              </property>
-             </widget>
-            </item>
-           </layout>
-          </item>
           <item row="9" column="0">
            <widget class="QLabel" name="label_21">
             <property name="text">
@@ -341,27 +301,53 @@
           <item row="9" column="1">
            <widget class="QComboBox" name="debrisRegion"/>
           </item>
-          <item row="15" column="1">
-           <widget class="QCheckBox" name="staggeredDebrisSources">
-            <property name="text">
-             <string/>
-            </property>
-           </widget>
+          <item row="12" column="1">
+           <layout class="QHBoxLayout" name="horizontalLayout_22">
+            <item>
+             <widget class="QSlider" name="debrisAngle">
+              <property name="minimum">
+               <number>20</number>
+              </property>
+              <property name="maximum">
+               <number>90</number>
+              </property>
+              <property name="value">
+               <number>90</number>
+              </property>
+              <property name="orientation">
+               <enum>Qt::Horizontal</enum>
+              </property>
+              <property name="tickPosition">
+               <enum>QSlider::NoTicks</enum>
+              </property>
+              <property name="tickInterval">
+               <number>0</number>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QLabel" name="debrisAngleLabel">
+              <property name="text">
+               <string>0</string>
+              </property>
+             </widget>
+            </item>
+           </layout>
           </item>
-          <item row="15" column="0">
-           <widget class="QLabel" name="label_4">
+          <item row="10" column="0">
+           <widget class="QLabel" name="label_19">
             <property name="text">
-             <string>Staggered sources</string>
+             <string>Building spacing</string>
             </property>
             <property name="alignment">
              <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
             </property>
            </widget>
           </item>
-          <item row="11" column="0">
-           <widget class="QLabel" name="label_22">
+          <item row="12" column="0">
+           <widget class="QLabel" name="label_23">
             <property name="text">
-             <string>Radius</string>
+             <string>Angle</string>
             </property>
             <property name="alignment">
              <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
@@ -401,54 +387,63 @@
             </item>
            </layout>
           </item>
-          <item row="10" column="0">
-           <widget class="QLabel" name="label_19">
+          <item row="11" column="0">
+           <widget class="QLabel" name="label_22">
             <property name="text">
-             <string>Building spacing</string>
+             <string>Radius</string>
             </property>
             <property name="alignment">
              <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
             </property>
            </widget>
           </item>
-          <item row="12" column="0">
-           <widget class="QLabel" name="label_23">
+          <item row="14" column="0">
+           <widget class="QLabel" name="label_2">
             <property name="text">
-             <string>Angle</string>
+             <string>Boundary</string>
             </property>
             <property name="alignment">
              <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
             </property>
            </widget>
           </item>
-          <item row="12" column="1">
-           <layout class="QHBoxLayout" name="horizontalLayout_22">
+          <item row="18" column="1">
+           <layout class="QHBoxLayout" name="horizontalLayout_18">
             <item>
-             <widget class="QSlider" name="debrisAngle">
-              <property name="minimum">
-               <number>20</number>
+             <widget class="QCheckBox" name="debris">
+              <property name="sizePolicy">
+               <sizepolicy hsizetype="Minimum" vsizetype="Minimum">
+                <horstretch>0</horstretch>
+                <verstretch>0</verstretch>
+               </sizepolicy>
               </property>
-              <property name="maximum">
-               <number>90</number>
+              <property name="acceptDrops">
+               <bool>false</bool>
               </property>
-              <property name="value">
-               <number>90</number>
+              <property name="accessibleDescription">
+               <string/>
               </property>
-              <property name="orientation">
-               <enum>Qt::Horizontal</enum>
+              <property name="layoutDirection">
+               <enum>Qt::LeftToRight</enum>
               </property>
-              <property name="tickPosition">
-               <enum>QSlider::NoTicks</enum>
-              </property>
-              <property name="tickInterval">
-               <number>0</number>
+              <property name="text">
+               <string>Enabled</string>
               </property>
              </widget>
             </item>
             <item>
-             <widget class="QLabel" name="debrisAngleLabel">
+             <widget class="QPushButton" name="testDebrisButton">
+              <property name="sizePolicy">
+               <sizepolicy hsizetype="Minimum" vsizetype="Minimum">
+                <horstretch>0</horstretch>
+                <verstretch>0</verstretch>
+               </sizepolicy>
+              </property>
+              <property name="layoutDirection">
+               <enum>Qt::LeftToRight</enum>
+              </property>
               <property name="text">
-               <string>0</string>
+               <string>Test</string>
               </property>
              </widget>
             </item>
@@ -457,8 +452,12 @@
           <item row="14" column="1">
            <widget class="QLineEdit" name="debrisBoundary"/>
           </item>
-          <item row="10" column="1">
-           <widget class="QComboBox" name="buildingSpacing"/>
+          <item row="15" column="1">
+           <widget class="QCheckBox" name="staggeredDebrisSources">
+            <property name="text">
+             <string/>
+            </property>
+           </widget>
           </item>
           <item row="13" column="0">
            <widget class="QLabel" name="label_24">
@@ -470,167 +469,86 @@
             </property>
            </widget>
           </item>
-         </layout>
-        </widget>
-        <widget class="QWidget" name="construction_tab">
-         <attribute name="title">
-          <string>Construction</string>
-         </attribute>
-         <layout class="QGridLayout" name="gridLayout">
-          <item row="1" column="0">
-           <widget class="QLabel" name="label_18">
-            <property name="sizePolicy">
-             <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
-              <horstretch>0</horstretch>
-              <verstretch>0</verstretch>
-             </sizepolicy>
-            </property>
+          <item row="15" column="0">
+           <widget class="QLabel" name="label_4">
             <property name="text">
-             <string>Probabilities</string>
+             <string>Staggered sources</string>
             </property>
             <property name="alignment">
              <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
             </property>
            </widget>
           </item>
-          <item row="4" column="0">
-           <widget class="QLabel" name="label_26">
-            <property name="sizePolicy">
-             <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
-              <horstretch>0</horstretch>
-              <verstretch>0</verstretch>
-             </sizepolicy>
-            </property>
-            <property name="text">
-             <string/>
-            </property>
-            <property name="alignment">
-             <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-            </property>
-           </widget>
+          <item row="10" column="1">
+           <widget class="QComboBox" name="buildingSpacing"/>
           </item>
-          <item row="2" column="1">
-           <widget class="QLineEdit" name="constMeans"/>
-          </item>
-          <item row="7" column="0">
-           <widget class="QLabel" name="label_31">
-            <property name="sizePolicy">
-             <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
-              <horstretch>0</horstretch>
-              <verstretch>0</verstretch>
-             </sizepolicy>
-            </property>
-            <property name="text">
-             <string/>
-            </property>
-            <property name="alignment">
-             <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-            </property>
-           </widget>
-          </item>
-          <item row="0" column="1">
-           <widget class="QLineEdit" name="constLevels"/>
-          </item>
-          <item row="1" column="1">
-           <widget class="QLineEdit" name="constProbs"/>
-          </item>
-          <item row="3" column="0">
-           <widget class="QLabel" name="label_10">
-            <property name="sizePolicy">
-             <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
-              <horstretch>0</horstretch>
-              <verstretch>0</verstretch>
-             </sizepolicy>
-            </property>
-            <property name="text">
-             <string>Cov factors</string>
-            </property>
-            <property name="alignment">
-             <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-            </property>
-           </widget>
-          </item>
-          <item row="5" column="0">
-           <widget class="QLabel" name="label_39">
-            <property name="sizePolicy">
-             <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
-              <horstretch>0</horstretch>
-              <verstretch>0</verstretch>
-             </sizepolicy>
-            </property>
-            <property name="text">
-             <string/>
-            </property>
-            <property name="alignment">
-             <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-            </property>
-           </widget>
-          </item>
-          <item row="2" column="0">
-           <widget class="QLabel" name="label_9">
-            <property name="sizePolicy">
-             <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
-              <horstretch>0</horstretch>
-              <verstretch>0</verstretch>
-             </sizepolicy>
-            </property>
-            <property name="text">
-             <string>Mean factors</string>
-            </property>
-            <property name="alignment">
-             <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-            </property>
-           </widget>
-          </item>
-          <item row="3" column="1">
-           <widget class="QLineEdit" name="constCovs"/>
-          </item>
-          <item row="4" column="1">
-           <layout class="QHBoxLayout" name="horizontalLayout_20">
+          <item row="16" column="1">
+           <layout class="QHBoxLayout" name="horizontalLayout">
             <item>
-             <widget class="QPushButton" name="testConstructionButton">
+             <widget class="QComboBox" name="comboBox_debrisVul">
               <property name="sizePolicy">
-               <sizepolicy hsizetype="Minimum" vsizetype="Minimum">
+               <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
                 <horstretch>0</horstretch>
-                <verstretch>7</verstretch>
+                <verstretch>0</verstretch>
+               </sizepolicy>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QLabel" name="label_5">
+              <property name="sizePolicy">
+               <sizepolicy hsizetype="Minimum" vsizetype="Preferred">
+                <horstretch>0</horstretch>
+                <verstretch>0</verstretch>
                </sizepolicy>
               </property>
               <property name="text">
-               <string>Test</string>
+               <string>Param1</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QLineEdit" name="debrisVul_param1">
+              <property name="sizePolicy">
+               <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+                <horstretch>0</horstretch>
+                <verstretch>0</verstretch>
+               </sizepolicy>
+              </property>
+              <property name="text">
+               <string/>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QLabel" name="label_6">
+              <property name="sizePolicy">
+               <sizepolicy hsizetype="Minimum" vsizetype="Preferred">
+                <horstretch>0</horstretch>
+                <verstretch>0</verstretch>
+               </sizepolicy>
+              </property>
+              <property name="text">
+               <string>Param2</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QLineEdit" name="debrisVul_param2">
+              <property name="sizePolicy">
+               <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+                <horstretch>0</horstretch>
+                <verstretch>0</verstretch>
+               </sizepolicy>
               </property>
              </widget>
             </item>
            </layout>
           </item>
-          <item row="0" column="0">
-           <widget class="QLabel" name="label_8">
-            <property name="sizePolicy">
-             <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
-              <horstretch>0</horstretch>
-              <verstretch>0</verstretch>
-             </sizepolicy>
-            </property>
+          <item row="16" column="0">
+           <widget class="QLabel" name="label">
             <property name="text">
-             <string>Levels</string>
-            </property>
-            <property name="alignment">
-             <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-            </property>
-           </widget>
-          </item>
-          <item row="6" column="0">
-           <widget class="QLabel" name="label_32">
-            <property name="sizePolicy">
-             <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
-              <horstretch>0</horstretch>
-              <verstretch>0</verstretch>
-             </sizepolicy>
-            </property>
-            <property name="text">
-             <string/>
-            </property>
-            <property name="alignment">
-             <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+             <string>Vulnerability input</string>
             </property>
            </widget>
           </item>
@@ -1064,8 +982,6 @@
          </layout>
         </widget>
        </widget>
-      </item>
-      <item>
        <widget class="QTabWidget" name="dataview_tab">
         <property name="sizePolicy">
          <sizepolicy hsizetype="Preferred" vsizetype="Expanding">
@@ -1083,7 +999,7 @@
          <enum>QTabWidget::North</enum>
         </property>
         <property name="currentIndex">
-         <number>0</number>
+         <number>1</number>
         </property>
         <widget class="QWidget" name="tab_15">
          <attribute name="title">
@@ -1448,557 +1364,569 @@
          </layout>
         </widget>
        </widget>
-      </item>
-     </layout>
-    </item>
-    <item row="0" column="1">
-     <widget class="QTabWidget" name="resultsview_tab">
-      <property name="sizePolicy">
-       <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
-        <horstretch>99</horstretch>
-        <verstretch>0</verstretch>
-       </sizepolicy>
-      </property>
-      <property name="currentIndex">
-       <number>0</number>
-      </property>
-      <widget class="QWidget" name="tab_cpe">
-       <attribute name="title">
-        <string>Pressure</string>
-       </attribute>
-       <layout class="QVBoxLayout" name="verticalLayout_4">
-        <item>
-         <layout class="QHBoxLayout" name="horizontalLayout_44">
-          <property name="topMargin">
-           <number>5</number>
-          </property>
-          <property name="rightMargin">
-           <number>1</number>
-          </property>
-          <item>
-           <widget class="QComboBox" name="comboBox_pressure"/>
-          </item>
-          <item>
-           <widget class="QLabel" name="label_pressure">
-            <property name="text">
-             <string>Wind dir.</string>
-            </property>
-            <property name="alignment">
-             <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-            </property>
-           </widget>
-          </item>
-          <item>
-           <widget class="QComboBox" name="comboBox2_pressure"/>
-          </item>
-          <item>
-           <spacer name="horizontalSpacer_6">
-            <property name="orientation">
-             <enum>Qt::Horizontal</enum>
-            </property>
-            <property name="sizeHint" stdset="0">
-             <size>
-              <width>40</width>
-              <height>20</height>
-             </size>
-            </property>
-           </spacer>
-          </item>
-         </layout>
-        </item>
-        <item>
-         <widget class="MatplotlibWidget" name="mplpressure" native="true"/>
-        </item>
-       </layout>
       </widget>
-      <widget class="QWidget" name="tab_influence">
-       <attribute name="title">
-        <string>Influences</string>
-       </attribute>
-       <layout class="QVBoxLayout" name="verticalLayout_4">
-        <item>
-         <layout class="QHBoxLayout" name="horizontalLayout_43">
-          <property name="topMargin">
-           <number>5</number>
-          </property>
-          <property name="rightMargin">
-           <number>1</number>
-          </property>
-          <item>
-           <widget class="QLabel" name="label_influence">
-            <property name="text">
-             <string>Connection id:</string>
-            </property>
-            <property name="alignment">
-             <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-            </property>
-           </widget>
-          </item>
-          <item>
-           <widget class="QSpinBox" name="spinBox_influence"/>
-          </item>
-          <item>
-           <spacer name="horizontalSpacer_3">
-            <property name="orientation">
-             <enum>Qt::Horizontal</enum>
-            </property>
-            <property name="sizeHint" stdset="0">
-             <size>
-              <width>40</width>
-              <height>20</height>
-             </size>
-            </property>
-           </spacer>
-          </item>
-         </layout>
-        </item>
-        <item>
-         <widget class="MatplotlibWidget" name="mplinfluecnes" native="true"/>
-        </item>
-       </layout>
-      </widget>
-      <widget class="QWidget" name="tab_patch">
-       <attribute name="title">
-        <string>Patches</string>
-       </attribute>
-       <layout class="QVBoxLayout" name="verticalLayout_4">
-        <item>
-         <layout class="QHBoxLayout" name="horizontalLayout_42">
-          <property name="topMargin">
-           <number>5</number>
-          </property>
-          <property name="rightMargin">
-           <number>1</number>
-          </property>
-          <item>
-           <widget class="QLabel" name="label_patch">
-            <property name="text">
-             <string>Failed connection id:</string>
-            </property>
-            <property name="alignment">
-             <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-            </property>
-           </widget>
-          </item>
-          <item>
-           <widget class="QSpinBox" name="spinBox_patch"/>
-          </item>
-          <item>
-           <widget class="QLabel" name="label_patch_2">
-            <property name="text">
-             <string>Connection id:</string>
-            </property>
-            <property name="alignment">
-             <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-            </property>
-           </widget>
-          </item>
-          <item>
-           <widget class="QComboBox" name="comboBox_patch"/>
-          </item>
-          <item>
-           <spacer name="horizontalSpacer_4">
-            <property name="orientation">
-             <enum>Qt::Horizontal</enum>
-            </property>
-            <property name="sizeHint" stdset="0">
-             <size>
-              <width>40</width>
-              <height>20</height>
-             </size>
-            </property>
-           </spacer>
-          </item>
-         </layout>
-        </item>
-        <item>
-         <widget class="MatplotlibWidget" name="mplpatches" native="true"/>
-        </item>
-       </layout>
-      </widget>
-      <widget class="QWidget" name="tab_13">
-       <attribute name="title">
-        <string>Results</string>
-       </attribute>
-       <layout class="QHBoxLayout" name="horizontalLayout_29">
-        <item>
-         <widget class="QTabWidget" name="tabWidget_4">
-          <property name="tabPosition">
-           <enum>QTabWidget::East</enum>
-          </property>
-          <property name="currentIndex">
-           <number>4</number>
-          </property>
-          <widget class="QWidget" name="tab_10">
-           <attribute name="title">
-            <string>Zones</string>
-           </attribute>
-           <layout class="QHBoxLayout" name="horizontalLayout_13">
-            <item>
-             <widget class="QTreeWidget" name="zoneResults">
-              <column>
-               <property name="text">
-                <string>Model</string>
-               </property>
-              </column>
-              <column>
-               <property name="text">
-                <string>Zone</string>
-               </property>
-              </column>
-              <column>
-               <property name="text">
-                <string>Cpe</string>
-               </property>
-              </column>
-              <column>
-               <property name="text">
-                <string>Cpe_str</string>
-               </property>
-              </column>
-              <column>
-               <property name="text">
-                <string>Cpe_eave</string>
-               </property>
-              </column>
-             </widget>
-            </item>
-           </layout>
-          </widget>
-          <widget class="QWidget" name="tab_22">
-           <attribute name="title">
-            <string>Connections</string>
-           </attribute>
-           <layout class="QHBoxLayout" name="horizontalLayout_30">
-            <item>
-             <widget class="QTreeWidget" name="connectionResults">
-              <column>
-               <property name="text">
-                <string>Name</string>
-               </property>
-              </column>
-              <column>
-               <property name="text">
-                <string>BrokeAt</string>
-               </property>
-              </column>
-              <column>
-               <property name="text">
-                <string>Strength</string>
-               </property>
-              </column>
-              <column>
-               <property name="text">
-                <string>DeadLoad</string>
-               </property>
-              </column>
-              <column>
-               <property name="text">
-                <string>Damaged Load</string>
-               </property>
-              </column>
-             </widget>
-            </item>
-           </layout>
-          </widget>
-          <widget class="QWidget" name="tab_23">
-           <attribute name="title">
-            <string>Type Strengths</string>
-           </attribute>
-           <layout class="QHBoxLayout" name="horizontalLayout_31">
-            <item>
-             <widget class="MatplotlibWidget" name="connection_type_plot" native="true"/>
-            </item>
-           </layout>
-          </widget>
-          <widget class="QWidget" name="tab_28">
-           <attribute name="title">
-            <string>Type Damage</string>
-           </attribute>
-           <layout class="QHBoxLayout" name="horizontalLayout_24">
-            <item>
-             <widget class="MatplotlibWidget" name="connection_type_damages_plot" native="true"/>
-            </item>
-           </layout>
-          </widget>
-          <widget class="QWidget" name="tab_7">
-           <attribute name="title">
-            <string>Load</string>
-           </attribute>
-           <layout class="QVBoxLayout" name="verticalLayout_6">
-            <item>
-             <layout class="QHBoxLayout" name="horizontalLayout_39">
-              <property name="topMargin">
-               <number>5</number>
-              </property>
-              <property name="rightMargin">
-               <number>1</number>
-              </property>
-              <item>
-               <widget class="QLabel" name="label_load">
+      <widget class="QTabWidget" name="resultsview_tab">
+       <property name="sizePolicy">
+        <sizepolicy hsizetype="Maximum" vsizetype="Maximum">
+         <horstretch>99</horstretch>
+         <verstretch>0</verstretch>
+        </sizepolicy>
+       </property>
+       <property name="currentIndex">
+        <number>5</number>
+       </property>
+       <widget class="QWidget" name="tab_cpe">
+        <attribute name="title">
+         <string>Pressure</string>
+        </attribute>
+        <layout class="QVBoxLayout" name="verticalLayout_4">
+         <item>
+          <layout class="QHBoxLayout" name="horizontalLayout_44">
+           <property name="topMargin">
+            <number>5</number>
+           </property>
+           <property name="rightMargin">
+            <number>1</number>
+           </property>
+           <item>
+            <widget class="QComboBox" name="comboBox_pressure"/>
+           </item>
+           <item>
+            <widget class="QLabel" name="label_pressure">
+             <property name="text">
+              <string>Wind dir.</string>
+             </property>
+             <property name="alignment">
+              <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QComboBox" name="comboBox2_pressure"/>
+           </item>
+           <item>
+            <spacer name="horizontalSpacer_6">
+             <property name="orientation">
+              <enum>Qt::Horizontal</enum>
+             </property>
+             <property name="sizeHint" stdset="0">
+              <size>
+               <width>40</width>
+               <height>20</height>
+              </size>
+             </property>
+            </spacer>
+           </item>
+          </layout>
+         </item>
+         <item>
+          <widget class="MatplotlibWidget" name="mplpressure" native="true"/>
+         </item>
+        </layout>
+       </widget>
+       <widget class="QWidget" name="tab_influence">
+        <attribute name="title">
+         <string>Influences</string>
+        </attribute>
+        <layout class="QVBoxLayout" name="verticalLayout_4">
+         <item>
+          <layout class="QHBoxLayout" name="horizontalLayout_43">
+           <property name="topMargin">
+            <number>5</number>
+           </property>
+           <property name="rightMargin">
+            <number>1</number>
+           </property>
+           <item>
+            <widget class="QLabel" name="label_influence">
+             <property name="text">
+              <string>Connection id:</string>
+             </property>
+             <property name="alignment">
+              <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QSpinBox" name="spinBox_influence"/>
+           </item>
+           <item>
+            <spacer name="horizontalSpacer_3">
+             <property name="orientation">
+              <enum>Qt::Horizontal</enum>
+             </property>
+             <property name="sizeHint" stdset="0">
+              <size>
+               <width>40</width>
+               <height>20</height>
+              </size>
+             </property>
+            </spacer>
+           </item>
+          </layout>
+         </item>
+         <item>
+          <widget class="MatplotlibWidget" name="mplinfluecnes" native="true"/>
+         </item>
+        </layout>
+       </widget>
+       <widget class="QWidget" name="tab_patch">
+        <attribute name="title">
+         <string>Patches</string>
+        </attribute>
+        <layout class="QVBoxLayout" name="verticalLayout_4">
+         <item>
+          <layout class="QHBoxLayout" name="horizontalLayout_42">
+           <property name="topMargin">
+            <number>5</number>
+           </property>
+           <property name="rightMargin">
+            <number>1</number>
+           </property>
+           <item>
+            <widget class="QLabel" name="label_patch">
+             <property name="text">
+              <string>Failed connection id:</string>
+             </property>
+             <property name="alignment">
+              <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QSpinBox" name="spinBox_patch"/>
+           </item>
+           <item>
+            <widget class="QLabel" name="label_patch_2">
+             <property name="text">
+              <string>Connection id:</string>
+             </property>
+             <property name="alignment">
+              <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QComboBox" name="comboBox_patch"/>
+           </item>
+           <item>
+            <spacer name="horizontalSpacer_4">
+             <property name="orientation">
+              <enum>Qt::Horizontal</enum>
+             </property>
+             <property name="sizeHint" stdset="0">
+              <size>
+               <width>40</width>
+               <height>20</height>
+              </size>
+             </property>
+            </spacer>
+           </item>
+          </layout>
+         </item>
+         <item>
+          <widget class="MatplotlibWidget" name="mplpatches" native="true"/>
+         </item>
+        </layout>
+       </widget>
+       <widget class="QWidget" name="tab_13">
+        <attribute name="title">
+         <string>Results</string>
+        </attribute>
+        <layout class="QHBoxLayout" name="horizontalLayout_29">
+         <item>
+          <widget class="QTabWidget" name="tabWidget_4">
+           <property name="tabPosition">
+            <enum>QTabWidget::East</enum>
+           </property>
+           <property name="currentIndex">
+            <number>4</number>
+           </property>
+           <widget class="QWidget" name="tab_10">
+            <attribute name="title">
+             <string>Zones</string>
+            </attribute>
+            <layout class="QHBoxLayout" name="horizontalLayout_13">
+             <item>
+              <widget class="QTreeWidget" name="zoneResults">
+               <column>
                 <property name="text">
-                 <string>Group:</string>
+                 <string>Model</string>
                 </property>
-                <property name="alignment">
-                 <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-                </property>
-               </widget>
-              </item>
-              <item>
-               <widget class="QComboBox" name="comboBox_load"/>
-              </item>
-              <item>
-               <widget class="QLabel" name="label_model_3">
+               </column>
+               <column>
                 <property name="text">
-                 <string>Model id: </string>
+                 <string>Zone</string>
                 </property>
-                <property name="alignment">
-                 <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-                </property>
-               </widget>
-              </item>
-              <item>
-               <widget class="QSpinBox" name="spinBox_load"/>
-              </item>
-              <item>
-               <widget class="QLabel" name="label_model_2">
+               </column>
+               <column>
                 <property name="text">
-                 <string>Wind speed:</string>
+                 <string>Cpe</string>
                 </property>
-                <property name="alignment">
-                 <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+               </column>
+               <column>
+                <property name="text">
+                 <string>Cpe_str</string>
                 </property>
-               </widget>
-              </item>
-              <item>
-               <widget class="QDoubleSpinBox" name="doubleSpinBox_load"/>
-              </item>
-              <item>
-               <spacer name="horizontalSpacer_5">
-                <property name="orientation">
-                 <enum>Qt::Horizontal</enum>
+               </column>
+               <column>
+                <property name="text">
+                 <string>Cpe_eave</string>
                 </property>
-                <property name="sizeHint" stdset="0">
-                 <size>
-                  <width>40</width>
-                  <height>20</height>
-                 </size>
-                </property>
-               </spacer>
-              </item>
-             </layout>
-            </item>
-            <item>
-             <widget class="MatplotlibWidget" name="mplload" native="true"/>
-            </item>
-           </layout>
-          </widget>
-         </widget>
-        </item>
-       </layout>
-      </widget>
-      <widget class="QWidget" name="tab">
-       <attribute name="title">
-        <string>Damages</string>
-       </attribute>
-       <layout class="QVBoxLayout" name="verticalLayout_6">
-        <item>
-         <layout class="QHBoxLayout" name="horizontalLayout_39">
-          <property name="topMargin">
-           <number>5</number>
-          </property>
-          <property name="rightMargin">
-           <number>1</number>
-          </property>
-          <item>
-           <widget class="QLabel" name="label_heatmap">
-            <property name="text">
-             <string>Group:</string>
-            </property>
-            <property name="alignment">
-             <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-            </property>
+               </column>
+              </widget>
+             </item>
+            </layout>
            </widget>
-          </item>
-          <item>
-           <widget class="QComboBox" name="comboBox_heatmap"/>
-          </item>
-          <item>
-           <widget class="QLabel" name="label_model">
-            <property name="text">
-             <string>Model id (0 for mean): </string>
-            </property>
-            <property name="alignment">
-             <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-            </property>
+           <widget class="QWidget" name="tab_22">
+            <attribute name="title">
+             <string>Connections</string>
+            </attribute>
+            <layout class="QHBoxLayout" name="horizontalLayout_30">
+             <item>
+              <widget class="QTreeWidget" name="connectionResults">
+               <column>
+                <property name="text">
+                 <string>Name</string>
+                </property>
+               </column>
+               <column>
+                <property name="text">
+                 <string>BrokeAt</string>
+                </property>
+               </column>
+               <column>
+                <property name="text">
+                 <string>Strength</string>
+                </property>
+               </column>
+               <column>
+                <property name="text">
+                 <string>DeadLoad</string>
+                </property>
+               </column>
+               <column>
+                <property name="text">
+                 <string>Damaged Load</string>
+                </property>
+               </column>
+              </widget>
+             </item>
+            </layout>
            </widget>
-          </item>
-          <item>
-           <widget class="QSpinBox" name="spinBox_heatmap"/>
-          </item>
-          <item>
-           <spacer name="horizontalSpacer_2">
-            <property name="orientation">
-             <enum>Qt::Horizontal</enum>
-            </property>
-            <property name="sizeHint" stdset="0">
-             <size>
-              <width>40</width>
-              <height>20</height>
-             </size>
-            </property>
-           </spacer>
-          </item>
-         </layout>
-        </item>
-        <item>
-         <widget class="MatplotlibWidget" name="mplsheeting" native="true"/>
-        </item>
-       </layout>
-      </widget>
-      <widget class="QWidget" name="tab_9">
-       <attribute name="title">
-        <string>Curves</string>
-       </attribute>
-       <layout class="QHBoxLayout" name="horizontalLayout_28">
-        <item>
-         <widget class="QTabWidget" name="tabWidget_3">
-          <property name="tabPosition">
-           <enum>QTabWidget::East</enum>
-          </property>
-          <property name="currentIndex">
-           <number>4</number>
-          </property>
-          <widget class="QWidget" name="tab_2">
-           <attribute name="title">
-            <string>Vulnerability</string>
-           </attribute>
-           <layout class="QHBoxLayout" name="horizontalLayout_32">
-            <item>
-             <layout class="QVBoxLayout" name="verticalLayout_2">
-              <item>
-               <layout class="QHBoxLayout" name="horizontalLayout_8">
-                <item>
-                 <widget class="QLabel" name="label_29">
-                  <property name="text">
-                   <string>Lognormal Coeffs</string>
-                  </property>
-                 </widget>
-                </item>
-                <item>
-                 <widget class="QLineEdit" name="ln_coeff_1"/>
-                </item>
-                <item>
-                 <widget class="QLineEdit" name="ln_coeff_2"/>
-                </item>
-                <item>
-                 <widget class="QLabel" name="label_30">
-                  <property name="text">
-                   <string>Weibull Coeffs</string>
-                  </property>
-                 </widget>
-                </item>
-                <item>
-                 <widget class="QLineEdit" name="wb_coeff_1"/>
-                </item>
-                <item>
-                 <widget class="QLineEdit" name="wb_coeff_2"/>
-                </item>
-               </layout>
-              </item>
-              <item>
-               <widget class="MatplotlibWidget" name="mplvuln" native="true"/>
-              </item>
-             </layout>
-            </item>
-           </layout>
+           <widget class="QWidget" name="tab_23">
+            <attribute name="title">
+             <string>Type Strengths</string>
+            </attribute>
+            <layout class="QHBoxLayout" name="horizontalLayout_31">
+             <item>
+              <widget class="MatplotlibWidget" name="connection_type_plot" native="true"/>
+             </item>
+            </layout>
+           </widget>
+           <widget class="QWidget" name="tab_28">
+            <attribute name="title">
+             <string>Type Damage</string>
+            </attribute>
+            <layout class="QHBoxLayout" name="horizontalLayout_24">
+             <item>
+              <widget class="MatplotlibWidget" name="connection_type_damages_plot" native="true"/>
+             </item>
+            </layout>
+           </widget>
+           <widget class="QWidget" name="tab_7">
+            <attribute name="title">
+             <string>Load</string>
+            </attribute>
+            <layout class="QVBoxLayout" name="verticalLayout_6">
+             <item>
+              <layout class="QHBoxLayout" name="horizontalLayout_39">
+               <property name="topMargin">
+                <number>5</number>
+               </property>
+               <property name="rightMargin">
+                <number>1</number>
+               </property>
+               <item>
+                <widget class="QLabel" name="label_load">
+                 <property name="text">
+                  <string>Group:</string>
+                 </property>
+                 <property name="alignment">
+                  <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+                 </property>
+                </widget>
+               </item>
+               <item>
+                <widget class="QComboBox" name="comboBox_load"/>
+               </item>
+               <item>
+                <widget class="QLabel" name="label_model_3">
+                 <property name="text">
+                  <string>Model id: </string>
+                 </property>
+                 <property name="alignment">
+                  <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+                 </property>
+                </widget>
+               </item>
+               <item>
+                <widget class="QSpinBox" name="spinBox_load"/>
+               </item>
+               <item>
+                <widget class="QLabel" name="label_model_2">
+                 <property name="text">
+                  <string>Wind speed:</string>
+                 </property>
+                 <property name="alignment">
+                  <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+                 </property>
+                </widget>
+               </item>
+               <item>
+                <widget class="QDoubleSpinBox" name="doubleSpinBox_load"/>
+               </item>
+               <item>
+                <spacer name="horizontalSpacer_5">
+                 <property name="orientation">
+                  <enum>Qt::Horizontal</enum>
+                 </property>
+                 <property name="sizeHint" stdset="0">
+                  <size>
+                   <width>40</width>
+                   <height>20</height>
+                  </size>
+                 </property>
+                </spacer>
+               </item>
+              </layout>
+             </item>
+             <item>
+              <widget class="MatplotlibWidget" name="mplload" native="true"/>
+             </item>
+            </layout>
+           </widget>
           </widget>
-          <widget class="QWidget" name="tab_12">
-           <attribute name="title">
-            <string>Fragility</string>
-           </attribute>
-           <layout class="QHBoxLayout" name="horizontalLayout_9">
-            <item>
-             <widget class="MatplotlibWidget" name="mplfrag" native="true"/>
-            </item>
-           </layout>
+         </item>
+        </layout>
+       </widget>
+       <widget class="QWidget" name="tab">
+        <attribute name="title">
+         <string>Damages</string>
+        </attribute>
+        <layout class="QVBoxLayout" name="verticalLayout_6">
+         <item>
+          <layout class="QHBoxLayout" name="horizontalLayout_39">
+           <property name="topMargin">
+            <number>5</number>
+           </property>
+           <property name="rightMargin">
+            <number>1</number>
+           </property>
+           <item>
+            <widget class="QLabel" name="label_heatmap">
+             <property name="text">
+              <string>Group:</string>
+             </property>
+             <property name="alignment">
+              <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QComboBox" name="comboBox_heatmap"/>
+           </item>
+           <item>
+            <widget class="QLabel" name="label_model">
+             <property name="text">
+              <string>Model id (0 for mean): </string>
+             </property>
+             <property name="alignment">
+              <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QSpinBox" name="spinBox_heatmap"/>
+           </item>
+           <item>
+            <spacer name="horizontalSpacer_2">
+             <property name="orientation">
+              <enum>Qt::Horizontal</enum>
+             </property>
+             <property name="sizeHint" stdset="0">
+              <size>
+               <width>40</width>
+               <height>20</height>
+              </size>
+             </property>
+            </spacer>
+           </item>
+          </layout>
+         </item>
+         <item>
+          <widget class="MatplotlibWidget" name="mplsheeting" native="true"/>
+         </item>
+        </layout>
+       </widget>
+       <widget class="QWidget" name="tab_9">
+        <attribute name="title">
+         <string>Curves</string>
+        </attribute>
+        <layout class="QHBoxLayout" name="horizontalLayout_28">
+         <item>
+          <widget class="QTabWidget" name="tabWidget_3">
+           <property name="tabPosition">
+            <enum>QTabWidget::East</enum>
+           </property>
+           <property name="currentIndex">
+            <number>0</number>
+           </property>
+           <widget class="QWidget" name="tab_2">
+            <attribute name="title">
+             <string>Vulnerability</string>
+            </attribute>
+            <layout class="QHBoxLayout" name="horizontalLayout_32">
+             <item>
+              <layout class="QVBoxLayout" name="verticalLayout_2">
+               <item>
+                <layout class="QHBoxLayout" name="horizontalLayout_8">
+                 <item>
+                  <widget class="QCheckBox" name="ln_checkBox">
+                   <property name="text">
+                    <string/>
+                   </property>
+                  </widget>
+                 </item>
+                 <item>
+                  <widget class="QLabel" name="label_29">
+                   <property name="text">
+                    <string>Lognormal Coeffs</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item>
+                  <widget class="QLineEdit" name="ln_coeff_1"/>
+                 </item>
+                 <item>
+                  <widget class="QLineEdit" name="ln_coeff_2"/>
+                 </item>
+                 <item>
+                  <widget class="QCheckBox" name="wb_checkBox">
+                   <property name="text">
+                    <string/>
+                   </property>
+                  </widget>
+                 </item>
+                 <item>
+                  <widget class="QLabel" name="label_30">
+                   <property name="text">
+                    <string>Weibull Coeffs</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item>
+                  <widget class="QLineEdit" name="wb_coeff_1"/>
+                 </item>
+                 <item>
+                  <widget class="QLineEdit" name="wb_coeff_2"/>
+                 </item>
+                </layout>
+               </item>
+               <item>
+                <widget class="MatplotlibWidget" name="mplvuln" native="true"/>
+               </item>
+              </layout>
+             </item>
+            </layout>
+           </widget>
+           <widget class="QWidget" name="tab_12">
+            <attribute name="title">
+             <string>Fragility</string>
+            </attribute>
+            <layout class="QHBoxLayout" name="horizontalLayout_9">
+             <item>
+              <widget class="MatplotlibWidget" name="mplfrag" native="true"/>
+             </item>
+            </layout>
+           </widget>
+           <widget class="QWidget" name="tab_6">
+            <attribute name="title">
+             <string>Water Ingress</string>
+            </attribute>
+            <layout class="QHBoxLayout" name="horizontalLayout_4">
+             <item>
+              <widget class="MatplotlibWidget" name="wateringress_plot" native="true"/>
+             </item>
+            </layout>
+           </widget>
+           <widget class="QWidget" name="tab_24">
+            <attribute name="title">
+             <string>Debris</string>
+            </attribute>
+            <layout class="QHBoxLayout" name="horizontalLayout_11">
+             <item>
+              <widget class="MatplotlibWidget" name="breaches_plot" native="true"/>
+             </item>
+            </layout>
+           </widget>
+           <widget class="QWidget" name="tab_55">
+            <attribute name="title">
+             <string>Cpi</string>
+            </attribute>
+            <layout class="QHBoxLayout" name="horizontalLayout_132">
+             <item>
+              <layout class="QVBoxLayout" name="verticalLayout_102">
+               <item>
+                <layout class="QHBoxLayout" name="horizontalLayout_108">
+                 <property name="sizeConstraint">
+                  <enum>QLayout::SetDefaultConstraint</enum>
+                 </property>
+                 <property name="topMargin">
+                  <number>5</number>
+                 </property>
+                 <property name="rightMargin">
+                  <number>1</number>
+                 </property>
+                 <item>
+                  <widget class="QLabel" name="label_3">
+                   <property name="text">
+                    <string>Model id (0 for mean): </string>
+                   </property>
+                   <property name="alignment">
+                    <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+                   </property>
+                  </widget>
+                 </item>
+                 <item>
+                  <widget class="QSpinBox" name="spinBox_cpi"/>
+                 </item>
+                 <item>
+                  <spacer name="horizontalSpacer">
+                   <property name="orientation">
+                    <enum>Qt::Horizontal</enum>
+                   </property>
+                   <property name="sizeHint" stdset="0">
+                    <size>
+                     <width>40</width>
+                     <height>20</height>
+                    </size>
+                   </property>
+                  </spacer>
+                 </item>
+                </layout>
+               </item>
+               <item>
+                <widget class="MatplotlibWidget" name="cpi_plot" native="true"/>
+               </item>
+              </layout>
+             </item>
+            </layout>
+           </widget>
           </widget>
-          <widget class="QWidget" name="tab_6">
-           <attribute name="title">
-            <string>Water Ingress</string>
-           </attribute>
-           <layout class="QHBoxLayout" name="horizontalLayout_4">
-            <item>
-             <widget class="MatplotlibWidget" name="wateringress_plot" native="true"/>
-            </item>
-           </layout>
-          </widget>
-          <widget class="QWidget" name="tab_24">
-           <attribute name="title">
-            <string>Debris</string>
-           </attribute>
-           <layout class="QHBoxLayout" name="horizontalLayout_11">
-            <item>
-             <widget class="MatplotlibWidget" name="breaches_plot" native="true"/>
-            </item>
-           </layout>
-          </widget>
-          <widget class="QWidget" name="tab_55">
-           <attribute name="title">
-            <string>Cpi</string>
-           </attribute>
-           <layout class="QHBoxLayout" name="horizontalLayout_132">
-            <item>
-             <layout class="QVBoxLayout" name="verticalLayout_102">
-              <item>
-               <layout class="QHBoxLayout" name="horizontalLayout_108">
-                <property name="sizeConstraint">
-                 <enum>QLayout::SetDefaultConstraint</enum>
-                </property>
-                <property name="topMargin">
-                 <number>5</number>
-                </property>
-                <property name="rightMargin">
-                 <number>1</number>
-                </property>
-                <item>
-                 <widget class="QLabel" name="label_3">
-                  <property name="text">
-                   <string>Model id (0 for mean): </string>
-                  </property>
-                  <property name="alignment">
-                   <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-                  </property>
-                 </widget>
-                </item>
-                <item>
-                 <widget class="QSpinBox" name="spinBox_cpi"/>
-                </item>
-                <item>
-                 <spacer name="horizontalSpacer">
-                  <property name="orientation">
-                   <enum>Qt::Horizontal</enum>
-                  </property>
-                  <property name="sizeHint" stdset="0">
-                   <size>
-                    <width>40</width>
-                    <height>20</height>
-                   </size>
-                  </property>
-                 </spacer>
-                </item>
-               </layout>
-              </item>
-              <item>
-               <widget class="MatplotlibWidget" name="cpi_plot" native="true"/>
-              </item>
-             </layout>
-            </item>
-           </layout>
-          </widget>
-         </widget>
-        </item>
-       </layout>
+         </item>
+        </layout>
+       </widget>
       </widget>
      </widget>
     </item>
@@ -2031,7 +1959,7 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>1280</width>
+     <width>1219</width>
      <height>22</height>
     </rect>
    </property>
@@ -2063,7 +1991,7 @@
   </widget>
   <action name="actionOpen_Scenario">
    <property name="icon">
-    <iconset resource="../windsim.qrc">
+    <iconset resource="../vaws.qrc">
      <normaloff>:/icons/images/fileopen.png</normaloff>:/icons/images/fileopen.png</iconset>
    </property>
    <property name="text">
@@ -2075,7 +2003,7 @@
     <bool>false</bool>
    </property>
    <property name="icon">
-    <iconset resource="../windsim.qrc">
+    <iconset resource="../vaws.qrc">
      <normaloff>:/icons/images/forward.png</normaloff>:/icons/images/forward.png</iconset>
    </property>
    <property name="text">
@@ -2087,7 +2015,7 @@
     <bool>false</bool>
    </property>
    <property name="icon">
-    <iconset resource="../windsim.qrc">
+    <iconset resource="../vaws.qrc">
      <normaloff>:/icons/images/filequit.png</normaloff>:/icons/images/filequit.png</iconset>
    </property>
    <property name="text">
@@ -2096,7 +2024,7 @@
   </action>
   <action name="actionSave_Scenario">
    <property name="icon">
-    <iconset resource="../windsim.qrc">
+    <iconset resource="../vaws.qrc">
      <normaloff>:/icons/images/filesave.png</normaloff>:/icons/images/filesave.png</iconset>
    </property>
    <property name="text">
@@ -2105,7 +2033,7 @@
   </action>
   <action name="actionNew_Scenario">
    <property name="icon">
-    <iconset resource="../windsim.qrc">
+    <iconset resource="../vaws.qrc">
      <normaloff>:/icons/images/filenew.png</normaloff>:/icons/images/filenew.png</iconset>
    </property>
    <property name="text">
@@ -2114,7 +2042,7 @@
   </action>
   <action name="actionSave_Scenario_As">
    <property name="icon">
-    <iconset resource="../windsim.qrc">
+    <iconset resource="../vaws.qrc">
      <normaloff>:/icons/images/filesaveas.png</normaloff>:/icons/images/filesaveas.png</iconset>
    </property>
    <property name="text">
@@ -2123,7 +2051,7 @@
   </action>
   <action name="actionHouse_Info">
    <property name="icon">
-    <iconset resource="../windsim.qrc">
+    <iconset resource="../vaws.qrc">
      <normaloff>:/icons/images/home2.png</normaloff>:/icons/images/home2.png</iconset>
    </property>
    <property name="text">
@@ -2132,7 +2060,7 @@
   </action>
   <action name="actionTest_Debris_Settings">
    <property name="icon">
-    <iconset resource="../windsim.qrc">
+    <iconset resource="../vaws.qrc">
      <normaloff>:/icons/images/fan.png</normaloff>:/icons/images/fan.png</iconset>
    </property>
    <property name="text">
@@ -2141,7 +2069,7 @@
   </action>
   <action name="actionInfo">
    <property name="icon">
-    <iconset resource="../windsim.qrc">
+    <iconset resource="../vaws.qrc">
      <normaloff>:/icons/images/editzoom.png</normaloff>:/icons/images/editzoom.png</iconset>
    </property>
    <property name="text">
@@ -2195,7 +2123,7 @@
   <tabstop>seedRandom</tabstop>
  </tabstops>
  <resources>
-  <include location="../windsim.qrc"/>
+  <include location="../vaws.qrc"/>
  </resources>
  <connections/>
 </ui>

@@ -14,7 +14,7 @@
    <string>House Viewer</string>
   </property>
   <property name="windowIcon">
-   <iconset resource="../windsim.qrc">
+   <iconset>
     <normaloff>:/icons/images/editresize.png</normaloff>:/icons/images/editresize.png</iconset>
   </property>
   <property name="sizeGripEnabled">
@@ -253,9 +253,7 @@
    </item>
   </layout>
  </widget>
- <resources>
-  <include location="../windsim.qrc"/>
- </resources>
+ <resources/>
  <connections>
   <connection>
    <sender>buttonBox</sender>
