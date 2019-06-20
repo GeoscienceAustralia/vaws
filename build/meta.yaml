@@ -42,7 +42,7 @@ requirements:
     - libcxx >=8.0.* # [osx]
     - libcxxabi >=8.0.* # [osx]
     - libffi >=3.2.* # [osx]
-    - libgfortran >=3.0.* [osx]
+    - libgfortran >=3.0.* # [osx]
     - liblapack >=3.8.*
     - libpng >=1.6.* 
     - matplotlib >=3.0.*
@@ -76,7 +76,7 @@ requirements:
     - vs2015_runtime >=14.15.* # [win]
     - wheel >=0.33.*
     - wincertstore >=0.2 # [win]
-    - xz >=5.2.* [osx]
+    - xz >=5.2.* # [osx]
     - zlib >=1.2.*
 
 about:
