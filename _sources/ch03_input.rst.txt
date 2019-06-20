@@ -92,8 +92,8 @@ The configuration file consists of a number of sections, among which *main* and 
 
     [water_ingress]
     thresholds = 0.1, 0.2, 0.5
-    speed_at_zero_wi = 50.0, 35.0, 0.0, -20.0
-    speed_at_full_wi = 75.0, 55.0, 40.0, 20.0
+    speed_at_zero_wi = 40.0, 35.0, 0.0, -20.0
+    speed_at_full_wi = 60.0, 55.0, 40.0, 20.0
 
     [fragility_thresholds]
     states = slight, medium, severe, complete

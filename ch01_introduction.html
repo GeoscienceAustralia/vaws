@@ -1,19 +1,20 @@
 
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
-  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<!DOCTYPE html>
 
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
-    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
-    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    <title>Introduction &#8212; VAWS 2.2 documentation</title>
+    <meta charset="utf-8" />
+    <title>Introduction &#8212; VAWS 3.0 documentation</title>
     <link rel="stylesheet" href="_static/classic.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
-    <script type="text/javascript" src="_static/documentation_options.js"></script>
+    
+    <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
     <script type="text/javascript" src="_static/jquery.js"></script>
     <script type="text/javascript" src="_static/underscore.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
-    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <script type="text/javascript" src="_static/language_data.js"></script>
+    <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
     <link rel="next" title="Getting Started" href="ch02_software.html" />
@@ -34,7 +35,7 @@
         <li class="right" >
           <a href="index.html" title="VAWS: Vulnerability and Adaptation to Wind Simulation"
              accesskey="P">previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">VAWS 2.2 documentation</a> &#187;</li> 
+        <li class="nav-item nav-item-0"><a href="index.html">VAWS 3.0 documentation</a> &#187;</li> 
       </ul>
     </div>  
 
@@ -60,16 +61,16 @@
 <div class="section" id="key-features">
 <h2>Key features<a class="headerlink" href="#key-features" title="Permalink to this headline">¶</a></h2>
 <ul>
-<li><p class="first">Component-based approach:</p>
+<li><p>Component-based approach:</p>
 <p>A house is modelled consisting of a large number of components, and overall damage is estimated based on damage to each of the components.</p>
 </li>
-<li><p class="first">Uncertainty captured through a Monte-Carlo process:</p>
+<li><p>Uncertainty captured through a Monte-Carlo process:</p>
 <p>Various uncertainties affecting house performance are modelled through a monte-carlo process.</p>
 </li>
-<li><p class="first">Inclusion of debris and water ingress induced damages:</p>
+<li><p>Inclusion of debris and water ingress induced damages:</p>
 <p>In addition to the damage to the connections by wind loads, debris and water ingress induced damages are modelled.</p>
 </li>
-<li><p class="first">Internal pressurisation:</p>
+<li><p>Internal pressurisation:</p>
 <p>Internal pressure coefficients are calculated at each wind speed following the procedures of AS/NZS 1170.2 (Standards Australia, 2011) using the modelled envelope failures to determine envelope permeability.</p>
 </li>
 </ul>
@@ -78,19 +79,19 @@
 <h2>Key uncertainties<a class="headerlink" href="#key-uncertainties" title="Permalink to this headline">¶</a></h2>
 <p>The Monte Carlo process capture a range of variability in both wind loading and component parameters. The parameter values are sampled for each model and kept the same through the wind steps.</p>
 <ul>
-<li><p class="first">Wind direction</p>
+<li><p>Wind direction</p>
 <p>For each house, its orientation with respect to the wind is chosen from the eight cardinal directions either randomly, or by the user.</p>
 </li>
-<li><p class="first">Gust wind profile</p>
+<li><p>Gust wind profile</p>
 <p>Variation in the profile of wind speed with height is captured by the random sampling of a profile from a suite of user-provided profiles.</p>
 </li>
-<li><p class="first">Pressure coefficients for zones and coverages</p>
+<li><p>Pressure coefficients for zones and coverages</p>
 <p>Pressure coefficients for different zones of the house surfaces envelope are randomly chosen from a Type III (Weibull) extreme value distribution with specified means for different zones of the house envelope, and specified coefficients of variation for different load effects.</p>
 </li>
-<li><p class="first">Construction level (or quality)</p>
+<li><p>Construction level (or quality)</p>
 <p>Multiple construction levels can be defined with mean and coefficient of variation (CV) factors which will be used to adjust the mean and CV of distribution of connection strength.</p>
 </li>
-<li><p class="first">Strength and dead load</p>
+<li><p>Strength and dead load</p>
 <p>Connection strengths and dead loads for generated houses are sampled from lognormal probability distributions.</p>
 </li>
 </ul>
@@ -107,7 +108,7 @@
       </div>
       <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
         <div class="sphinxsidebarwrapper">
-  <h3><a href="index.html">Table Of Contents</a></h3>
+  <h3><a href="index.html">Table of Contents</a></h3>
   <ul>
 <li><a class="reference internal" href="#">Introduction</a><ul>
 <li><a class="reference internal" href="#background">Background</a></li>
@@ -133,13 +134,11 @@
     </ul>
    </div>
 <div id="searchbox" style="display: none" role="search">
-  <h3>Quick search</h3>
+  <h3 id="searchlabel">Quick search</h3>
     <div class="searchformwrapper">
     <form class="search" action="search.html" method="get">
-      <input type="text" name="q" />
+      <input type="text" name="q" aria-labelledby="searchlabel" />
       <input type="submit" value="Go" />
-      <input type="hidden" name="check_keywords" value="yes" />
-      <input type="hidden" name="area" value="default" />
     </form>
     </div>
 </div>
@@ -163,12 +162,12 @@
         <li class="right" >
           <a href="index.html" title="VAWS: Vulnerability and Adaptation to Wind Simulation"
              >previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">VAWS 2.2 documentation</a> &#187;</li> 
+        <li class="nav-item nav-item-0"><a href="index.html">VAWS 3.0 documentation</a> &#187;</li> 
       </ul>
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright 2017, Geoscience Australia.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.7.4.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 2.1.2.
     </div>
   </body>
 </html>

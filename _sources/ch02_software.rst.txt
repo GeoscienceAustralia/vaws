@@ -18,17 +18,17 @@ Instructions for general users
 Installation
 ------------
 
-The VAWS code currently runs with Python 2.7 with many dependencies. It is recommended to create a Python environment dedicated to the code without disrupting the existing environment. With conda, you can manage environments easily. Instructions below are based on conda, but virutalenv can be used alternatively.
+The VAWS code currently runs with Python 3.6 with many dependencies. It is recommended to create a Python environment dedicated to the code without disrupting the existing environment. With conda, you can manage environments easily. Instructions below are based on conda, but virutalenv can be used alternatively.
 
 .. _install_conda:
 
 1. Install Miniconda
 
-Download and install Miniconda(https://conda.io/miniconda.html) with Python 2.7. This step can be skipped if either Miniconda or Anaconda with Python 2.7 is already installed.
+Download and install Miniconda(https://conda.io/miniconda.html) with Python 3.7. This step can be skipped if either Miniconda or Anaconda with Python 3.7 is already installed.
 
   * Windows
 
-    - Double-click the downloaded `Miniconda2-latest-Windows-x86_64.exe` file.
+    - Double-click the downloaded `Miniconda3-latest-Windows-x86_64.exe` file.
     - When installation is finished, from the `Start` menu, open the `Anaconda Prompt`.
 
   * Linux
@@ -37,7 +37,7 @@ Download and install Miniconda(https://conda.io/miniconda.html) with Python 2.7.
 
       .. code-block:: bash
 
-        $ bash Miniconda2-latest-Linux-x86_64.sh
+        $ bash Miniconda3-latest-Linux-x86_64.sh
 
   * Mac
 
@@ -45,7 +45,7 @@ Download and install Miniconda(https://conda.io/miniconda.html) with Python 2.7.
 
       .. code-block:: bash
 
-        $ bash Miniconda2-latest-MacOSX-x86_64.sh
+        $ bash Miniconda3-latest-MacOSX-x86_64.sh
 
 
 2. Create a conda environment.
@@ -54,7 +54,7 @@ In the terminal client, enter the following command to create the environment ca
 
   .. code-block:: bash
 
-    conda create -n vaws_env python=2.7
+    conda create -n vaws_env python=3.6
 
 .. _activate_environment:
 
@@ -62,17 +62,9 @@ In the terminal client, enter the following command to create the environment ca
 
 In the terminal client, enter the following to activate the environment.
 
-  * Windows
-
     .. code-block:: bash
 
-      activate vaws_env
-
-  * Linux/Mac
-
-    .. code-block:: bash
-
-      source activate vaws_env
+      conda activate vaws_env
 
 .. _install_code:
 
@@ -146,21 +138,21 @@ This step will create directory called <vaws dir>.
 
 2. Create a conda environment.
 
-Make sure either miniconda or anaconda is installed. Otherwise install either Miniconda or Anaconda with Python 2.7 as :ref:`2.1.1 step 1 <install_conda>`. Then create the environment called *vaws_env*. by entering the following command in the terminal.
+Make sure either miniconda or anaconda is installed. Otherwise install either Miniconda or Anaconda with Python 3.6 as :ref:`2.1.1 step 1 <install_conda>`. Then create the environment called *vaws_env*. by entering the following command in the terminal.
 
   * Windows
 
     .. code-block:: bash
 
       cd <vaws dir>
-      conda env create --name vaws_env --file vaws_win.yml
+      conda env create --name vaws_env --file vaws_win_py3.6.7.yml
 
   * Linux/Mac
 
     .. code-block:: bash
 
       cd <vaws dir>
-      conda env create --name vaws_env --file vaws_env.yml
+      conda env create --name vaws_env --file vaws_osx_py3.6.7.yml
 
 This will create the environment called vaws_env. The *vaws_env* can be activated as :ref:`2.1.1 step 3 <activate_environment>`.
 
@@ -255,32 +247,33 @@ Testing the code
 
 To test the code, the conda environment *vaws_env* should be activated first as :ref:`2.1.1 step 3 <activate_environment>`. And then enter the following command in the terminal.
 
-.. code-block:: bash
+  .. code-block:: bash
 
-  nosetests -v vaws
+    cd <vaws dir>
+    python -m unittest -v
 
 You should see something similar to below.
 
 .. code-block:: bash
 
-  test_distribute_damage_by_row (vaws.model.tests.test_simulation_batten.TestHouseDamage) ... ok
-  test_calc (vaws.model.tests.test_stats.MyTestCase) ... ok
-  test_calc2 (vaws.model.tests.test_stats.MyTestCase) ... ok
-  test_calc_big_a_b_values (vaws.model.tests.test_stats.MyTestCase) ... ok
-  test_compute_arithmetic_mean_stdev (vaws.model.tests.test_stats.MyTestCase) ... ok
-  test_compute_logarithmic_mean_stdev (vaws.model.tests.test_stats.MyTestCase) ... ok
-  test_gev_calc (vaws.model.tests.test_stats.MyTestCase) ... ok
-  test_gev_calc2 (vaws.model.tests.test_stats.MyTestCase) ... ok
-  test_sample_logrnormal (vaws.model.tests.test_stats.MyTestCase) ... ok
-  test_calc_zone_pressures (vaws.model.tests.test_zone.MyTestCase) ... ok
-  test_get_grid (vaws.model.tests.test_zone.MyTestCase) ... ok
-  test_is_wall (vaws.model.tests.test_zone.MyTestCase) ... ok
-  test_str2num (vaws.model.tests.test_zone.MyTestCase) ... ok
+    test_distribute_damage_by_row (vaws.model.tests.test_simulation_batten.TestHouseDamage) ... ok
+    test_calc (vaws.model.tests.test_stats.MyTestCase) ... ok
+    test_calc2 (vaws.model.tests.test_stats.MyTestCase) ... ok
+    test_calc_big_a_b_values (vaws.model.tests.test_stats.MyTestCase) ... ok
+    test_compute_arithmetic_mean_stdev (vaws.model.tests.test_stats.MyTestCase) ... ok
+    test_compute_logarithmic_mean_stdev (vaws.model.tests.test_stats.MyTestCase) ... ok
+    test_gev_calc (vaws.model.tests.test_stats.MyTestCase) ... ok
+    test_gev_calc2 (vaws.model.tests.test_stats.MyTestCase) ... ok
+    test_sample_logrnormal (vaws.model.tests.test_stats.MyTestCase) ... ok
+    test_calc_zone_pressures (vaws.model.tests.test_zone.MyTestCase) ... ok
+    test_get_grid (vaws.model.tests.test_zone.MyTestCase) ... ok
+    test_set_differential_shieding (vaws.model.tests.test_zone.MyTestCase) ... ok
+    test_str2num (vaws.model.tests.test_zone.MyTestCase) ... ok
 
-  ----------------------------------------------------------------------
-  Ran 93 tests in 56.053s
+    ----------------------------------------------------------------------
+    Ran 134 tests in 131.287s
 
-  OK
+    OK (skipped=1)
 
 Documentation
 -------------
