@@ -2,7 +2,7 @@
 echo Building GUI files...
 
 del *_ui.py
-del windsim_rc.py
+del vaws_rc.py
 
 echo Building UI
 
