@@ -751,7 +751,8 @@ class Config(object):
             self.logger.error(msg, exc_info=True)
         else:
             # asert check values >= 0
-            not_good = df_types.loc[(df_types < 0).sum(axis=1) > 1].index.tolist()
+            tmp = df_types.loc[:, df_types.columns != 'group_name']
+            not_good = df_types.loc[(tmp < 0).any(axis=1)].index.tolist()
             if not_good:
                 raise Exception('Invalid value(s) for type(s): {}'.format(
                     not_good))
