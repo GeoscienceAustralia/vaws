@@ -1,47 +1,53 @@
 from __future__ import division, print_function
 import unittest
 import os
-import copy
+# import copy
 import numpy as np
-import pandas as pd
-import matplotlib
+# import pandas as pd
+# import parmap
 import matplotlib.pyplot as plt
+from matplotlib import patches
 import logging
 import time
+# from scipy import stats
 
 import numbers
 import math
-import shapely
+from shapely import geometry, affinity
 
+from vaws.model.constants import (WIND_DIR, DEBRIS_TYPES_KEYS,
+                                  FLIGHT_DISTANCE_POWER, VUL_DIC,
+                                  FLIGHT_DISTANCE_COEFF, RHO_AIR, G_CONST)
 from vaws.model.config import Config
-from vaws.model.debris import Debris
+from vaws.model.debris import Debris, generate_debris_items, create_sources, \
+    check_impact_by_debris
 from vaws.model.coverage import Coverage
-from vaws.model.curve import vulnerability_weibull_pdf, vulnerability_weibull
+from vaws.model.curve import vulnerability_weibull_pdf
+from vaws.model.house import House
 
-VUL_DIC = {'Capital_city': {'alpha': 0.1586, 'beta': 3.8909},
-           'Tropical_town': {'alpha': 0.1030, 'beta': 4.1825}}
+REF04 = geometry.Polygon([(-24.0, 6.5), (4.0, 6.5), (4.0, -6.5),
+                          (-24.0, -6.5), (-24.0, 6.5)])
+
+REF37 = geometry.Polygon([(-1.77, 7.42), (7.42, -1.77), (1.77, -7.42),
+                          (-27.42, 1.77), (-1.77, 7.42)])
+
+REF26 = geometry.Polygon([(-26.5, 4.0), (6.5, 4.0), (6.5, -4.0),
+                          (-26.5, -4.0), (-26.5, 4.0)])
+
+REF15 = geometry.Polygon([(-27.42, -1.77), (1.77, 7.42), (7.42, 1.77),
+                          (-1.77, -7.42), (-27.42, -1.77)])
+
+STRETCHED_FOOTPRINT = {0: REF04, 1: REF15, 2: REF26, 3: REF37,
+                       4: REF04, 5: REF15, 6: REF26, 7: REF37}
 
 
 class DebrisOriginal(object):
     """
     Original debris model
-    : footprint: stretched
+    : footprint: stretched (only works for defined stretched_footprint)
     : touching: within the footprint
     : estimated breached area assuming poisson distribution
     """
-
-    rho_air = 1.2  # air density
-    g_const = 9.81  # acceleration of gravity
-
-    flight_distance_coeff = {2: {'Compact': [0.011, 0.2060],
-                                 'Sheet': [0.3456, 0.072],
-                                 'Rod': [0.2376, 0.0723]},
-                             5: {'Sheet': [0.456, -0.148, 0.024, -0.0014],
-                                 'Compact': [0.405, -0.036, -0.052, 0.008],
-                                 'Rod': [0.4005, -0.16, 0.036, -0.0032]}}
-
-    flight_distance_power = {2: [1, 2],
-                             5: [2, 3, 4, 5]}
 
     angle_by_idx = {0: 90.0, 4: 90.0,  # S, N
                     1: 45.0, 5: 45.0,  # SW, NE
@@ -53,13 +59,13 @@ class DebrisOriginal(object):
         assert isinstance(cfg, Config)
         assert isinstance(rnd_state, np.random.RandomState)
         assert wind_dir_idx in range(8)
-        assert isinstance(coverages, dict)
+        assert isinstance(coverages, list)
 
         self.cfg = cfg
         self.rnd_state = rnd_state
         self.wind_dir_idx = wind_dir_idx
         self.coverages = coverages
-
+        self._footprint = None
         self._damage_incr = None
 
         self.debris_items = []  # container of items over wind steps
@@ -70,17 +76,7 @@ class DebrisOriginal(object):
         self.no_impacts = 0
         self.damaged_area = 0.0  # total damaged area by debris items
 
-        self.coverage_idx = []
-        _coverage_prob = []
-        _area = 0.0
-        for key, value in self.coverages.items():
-            _area += value.area
-            self.coverage_idx.append(key)
-            _coverage_prob.append(_area)
-        self.coverage_prob = np.array(_coverage_prob)/_area
-
-        # vary over wind speeds
-        self.sampled_impacts = 0
+        self.coverage_prob = np.array([x.area for x in coverages])/self.area
 
     @property
     def damage_incr(self):
@@ -92,7 +88,7 @@ class DebrisOriginal(object):
         self._damage_incr = value
 
     @property
-    def mean_no_items(self):
+    def no_items_mean(self):
         """
 
         dN = f * dD
@@ -114,30 +110,46 @@ class DebrisOriginal(object):
 
     @property
     def footprint(self):
+        return self._footprint
+
+    @footprint.setter
+    def footprint(self, polygon_inst):
         """
         create house footprint by wind direction
-        Note that debris source model is generated assuming wind blows from East.
+        Note that debris source model is generated assuming wind blows from E.
 
-        :param _tuple: (polygon_inst, wind_dir_index)
+        Args:
+            _tuple: (polygon_inst, wind_dir_index)
 
-        :return:
-            self.footprint, self.front_facing_walls
+        Returns:
+
+            self.footprint
+            self.front_facing_walls
+
         """
-        return shapely.affinity.rotate(
-            self.cfg.footprint, self.__class__.angle_by_idx[self.wind_dir_idx])
-
-    @property
-    def front_facing_walls(self):
-        return self.cfg.front_facing_walls[self.cfg.wind_dir[self.wind_dir_idx]]
+        self._footprint = polygon_inst
 
     @property
     def area(self):
-        return sum([x.area for x in self.coverages.itervalues()])
+        return sum([x.area for x in self.coverages])
 
     @property
     def boundary(self):
-        return shapely.geometry.Point(0, 0).buffer(self.cfg.boundary_radius)
+        return geometry.Point(0, 0).buffer(self.cfg.boundary_radius)
 
+    @property
+    def breached_area(self):
+        return sum([x.breached_area for x in self.coverages])
+
+    @property
+    def window_breached(self):
+        # only check windows breach
+        window_breach = sum([x.breached for x in self.coverages
+                             if x.description == 'window'])
+        if window_breach:
+            return 1
+        else:
+            return 0
 
     def run(self, wind_speed):
         """
@@ -151,7 +163,6 @@ class DebrisOriginal(object):
 
         self.no_impacts = 0
         self.debris_momentums = []
-        self.sampled_impacts = 0
 
         # sample a poisson for each source
         no_items_by_source = self.rnd_state.poisson(
@@ -164,7 +175,7 @@ class DebrisOriginal(object):
         # loop through sources
         for no_item, source in zip(no_items_by_source, self.cfg.debris_sources):
 
-            list_debris = self.rnd_state.choice(self.cfg.debris_types_keys,
+            list_debris = self.rnd_state.choice(DEBRIS_TYPES_KEYS,
                                                 size=no_item, replace=True,
                                                 p=self.cfg.debris_types_ratio)
 
@@ -172,7 +183,40 @@ class DebrisOriginal(object):
                 self.generate_debris_item(wind_speed, source, debris_type)
 
         if self.no_impacts:
-            self.check_debris_impact()
+            self.check_coverages()
+
+    def run_moment(self, wind_speed):
+        """
+
+        Args:
+            wind_speed:
+
+        Returns:
+
+        """
+        self.no_impacts = 0
+        self.debris_momentums = []
+
+        # sample a poisson for each source
+        no_items_by_source = self.rnd_state.poisson(
+            self.no_items_mean, size=len(self.cfg.debris_sources))
+
+        self.no_items = no_items_by_source.sum()
+        logging.debug('no_item_by_source at speed {:.3f}: {} sampled with {}'.format(
+            wind_speed, self.no_items, self.no_items_mean))
+
+        # loop through sources
+        for no_item, source in zip(no_items_by_source, self.cfg.debris_sources):
+
+            list_debris = self.rnd_state.choice(DEBRIS_TYPES_KEYS,
+                                                size=no_item, replace=True,
+                                                p=self.cfg.debris_types_ratio)
+
+            for debris_type in list_debris:
+                self.generate_debris_item(wind_speed, source, debris_type)
+
+        if self.no_impacts:
+            self.check_coverages_moment()
 
     def generate_debris_item(self, wind_speed, source, debris_type_str):
         """
@@ -202,10 +246,10 @@ class DebrisOriginal(object):
             frontal_area = math.exp(debris['frontal_area_mu'])
 
         try:
-            flight_time = self.rnd_state.lognormal(self.cfg.flight_time_log_mu,
-                                                   self.cfg.flight_time_log_std)
+            flight_time = self.rnd_state.lognormal(debris['flight_time_mu'],
+                                                   debris['flight_time_std'])
         except ValueError:
-            flight_time = math.exp(self.cfg.flight_time_log_mu)
+            flight_time = math.exp(debris['flight_time_mu'])
 
         flight_distance = self.compute_flight_distance(debris_type_str,
                                                        flight_time,
@@ -223,12 +267,12 @@ class DebrisOriginal(object):
         x, y = self.rnd_state.normal(loc=[0.0, 0.0], scale=[sigma_x, sigma_y])
 
         # reference point: target house
-        pt_debris = shapely.geometry.Point(x + source.x - flight_distance, y + source.y)
+        pt_debris = geometry.Point(x + source.x - flight_distance, y + source.y)
+        line_debris = geometry.LineString([source, pt_debris])
 
         if self.footprint.contains(pt_debris):
             self.no_impacts += 1
 
-        line_debris = LineString([source, pt_debris])
         self.debris_items.append((debris_type_str, line_debris))
 
         item_momentum = self.compute_debris_momentum(debris['cdav'],
@@ -239,7 +283,7 @@ class DebrisOriginal(object):
 
         self.debris_momentums.append(item_momentum)
 
-    def check_debris_impact(self):
+    def check_coverages(self):
         """
 
         Returns:
@@ -247,7 +291,7 @@ class DebrisOriginal(object):
 
         """
 
-        for _id, _coverage in self.coverages.items():
+        for _coverage in self.coverages:
 
             try:
                 _capacity = self.rnd_state.lognormal(*_coverage.log_failure_momentum)
@@ -255,7 +299,7 @@ class DebrisOriginal(object):
                 _capacity = math.exp(_coverage.log_failure_momentum[0])
 
             # Complementary CDF of impact momentum
-            ccdf = 1.0*(self.debris_momentums > np.array(_capacity)).sum()/self.no_items
+            ccdf = (self.debris_momentums > np.array(_capacity)).sum()/self.no_items
             poisson_rate = self.no_impacts * _coverage.area / self.area * ccdf
 
             if _coverage.description == 'window':
@@ -269,8 +313,30 @@ class DebrisOriginal(object):
                 sampled_impacts = self.rnd_state.poisson(poisson_rate)
                 _coverage.breached_area = min(sampled_impacts, _coverage.area)
 
-            # logging.debug('coverage {} breached by debris b/c {:.3f} < {:.3f} -> area: {:.3f}'.format(
-            #     _coverage.name, _capacity, item_momentum, _coverage.breached_area))
+    def check_coverages_moment(self):
+        """
+
+        Returns:
+            self.breached
+
+        """
+
+        for _coverage in self.coverages:
+
+            # Complementary CDF of impact momentum
+            ccdf = (self.debris_momentums > np.array(_coverage.momentum_capacity)).sum()/self.no_items
+            poisson_rate = self.no_impacts * _coverage.area / self.area * ccdf
+
+            if _coverage.description == 'window':
+                prob_damage = 1.0 - math.exp(-1.0*poisson_rate)
+                rv = self.rnd_state.rand()
+                if rv < prob_damage:
+                    _coverage.breached_area = _coverage.area
+                    _coverage.breached = 1
+            else:
+                # assume area: no_impacts * size(1) * amplification_factor(1)
+                sampled_impacts = self.rnd_state.poisson(poisson_rate)
+                _coverage.breached_area = min(sampled_impacts, _coverage.area)
 
     def compute_flight_distance(self, debris_type_str, flight_time,
                                 frontal_area, mass, wind_speed, flag_poly=2):
@@ -300,28 +366,26 @@ class DebrisOriginal(object):
 
         else:
 
-            assert flag_poly in self.__class__.flight_distance_power
+            assert flag_poly in FLIGHT_DISTANCE_POWER
 
             # dimensionless time
-            t_star = self.__class__.g_const * flight_time / wind_speed
+            t_star = G_CONST * flight_time / wind_speed
 
-            # Tachikawa Number: rho*(V**2)/(2*g*h_m*rho_m)
+            # tachikawa number: rho*(v**2)/(2*g*h_m*rho_m)
             # assume h_m * rho_m == mass / frontal_area
-            k_star = self.__class__.rho_air * math.pow(wind_speed, 2.0) / (
-                2.0 * self.__class__.g_const * mass / frontal_area)
+            k_star = RHO_AIR * math.pow(wind_speed, 2.0) / (
+                2.0 * G_CONST * mass / frontal_area)
             kt_star = k_star * t_star
 
-            kt_star_powered = np.array([math.pow(kt_star, i)
-                for i in self.__class__.flight_distance_power[flag_poly]])
-            coeff = np.array(self.__class__.flight_distance_coeff[
-                              flag_poly][debris_type_str])
+            kt_star_powered = np.array([math.pow(kt_star, i) for i in FLIGHT_DISTANCE_POWER[flag_poly]])
+            coeff = np.array(FLIGHT_DISTANCE_COEFF[flag_poly][debris_type_str])
             less_dis = (coeff * kt_star_powered).sum()
 
             # dimensionless hor. displacement
-            # k*x_star = k*g*x/V**2
-            # x = (k*x_star)*(V**2)/(k*g)
+            # k*x_star = k*g*x/v**2
+            # x = (k*x_star)*(v**2)/(k*g)
             convert_to_dim = math.pow(wind_speed, 2.0) / (
-                k_star * self.__class__.g_const)
+                k_star * G_CONST)
 
             return convert_to_dim * less_dis
 
@@ -355,7 +419,7 @@ class DebrisOriginal(object):
 
         """
         # calculate um/vs, ratio of hor. vel. of debris to local wind speed
-        param_b = math.sqrt(self.__class__.rho_air * cdav * frontal_area / mass)
+        param_b = math.sqrt(RHO_AIR * cdav * frontal_area / mass)
         _mean = 1.0 - math.exp(-param_b * math.sqrt(flight_distance))
 
         # dispersion here means a + b of Beta(a, b)
@@ -380,21 +444,35 @@ class DebrisOriginal(object):
         return mass * wind_speed * self.rnd_state.beta(beta_a, beta_b)
 
 
-class DebrisTest(DebrisOriginal):
+class DebrisCircle(DebrisOriginal):
     """
     debris model with
-    : footprint: rotated
-    : touching is intersect with footprint
+    : footprint: rotated + circle boundary
+    : touching: within footprint or intersect footprint within boundary
     : estimated breached area assuming poisson distribution
-
     """
 
     def __init__(self, cfg, rnd_state, wind_dir_idx, coverages):
 
-        super(DebrisTest, self).__init__(cfg=cfg,
-                                         rnd_state=rnd_state,
-                                         wind_dir_idx=wind_dir_idx,
-                                         coverages=coverages)
+        super(DebrisCircle, self).__init__(cfg=cfg,
+                                           rnd_state=rnd_state,
+                                           wind_dir_idx=wind_dir_idx,
+                                           coverages=coverages)
+
+    @property
+    def footprint(self):
+        """
+        create house footprint by wind direction
+        Note that debris source model is generated assuming wind blows from East.
+
+        :param _tuple: (polygon_inst, wind_dir_index)
+
+        :return:
+            self.footprint, self.front_facing_walls
+        """
+        if self._footprint is None:
+            self._footprint = affinity.rotate(self.cfg.footprint, self.__class__.angle_by_idx[self.wind_dir_idx])
+        return self._footprint
 
     def generate_debris_item(self, wind_speed, source, debris_type_str):
         """
@@ -424,10 +502,10 @@ class DebrisTest(DebrisOriginal):
             frontal_area = math.exp(debris['frontal_area_mu'])
 
         try:
-            flight_time = self.rnd_state.lognormal(self.cfg.flight_time_log_mu,
-                                                   self.cfg.flight_time_log_std)
+            flight_time = self.rnd_state.lognormal(debris['flight_time_mu'],
+                                                   debris['flight_time_std'])
         except ValueError:
-            flight_time = math.exp(self.cfg.flight_time_log_mu)
+            flight_time = math.exp(debris['flight_time_mu'])
 
         flight_distance = self.compute_flight_distance(debris_type_str,
                                                        flight_time,
@@ -440,17 +518,21 @@ class DebrisTest(DebrisOriginal):
 
         # determine landing location for a debris item
         # sigma_x, y are taken from Wehner et al. (2010)
-        x = self.rnd_state.normal(loc=0.0, scale=flight_distance / 3.0)
-        y = self.rnd_state.normal(loc=0.0, scale=flight_distance / 12.0)
+        sigma_x = flight_distance / 3.0
+        sigma_y = flight_distance / 12.0
+        x = self.rnd_state.normal(loc=0.0, scale=sigma_x)
+        y = self.rnd_state.normal(loc=0.0, scale=sigma_y)
 
         # reference point: target house
-        pt_debris = shapely.geometry.Point(x + source.x - flight_distance, y + source.y)
-        line_debris = shapely.geometry.LineString([source, pt_debris])
-
-        if line_debris.intersects(self.footprint):
+        pt_debris = geometry.Point(x + source.x - flight_distance, y + source.y)
+        line_debris = geometry.LineString([source, pt_debris])
+        #
+        land_within_footprint = self.footprint.contains(pt_debris)
+        intersect_within_boundary = (line_debris.intersects(self.footprint)
+                                     and self.boundary.contains(pt_debris))
+        if land_within_footprint or intersect_within_boundary:
             self.no_impacts += 1
 
-        line_debris = shapely.geometry.LineString([source, pt_debris])
         self.debris_items.append((debris_type_str, line_debris))
 
         item_momentum = self.compute_debris_momentum(debris['cdav'],
@@ -465,9 +547,9 @@ class DebrisTest(DebrisOriginal):
 class DebrisMC(DebrisOriginal):
     """
     Original debris model
-    : footprint: stretched
+    : footprint: stretched (only works for defined stretched_footprint)
     : touching: within the footprint
-    : estimated breached area based on the MC
+    : estimated breached area using MC + Moment
     """
 
     def __init__(self, cfg, rnd_state, wind_dir_idx, coverages):
@@ -505,10 +587,10 @@ class DebrisMC(DebrisOriginal):
             frontal_area = math.exp(debris['frontal_area_mu'])
 
         try:
-            flight_time = self.rnd_state.lognormal(self.cfg.flight_time_log_mu,
-                                                   self.cfg.flight_time_log_std)
+            flight_time = self.rnd_state.lognormal(debris['flight_time_mu'],
+                                                   debris['flight_time_std'])
         except ValueError:
-            flight_time = math.exp(self.cfg.flight_time_log_mu)
+            flight_time = math.exp(debris['flight_time_mu'])
 
         flight_distance = self.compute_flight_distance(debris_type_str,
                                                        flight_time,
@@ -524,13 +606,18 @@ class DebrisMC(DebrisOriginal):
         x = self.rnd_state.normal(loc=0.0, scale=flight_distance / 3.0)
         y = self.rnd_state.normal(loc=0.0, scale=flight_distance / 12.0)
 
-        # reference point: target house
-        pt_debris = shapely.geometry.Point(x + source.x - flight_distance, y + source.y)
-        line_debris = shapely.geometry.LineString([source, pt_debris])
+        # # reference point: target house
+        pt_debris = geometry.Point(x + source.x - flight_distance, y + source.y)
+        line_debris = geometry.LineString([source, pt_debris])
         self.debris_items.append((debris_type_str, line_debris))
+        #
+        # land_within_footprint = self.footprint.contains(pt_debris)
+        # intersect_within_boundary = (line_debris.intersects(self.footprint)
+        #                              and self.boundary.contains(pt_debris))
+        # if land_within_footprint or intersect_within_boundary:
+        #     self.no_impacts += 1
 
         if self.footprint.contains(pt_debris):
-
             self.no_impacts += 1
 
             item_momentum = self.compute_debris_momentum(debris['cdav'],
@@ -539,9 +626,9 @@ class DebrisMC(DebrisOriginal):
                                                          mass,
                                                          wind_speed)
 
-            self.check_debris_impact_MC(item_momentum)
+            self.check_coverages_MC(item_momentum)
 
-    def check_debris_impact_MC(self, item_momentum):
+    def check_coverages_MC(self, item_momentum):
         """
 
         Args:
@@ -554,20 +641,9 @@ class DebrisMC(DebrisOriginal):
         """
 
         # determine coverage type
-        _rv = self.rnd_state.uniform()
-        _id = self.coverage_idx[(self.coverage_prob < _rv).sum()]
-        _coverage = self.coverages[_id]
+        _coverage = self.rnd_state.choice(self.coverages, p=self.coverage_prob)
 
-        #logging.debug('coverage id: {} due to rv: {} vs prob: {}'.format(
-        #    _id, _rv, self.coverage_prob))
-
-        # check impact using failure momentum
-        try:
-            _capacity = self.rnd_state.lognormal(*_coverage.log_failure_momentum)
-        except ValueError:
-            _capacity = math.exp(_coverage.log_failure_momentum[0])
-
-        if _capacity < item_momentum:
+        if _coverage.momentum_capacity < item_momentum:
             # history of coverage is ignored
             if _coverage.description == 'window':
                 _coverage.breached_area = _coverage.area
@@ -579,16 +655,25 @@ class DebrisMC(DebrisOriginal):
                     _coverage.area)
 
 
-def area_stretched(stretch, a, b):
-    return (stretch+a*2.0)*(b*2.0)
+def set_coverages_for_debris(cfg, wind_dir_idx, rnd_state):
+    windward_walls = cfg.front_facing_walls[WIND_DIR[wind_dir_idx]]
+    coverages = []
+    new_item = {'rnd_state': rnd_state}
+
+    for _name, item in cfg.coverages.iterrows():
+
+        for key, value in new_item.items():
+            item[key] = value
+
+        _coverage = Coverage(name=_name, **item)
+
+        if item.wall_name in windward_walls:
+            coverages.append(_coverage)
+
+    return coverages
 
 
-def area_circle(r, a, b):
-    x_plus_a = math.sqrt(r**2 - b**2)
-    theta = math.acos(x_plus_a/r)
-    return theta * r**2 + x_plus_a*b + (a * 2*b)
-
-'''
+@unittest.skip("comparison cases")
 class CompareCase(unittest.TestCase):
 
     @classmethod
@@ -596,315 +681,363 @@ class CompareCase(unittest.TestCase):
         path = os.sep.join(__file__.split(os.sep)[:-1])
         cls.path_scenario = os.path.join(
             path, 'test_scenarios', 'test_roof_sheeting')
-        # set up logging
-        file_logger = os.path.join(cls.path_scenario, 'output', 'log.txt')
-        logging.basicConfig(filename=file_logger,
-                            filemode='w',
-                            level=logging.DEBUG,
-                            format='%(levelname)s %(message)s')
 
-        cfg_file = os.path.join(cls.path_scenario, 'test_roof_sheeting.cfg')
-        cls.cfg = Config(cfg_file=cfg_file)
+        file_cfg = os.path.join(cls.path_scenario, 'test_roof_sheeting.cfg')
+        cls.cfg = Config(file_cfg=file_cfg)
 
-        cls.footprint_inst = Polygon([(-6.5, 4.0), (6.5, 4.0), (6.5, -4.0),
-                                      (-6.5, -4.0), (-6.5, 4.0)])
-
-        cls.footprint_stretched = Polygon([
-            (-24.0, 6.5), (4.0, 6.5), (4.0, -6.5), (-24.0, -6.5), (-24.0, 6.5)])
-
-        cls.footprint_rotated = Polygon([
-            (-4.0, 6.5), (4.0, 6.5), (4.0, -6.5), (-4.0, -6.5), (-4.0, 6.5)])
-
-        cls.radius = 24.0
-
-    def test_run(self):
-
-        # set up logging
-        # file_logger = os.path.join(self.path_output, 'log_debris.txt')
-        # logging.basicConfig(filename=file_logger,
-        #                     filemode='w',
-        #                     level=logging.DEBUG,
-        #                     format='%(levelname)s %(message)s')
-
-        wind_speeds = np.arange(40.0, 120.0, 1.0)
-
-        #key = 'Capital_city'
+        # key = 'Capital_city'
         key = 'Tropical_town'
 
-        alpha_ = VUL_DIC[key]['alpha']
-        beta_ = VUL_DIC[key]['beta']
+        cls.cfg.building_spacing = 20.0
+        cls.cfg.debris_radius = 100.
+        cls.cfg.debris_angle = 45.0
+        cls.cfg.source_items = 100
+        cls.cfg.region_name = key
 
-        incr_speed = wind_speeds[1] - wind_speeds[0]
+        cls.cfg.process_config()
 
-        nmodels = 20
+        cls.wind_speeds = np.arange(40.0, 120.0, 1.0)
+        cls.incr_speed = cls.wind_speeds[1] - cls.wind_speeds[0]
+        cls.no_speeds = len(cls.wind_speeds)
+        cls.no_models = 20
 
-        self.cfg.building_spacing = 20.0
-        self.cfg.debris_radius = 100.
-        self.cfg.debris_angle = 45.0
-        self.cfg.source_items = 100
-        self.cfg.region_name = key
+        cls.footprint_stretched = geometry.Polygon([
+            (-24.0, 6.5), (4.0, 6.5), (4.0, -6.5), (-24.0, -6.5), (-24.0, 6.5)])
 
-        self.cfg.process_config()
+        cls.footprint_rotated = geometry.Polygon([
+            (-4.0, 6.5), (4.0, 6.5), (4.0, -6.5), (-4.0, -6.5), (-4.0, 6.5)])
+
+        cls.footprint_inst = geometry.Polygon([(-6.5, 4.0), (6.5, 4.0), (6.5, -4.0),
+                                      (-6.5, -4.0), (-6.5, 4.0)])
+
+        boundary_radius = 24.0
+
+        cls.boundary = geometry.Point(0, 0).buffer(boundary_radius)
+
+    @classmethod
+    def run_original(cls):
+        start_time = time.time()
+        no_items, no_touched, no_breached, damaged_area = [], [], [], []
+
+        # original case:
+        for i in range(cls.no_models):
+
+            rnd_state = np.random.RandomState(i)
+
+            coverages = set_coverages_for_debris(cfg=cls.cfg,
+                                                 wind_dir_idx=0,
+                                                 rnd_state=rnd_state)
+
+            debris = DebrisOriginal(cfg=cls.cfg,
+                                    rnd_state=rnd_state,
+                                    coverages=coverages,
+                                    wind_dir_idx=0)
+
+            debris.footprint = cls.footprint_stretched
+
+            for wind_speed in cls.wind_speeds:
+
+                incr_damage = vulnerability_weibull_pdf(
+                    x=wind_speed,
+                    alpha=VUL_DIC[cls.cfg.region_name]['alpha'],
+                    beta=VUL_DIC[cls.cfg.region_name]['beta']) * cls.incr_speed
+
+                debris.damage_incr = incr_damage
+                debris.run(wind_speed)
+
+                no_items.append(debris.no_items)
+                no_touched.append(debris.no_impacts)
+                no_breached.append(debris.window_breached)
+                damaged_area.append(debris.breached_area)
+
+        no_items = np.array(no_items).reshape(cls.no_models, cls.no_speeds).mean(axis=0)
+        no_touched = np.array(no_touched).reshape(cls.no_models, cls.no_speeds).mean(axis=0)
+        no_breached = np.array(no_breached).reshape(cls.no_models, cls.no_speeds).mean(axis=0)
+        damaged_area = np.array(damaged_area).reshape(cls.no_models, cls.no_speeds).mean(axis=0)
+        elapsed = time.time() - start_time
+
+        return no_items, no_touched, no_breached, damaged_area, elapsed
+
+    @classmethod
+    def run_moment(cls):
 
         start_time = time.time()
+        no_items, no_touched, no_breached, damaged_area = [], [], [], []
 
-        no_items1 = []
-        no_touched1 = []
-        no_breached1 = []
-        damaged_area1 = []
+        # original case:
+        for i in range(cls.no_models):
 
-        # original debris model with stretched footprint
-        for i in range(nmodels):
+            rnd_state = np.random.RandomState(i)
 
-            coverages1 = copy.deepcopy(self.cfg.coverages)
-            for _name, item in coverages1.iterrows():
-                _coverage = Coverage(coverage_name=_name, **item)
-                coverages1.loc[_name, 'coverage'] = _coverage
+            coverages = set_coverages_for_debris(cfg=cls.cfg,
+                                                       wind_dir_idx=0,
+                                                       rnd_state=rnd_state)
 
-            debris1 = DebrisOriginal(self.cfg)
-            debris1.rnd_state = np.random.RandomState(i)
-            debris1.footprint = (self.footprint_stretched, 0)
-            debris1.coverages = coverages1
+            debris = DebrisOriginal(cfg=cls.cfg,
+                                    rnd_state=rnd_state,
+                                    coverages=coverages,
+                                    wind_dir_idx=0)
 
-            for wind_speed in wind_speeds:
-                incr_damage = vulnerability_weibull_pdf(x=wind_speed,
-                                                        alpha_=alpha_,
-                                                        beta_=beta_) * incr_speed
+            debris.footprint = cls.footprint_stretched
 
-                debris1.no_items_mean = incr_damage
-                # print('{},,{}'.format(wind_speed, debris2.no_items_mean))
-                debris1.run(wind_speed)
-                no_items1.append(debris1.no_items)
-                no_touched1.append(debris1.no_impacts)
-                breached_area = sum(
-                    [x.breached_area for x in debris1.coverages.itervalues()])
-                damaged_area1.append(breached_area)
+            for wind_speed in cls.wind_speeds:
 
-                # only check windows breach
-                window_breach = np.array([
-                    x.breached for x in debris1.coverages.itervalues()]).sum()
-                if window_breach:
-                    no_breached1.append(1)
-                else:
-                    no_breached1.append(0)
+                incr_damage = vulnerability_weibull_pdf(
+                    x=wind_speed,
+                    alpha=VUL_DIC[cls.cfg.region_name]['alpha'],
+                    beta=VUL_DIC[cls.cfg.region_name]['beta']) * cls.incr_speed
 
-        no_items1 = np.array(no_items1).reshape(nmodels, len(wind_speeds)).mean(axis=0)
-        no_touched1 = np.array(no_touched1).reshape(nmodels, len(wind_speeds)).mean(axis=0)
-        no_breached1 = np.array(no_breached1).reshape(nmodels, len(wind_speeds)).mean(axis=0)
-        damaged_area1 = np.array(damaged_area1).reshape(nmodels, len(wind_speeds)).mean(axis=0)
-        print('Elapsed time: {}'.format(time.time()-start_time))
+                debris.damage_incr = incr_damage
+                debris.run_moment(wind_speed)
+
+                no_items.append(debris.no_items)
+                no_touched.append(debris.no_impacts)
+                no_breached.append(debris.window_breached)
+                damaged_area.append(debris.breached_area)
+
+        no_items = np.array(no_items).reshape(cls.no_models, cls.no_speeds).mean(axis=0)
+        no_touched = np.array(no_touched).reshape(cls.no_models, cls.no_speeds).mean(axis=0)
+        no_breached = np.array(no_breached).reshape(cls.no_models, cls.no_speeds).mean(axis=0)
+        damaged_area = np.array(damaged_area).reshape(cls.no_models, cls.no_speeds).mean(axis=0)
+        elapsed = time.time() - start_time
+
+        return no_items, no_touched, no_breached, damaged_area, elapsed
+
+    @classmethod
+    def run_mc(cls):
 
         start_time = time.time()
-        no_items2 = []
-        no_touched2 = []
-        no_breached2 = []
-        damaged_area2 = []
+        no_items, no_touched, no_breached, damaged_area = [], [], [], []
 
-        # debris model with rotated footprint with circular boundary
-        for i in range(nmodels):
+        # original case:
+        for i in range(cls.no_models):
 
-            coverages2 = copy.deepcopy(self.cfg.coverages)
-            for _name, item in coverages2.iterrows():
-                _coverage = Coverage(coverage_name=_name, **item)
-                coverages2.loc[_name, 'coverage'] = _coverage
+            rnd_state = np.random.RandomState(i)
 
-            debris2 = Debris(self.cfg)
-            debris2.rnd_state = np.random.RandomState(i)
-            debris2.footprint = (self.footprint_inst, 0)
-            debris2.boundary = self.radius
-            debris2.coverages = coverages2
+            coverages = set_coverages_for_debris(cfg=cls.cfg,
+                                                       wind_dir_idx=0,
+                                                       rnd_state=rnd_state)
 
-            for wind_speed in wind_speeds:
-                incr_damage = vulnerability_weibull_pdf(x=wind_speed,
-                                                        alpha_=alpha_,
-                                                        beta_=beta_) * incr_speed
+            debris = DebrisMC(cfg=cls.cfg,
+                              rnd_state=rnd_state,
+                              coverages=coverages,
+                              wind_dir_idx=0)
 
-                debris2.no_items_mean = incr_damage
-                # print('{},,{}'.format(wind_speed, debris2.no_items_mean))
-                debris2.run(wind_speed)
-                no_items2.append(debris2.no_items)
-                no_touched2.append(debris2.no_impacts)
-                breached_area = sum(
-                    [x.breached_area for x in debris2.coverages.itervalues()])
-                damaged_area2.append(breached_area)
+            debris.footprint = cls.footprint_stretched
 
-                # only check windows breach
-                window_breach = np.array([
-                    x.breached for x in debris2.coverages.itervalues()]).sum()
-                if window_breach:
-                    no_breached2.append(1)
-                else:
-                    no_breached2.append(0)
+            for wind_speed in cls.wind_speeds:
 
-        no_items2 = np.array(no_items2).reshape(nmodels, len(wind_speeds)).mean(axis=0)
-        no_touched2 = np.array(no_touched2).reshape(nmodels, len(wind_speeds)).mean(axis=0)
-        no_breached2 = np.array(no_breached2).reshape(nmodels, len(wind_speeds)).mean(axis=0)
-        damaged_area2 = np.array(damaged_area2).reshape(nmodels, len(wind_speeds)).mean(axis=0)
-        print('Elapsed time: {}'.format(time.time()-start_time))
+                incr_damage = vulnerability_weibull_pdf(
+                    x=wind_speed,
+                    alpha=VUL_DIC[cls.cfg.region_name]['alpha'],
+                    beta=VUL_DIC[cls.cfg.region_name]['beta']) * cls.incr_speed
+
+                debris.damage_incr = incr_damage
+                debris.run(wind_speed)
+
+                no_items.append(debris.no_items)
+                no_touched.append(debris.no_impacts)
+                no_breached.append(debris.window_breached)
+                damaged_area.append(debris.breached_area)
+
+        no_items = np.array(no_items).reshape(cls.no_models, cls.no_speeds).mean(axis=0)
+        no_touched = np.array(no_touched).reshape(cls.no_models, cls.no_speeds).mean(axis=0)
+        no_breached = np.array(no_breached).reshape(cls.no_models, cls.no_speeds).mean(axis=0)
+        damaged_area = np.array(damaged_area).reshape(cls.no_models, cls.no_speeds).mean(axis=0)
+        elapsed = time.time() - start_time
+
+        return no_items, no_touched, no_breached, damaged_area, elapsed
+
+    @classmethod
+    def run_boundary(cls):
 
         start_time = time.time()
-        no_items3 = []
-        no_touched3 = []
-        no_breached3 = []
-        damaged_area3 = []
+        no_items, no_touched, no_breached, damaged_area = [], [], [], []
 
-        # debris model with stretched
-        for i in range(nmodels):
+        # original case:
+        for i in range(cls.no_models):
 
-            coverages3 = copy.deepcopy(self.cfg.coverages)
-            for _name, item in coverages3.iterrows():
-                _coverage = Coverage(coverage_name=_name, **item)
-                coverages3.loc[_name, 'coverage'] = _coverage
+            rnd_state = np.random.RandomState(i)
 
-            debris3 = DebrisMC(self.cfg)
-            debris3.rnd_state = np.random.RandomState(i)
-            debris3.footprint = (self.footprint_stretched, 0)
-            debris3.coverages = coverages3
+            coverages = set_coverages_for_debris(cfg=cls.cfg,
+                                                       wind_dir_idx=0,
+                                                       rnd_state=rnd_state)
 
-            for wind_speed in wind_speeds:
-                incr_damage = vulnerability_weibull_pdf(x=wind_speed,
-                                                        alpha_=alpha_,
-                                                        beta_=beta_) * incr_speed
+            debris = DebrisCircle(cfg=cls.cfg,
+                                  rnd_state=rnd_state,
+                                  coverages=coverages,
+                                  wind_dir_idx=0)
 
-                debris3.no_items_mean = incr_damage
-                # print('{},,{}'.format(wind_speed, debris2.no_items_mean))
-                debris3.run(wind_speed)
-                no_items3.append(debris3.no_items)
-                no_touched3.append(debris3.no_impacts)
-                breached_area = sum(
-                    [x.breached_area for x in debris3.coverages.itervalues()])
-                damaged_area3.append(breached_area)
+            for wind_speed in cls.wind_speeds:
 
-                # only check windows breach
-                window_breach = np.array([
-                    x.breached for x in debris3.coverages.itervalues()]).sum()
-                if window_breach:
-                    no_breached3.append(1)
-                else:
-                    no_breached3.append(0)
+                incr_damage = vulnerability_weibull_pdf(
+                    x=wind_speed,
+                    alpha=VUL_DIC[cls.cfg.region_name]['alpha'],
+                    beta=VUL_DIC[cls.cfg.region_name]['beta']) * cls.incr_speed
 
-        no_items3 = np.array(no_items3).reshape(nmodels, len(wind_speeds)).mean(axis=0)
-        no_touched3 = np.array(no_touched3).reshape(nmodels, len(wind_speeds)).mean(axis=0)
-        no_breached3 = np.array(no_breached3).reshape(nmodels, len(wind_speeds)).mean(axis=0)
-        damaged_area3 = np.array(damaged_area3).reshape(nmodels, len(wind_speeds)).mean(axis=0)
-        print('Elapsed time: {}'.format(time.time()-start_time))
+                debris.damage_incr = incr_damage
+                debris.run(wind_speed)
+
+                no_items.append(debris.no_items)
+                no_touched.append(debris.no_impacts)
+                no_breached.append(debris.window_breached)
+                damaged_area.append(debris.breached_area)
+
+        no_items = np.array(no_items).reshape(cls.no_models, cls.no_speeds).mean(axis=0)
+        no_touched = np.array(no_touched).reshape(cls.no_models, cls.no_speeds).mean(axis=0)
+        no_breached = np.array(no_breached).reshape(cls.no_models, cls.no_speeds).mean(axis=0)
+        damaged_area = np.array(damaged_area).reshape(cls.no_models, cls.no_speeds).mean(axis=0)
+        elapsed = time.time() - start_time
+
+        return no_items, no_touched, no_breached, damaged_area, elapsed
+
+    @classmethod
+    def run_debris(cls):
 
         start_time = time.time()
-        no_items4 = []
-        no_touched4 = []
-        no_breached4 = []
-        damaged_area4 = []
+        no_items, no_touched, no_breached, damaged_area = [], [], [], []
 
-        # debris model with rotated footprint with intersection
-        for i in range(nmodels):
+        # original case:
+        for i in range(cls.no_models):
 
-            coverages4 = copy.deepcopy(self.cfg.coverages)
-            for _name, item in coverages4.iterrows():
-                _coverage = Coverage(coverage_name=_name, **item)
-                coverages4.loc[_name, 'coverage'] = _coverage
+            rnd_state = np.random.RandomState(i)
 
-            debris4 = DebrisTest(self.cfg)
-            debris4.rnd_state = np.random.RandomState(i)
-            debris4.footprint = (self.footprint_rotated, 0)
-            debris4.coverages = coverages4
+            coverages = set_coverages_for_debris(cfg=cls.cfg,
+                                                     wind_dir_idx=0,
+                                                     rnd_state=rnd_state)
 
-            for wind_speed in wind_speeds:
-                incr_damage = vulnerability_weibull_pdf(x=wind_speed,
-                                                        alpha_=alpha_,
-                                                        beta_=beta_) * incr_speed
+            coverage_area = sum([x.area for x in coverages])
+            coverage_prob = np.array(
+                [x.area for x in coverages]) / coverage_area
 
-                debris4.no_items_mean = incr_damage
-                # print('{},,{}'.format(wind_speed, debris2.no_items_mean))
-                debris4.run(wind_speed)
-                no_items4.append(debris4.no_items)
-                no_touched4.append(debris4.no_impacts)
-                breached_area = sum(
-                    [x.breached_area for x in debris4.coverages.itervalues()])
-                damaged_area4.append(breached_area)
+            for wind_speed in cls.wind_speeds:
+
+                incr_damage = vulnerability_weibull_pdf(
+                    x=wind_speed,
+                    alpha=VUL_DIC[cls.cfg.region_name]['alpha'],
+                    beta=VUL_DIC[cls.cfg.region_name]['beta']) * cls.incr_speed
+
+                mean_no_items = np.rint(cls.cfg.source_items * incr_damage)
+
+                debris_items = generate_debris_items(
+                    rnd_state=rnd_state,
+                    wind_speed=wind_speed,
+                    cfg=cls.cfg,
+                    mean_no_debris_items=mean_no_items)
+
+                for item in debris_items:
+                    item.check_impact(boundary=cls.boundary,
+                                      footprint=cls.footprint_rotated)
+                    item.check_coverages(coverages=coverages,
+                                         prob_coverages=coverage_prob)
+
+                breached_area = sum([x.breached_area for x in coverages])
 
                 # only check windows breach
-                window_breach = np.array([
-                    x.breached for x in debris4.coverages.itervalues()]).sum()
+                window_breach = sum([
+                    x.breached for x in coverages if
+                    x.description == 'window'])
                 if window_breach:
-                    no_breached4.append(1)
+                    no_breached.append(1)
                 else:
-                    no_breached4.append(0)
+                    no_breached.append(0)
 
-        no_items4 = np.array(no_items4).reshape(nmodels, len(wind_speeds)).mean(axis=0)
-        no_touched4 = np.array(no_touched4).reshape(nmodels, len(wind_speeds)).mean(axis=0)
-        no_breached4 = np.array(no_breached4).reshape(nmodels, len(wind_speeds)).mean(axis=0)
-        damaged_area4 = np.array(damaged_area4).reshape(nmodels, len(wind_speeds)).mean(axis=0)
-        print('Elapsed time: {}'.format(time.time()-start_time))
+                no_debris_items = len(debris_items)
+                no_debris_impacts = sum([x.impact for x in debris_items])
 
+                no_items.append(no_debris_items)
+                no_touched.append(no_debris_impacts)
+                damaged_area.append(breached_area)
+
+        no_items = np.array(no_items).reshape(cls.no_models, cls.no_speeds).mean(axis=0)
+        no_touched = np.array(no_touched).reshape(cls.no_models, cls.no_speeds).mean(axis=0)
+        no_breached = np.array(no_breached).reshape(cls.no_models, cls.no_speeds).mean(axis=0)
+        damaged_area = np.array(damaged_area).reshape(cls.no_models, cls.no_speeds).mean(axis=0)
+        elapsed = time.time() - start_time
+
+        return no_items, no_touched, no_breached, damaged_area, elapsed
+
+    def test_compare_cases(self):
+
+        label1 = 'original'
+        no_items1, no_touched1, no_breached1, damaged_area1, elapsed1 = self.run_original()
+        print('Elapsed time: {}'.format(elapsed1))
+
+        label2 = 'moment'
+        no_items2, no_touched2, no_breached2, damaged_area2, elapsed2 = self.run_moment()
+        print('Elapsed time: {}'.format(elapsed2))
+
+        label3 = 'moment+mc'
+        no_items3, no_touched3, no_breached3, damaged_area3, elapsed3 = self.run_mc()
+        print('Elapsed time: {}'.format(elapsed3))
+
+        label4 = 'boundary'
+        no_items4, no_touched4, no_breached4, damaged_area4, elapsed4 = self.run_boundary()
+        print('Elapsed time: {}'.format(elapsed4))
+
+        label5 = 'implemented'
+        no_items5, no_touched5, no_breached5, damaged_area5, elapsed5 = self.run_debris()
+        print('Elapsed time: {}'.format(elapsed5))
 
         plt.figure()
-        # plt.plot(wind_speeds, no_items1, 'b.-',label='stretched')
-        # plt.plot(wind_speeds, no_items2, 'r.--', label='alternative')
-        # plt.plot(wind_speeds, no_items3, 'g.-', label='rotated')
-        # plt.plot(wind_speeds, no_items4, 'c.-', label='rotated_inter')
-        plt.plot(wind_speeds, np.cumsum(no_items1), 'b.-',label='cum_original')
-        plt.plot(wind_speeds, np.cumsum(no_items2), 'r.--', label='cum_alternative')
-        plt.plot(wind_speeds, np.cumsum(no_items3), 'g.--', label='cum_rotated')
-        plt.plot(wind_speeds, np.cumsum(no_items4), 'c.--', label='cum_rotated_inter')
+        plt.plot(self.wind_speeds, np.cumsum(no_items1), 'b.-', label=label1)
+        plt.plot(self.wind_speeds, np.cumsum(no_items2), 'r.--', label=label2)
+        plt.plot(self.wind_speeds, np.cumsum(no_items3), 'g.--', label=label3)
+        plt.plot(self.wind_speeds, np.cumsum(no_items4), 'c.--', label=label4)
+        plt.plot(self.wind_speeds, np.cumsum(no_items5), 'k.--', label=label5)
         plt.title('Debris impact model comparision')
         plt.xlabel('Wind speed (m/s)')
         plt.ylabel('No. of debris supply')
         plt.legend(loc=4, numpoints=1)
         plt.grid(1)
-        plt.pause(1.0)
-        # plt.show()
-        # plt.savefig('compare_supply1.png')
+        # plt.pause(1.0)
+        plt.savefig('compare_1.png')
         plt.close()
 
         plt.figure()
-        plt.plot(wind_speeds, no_breached1, 'b.-',label='original')
-        plt.plot(wind_speeds, no_breached2, 'r.--', label='alternative')
-        plt.plot(wind_speeds, no_breached3, 'g.-', label='rotated')
-        plt.plot(wind_speeds, no_breached4, 'c.-', label='rotated_inter')
+        plt.plot(self.wind_speeds, no_breached1, 'b.-', label=label1)
+        plt.plot(self.wind_speeds, no_breached2, 'r.--', label=label2)
+        plt.plot(self.wind_speeds, no_breached3, 'g.--', label=label3)
+        plt.plot(self.wind_speeds, no_breached4, 'c.--', label=label4)
+        plt.plot(self.wind_speeds, no_breached5, 'k.--', label=label5)
         plt.title('Debris impact model comparision')
         plt.xlabel('Wind speed (m/s)')
         plt.ylabel('% of model with window breach')
         plt.legend(loc=4, numpoints=1)
         plt.grid(1)
-        plt.pause(1.0)
-        # plt.show()
-        # plt.savefig('compare_breached1.png')
+        # plt.pause(1.0)
+        plt.savefig('compare_2.png')
         plt.close()
 
         plt.figure()
-        # plt.plot(wind_speeds, no_touched1, 'b.-', label='original')
-        # plt.plot(wind_speeds, no_touched2, 'r.--', label='alternative')
-        # plt.plot(wind_speeds, no_touched3, 'g.-', label='rotated')
-        # plt.plot(wind_speeds, no_touched4, 'c.-', label='rotated_inter')
-        plt.plot(wind_speeds, np.cumsum(no_touched1), 'b.-',label='cum_original')
-        plt.plot(wind_speeds, np.cumsum(no_touched2), 'r.--', label='cum_alternative')
-        plt.plot(wind_speeds, np.cumsum(no_touched3), 'g.-', label='cum_rotated')
-        plt.plot(wind_speeds, np.cumsum(no_touched4), 'c.-', label='cum_rotated_inter')
+        plt.plot(self.wind_speeds, np.cumsum(no_touched1), 'b.-', label=label1)
+        plt.plot(self.wind_speeds, np.cumsum(no_touched2), 'r.--', label=label2)
+        plt.plot(self.wind_speeds, np.cumsum(no_touched3), 'g.--', label=label3)
+        plt.plot(self.wind_speeds, np.cumsum(no_touched4), 'c.--', label=label4)
+        plt.plot(self.wind_speeds, np.cumsum(no_touched5), 'k.--', label=label5)
         plt.title('Debris impact model comparision')
         plt.xlabel('Wind speed (m/s)')
         plt.ylabel('No of debris impacts')
         plt.legend(loc=4, numpoints=1)
         plt.grid(1)
-        plt.pause(1.0)
-        # plt.show()
-        # plt.savefig('compare_impact1.png')
+        # plt.pause(1.0)
+        plt.savefig('compare_3.png')
         plt.close()
 
         plt.figure()
-        plt.plot(wind_speeds, damaged_area1, 'b.-',label='stretched')
-        plt.plot(wind_speeds, damaged_area2, 'r.--', label='alternative')
-        plt.plot(wind_speeds, damaged_area3, 'g.-', label='rotated')
-        plt.plot(wind_speeds, damaged_area4, 'c.-', label='rotated_inter')
+        plt.plot(self.wind_speeds, damaged_area1, 'b.-', label=label1)
+        plt.plot(self.wind_speeds, damaged_area2, 'r.--', label=label2)
+        plt.plot(self.wind_speeds, damaged_area3, 'g.--', label=label3)
+        plt.plot(self.wind_speeds, damaged_area4, 'c.--', label=label4)
+        plt.plot(self.wind_speeds, damaged_area5, 'k.--', label=label5)
         plt.title('Debris impact model comparision')
         plt.xlabel('Wind speed (m/s)')
         plt.ylabel('Damaged area')
         plt.legend(loc=4, numpoints=1)
         plt.grid(1)
-        plt.pause(1.0)
-        # plt.show()
-        # plt.savefig('compare_damaged_area.png')
+        # plt.pause(1.0)
+        plt.savefig('compare_4.png')
         plt.close()
-'''
 
 
 class MyTestCase(unittest.TestCase):
@@ -921,26 +1054,29 @@ class MyTestCase(unittest.TestCase):
                             level=logging.DEBUG,
                             format='%(levelname)s %(message)s')
 
-        cfg_file = os.path.join(cls.path_scenario, 'test_roof_sheeting.cfg')
-        cls.cfg = Config(cfg_file=cfg_file)
+        file_cfg = os.path.join(cls.path_scenario, 'test_roof_sheeting.cfg')
+        cls.cfg = Config(file_cfg=file_cfg)
 
         cls.rnd_state = np.random.RandomState(1)
         cls.radius = 24.0
-        # cls.footprint_circle = Point(0, 0).buffer(cls.radius)
+        cls.boundary = geometry.Point(0, 0).buffer(cls.radius)
 
-        cls.footprint_inst = shapely.geometry.Polygon([(-6.5, 4.0), (6.5, 4.0), (6.5, -4.0),
+        cls.footprint_inst = geometry.Polygon([(-6.5, 4.0), (6.5, 4.0), (6.5, -4.0),
                                       (-6.5, -4.0), (-6.5, 4.0)])
 
-        ref04 = shapely.geometry.Polygon([(-24.0, 6.5), (4.0, 6.5), (4.0, -6.5),
+        cls.footprint_rotated = geometry.Polygon([
+            (-4.0, 6.5), (4.0, 6.5), (4.0, -6.5), (-4.0, -6.5), (-4.0, 6.5)])
+
+        ref04 = geometry.Polygon([(-24.0, 6.5), (4.0, 6.5), (4.0, -6.5),
                          (-24.0, -6.5), (-24.0, 6.5)])
 
-        ref37 = shapely.geometry.Polygon([(-1.77, 7.42), (7.42, -1.77), (1.77, -7.42),
+        ref37 = geometry.Polygon([(-1.77, 7.42), (7.42, -1.77), (1.77, -7.42),
                          (-27.42, 1.77), (-1.77, 7.42)])
 
-        ref26 = shapely.geometry.Polygon([(-26.5, 4.0), (6.5, 4.0), (6.5, -4.0),
+        ref26 = geometry.Polygon([(-26.5, 4.0), (6.5, 4.0), (6.5, -4.0),
                          (-26.5, -4.0), (-26.5, 4.0)])
 
-        ref15 = shapely.geometry.Polygon([(-27.42, -1.77), (1.77, 7.42), (7.42, 1.77),
+        ref15 = geometry.Polygon([(-27.42, -1.77), (1.77, 7.42), (7.42, 1.77),
                          (-1.77, -7.42), (-27.42, -1.77)])
 
         cls.ref_footprint = {0: ref04, 1: ref15, 2: ref26, 3: ref37,
@@ -948,16 +1084,15 @@ class MyTestCase(unittest.TestCase):
 
     def test_create_sources(self):
 
-        self.cfg.debris_radius = 100.0
-        self.cfg.debris_angle = 45.0
-        self.cfg.building_spacing = 20.0
-        self.cfg.flags['debris_staggered_sources'] = False
+        debris_radius = 100.0
+        debris_angle = 45.0
+        building_spacing = 20.0
 
-        sources1 = Debris.create_sources(self.cfg.debris_radius,
-                                         self.cfg.debris_angle,
-                                         self.cfg.building_spacing,
-                                         False)
-        self.assertEquals(len(sources1), 13)
+        sources1 = create_sources(radius=debris_radius,
+                                  angle=debris_angle,
+                                  bldg_spacing=building_spacing,
+                                  flag_staggered=False)
+        self.assertEqual(len(sources1), 13)
 
         plt.figure()
         source_x, source_y = [], []
@@ -971,13 +1106,18 @@ class MyTestCase(unittest.TestCase):
         # plt.savefig('./source.png', dpi=300)
         plt.close()
 
-        # staggered source
-        sources2 = Debris.create_sources(self.cfg.debris_radius,
-                                         self.cfg.debris_angle,
-                                         self.cfg.building_spacing,
-                                         True)
+    def test_create_sources_staggered(self):
 
-        self.assertEquals(len(sources2), 15)
+        # staggered source
+        debris_radius = 100.0
+        debris_angle = 45.0
+        building_spacing = 20.0
+
+        sources2 = create_sources(radius=debris_radius,
+                                  angle=debris_angle,
+                                  bldg_spacing=building_spacing,
+                                  flag_staggered=True)
+        self.assertEqual(len(sources2), 15)
 
         plt.figure()
         source_x, source_y = [], []
@@ -991,161 +1131,43 @@ class MyTestCase(unittest.TestCase):
         # plt.savefig('./source_staggered.png', dpi=300)
         plt.close()
 
-    def test_footprint04(self):
+    def test_footprint(self):
 
-        _debris = Debris(cfg=self.cfg,
-                         wind_dir_idx=0,
-                         rnd_state=self.rnd_state,
-                         coverages={})
+        wind_dir_idx = [0, 1, 2, 3]
+        for idx in wind_dir_idx:
 
-        fig = plt.figure(1)
-        ax = fig.add_subplot(111)
+            house = House(self.cfg, 1)
+            house._wind_dir_index = idx
 
-        _array = np.array(_debris.footprint.exterior.xy).T
-        ax.add_patch(matplotlib.patches.Polygon(_array, alpha=0.3, label='footprint'))
+            fig = plt.figure(1)
+            ax = fig.add_subplot(111)
 
-        ax.add_patch(matplotlib.patches.Circle(xy=(0, 0),
-                                    radius=self.radius,
-                                    alpha=0.3, color='r', label='boundary'))
+            _array = np.array(house.footprint.exterior.xy).T
+            ax.add_patch(patches.Polygon(_array, alpha=0.3, label='footprint'))
 
-        x, y = self.ref_footprint[0].exterior.xy
-        ax.plot(x, y, 'b-', label='stretched')
-        ax.set_xlim([-40, 20])
-        ax.set_ylim([-20, 20])
-        plt.title('Wind direction: 0')
-        plt.legend(loc=2)
-        # plt.show()
-        plt.pause(1.0)
-        plt.close()
+            ax.add_patch(patches.Circle(xy=(0, 0),
+                                        radius=self.radius,
+                                        alpha=0.3, color='r', label='boundary'))
 
-    def test_footprint15(self):
-
-        _debris = Debris(cfg=self.cfg,
-                         wind_dir_idx=1,
-                         rnd_state=self.rnd_state,
-                         coverages={})
-
-        fig = plt.figure(1)
-        ax = fig.add_subplot(111)
-
-        _array = np.array(_debris.footprint.exterior.xy).T
-
-        ax.add_patch(matplotlib.patches.Polygon(_array, alpha=0.3, label='footprint'))
-        ax.add_patch(matplotlib.patches.Circle(xy=(0, 0),
-                                    radius=self.radius,
-                                    alpha=0.3, color='r', label='boundary'))
-
-        x, y = self.ref_footprint[1].exterior.xy
-        ax.plot(x, y, 'b-', label='stretched')
-        ax.set_xlim([-40, 20])
-        ax.set_ylim([-20, 20])
-        plt.legend(loc=2)
-        plt.title('Wind direction: 1')
-        # plt.show()
-        plt.pause(1.0)
-        plt.close()
-
-    def test_footprint26(self):
-
-        _debris = Debris(cfg=self.cfg,
-                         wind_dir_idx=2,
-                         rnd_state=self.rnd_state,
-                         coverages={})
-
-        fig = plt.figure(1)
-        ax = fig.add_subplot(111)
-
-        _array = np.array(_debris.footprint.exterior.xy).T
-        ax.add_patch(matplotlib.patches.Polygon(_array, alpha=0.3, label='footprint'))
-        ax.add_patch(matplotlib.patches.Circle(xy=(0, 0),
-                                    radius=self.radius,
-                                    alpha=0.3, color='r', label='boundary'))
-
-        x, y = self.ref_footprint[2].exterior.xy
-        ax.plot(x, y, 'b-', label='stretched')
-        ax.set_xlim([-40, 20])
-        ax.set_ylim([-20, 20])
-        plt.legend(loc=2)
-        plt.title('Wind direction: 2')
-        # plt.show()
-        plt.pause(1.0)
-        plt.close()
-
-    def test_footprint37(self):
-
-        _debris = Debris(cfg=self.cfg,
-                         wind_dir_idx=3,
-                         rnd_state=self.rnd_state,
-                         coverages={})
-
-        fig = plt.figure(1)
-        ax = fig.add_subplot(111)
-
-        _array = np.array(_debris.footprint.exterior.xy).T
-
-        ax.add_patch(matplotlib.patches.Polygon(_array, alpha=0.3, label='footprint'))
-        ax.add_patch(matplotlib.patches.Circle(xy=(0, 0),
-                                    radius=self.radius,
-                                    alpha=0.3, color='r', label='boundary'))
-
-        x, y = self.ref_footprint[3].exterior.xy
-        ax.plot(x, y, 'b-', label='stretched')
-        ax.set_xlim([-40, 20])
-        ax.set_ylim([-20, 20])
-        plt.legend(loc=2)
-        plt.title('Wind direction: 3')
-        # plt.show()
-        plt.pause(1.0)
-        plt.close()
-
-    def test_footprint_non_rect(self):
-        # Not working yet 
-
-        _cfg = self.cfg
-
-        footprint_inst = shapely.geometry.Polygon(
-            [(-6.5, 4.0), (6.5, 4.0), (6.5, 0.0), (0.0, 0.0),
-             (0.0, -4.0), (-6.5, -4.0), (-6.5, 4.0)])
-        _cfg.footprint = footprint_inst
-
-        _debris = Debris(cfg=_cfg,
-                         wind_dir_idx=0,
-                         rnd_state=self.rnd_state,
-                         coverages={})
-
-        fig = plt.figure(1)
-        ax = fig.add_subplot(111)
-
-        _array = np.array(_debris.footprint.exterior.xy).T
-        ax.add_patch(matplotlib.patches.Polygon(_array, alpha=0.3, label='footprint'))
-        ax.add_patch(matplotlib.patches.Circle(xy=(0, 0),
-                                    radius=self.radius,
-                                    alpha=0.3, color='r', label='boundary'))
-
-        # x, y = footprint_inst.exterior.xy
-        # ax.plot(x, y, 'b-', label='stretched')
-        ax.set_xlim([-40, 20])
-        ax.set_ylim([-20, 20])
-        plt.legend(loc=2)
-        plt.title('Wind direction: 0')
-        # plt.show()
-        plt.pause(1.0)
-        plt.close()
+            x, y = self.ref_footprint[idx].exterior.xy
+            ax.plot(x, y, 'b-', label='stretched')
+            ax.set_xlim([-40, 20])
+            ax.set_ylim([-20, 20])
+            plt.title('Wind direction: {}'.format(idx))
+            plt.legend(loc=2)
+            # plt.show()
+            plt.pause(1.0)
+            plt.close()
 
     def test_contains(self):
-        rect = shapely.geometry.Polygon([(-15, 4), (15, 4), (15, -4), (-15, -4)])
-        self.assertTrue(rect.contains(shapely.geometry.Point(0, 0)))
-        self.assertFalse(rect.contains(shapely.geometry.Point(-100, -1.56)))
-        self.assertFalse(rect.contains(shapely.geometry.Point(10.88, 4.514)))
-        self.assertFalse(rect.contains(shapely.geometry.Point(7.773, 12.66)))
-        self.assertTrue(rect.touches(shapely.geometry.Point(15, -4)))
+        rect = geometry.Polygon([(-15, 4), (15, 4), (15, -4), (-15, -4)])
+        self.assertTrue(rect.contains(geometry.Point(0, 0)))
+        self.assertFalse(rect.contains(geometry.Point(-100, -1.56)))
+        self.assertFalse(rect.contains(geometry.Point(10.88, 4.514)))
+        self.assertFalse(rect.contains(geometry.Point(7.773, 12.66)))
+        self.assertTrue(rect.touches(geometry.Point(15, -4)))
 
-    def test_compute_flight_distance(self):
-
-        _debris = Debris(cfg=self.cfg,
-                         wind_dir_idx=0,
-                         rnd_state=self.rnd_state,
-                         coverages={})
+    def test_flight_distance(self):
 
         wind_speed = 50.0
         key = 'Tropical_town'
@@ -1156,23 +1178,24 @@ class MyTestCase(unittest.TestCase):
 
         for debris_type in self.cfg.debris_types:
 
-            frontal_area = self.cfg.debris_regions[key][
+            _debris = Debris(debris_source=None,
+                             debris_type=debris_type,
+                             debris_property=self.cfg.debris_types[debris_type],
+                             wind_speed=wind_speed,
+                             rnd_state=self.rnd_state)
+            _debris._frontal_area = self.cfg.debris_regions[key][
                 '{}_frontal_area_mean'.format(debris_type)]
-            mass = self.cfg.debris_regions[key][
+            _debris._mass = self.cfg.debris_regions[key][
                 '{}_mass_mean'.format(debris_type)]
-
-            result = _debris.compute_flight_distance(
-                debris_type_str=debris_type,
-                flight_time=self.cfg.flight_time_mean,
-                frontal_area=frontal_area,
-                mass=mass,
-                wind_speed=wind_speed)
+            _debris._flight_time = self.cfg.debris_regions[key][
+                '{}_flight_time_mean'.format(debris_type)]
 
             try:
-                self.assertAlmostEqual(expected[debris_type], result, places=2)
+                self.assertAlmostEqual(expected[debris_type],
+                                       _debris.flight_distance, places=2)
             except AssertionError:
                 print('{}: {} is expected but {}'.format(
-                    debris_type, expected[debris_type], result))
+                    debris_type, expected[debris_type], _debris.flight_distance))
 
     def test_bivariate_gaussian(self):
 
@@ -1203,79 +1226,70 @@ class MyTestCase(unittest.TestCase):
     def test_compute_coeff_beta_dist(self):
 
         # Tropical town, Rod
-        cdav = 0.8
-        frontal_area = 0.1
-        flight_distance = 10.0
-        mass = 4.0
+        debris_type = 'Rod'
+        wind_speed = 40.0
+        _debris = Debris(debris_source=None,
+                         debris_type=debris_type,
+                         debris_property=self.cfg.debris_types[debris_type],
+                         wind_speed=wind_speed,
+                         rnd_state=self.rnd_state)
 
-        _debris = Debris(cfg=self.cfg,
-                         wind_dir_idx=0,
-                         rnd_state=self.rnd_state,
-                         coverages={})
+        _debris._flight_distance = 10.0
+        _debris._mass = 4.0
+        _debris._frontal_area = 0.1
 
-        beta_a, beta_b = _debris.compute_coeff_beta_dist(
-            cdav, frontal_area, flight_distance, mass)
+        beta_a, beta_b = _debris.compute_coeff_beta_dist()
         self.assertAlmostEqual(beta_a, 2.1619, places=3)
         self.assertAlmostEqual(beta_b, 3.4199, places=3)
 
-    def test_compute_debris_momentum(self):
-
-        # Tropical town, Rod
-        cdav = 0.8
-        frontal_area = 0.1
-        flight_distance = 10.0
-        mass = 4.0
-        wind_speed = 50.0
-
-        _debris = Debris(cfg=self.cfg,
-                         wind_dir_idx=0,
-                         rnd_state=self.rnd_state,
-                         coverages={})
+    def test_debris_momentum(self):
 
         nsample = 100
         momentum = np.zeros(shape=nsample)
         for i in range(nsample):
-            momentum[i] = _debris.compute_debris_momentum(
-                cdav=cdav,
-                frontal_area=frontal_area,
-                flight_distance=flight_distance,
-                mass=mass,
-                wind_speed=wind_speed)
+
+            # Tropical town, Rod
+            debris_type = 'Rod'
+            wind_speed = 50.0
+            _debris = Debris(debris_source=None,
+                             debris_type=debris_type,
+                             debris_property=self.cfg.debris_types[debris_type],
+                             wind_speed=wind_speed,
+                             rnd_state=self.rnd_state)
+
+            _debris._flight_distance = 10.0
+            _debris._mass = 4.0
+            _debris._frontal_area = 0.1
+            momentum[i] = _debris.momentum
 
         plt.figure()
         plt.hist(momentum)
-        plt.title('sampled momentum with mean: {:.2f}, sd: {:.2f}'.format(np.mean(momentum), np.std(momentum)))
+        plt.title('sampled momentum with mean: {:.2f}, sd: {:.2f}'.format(
+            momentum.mean(), momentum.std()))
         plt.pause(1.0)
         plt.close()
         # plt.show()
 
-    def test_compute_debris_momentum_by_type(self):
-
-        _debris = Debris(cfg=self.cfg,
-                         wind_dir_idx=0,
-                         rnd_state=self.rnd_state,
-                         coverages={})
+    def test_debris_momentum_by_type(self):
 
         wind_speeds = np.arange(0.01, 120.0, 1.0)
-        # flight_time = math.exp(self.cfg.flight_time_log_mu)
         momentum = {}
 
         for key, value in self.cfg.debris_types.items():
 
             momentum[key] = np.zeros_like(wind_speeds)
 
-            frontal_area = math.exp(value['frontal_area_mu'])
-            mass = math.exp(value['mass_mu'])
-            flight_time = math.exp(self.cfg.flight_time_log_mu)
-            cdav = value['cdav']
-
             for i, wind_speed in enumerate(wind_speeds):
 
-                flight_distance = _debris.compute_flight_distance(
-                    key, flight_time, frontal_area, mass, wind_speed)
+                _debris = Debris(debris_source=None,
+                                 debris_type=key,
+                                 debris_property=self.cfg.debris_types[key],
+                                 wind_speed=wind_speed,
+                                 rnd_state=self.rnd_state)
 
-                momentum[key][i] = _debris.compute_debris_momentum(
-                    cdav, frontal_area, flight_distance, mass, wind_speed)
+                _debris._mass = math.exp(value['mass_mu'])
+                _debris._frontal_area = math.exp(value['frontal_area_mu'])
+                momentum[key][i] = _debris.momentum
 
         dic_ = {'Compact': 'b', 'Sheet': 'r', 'Rod': 'g'}
         plt.figure()
@@ -1290,34 +1304,44 @@ class MyTestCase(unittest.TestCase):
         plt.pause(1.0)
         plt.close()
 
-    def test_compute_flight_distance_compare(self):
-
-        _debris = Debris(cfg=self.cfg,
-                         wind_dir_idx=0,
-                         rnd_state=self.rnd_state,
-                         coverages={})
+    def test_compare_flight_distance(self):
 
         wind_speeds = np.arange(0.0, 120.0, 1.0)
-        flight_time = math.exp(self.cfg.flight_time_log_mu)
         flight_distance = {}
         flight_distance_poly5 = {}
 
         for key, value in self.cfg.debris_types.items():
 
-            frontal_area = math.exp(value['frontal_area_mu'])
-            mass = math.exp(value['mass_mu'])
-
             flight_distance[key] = np.zeros_like(wind_speeds)
             flight_distance_poly5[key] = np.zeros_like(wind_speeds)
 
             for i, wind_speed in enumerate(wind_speeds):
-                flight_distance[key][i] = \
-                    _debris.compute_flight_distance(
-                        key, flight_time, frontal_area, mass, wind_speed)
 
-                flight_distance_poly5[key][i] = \
-                    _debris.compute_flight_distance(
-                        key, flight_time, frontal_area, mass, wind_speed, flag_poly=5)
+                _debris2 = Debris(debris_source=None,
+                                  debris_type=key,
+                                  debris_property=self.cfg.debris_types[key],
+                                  wind_speed=wind_speed,
+                                  rnd_state=self.rnd_state,
+                                  flag_poly=2)
+
+                _debris2._frontal_area = math.exp(value['frontal_area_mu'])
+                _debris2._mass = math.exp(value['mass_mu'])
+                _debris2._flight_time = math.exp(value['flight_time_mu'])
+
+                _debris5 = Debris(debris_source=None,
+                                  debris_type=key,
+                                  debris_property=self.cfg.debris_types[key],
+                                  wind_speed=wind_speed,
+                                  rnd_state=self.rnd_state,
+                                  flag_poly=5)
+
+                _debris5._frontal_area = math.exp(value['frontal_area_mu'])
+                _debris5._mass = math.exp(value['mass_mu'])
+                _debris5._flight_time = math.exp(value['flight_time_mu'])
+
+                flight_distance[key][i] = _debris2.flight_distance
+
+                flight_distance_poly5[key][i] = _debris5.flight_distance
 
         dic_ = {'Compact': 'b', 'Sheet': 'r', 'Rod': 'g'}
         plt.figure()
@@ -1340,64 +1364,88 @@ class MyTestCase(unittest.TestCase):
         # plt.savefig('./flight_distance.png', dpi=200)
         plt.close()
 
-    @staticmethod
-    def setup_coverages(df_coverages):
+    def check_performance_of_parmap(self):
 
-        coverages = df_coverages[['wall_name']].copy()
-        coverages['breached_area'] = np.zeros_like(coverages.wall_name)
+        no_models = 10
+        no_debris = 300
+        source = geometry.Point([20.0, 0.0])
 
-        for _name, item in df_coverages.iterrows():
-            _coverage = Coverage(name=_name, **item)
-            coverages.loc[_name, 'coverage'] = _coverage
+        par_time, ser_time = [], []
 
-        return coverages
+        for j in range(no_models):
+
+            debris_items = []
+            for i in range(no_debris):
+                _debris = Debris(debris_source=source,
+                                 debris_type='Rod',
+                                 debris_property=self.cfg.debris_types['Rod'],
+                                 wind_speed=20.0,
+                                 rnd_state=self.rnd_state,
+                                 )
+                debris_items.append(_debris)
+
+            # serial run
+            tic = time.time()
+            for item in debris_items:
+                _ = item.check_impact(footprint=self.footprint_inst,
+                                      boundary=self.boundary)
+
+            ser_time.append(time.time()-tic)
+
+            tic = time.time()
+            _ = parmap.map(check_impact_by_debris, debris_items,
+                           self.footprint_inst, self.boundary)
+            par_time.append(time.time()-tic)
+
+        print('Parallel vs Serial: {} vs {}'.format(sum(par_time), sum(ser_time)))
 
     def test_number_of_touched(self):
 
-        house_coverages = self.setup_coverages(self.cfg.coverages)
+        coverages = set_coverages_for_debris(cfg=self.cfg,
+                                             wind_dir_idx=0,
+                                             rnd_state=self.rnd_state)
 
-        wind_dir_idx = 0
-        _tf = house_coverages.wall_name.isin(
-            self.cfg.front_facing_walls[self.cfg.wind_dir[wind_dir_idx]])
-        coverages = house_coverages.loc[_tf, 'coverage'].to_dict()
-
-        _debris = Debris(cfg=self.cfg,
-                         wind_dir_idx=wind_dir_idx,
-                         rnd_state=self.rnd_state,
-                         coverages=coverages)
-
-        incr_speed = self.cfg.speeds[1] - self.cfg.speeds[0]
+        coverage_area = sum([x.area for x in coverages])
+        coverage_prob = np.array([x.area for x in coverages]) / coverage_area
 
         key = 'Tropical_town'
 
-        no_impacts = []
-        for speed in self.cfg.speeds:
+        items_all = []
+        no_impacts = 0
+        no_generated = 0
+        for wind_speed in self.cfg.wind_speeds:
 
             damage_incr = vulnerability_weibull_pdf(
-                x=speed,
-                alpha_=VUL_DIC[key]['alpha'],
-                beta_=VUL_DIC[key]['beta']) * incr_speed
+                x=wind_speed,
+                alpha=VUL_DIC[key]['alpha'],
+                beta=VUL_DIC[key]['beta']) * self.cfg.wind_speed_increment
 
-            _debris.damage_incr = damage_incr
+            mean_no_debris_items = np.rint(self.cfg.source_items * damage_incr)
 
-            _debris.run(speed)
-            no_impacts.append(_debris.no_impacts)
-            #no_items_mean.append(_debris.no_items_mean)
+            debris_items = generate_debris_items(
+                rnd_state=self.rnd_state,
+                wind_speed=wind_speed,
+                cfg=self.cfg,
+                mean_no_debris_items=mean_no_debris_items)
+
+            for item in debris_items:
+                item.check_impact(boundary=self.boundary,
+                                      footprint=self.footprint_rotated)
+                item.check_coverages(coverages=coverages,
+                                     prob_coverages=coverage_prob)
+
+            [items_all.append(x) for x in debris_items]
+            no_impacts += sum([x.impact for x in debris_items])
+            no_generated += len(debris_items)
 
         fig = plt.figure(1)
         ax = fig.add_subplot(111)
+
+        title_str = 'total no. of impacts: {} out of {}'.format(no_impacts, no_generated)
+        ax.set_title(title_str)
+        ax.set_xlim([-150, 150])
+        ax.set_ylim([-100, 100])
         # plt.title('Wind direction: 0')
-
-        source_x, source_y = [], []
-        for source in self.cfg.debris_sources:
-            source_x.append(source.x)
-            source_y.append(source.y)
-        ax.scatter(source_x, source_y, label='source', color='b')
-        ax.scatter(0, 0, label='target', color='r')
-
-        # add footprint
-        ax.add_patch(matplotlib.patches.Polygon(_debris.footprint.exterior, fc='red', alpha=0.5))
-        ax.add_patch(matplotlib.patches.Polygon(_debris.boundary.exterior, alpha=0.5))
 
         # p = PolygonPatch(_debris.footprint, fc='red')
         # ax.add_patch(p)
@@ -1406,21 +1454,24 @@ class MyTestCase(unittest.TestCase):
 
         # shape_type = {'Compact': 'c', 'Sheet': 'g', 'Rod': 'r'}
 
-        for debris_type, line_string in _debris.debris_items:
-            _x, _y = line_string.xy[0][1], line_string.xy[1][1]
+        for item in items_all:
+            _x, _y = item.trajectory.xy[0][1], item.trajectory.xy[1][1]
             ax.scatter(_x, _y, color='g', alpha=0.2)
 
-        title_str = 'total no. of impacts: {} out of {}'.format(
-            sum(no_impacts), len(_debris.debris_items))
-        plt.title(title_str)
-        ax.set_xlim([-150, 150])
-        ax.set_ylim([-100, 100])
-        #plt.show()
-        plt.pause(1.0)
+        for source in self.cfg.debris_sources:
+            ax.scatter(source.x, source.y, color='b')
+        ax.scatter(0, 0, label='target', color='r')
+
+        # add footprint
+        ax.add_patch(patches.Polygon(self.footprint_rotated.exterior, fc='red', alpha=0.5))
+        ax.add_patch(patches.Polygon(self.boundary.exterior, alpha=0.5))
+
+        # plt.show()
+        plt.pause(3.0)
         plt.close()
+
 
 if __name__ == '__main__':
     # unittest.main()
     suite = unittest.TestLoader().loadTestsFromTestCase(MyTestCase)
     unittest.TextTestRunner(verbosity=2).run(suite)
-

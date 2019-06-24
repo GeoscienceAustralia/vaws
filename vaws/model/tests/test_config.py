@@ -4,7 +4,8 @@ from numpy import linspace
 import pandas as pd
 from pandas.util.testing import assert_frame_equal
 import os
-import StringIO
+import logging
+from io import StringIO
 import tempfile
 
 from vaws.model.config import Config
@@ -18,11 +19,13 @@ class TestConfig(unittest.TestCase):
         path = os.sep.join(__file__.split(os.sep)[:-1])
         scenario_filename1 = os.path.abspath(os.path.join(
             path, 'test_scenarios', 'test_house', 'test_house.cfg'))
-        cls.cfg = Config(cfg_file=scenario_filename1)
+        logging.basicConfig(level=logging.INFO)
+        logger = logging.getLogger(__name__)
+        cls.cfg = Config(file_cfg=scenario_filename1, logger=logger)
         cls.path_cfg = os.path.dirname(os.path.realpath(scenario_filename1))
 
     def test_debris(self):
-        self.assertEquals(self.cfg.flags['debris'], True)
+        self.assertEqual(self.cfg.flags['debris'], True)
 
     def test_set_wind_dir_index(self):
         self.cfg.wind_direction = 'Random'
@@ -34,7 +37,8 @@ class TestConfig(unittest.TestCase):
         self.assertEqual(self.cfg.wind_dir_index, 1)
 
         self.cfg.wind_direction = 'dummy'
-        self.assertRaises(ValueError, self.cfg.set_wind_dir_index())
+        with self.assertRaises(ValueError):
+            self.cfg.set_wind_dir_index()
         self.assertEqual(self.cfg.wind_dir_index, 8)
 
     def test_water_ingress(self):
@@ -43,14 +47,14 @@ class TestConfig(unittest.TestCase):
         self.assertTrue(self.cfg.flags['water_ingress'])
 
     def test_path(self):
-        self.assertEquals(self.cfg.path_cfg, self.path_cfg)
-        self.assertEquals(self.cfg.path_output,
+        self.assertEqual(self.cfg.path_cfg, self.path_cfg)
+        self.assertEqual(self.cfg.path_output,
                           os.path.join(self.path_cfg, 'output'))
-        self.assertEquals(self.cfg.path_house_data,
+        self.assertEqual(self.cfg.path_house_data,
                           os.path.join(self.path_cfg, 'input', 'house'))
-        self.assertEquals(self.cfg.path_wind_profiles,
+        self.assertEqual(self.cfg.path_wind_profiles,
                           os.path.join(self.path_cfg, 'input', 'gust_envelope_profiles'))
-        self.assertEquals(self.cfg.path_debris,
+        self.assertEqual(self.cfg.path_debris,
                           os.path.join(self.path_cfg, 'input', 'debris'))
 
     def test_read_main(self):
@@ -62,13 +66,13 @@ class TestConfig(unittest.TestCase):
         _speeds = linspace(self.cfg.wind_speed_min,
                            self.cfg.wind_speed_max,
                            self.cfg.wind_speed_steps)
-        assert_array_equal(self.cfg.speeds, _speeds)
+        assert_array_equal(self.cfg.wind_speeds, _speeds)
 
-        self.assertEquals(self.cfg.wind_dir_index, 0)
+        self.assertEqual(self.cfg.wind_dir_index, 0)
 
-        self.assertEquals(self.cfg.regional_shielding_factor, 1.0)
+        self.assertEqual(self.cfg.regional_shielding_factor, 1.0)
 
-        self.assertEquals(self.cfg.file_wind_profiles,
+        self.assertEqual(self.cfg.file_wind_profiles,
                           'cyclonic_terrain_cat2.csv')
 
     def test_set_wind_profile(self):
@@ -76,8 +80,8 @@ class TestConfig(unittest.TestCase):
         self.cfg.set_wind_profiles()
 
         self.cfg.file_wind_profiles = 'dummy'
-        self.assertRaises(IOError,
-                          self.cfg.set_wind_profiles())
+        with self.assertRaises(IOError):
+            self.cfg.set_wind_profiles()
 
     def test_read_fragility_thresholds(self):
         ref = pd.DataFrame([[0.02, 'b'],
@@ -90,13 +94,13 @@ class TestConfig(unittest.TestCase):
 
     def test_set_region_name(self):
         self.cfg.set_region_name('Capital_city')
-        self.assertEquals(self.cfg.region_name, 'Capital_city')
+        self.assertEqual(self.cfg.region_name, 'Capital_city')
 
         self.cfg.set_region_name('Tropical_town')
-        self.assertEquals(self.cfg.region_name, 'Tropical_town')
+        self.assertEqual(self.cfg.region_name, 'Tropical_town')
 
-        self.assertRaises(IOError,
-                          self.cfg.set_region_name('dummy'))
+        with self.assertRaises(AssertionError):
+            self.cfg.set_region_name('dummy')
 
     def test_return_norm_cdf(self):
         row = {'speed_at_full_wi': 75.0, 'speed_at_zero_wi': 50.0}
@@ -108,10 +112,10 @@ class TestConfig(unittest.TestCase):
     def test_get_diff_tuples(self):
         row = {'key1': {0: 3, 1: 4}, 'key2': {0: 2, 1: 5}}
         a = self.cfg.get_diff_tuples(row, 'key1', 'key2')
-        self.assertEquals(a, (1, -1))
+        self.assertEqual(a, (1, -1))
 
     def test_read_damage_costing_data(self):
-        data = StringIO.StringIO("""
+        data = StringIO("""
 group_name,dist_order,dist_dir,damage_scenario
 sheeting,1,col,Loss of roof sheeting
 batten,2,row,Loss of roof sheeting & purlins
@@ -119,7 +123,7 @@ rafter,3,col,Loss of roof structure
         """)
         # df_groups = pd.read_csv(data, index_col='group_name')
 
-        file_damage_costing = StringIO.StringIO("""
+        file_damage_costing = StringIO("""
 name,surface_area,envelope_repair_rate,envelope_factor_formula_type,envelope_coeff1,envelope_coeff2,envelope_coeff3,internal_repair_rate,internal_factor_formula_type,internal_coeff1,internal_coeff2,internal_coeff3,water_ingress_order
 Loss of roof sheeting,116,72.4,1,0.3105,-0.8943,1.6015,0,1,0,0,0,6
 Loss of roof sheeting & purlins,116,184.23,1,0.3105,-0.8943,1.6015,0,1,0,0,0,7
@@ -143,7 +147,7 @@ Wall debris damage,106.4,375.37,1,0.8862,-1.6957,1.8535,0,1,0,0,0,4
                           'Loss of roof sheeting & purlins'])
 
     def test_read_water_ingress_costing_data(self):
-        file_water_ingress_costing_data = StringIO.StringIO("""
+        file_water_ingress_costing_data = StringIO("""
 name,water_ingress,base_cost,formula_type,coeff1,coeff2,coeff3
 Loss of roof sheeting,0,0,1,0,0,1
 Loss of roof sheeting,5,2989.97,1,0,0,1
@@ -171,7 +175,7 @@ WI only,67,40065.59,1,0,0,1
 WI only,100,59799.39,1,0,0,1
         """)
 
-        file_conn_groups = StringIO.StringIO("""
+        file_conn_groups = StringIO("""
 group_name,dist_order,dist_dir,damage_scenario,trigger_collapse_at,set_zone_to_zero,water_ingress_order
 sheeting,1,col,Loss of roof sheeting,0,1,6
 batten,2,row,Loss of roof sheeting & purlins,0,1,7
@@ -294,8 +298,8 @@ rafter,3,patch,Loss of roof structure,0,0,3
     def test_read_water_ingress(self):
         thresholds = [0.1, 0.2, 0.5]
         index = [0.1, 0.2, 0.5, 1.1]
-        speed_zero = [50.0, 35.0, 0.0, -20.0]
-        speed_full = [75.0, 55.0, 40.0, 20.0]
+        speed_zero = [40.0, 35.0, 0.0, -20.0]
+        speed_full = [60.0, 55.0, 40.0, 20.0]
 
         assert_array_equal(self.cfg.water_ingress_i_thresholds, thresholds)
         assert_array_equal(self.cfg.water_ingress.index, index)
@@ -327,33 +331,32 @@ rafter,3,patch,Loss of roof structure,0,0,3
                 self.assertAlmostEqual(_mu, value['{}_mu'.format(item)])
                 self.assertAlmostEqual(_std, value['{}_std'.format(item)])
 
-    def test_get_get_construction_level(self):
+    # def test_get_construction_level(self):
+    #
+    #     ref = {'low': (0.9, 0.58),
+    #            'medium': (1.0, 0.58),
+    #            'high': (1.1, 0.58)}
+    #     keys = ['mean_factor', 'cv_factor']
+    #     for key, values in ref.items():
+    #         for sub_key, value in zip(keys, values):
+    #             self.assertEqual(value,
+    #                              self.cfg.construction_levels[key][sub_key])
 
-        ref = {'low': (0.33, 0.9, 0.58),
-               'medium': (0.34, 1.0, 0.58),
-               'high': (0.33, 1.1, 0.58)}
-        keys = ['probability', 'mean_factor', 'cv_factor']
-        for key, values in ref.items():
-            for sub_key, value in zip(keys, values):
-                self.assertEqual(value,
-                                 self.cfg.construction_levels[key][sub_key])
-
-    def test_set_construction_levels(self):
-
-        self.cfg.construction_levels_i_levels = ['dummy']
-        self.cfg.construction_levels_i_probs = [0.5]
-        self.cfg.construction_levels_i_mean_factors = [0.5]
-        self.cfg.construction_levels_i_cv_factors = [0.5]
-
-        self.cfg.set_construction_levels()
-
-        self.assertDictEqual(self.cfg.construction_levels['dummy'],
-                             {'probability': 0.5,
-                              'mean_factor': 0.5,
-                              'cv_factor': 0.5})
+    # def test_set_construction_levels(self):
+    #
+    #     self.cfg.construction_levels_levels = ['dummy']
+    #     self.cfg.construction_levels_probs = [1.0]
+    #     self.cfg.construction_levels_mean_factors = [0.5]
+    #     self.cfg.construction_levels_cv_factors = [0.5]
+    #
+    #     self.cfg.set_construction_levels()
+    #
+    #     self.assertDictEqual(self.cfg.construction_levels['dummy'],
+    #                          {'mean_factor': 0.5,
+    #                           'cv_factor': 0.5})
 
     def test_save_config(self):
-        self.cfg.cfg_file += '.copy'
+        self.cfg.file_cfg += '.copy'
         self.cfg.save_config()
 
 
@@ -365,13 +368,13 @@ class TestInputChecks(unittest.TestCase):
         path = os.sep.join(__file__.split(os.sep)[:-1])
         scenario_filename1 = os.path.abspath(os.path.join(
             path, 'test_scenarios', 'test_house', 'test_house.cfg'))
-        cls.cfg = Config(cfg_file=scenario_filename1)
+        cls.cfg = Config(file_cfg=scenario_filename1)
         cls.path_cfg = os.path.dirname(os.path.realpath(scenario_filename1))
 
     def test_flag_pressure(self):
         """Check that each flag_pressure entry is a valid entry. """
 
-        self.cfg.file_conn_groups = StringIO.StringIO("""
+        self.cfg.file_conn_groups = StringIO("""
 group_name,dist_order,dist_dir,damage_scenario,flag_pressure
 sheeting,1,col,Loss of roof sheeting,dummy
 batten,2,row,Loss of roof sheeting and purlins,cpe_str
@@ -382,7 +385,7 @@ batten,2,row,Loss of roof sheeting and purlins,cpe_str
         """
         Check that each damage_scenario entry is also listed in damage_costing_data.csv
         """
-        self.cfg.file_conn_groups = StringIO.StringIO("""
+        self.cfg.file_conn_groups = StringIO("""
 group_name,dist_order,dist_dir,damage_scenario,flag_pressure
 sheeting,1,col,Loss of roof sheeting,cpe
 batten,2,row,dummy,cpe_str
@@ -395,7 +398,7 @@ batten,2,row,dummy,cpe_str
         """
         Check that each damage_scenario entry is also listed in damage_costing_data.csv
         """
-        self.cfg.file_conn_groups = StringIO.StringIO("""
+        self.cfg.file_conn_groups = StringIO("""
 group_name,dist_order,dist_dir,damage_scenario,flag_pressure
 sheeting,1,col,Loss of roof sheeting,cpe
 batten,2,dummy,Loss of roof sheeting & purlins,cpe_str
@@ -407,7 +410,7 @@ batten,2,dummy,Loss of roof sheeting & purlins,cpe_str
         Check that each strength_mean, strength_std, dead_load_mean, dead_load_std and costing_area entry is >=0
         """
 
-        self.cfg.file_conn_types = StringIO.StringIO("""
+        self.cfg.file_conn_types = StringIO("""
 type_name,strength_mean,strength_std,dead_load_mean,dead_load_std,group_name,costing_area
 sheetinggable,1.54,0.16334,0.02025,0.0246,sheeting,0.405
 sheetingeave,4.62,0.28292,0.02025,-0.0246,sheeting,0.405
@@ -419,7 +422,7 @@ sheetingcorner,2.31,0.2,0.01013,0.0246,sheeting,-0.225
     def test_conn_types2(self):
         """Check that each group_name entry is also listed in conn_groups.csv"""
 
-        self.cfg.file_conn_types = StringIO.StringIO("""
+        self.cfg.file_conn_types = StringIO("""
 type_name,strength_mean,strength_std,dead_load_mean,dead_load_std,group_name,costing_area
 sheetinggable,1.54,0.16334,0.02025,0.0246,sheeting,0.405
 sheetingeave,4.62,0.28292,0.02025,0.0246,sheeting,0.405
@@ -435,7 +438,7 @@ sheetingcorner,2.31,0.2,0.01013,0.0246,dummy,0.225
     def test_connections(self):
         """Check that each conn_type entry is also listed in conn_types.csv"""
 
-        self.cfg.file_conn_types = StringIO.StringIO("""
+        self.cfg.file_conn_types = StringIO("""
 type_name,strength_mean,strength_std,dead_load_mean,dead_load_std,group_name,costing_area
 sheetinggable,1.54,0.16334,0.02025,0.0246,sheeting,0.405
 sheetingeave,4.62,0.28292,0.02025,0.0246,sheeting,0.405
@@ -466,7 +469,7 @@ sheetingcorner,2.31,0.2,0.01013,0.0246,sheeting,0.225
     def test_connections_coords(self):
         """Check that each conn_type entry is also listed in conn_types.csv"""
 
-        self.cfg.file_conn_types = StringIO.StringIO("""
+        self.cfg.file_conn_types = StringIO("""
 type_name,strength_mean,strength_std,dead_load_mean,dead_load_std,group_name,costing_area
 sheetinggable,1.54,0.16334,0.02025,0.0246,sheeting,0.405
 sheetingeave,4.62,0.28292,0.02025,0.0246,sheeting,0.405
@@ -494,7 +497,7 @@ sheetingcorner,2.31,0.2,0.01013,0.0246,sheeting,0.225
     def test_coverage_types(self):
         """Check that each failure_strength_out_mean entry is <=0. """
 
-        self.cfg.file_coverage_types = StringIO.StringIO("""
+        self.cfg.file_coverage_types = StringIO("""
 Name,failure_momentum_mean,failure_momentum_std,failure_strength_in_mean,failure_strength_in_std,failure_strength_out_mean,failure_strength_out_std
 Glass_annealed_6mm,0.05,0.01,100,0.0,-100,0.0
 Glass_heatstr_6mm,0.06,0.012,100,0.0,-100,0.0
@@ -510,7 +513,7 @@ Timber_door,142.2,28.44,100,0.0,100,0.0
     def test_coverages1(self):
         """Check that each area entry is >=0"""
 
-        self.cfg.file_coverages = StringIO.StringIO("""
+        self.cfg.file_coverages = StringIO("""
 name,description,wall_name,area,coverage_type
 1,window,1,3.6,Glass_annealed_6mm
 2,door,1,1.8,Timber_door
@@ -523,7 +526,7 @@ name,description,wall_name,area,coverage_type
     def test_coverages2(self):
         """Check each coverage_type entry is also listed in coverage_types"""
 
-        self.cfg.file_coverages = StringIO.StringIO("""
+        self.cfg.file_coverages = StringIO("""
 name,description,wall_name,area,coverage_type
 1,window,1,3.6,Glass_annealed_6mm
 2,door,1,1.8,Timber_door
@@ -553,7 +556,7 @@ name,description,wall_name,area,coverage_type
 
             self.cfg.file_front_facing_walls = _file.name
 
-            self.cfg.file_coverages = StringIO.StringIO("""
+            self.cfg.file_coverages = StringIO("""
 name,description,wall_name,area,coverage_type
 1,window,1,3.6,Glass_annealed_6mm
 2,door,1,1.8,Timber_door
@@ -569,7 +572,7 @@ name,description,wall_name,area,coverage_type
     def test_coverages_cpe(self):
         """Check that each numerical entry is between -5 and +5."""
 
-        self.cfg.file_coverages_cpe = StringIO.StringIO("""ID,S,SW,W,NW,N,NE,E,SE
+        self.cfg.file_coverages_cpe = StringIO("""ID,S,SW,W,NW,N,NE,E,SE
 1,2.4,2.4,2.4,2.4,2.4,2.4,2.4,2.4
 2,1.69,1.69,1.69,1.69,1.69,1.69,1.69,1.69
 3,-1.14,-1.14,-1.14,-1.14,-1.14,-1.14,-1.14,-1.14
@@ -586,7 +589,7 @@ name,description,wall_name,area,coverage_type
         """Both envelope_factor and internal_factor formula_type entry are
         either 1 or 2"""
 
-        self.cfg.file_damage_costing_data = StringIO.StringIO("""name,surface_area,envelope_repair_rate,envelope_factor_formula_type,envelope_coeff1,envelope_coeff2,envelope_coeff3,internal_repair_rate,internal_factor_formula_type,internal_coeff1,internal_coeff2,internal_coeff3,water_ingress_order
+        self.cfg.file_damage_costing_data = StringIO("""name,surface_area,envelope_repair_rate,envelope_factor_formula_type,envelope_coeff1,envelope_coeff2,envelope_coeff3,internal_repair_rate,internal_factor_formula_type,internal_coeff1,internal_coeff2,internal_coeff3,water_ingress_order
 Loss of roof sheeting,116,72.4,1,0.3105,-0.8943,1.6015,0,1,0,0,0,6
 Loss of roof sheeting & purlins,116,184.23,-1,0.3105,-0.8943,1.6015,0,1,0,0,0,7
         """)
@@ -597,7 +600,7 @@ Loss of roof sheeting & purlins,116,184.23,-1,0.3105,-0.8943,1.6015,0,1,0,0,0,7
     def test_footprint(self):
         """Check that each row has two numeric values"""
 
-        self.cfg.file_footprint = StringIO.StringIO("""footprint_coord
+        self.cfg.file_footprint = StringIO("""footprint_coord
 -4.0,1.0, 3.0
 4.0, 6.5
 4.0, -6.5
@@ -636,7 +639,7 @@ Loss of roof sheeting & purlins,116,184.23,-1,0.3105,-0.8943,1.6015,0,1,0,0,0,7
            Check that Cpe_k and Cpe_str_k are >0.
         """
 
-        self.cfg.file_house_data = StringIO.StringIO("""name,Group 4 House
+        self.cfg.file_house_data = StringIO("""name,Group 4 House
 replace_cost,198859.27
 height,4.5
 cpe_cv,0.12
@@ -808,7 +811,7 @@ cpe_str_k,0.1
         """Check that each name is also listed in damage_costing_data.csv,
         other than WI only"""
 
-        self.cfg.file_water_ingress_costing_data = StringIO.StringIO("""name, water_ingress, base_cost, formula_type, coeff1, coeff2, coeff3
+        self.cfg.file_water_ingress_costing_data = StringIO("""name, water_ingress, base_cost, formula_type, coeff1, coeff2, coeff3
 Loss of roof sheeting,0,0,1,0,0,1
 Loss of roof sheeting & purlins,0,0,1,0,0,1
 Loss of roof structure,0,0,1,0,0,1
@@ -825,7 +828,7 @@ dummy,0,0,1,0,0,1
     def test_water_ingress_costing_data1(self):
         """Check that each name is also listed in damage_costing_data.csv,
         other than WI only"""
-        self.cfg.file_water_ingress_costing_data = StringIO.StringIO("""name, water_ingress, base_cost, formula_type, coeff1, coeff2, coeff3
+        self.cfg.file_water_ingress_costing_data = StringIO("""name, water_ingress, base_cost, formula_type, coeff1, coeff2, coeff3
 Loss of roof sheeting,0,0,1,0,0,1
 Loss of roof sheeting & purlins,0,0,1,0,0,1
 Loss of roof structure,0,0,1,0,0,1
@@ -839,7 +842,7 @@ Wall racking,0,0,1,0,0,1
 
     def test_water_ingress_costing_data2(self):
         """Check that each formula_type entry is either 1 or 2"""
-        self.cfg.file_water_ingress_costing_data = StringIO.StringIO("""name, water_ingress, base_cost, formula_type, coeff1, coeff2, coeff3
+        self.cfg.file_water_ingress_costing_data = StringIO("""name, water_ingress, base_cost, formula_type, coeff1, coeff2, coeff3
 Loss of roof sheeting,0,0,1,0,0,1
 Loss of roof sheeting & purlins,0,0,1,0,0,1
 Loss of roof structure,0,0,1,0,0,1
@@ -988,28 +991,28 @@ WI only,0,0,dummy,0,0,1
 
             self.cfg.file_zones = _file.name
 
-            self.cfg.file_zones_cpe_mean = StringIO.StringIO("""name,S,SW,W,NW,N,NE,E,SE
+            self.cfg.file_zones_cpe_mean = StringIO("""name,S,SW,W,NW,N,NE,E,SE
 A1,-1.25,-1.45,-1.3,-0.75,-0.35,-0.4,-0.2,-0.4
 A2,-1.25,-1.45,-1.3,-0.75,-0.35,-0.4,-0.2,-0.4
 A3,-0.908,-1.45,-1.3,-0.75,-0.35,-0.4,-0.2,-0.4
 dummy,-0.5,-1.45,-0.85,-0.75,-0.5,-0.4,-0.2,-0.4
             """)
 
-            self.cfg.file_zones_cpe_eave_mean = StringIO.StringIO("""name,S,SW,W,NW,N,NE,E,SE
+            self.cfg.file_zones_cpe_eave_mean = StringIO("""name,S,SW,W,NW,N,NE,E,SE
 A1,-1.25,-1.45,-1.3,-0.75,-0.35,-0.4,-0.2,-0.4
 A2,-1.25,-1.45,-1.3,-0.75,-0.35,-0.4,-0.2,-0.4
 A3,-0.908,-1.45,-1.3,-0.75,-0.35,-0.4,-0.2,-0.4
 A4,-0.5,-1.45,-0.85,-0.75,-0.5,-0.4,-0.2,-0.4
                         """)
 
-            self.cfg.file_zones_cpe_str_mean = StringIO.StringIO("""name,S,SW,W,NW,N,NE,E,SE
+            self.cfg.file_zones_cpe_str_mean = StringIO("""name,S,SW,W,NW,N,NE,E,SE
 A1,-1.25,-1.45,-1.3,-0.75,-0.35,-0.4,-0.2,-0.4
 A2,-1.25,-1.45,-1.3,-0.75,-0.35,-0.4,-0.2,-0.4
 A3,-0.908,-1.45,-1.3,-0.75,-0.35,-0.4,-0.2,-0.4
 A4,-0.5,-1.45,-0.85,-0.75,-0.5,-0.4,-0.2,-0.4
                         """)
 
-            self.cfg.file_zones_edge = StringIO.StringIO("""name,S,SW,W,NW,N,NE,E,SE
+            self.cfg.file_zones_edge = StringIO("""name,S,SW,W,NW,N,NE,E,SE
 A1,1,1,1,0,0,0,0,0
 A2,1,1,1,0,0,0,0,0
 A3,1,1,1,0,0,0,0,0
@@ -1037,28 +1040,28 @@ A4,0,1,0,0,0,0,0,0
             self.cfg.file_zones = _file.name
 
             # missing value @ A1
-            self.cfg.file_zones_cpe_mean = StringIO.StringIO("""name,S,SW,W,NW,N,NE,E,SE
+            self.cfg.file_zones_cpe_mean = StringIO("""name,S,SW,W,NW,N,NE,E,SE
 A1,-1.25,-1.45,-1.3,-0.75,-0.35,-0.4,,-0.4
 A2,-1.25,-1.45,-1.3,-0.75,-0.35,-0.4,-0.2,-0.4
 A3,-0.908,-1.45,-1.3,-0.75,-0.35,-0.4,-0.2,-0.4
 A4,-0.5,-1.45,-0.85,-0.75,-0.5,-0.4,-0.2,-0.4
             """)
 
-            self.cfg.file_zones_cpe_eave_mean = StringIO.StringIO("""name,S,SW,W,NW,N,NE,E,SE
+            self.cfg.file_zones_cpe_eave_mean = StringIO("""name,S,SW,W,NW,N,NE,E,SE
 A1,-1.25,-1.45,-1.3,-0.75,-0.35,-0.4,-0.2,-0.4
 A2,-1.25,-1.45,-1.3,-0.75,-0.35,-0.4,-0.2,-0.4
 A3,-0.908,-1.45,-1.3,-0.75,-0.35,-0.4,-0.2,-0.4
 A4,-0.5,-1.45,-0.85,-0.75,-0.5,-0.4,-0.2,-0.4
                         """)
 
-            self.cfg.file_zones_cpe_str_mean = StringIO.StringIO("""name,S,SW,W,NW,N,NE,E,SE
+            self.cfg.file_zones_cpe_str_mean = StringIO("""name,S,SW,W,NW,N,NE,E,SE
 A1,-1.25,-1.45,-1.3,-0.75,-0.35,-0.4,-0.2,-0.4
 A2,-1.25,-1.45,-1.3,-0.75,-0.35,-0.4,-0.2,-0.4
 A3,-0.908,-1.45,-1.3,-0.75,-0.35,-0.4,-0.2,-0.4
 A4,-0.5,-1.45,-0.85,-0.75,-0.5,-0.4,-0.2,-0.4
                         """)
 
-            self.cfg.file_zones_edge = StringIO.StringIO("""name,S,SW,W,NW,N,NE,E,SE
+            self.cfg.file_zones_edge = StringIO("""name,S,SW,W,NW,N,NE,E,SE
 A1,1,1,1,0,0,0,0,0
 A2,1,1,1,0,0,0,0,0
 A3,1,1,1,0,0,0,0,0
@@ -1086,28 +1089,28 @@ A4,0,1,0,0,0,0,0,0
             self.cfg.file_zones = _file.name
 
             # wrong value @ A1
-            self.cfg.file_zones_cpe_mean = StringIO.StringIO("""name,S,SW,W,NW,N,NE,E,SE
+            self.cfg.file_zones_cpe_mean = StringIO("""name,S,SW,W,NW,N,NE,E,SE
 A1,-1.25,-1.45,-1.3,-0.75,-0.35,-0.4,-0.4,-99
 A2,-1.25,-1.45,-1.3,-0.75,-0.35,-0.4,-0.2,-0.4
 A3,-0.908,-1.45,-1.3,-0.75,-0.35,-0.4,-0.2,-0.4
 A4,-0.5,-1.45,-0.85,-0.75,-0.5,-0.4,-0.2,-0.4
             """)
 
-            self.cfg.file_zones_cpe_eave_mean = StringIO.StringIO("""name,S,SW,W,NW,N,NE,E,SE
+            self.cfg.file_zones_cpe_eave_mean = StringIO("""name,S,SW,W,NW,N,NE,E,SE
 A1,-1.25,-1.45,-1.3,-0.75,-0.35,-0.4,-0.2,-0.4
 A2,-1.25,-1.45,-1.3,-0.75,-0.35,-0.4,-0.2,-0.4
 A3,-0.908,-1.45,-1.3,-0.75,-0.35,-0.4,-0.2,-0.4
 A4,-0.5,-1.45,-0.85,-0.75,-0.5,-0.4,-0.2,-0.4
                         """)
 
-            self.cfg.file_zones_cpe_str_mean = StringIO.StringIO("""name,S,SW,W,NW,N,NE,E,SE
+            self.cfg.file_zones_cpe_str_mean = StringIO("""name,S,SW,W,NW,N,NE,E,SE
 A1,-1.25,-1.45,-1.3,-0.75,-0.35,-0.4,-0.2,-0.4
 A2,-1.25,-1.45,-1.3,-0.75,-0.35,-0.4,-0.2,-0.4
 A3,-0.908,-1.45,-1.3,-0.75,-0.35,-0.4,-0.2,-0.4
 A4,-0.5,-1.45,-0.85,-0.75,-0.5,-0.4,-0.2,-0.4
                         """)
 
-            self.cfg.file_zones_edge = StringIO.StringIO("""name,S,SW,W,NW,N,NE,E,SE
+            self.cfg.file_zones_edge = StringIO("""name,S,SW,W,NW,N,NE,E,SE
 A1,1,1,1,0,0,0,0,0
 A2,1,1,1,0,0,0,0,0
 A3,1,1,1,0,0,0,0,0
@@ -1136,28 +1139,28 @@ A4,0,1,0,0,0,0,0,0
 
             self.cfg.file_zones = _file.name
 
-            self.cfg.file_zones_cpe_mean = StringIO.StringIO("""name,S,SW,W,NW,N,NE,E,SE
+            self.cfg.file_zones_cpe_mean = StringIO("""name,S,SW,W,NW,N,NE,E,SE
 A1,-1.25,-1.45,-1.3,-0.75,-0.35,-0.4,-0.4,-0.4
 A2,-1.25,-1.45,-1.3,-0.75,-0.35,-0.4,-0.2,-0.4
 A3,-0.908,-1.45,-1.3,-0.75,-0.35,-0.4,-0.2,-0.4
 A4,-0.5,-1.45,-0.85,-0.75,-0.5,-0.4,-0.2,-0.4
             """)
 
-            self.cfg.file_zones_cpe_eave_mean = StringIO.StringIO("""name,S,SW,W,NW,N,NE,E,SE
+            self.cfg.file_zones_cpe_eave_mean = StringIO("""name,S,SW,W,NW,N,NE,E,SE
 A1,-1.25,-1.45,-1.3,-0.75,-0.35,-0.4,-0.2,-0.4
 A2,-1.25,-1.45,-1.3,-0.75,-0.35,-0.4,-0.2,-0.4
 A3,-0.908,-1.45,-1.3,-0.75,-0.35,-0.4,-0.2,-0.4
 A4,-0.5,-1.45,-0.85,-0.75,-0.5,-0.4,-0.2,-0.4
                         """)
 
-            self.cfg.file_zones_cpe_str_mean = StringIO.StringIO("""name,S,SW,W,NW,N,NE,E,SE
+            self.cfg.file_zones_cpe_str_mean = StringIO("""name,S,SW,W,NW,N,NE,E,SE
 A1,-1.25,-1.45,-1.3,-0.75,-0.35,-0.4,-0.2,-0.4
 A2,-1.25,-1.45,-1.3,-0.75,-0.35,-0.4,-0.2,-0.4
 A3,-0.908,-1.45,-1.3,-0.75,-0.35,-0.4,-0.2,-0.4
 A4,-0.5,-1.45,-0.85,-0.75,-0.5,-0.4,-0.2,-0.4
                         """)
             # wrong value @ A4
-            self.cfg.file_zones_edge = StringIO.StringIO("""name,S,SW,W,NW,N,NE,E,SE
+            self.cfg.file_zones_edge = StringIO("""name,S,SW,W,NW,N,NE,E,SE
 A1,1,1,1,0,0,0,0,0
 A2,1,1,1,0,0,0,0,0
 A3,1,1,1,0,0,0,0,0

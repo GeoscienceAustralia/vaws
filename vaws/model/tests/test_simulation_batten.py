@@ -3,6 +3,7 @@ from __future__ import print_function
 
 import unittest
 import os
+import logging
 import numpy as np
 import filecmp
 import pandas as pd
@@ -211,7 +212,7 @@ class TestDistributeMultiSwitchesOFF(unittest.TestCase):
             except Exception as e:
                 print(e)
 
-        cfg = Scenario(cfg_file=os.path.join(path, 'scenarios/test_roof_sheeting.cfg'),
+        cfg = Scenario(file_cfg=os.path.join(path, 'scenarios/test_roof_sheeting.cfg'),
                        output_path=cls.path_output)
 
         cfg.flags['random_seed'] = True
@@ -249,7 +250,7 @@ class TestDistributeMultiSwitchesOn(unittest.TestCase):
             except Exception as e:
                 print(e)
 
-        cfg = Scenario(cfg_file=os.path.join(path, 'scenarios/test_roof_sheeting.cfg'),
+        cfg = Scenario(file_cfg=os.path.join(path, 'scenarios/test_roof_sheeting.cfg'),
                        output_path=cls.path_output)
 
         cfg.flags['random_seed'] = True
@@ -287,6 +288,7 @@ class TestDistributeMultiSwitchesOn(unittest.TestCase):
     #     consistency_wind_debris(self.path_reference, self.path_output)
 """
 
+
 class TestHouseDamage(unittest.TestCase):
 
     @classmethod
@@ -296,8 +298,12 @@ class TestHouseDamage(unittest.TestCase):
         cls.path_reference = os.path.join(path, 'test')
         cls.path_output = os.path.join(path, 'output')
 
-        cfg = Config(cfg_file=os.path.join(
-            path, 'test_scenarios', 'test_sheeting_batten', 'test_sheeting_batten.cfg'))
+        file_cfg = os.path.join(path, 'test_scenarios', 'test_sheeting_batten',
+                                'test_sheeting_batten.cfg')
+        logging.basicConfig(level=logging.WARNING)
+        logger = logging.getLogger(__name__)
+
+        cfg = Config(file_cfg=file_cfg, logger=logger)
 
         cls.house = House(cfg, seed=1)
 
@@ -313,7 +319,7 @@ class TestHouseDamage(unittest.TestCase):
             ref_area[key] = np.array(value).sum()
 
         # # iteration over wind speed list
-        for id_speed, wind_speed in enumerate(self.house.cfg.speeds):
+        for id_speed, wind_speed in enumerate(self.house.cfg.wind_speeds):
 
             # simulate sampled house
             self.house.run_simulation(wind_speed)
@@ -333,8 +339,8 @@ class TestHouseDamage(unittest.TestCase):
                                                            ref_area[key]))
                     self.assertEqual(0, 1)
 
-    def test_cal_damage_index(self):
-        pass
+    # def test_cal_damage_index(self):
+    #     pass
     # check cal_damage_index esp. factors_costing
 
 if __name__ == '__main__':

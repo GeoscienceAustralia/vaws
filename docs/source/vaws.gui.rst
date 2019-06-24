@@ -41,14 +41,6 @@ vaws.gui.output module
     :undoc-members:
     :show-inheritance:
 
-vaws.gui.windsim_rc module
---------------------------
-
-.. automodule:: vaws.gui.windsim_rc
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
 ..
     Module contents
     ---------------

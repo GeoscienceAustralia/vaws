@@ -1,6 +1,6 @@
 
 import logging
-from math import log, exp, sqrt, gamma, copysign
+import math
 from scipy.stats import genextreme
 
 
@@ -20,7 +20,7 @@ def sample_lognormal(mu_lnx, std_lnx, rnd_state):
     try:
         return rnd_state.lognormal(mean=mu_lnx, sigma=std_lnx)
     except ValueError:  # no sampling
-        return exp(mu_lnx)
+        return math.exp(mu_lnx)
 
 
 def sample_gev(mean_est, cov_est, shape_k, big_a, big_b, rnd_state=None):
@@ -38,7 +38,7 @@ def sample_gev(mean_est, cov_est, shape_k, big_a, big_b, rnd_state=None):
         big_b:
         cov_est:
         shape_k:
-        rnd_state:
+        rnd_state: None, integer or np.random.RandomState
 
     Returns: random sample from the extreme value distribution Type III
 
@@ -46,8 +46,8 @@ def sample_gev(mean_est, cov_est, shape_k, big_a, big_b, rnd_state=None):
     assert shape_k > 0
     a, u = calc_parameters_gev(mean_est, cov_est, big_a, big_b)
 
-    return copysign(genextreme.rvs(shape_k, loc=u, scale=a, size=1,
-                                   random_state=rnd_state)[0], mean_est)
+    return math.copysign(genextreme.rvs(shape_k, loc=u, scale=a, size=1,
+                         random_state=rnd_state)[0], mean_est)
 
 
 def calc_parameters_gev(mean_est, cov_est, big_a, big_b):
@@ -67,11 +67,13 @@ def calc_parameters_gev(mean_est, cov_est, big_a, big_b):
     Returns:
 
     """
+    logger = logging.getLogger(__name__)
+
     try:
         a_est = abs(mean_est) * cov_est / big_b
         u_est = abs(mean_est) - a_est * big_a
     except TypeError:
-        logging.warning('mean_est:{}, cov_est:{}, big_a:{}, big_b:{}'.format(
+        logger.warning('mean_est:{}, cov_est:{}, big_a:{}, big_b:{}'.format(
             mean_est, cov_est, big_a, big_b))
     else:
         return a_est, u_est
@@ -93,8 +95,8 @@ def calc_big_a_b_values(shape_k):
 
     """
     assert 0.0 < shape_k < 0.5
-    big_a = (1.0 - gamma(1.0 + shape_k)) / shape_k
-    big_b = sqrt(gamma(1.0 + 2 * shape_k) - gamma(1.0 + shape_k) ** 2) / shape_k
+    big_a = (1.0 - math.gamma(1.0 + shape_k)) / shape_k
+    big_b = math.sqrt(math.gamma(1.0 + 2 * shape_k) - math.gamma(1.0 + shape_k) ** 2) / shape_k
 
     return big_a, big_b
 
@@ -117,8 +119,8 @@ def compute_logarithmic_mean_stddev(m, stddev):
     assert stddev >= 0.0
 
     if m:
-        mu = 2.0 * log(m) - 0.5 * log(stddev**2.0 + m**2.0)
-        std = sqrt(log(stddev**2.0 / m**2.0 + 1))
+        mu = 2.0 * math.log(m) - 0.5 * math.log(stddev**2.0 + m**2.0)
+        std = math.sqrt(math.log(stddev**2.0 / m**2.0 + 1))
     else:
         mu = -999
         std = 0.0
@@ -132,15 +134,15 @@ def sample_lognorm_given_mean_stddev(m, stddev, rnd_state):
     Args:
         m: mean of x
         stddev: std of x
-        rnd_state
+        rnd_state: np.random.RandomState
         size: size of rv (default: 1)
 
     Returns:
 
     """
-    mu_, std_ = compute_logarithmic_mean_stddev(m, stddev)
+    mu, std = compute_logarithmic_mean_stddev(m, stddev)
 
-    return sample_lognormal(mu_, std_, rnd_state)
+    return sample_lognormal(mu, std, rnd_state)
 
 
 def compute_arithmetic_mean_stddev(m, stddev):
@@ -154,8 +156,8 @@ def compute_arithmetic_mean_stddev(m, stddev):
 
     """
     assert stddev >= 0, 'std can not be less than zero'
-    mean_x = exp(m + 0.5 * stddev * stddev)
-    std_x = mean_x * sqrt(exp(stddev**2.0) - 1.0)
+    mean_x = math.exp(m + 0.5 * stddev * stddev)
+    std_x = mean_x * math.sqrt(math.exp(stddev**2.0) - 1.0)
 
     return mean_x, std_x
 

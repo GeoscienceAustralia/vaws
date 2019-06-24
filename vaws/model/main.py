@@ -1,7 +1,8 @@
 import sys
 import os
 import time
-import logging
+import logging.config
+# import json
 
 import h5py
 import numpy as np
@@ -13,6 +14,8 @@ from vaws.model.curve import fit_fragility_curves, fit_vulnerability_curve
 from vaws.model.output import plot_heatmap
 from vaws.model.version import VERSION_DESC
 
+DT = h5py.special_dtype(vlen=str)
+
 
 def simulate_wind_damage_to_houses(cfg, call_back=None):
     """
@@ -22,139 +25,150 @@ def simulate_wind_damage_to_houses(cfg, call_back=None):
         call_back: used by gui
 
     Returns:
+        elapsed: float: elapsed time
+        bucket: list: list of results
 
     """
+
+    logger = logging.getLogger(__name__)
 
     # simulator main_loop
     tic = time.time()
 
-    damage_incr = 0.0
+    damage_increment = 0.0
     bucket = init_bucket(cfg)
-
-    logging.info('Starting simulation in serial')
 
     # generate instances of house
     list_house_damage = [House(cfg, i + cfg.random_seed)
                          for i in range(cfg.no_models)]
 
-    for ispeed, wind_speed in enumerate(cfg.speeds):
+    for ispeed, wind_speed in enumerate(cfg.wind_speeds):
 
         results_by_speed = []
 
         for ihouse, house in enumerate(list_house_damage):
 
-            logging.info('model {}'.format(ihouse))
+            logger.debug('model {}'.format(ihouse))
 
-            house.debris.damage_incr = damage_incr
+            house.damage_increment = damage_increment
 
             result = house.run_simulation(wind_speed)
 
             results_by_speed.append(result)
 
         bucket = update_bucket(cfg, bucket, results_by_speed, ispeed)
-        damage_incr = compute_damage_increment(bucket, ispeed)
+        damage_increment = compute_damage_increment(cfg, bucket, ispeed)
 
-        logging.debug('damage index increment {}'.format(damage_incr))
-
+        logger.debug('damage index increment {}'.format(damage_increment))
+        percent_done = 100.0 * (ispeed + 1) / len(cfg.wind_speeds)
+        int_percent = int(percent_done)
         if not call_back:
-            sys.stdout.write('{} out of {} completed \n'.format(
-                ispeed + 1, len(cfg.speeds)))
+            sys.stdout.write(
+                ('=' * int_percent) + ('' * (100 - int_percent)) +
+                ("\r [ %d" % percent_done + "% ] "))
             sys.stdout.flush()
         else:
-            percent_done = 100.0 * (ispeed + 1) / len(cfg.speeds)
-            if not call_back(int(percent_done)):  # stop triggered
+            if not call_back(int_percent):  # stop triggered
                 return
 
     save_results_to_files(cfg, bucket)
 
     elapsed = time.time()-tic
-    logging.info('Time taken for simulation {}'.format(elapsed))
+    logging.info('Simulation completed: {:.4f}'.format(elapsed))
 
     return elapsed, bucket
 
 
 def init_bucket(cfg):
 
-    bucket = {item: {} for item in ['house', 'debris']}
-
-    for item in ['house', 'debris']:
-        bucket[item] = {}
-        for att in getattr(cfg, '{}_bucket'.format(item)):
-            if att in cfg.att_time_invariant:
-                if att in cfg.att_non_float:
-                    bucket[item][att] = np.zeros(shape=(1, cfg.no_models),
-                                                 dtype=str)
-                else:
-                    bucket[item][att] = np.zeros(shape=(1, cfg.no_models),
-                                                 dtype=float)
-            else:
-                bucket[item][att] = np.zeros(
-                    shape=(cfg.wind_speed_steps, cfg.no_models), dtype=float)
+    bucket = {'house': {}}
+    for att, flag_time in cfg.house_bucket:
+        if flag_time:
+            bucket['house'][att] = np.zeros(
+                shape=(cfg.wind_speed_steps, cfg.no_models), dtype=float)
+        else:
+            bucket['house'][att] = np.zeros(shape=(1, cfg.no_models),
+                                            dtype=float)
 
     # components: group, connection, zone, coverage
     for comp in cfg.list_components:
         bucket[comp] = {}
-        for att in getattr(cfg, '{}_bucket'.format(comp)):
-            bucket[comp][att] = {}
-            try:
-                for item in getattr(cfg, 'list_{}s'.format(comp)):
-                    if att in cfg.att_time_invariant:
-                        bucket[comp][att][item] = np.zeros(
-                            shape=(1, cfg.no_models), dtype=float)
-                    else:
-                        bucket[comp][att][item] = np.zeros(
-                            shape=(cfg.wind_speed_steps, cfg.no_models), dtype=float)
-            except TypeError:
-                pass
+        if comp == 'debris':
+            for att, _ in getattr(cfg, '{}_bucket'.format(comp)):
+                bucket[comp][att] = np.zeros(
+                    shape=(cfg.wind_speed_steps, cfg.no_models), dtype=object)
+        else:
+            for att, flag_time in getattr(cfg, '{}_bucket'.format(comp)):
+                bucket[comp][att] = {}
+                try:
+                    for item in getattr(cfg, 'list_{}s'.format(comp)):
+                        if flag_time:
+                            bucket[comp][att][item] = np.zeros(
+                                shape=(cfg.wind_speed_steps, cfg.no_models), dtype=float)
+                        else:
+                            bucket[comp][att][item] = np.zeros(
+                                shape=(1, cfg.no_models), dtype=float)
+                except TypeError:
+                    pass
     return bucket
 
 
 def update_bucket(cfg, bucket, results_by_speed, ispeed):
 
-    for item in ['house', 'debris']:
-        for att in getattr(cfg, '{}_bucket'.format(item)):
-            if att not in cfg.att_time_invariant:
-                bucket[item][att][ispeed] = [x[item][att] for x in results_by_speed]
+    for att, flag_time in cfg.house_bucket:
+        if flag_time:
+            bucket['house'][att][ispeed] = [x['house'][att] for x in results_by_speed]
 
     for comp in cfg.list_components:
-        for att, chunk in bucket[comp].items():
-            if att not in cfg.att_time_invariant:
-                for item in chunk.iterkeys():
-                    bucket[comp][att][item][ispeed] = \
-                        [x[comp][att][item] for x in results_by_speed]
+        if comp == 'debris':
+            for att, flag_time in cfg.debris_bucket:
+                bucket['debris'][att][ispeed] = [x['debris'][att] for x in results_by_speed]
+        else:
+            for att, flag_time in getattr(cfg, '{}_bucket'.format(comp)):
+                if flag_time:
+                    for item, value in bucket[comp][att].items():
+                        value[ispeed] = [x[comp][att][item] for x in
+                                         results_by_speed]
 
     # save time invariant attribute
     if ispeed == cfg.wind_speed_steps-1:
 
-        for item in ['house', 'debris']:
-            for att in getattr(cfg, '{}_bucket'.format(item)):
-                if att in cfg.att_time_invariant:
-                    bucket[item][att] = [x[item][att] for x in results_by_speed]
+        for att, flag_time in cfg.house_bucket:
+            if not flag_time:
+                bucket['house'][att] = [x['house'][att] for x in results_by_speed]
 
         for comp in cfg.list_components:
-            for att, chunk in bucket[comp].items():
-                if att in cfg.att_time_invariant:
-                    for item in chunk.iterkeys():
-                        bucket[comp][att][item] = \
-                            [x[comp][att][item] for x in results_by_speed]
+            for att, flag_time in getattr(cfg, '{}_bucket'.format(comp)):
+                if not flag_time:
+                    for item, value in bucket[comp][att].items():
+                        value[0] = [x[comp][att][item] for x in results_by_speed]
 
     return bucket
 
 
-def compute_damage_increment(bucket, ispeed):
+def compute_damage_increment(cfg, bucket, ispeed):
+
+    logger = logging.getLogger(__name__)
 
     # compute damage index increment
-    damage_incr = 0.0  # default value
+    damage_increment = 0.0  # default value
 
-    if ispeed:
-        damage_incr = (bucket['house']['di'][ispeed].mean(axis=0) -
-                       bucket['house']['di'][ispeed - 1].mean(axis=0))
+    if cfg.flags['debris_vulnerability']:
 
-        if damage_incr < 0:
-            logging.warning('damage increment is less than zero')
-            damage_incr = 0.0
+        if ispeed:
+            damage_increment = cfg.debris_vulnerability.cdf(cfg.wind_speeds[ispeed]) - \
+                               cfg.debris_vulnerability.cdf(cfg.wind_speeds[ispeed-1])
+    else:
 
-    return damage_incr
+        if ispeed:
+            damage_increment = (bucket['house']['di'][ispeed].mean(axis=0) -
+                                bucket['house']['di'][ispeed - 1].mean(axis=0))
+
+            if damage_increment < 0:
+                logger.warning('damage increment is less than zero')
+                damage_increment = 0.0
+
+    return damage_increment
 
 
 def save_results_to_files(cfg, bucket):
@@ -171,36 +185,53 @@ def save_results_to_files(cfg, bucket):
     # file_house
     with h5py.File(cfg.file_results, 'w') as hf:
 
-        for item in ['house', 'debris']:
-            _group = hf.create_group(item)
-            for att, value in bucket[item].items():
-                _group.create_dataset(att, data=value)
+        hf.create_dataset('wind_speeds', data=cfg.wind_speeds)
+
+        group = hf.create_group('house')
+        for att, value in bucket['house'].items():
+            group.create_dataset(att, data=value)
 
         for comp in cfg.list_components:
-            _group = hf.create_group(comp)
-            for att, chunk in bucket[comp].items():
-                _subgroup = _group.create_group(att)
-                for item, value in chunk.items():
-                    _subgroup.create_dataset(str(item), data=value)
+            group = hf.create_group(comp)
+            if comp == 'debris':
+                for att, value in bucket[comp].items():
+                    group.create_dataset(att, data=value, dtype=DT)
+            else:
+                for att, chunk in bucket[comp].items():
+                    subgroup = group.create_group(att)
+                    for item, value in chunk.items():
+                        subgroup.create_dataset(str(item), data=value)
 
         # fragility curves
         if cfg.no_models > 1:
-            frag_counted = fit_fragility_curves(cfg, bucket['house']['di'])
+            frag_counted, df_counted = fit_fragility_curves(cfg, bucket['house']['di'])
 
-            if frag_counted:
-                _group = hf.create_group('fragility')
-                for key, value in frag_counted.items():
-                    for sub_key, sub_value in value.items():
-                        _group.create_dataset('{}/{}'.format(key, sub_key),
-                                              data=sub_value)
+            group = hf.create_group('fragility')
+            bucket['fragility'] = {}
+            group.create_dataset('counted', data=df_counted)
+            column_names = ','.join([x for x in df_counted.columns.tolist()])
+            group['counted'].attrs['column_names'] = column_names
+            bucket['fragility']['counted'] = df_counted
+
+            for fitting in ['MLE', 'OLS']:
+                if frag_counted[fitting]:
+                    for key, value in frag_counted[fitting].items():
+                        for sub_key, sub_value in value.items():
+                            name = '{}/{}/{}'.format(fitting, key, sub_key)
+                            group.create_dataset(name=name, data=sub_value)
+                            bucket['fragility'].setdefault(fitting, {}).setdefault(key, {})[sub_key] = sub_value
 
         # vulnerability curves
         fitted_curve = fit_vulnerability_curve(cfg, bucket['house']['di'])
 
-        _group = hf.create_group('vulnearbility')
+        group = hf.create_group('vulnerability')
+        bucket['vulnerability'] = {}
         for key, value in fitted_curve.items():
             for sub_key, sub_value in value.items():
-                _group.create_dataset('{}/{}'.format(key, sub_key), data=sub_value)
+                group.create_dataset('{}/{}'.format(key, sub_key),
+                                     data=sub_value)
+                bucket['vulnerability'].setdefault(key, {})[
+                    sub_key] = sub_value
 
     if cfg.flags['save_heatmaps']:
 
@@ -208,8 +239,8 @@ def save_results_to_files(cfg, bucket):
 
             for id_sim in range(cfg.no_models):
 
-                value = np.array([bucket['connection']['capacity'][i][id_sim]
-                               for i in grouped.index])
+                value = np.array([bucket['connection']['capacity'][i]
+                                 for i in grouped.index])[:, 0, id_sim]
 
                 file_name = os.path.join(cfg.path_output,
                                          '{}_id{}'.format(group_name,
@@ -225,53 +256,58 @@ def save_results_to_files(cfg, bucket):
 
 
 def set_logger(path_cfg, logging_level=None):
-    """
-        
-    Args:
-        path_cfg: path of configuration file 
-        logging_level: Level of messages that will be logged
-    Returns:
-    """
+    """debug, info, warning, error, critical"""
 
-    # create logger
-    logger = logging.getLogger()
-    logger.setLevel(logging.NOTSET)
-    formatter = logging.Formatter('%(levelname)s - %(message)s')
+    config_dic = {
+        "version": 1,
+        "disable_existing_loggers": False,
+        "formatters": {
+            "simple": {
+                "format": "[%(levelname)s] %(name)s: %(message)s"
+            }
+        },
 
-    add_stream = True
-    for h in list(logger.handlers):
-        if h.__class__.__name__ == 'StreamHandler':
-            add_stream = False
-            break
+        "handlers": {
+            "console": {
+                "class": "logging.StreamHandler",
+                "level": "INFO",
+                "formatter": "simple",
+                "stream": "ext://sys.stdout"
+            },
 
-    if add_stream:
-        # create console handler and set level to WARNING
-        ch = logging.StreamHandler()
-        ch.setFormatter(formatter)
-        ch.setLevel(logging.WARNING)
-        logger.addHandler(ch)
+        },
+
+        "loggers": {
+        },
+
+        "root": {
+            "level": "INFO",
+            "handlers": ["console"]
+        }
+    }
 
     if logging_level:
 
-        # create file handler
-        path_logger = os.path.join(path_cfg, 'output')
-        if not os.path.exists(path_logger):
-            os.makedirs(path_logger)
-        fh = logging.FileHandler(os.path.join(path_logger, 'log.txt'), mode='w')
-        fh.setFormatter(formatter)
-
-        for h in list(logger.handlers):
-            if h.__class__.__name__ == 'FileHandler':
-                logger.removeHandler(h)
-                break
-        logger.addHandler(fh)
-
         try:
-            fh.setLevel(getattr(logging, logging_level.upper()))
+            level = getattr(logging, logging_level.upper())
         except (AttributeError, TypeError):
-            logging.warning('{} is not valid; WARNING is set instead'.format(
-                logging_level))
-            fh.setLevel(logging.WARNING)
+            logging_level = 'DEBUG'
+            level = 'DEBUG'
+        finally:
+            file_log = os.path.join(path_cfg, 'output', '{}.log'.format(logging_level))
+            added_file_handler = {"added_file_handler": {
+                                  "class": "logging.handlers.RotatingFileHandler",
+                                  "level": level,
+                                  "formatter": "simple",
+                                  "filename": file_log,
+                                  "encoding": "utf8",
+                                  "mode": "w"}
+                            }
+            config_dic['handlers'].update(added_file_handler)
+            config_dic['root']['handlers'].append('added_file_handler')
+            config_dic['root']['level'] = "DEBUG"
+
+    logging.config.dictConfig(config_dic)
 
 
 def process_commandline():
@@ -283,7 +319,7 @@ def process_commandline():
                       metavar="FILE")
     parser.add_option("-v", "--verbose",
                       dest="verbose",
-                      default=False,
+                      default=None,
                       metavar="logging_level",
                       help="set logging level")
     return parser
@@ -298,12 +334,11 @@ def main():
         path_cfg = os.path.dirname(os.path.realpath(options.config_file))
         set_logger(path_cfg, options.verbose)
 
-        conf = Config(cfg_file=options.config_file)
-        elapsed, _ = simulate_wind_damage_to_houses(conf)
-        print('Simulation completed: {}'.format(elapsed))
+        conf = Config(file_cfg=options.config_file)
+        _ = simulate_wind_damage_to_houses(conf)
     else:
-        print('Error: Must provide a config file to run')
         parser.print_help()
+
 
 if __name__ == '__main__':
     main()

@@ -14,7 +14,7 @@
    <string>Connection Type Editor</string>
   </property>
   <property name="windowIcon">
-   <iconset resource="../windsim.qrc">
+   <iconset>
     <normaloff>:/icons/images/editresize.png</normaloff>:/icons/images/editresize.png</iconset>
   </property>
   <layout class="QVBoxLayout" name="verticalLayout">
@@ -110,7 +110,7 @@
         </widget>
        </item>
        <item row="1" column="0" colspan="5">
-        <widget class="MatplotlibWidget" name="plot_strength"/>
+        <widget class="MatplotlibWidget" name="plot_strength" native="true"/>
        </item>
       </layout>
      </widget>
@@ -147,7 +147,7 @@
         </widget>
        </item>
        <item row="1" column="0" colspan="5">
-        <widget class="MatplotlibWidget" name="plot_deadload"/>
+        <widget class="MatplotlibWidget" name="plot_deadload" native="true"/>
        </item>
       </layout>
      </widget>
@@ -226,9 +226,7 @@
    <header>matplotlibwidget</header>
   </customwidget>
  </customwidgets>
- <resources>
-  <include location="../windsim.qrc"/>
- </resources>
+ <resources/>
  <connections>
   <connection>
    <sender>buttonBox</sender>

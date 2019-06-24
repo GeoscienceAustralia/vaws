@@ -2,7 +2,7 @@
 import unittest
 import pandas as pd
 import os
-import StringIO
+from io import StringIO
 import numpy as np
 import matplotlib.pyplot as plt
 
@@ -19,12 +19,10 @@ class MyTestCase(unittest.TestCase):
         filename = 'damage_costing_data.csv'
         df_costing = pd.read_csv(os.path.join(
             path, 'test_scenarios', 'test_roof_sheeting', 'input', 'house', filename))
-        adic = df_costing.loc[0].to_dict()
-        cls.costing1 = Costing(costing_name=adic['name'],
-                               **adic)
-        adic = df_costing.loc[4].to_dict()
-        cls.costing2 = Costing(costing_name=adic['name'],
-                               **adic)
+        dic = df_costing.loc[0].to_dict()
+        cls.costing1 = Costing(costing_name=dic['name'], **dic)
+        dic = df_costing.loc[4].to_dict()
+        cls.costing2 = Costing(costing_name=dic['name'], **dic)
 
     def test_env_func_type1(self):
         assert self.costing1.envelope_factor_formula_type == 1
@@ -78,7 +76,7 @@ class WaterIngressTestCase(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         path = os.sep.join(__file__.split(os.sep)[:-1])
-        cls.cfg = Config(cfg_file=os.path.join(
+        cls.cfg = Config(file_cfg=os.path.join(
             path, 'test_scenarios', 'test_scenario16', 'test_scenario16.cfg'))
 
     def test_compute_water_ingress_given_damage(self):
@@ -113,7 +111,7 @@ class WaterIngressTestCase(unittest.TestCase):
         self.assertEqual(self.cfg.damage_order_by_water_ingress,
                          damage_order)
 
-        repair_cost_by_group = StringIO.StringIO("""sheeting,batten,rafter,expected
+        repair_cost_by_group = StringIO("""sheeting,batten,rafter,expected
         0.0,0.0,0.0,WI only
         0.2,0.0,0.0,Loss of roof sheeting
         0.0,0.2,0.0,Loss of roof sheeting & purlins
@@ -154,7 +152,7 @@ class WaterIngressTestCase(unittest.TestCase):
 
         for wi, expected in dic_wi.items():
             idx = np.argsort(np.abs(_df.index - wi))[0]
-            self.assertEquals(_df.iloc[idx].name, expected)
+            self.assertEqual(_df.iloc[idx].name, expected)
 
     def test_water_ingress_costings(self):
 

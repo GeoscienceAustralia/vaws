@@ -14,7 +14,7 @@
    <string>Zone Browser</string>
   </property>
   <property name="windowIcon">
-   <iconset resource="../windsim.qrc">
+   <iconset>
     <normaloff>:/icons/images/editresize.png</normaloff>:/icons/images/editresize.png</iconset>
   </property>
   <layout class="QVBoxLayout" name="verticalLayout">
@@ -184,7 +184,7 @@
         </widget>
        </item>
        <item row="1" column="1">
-        <widget class="MatplotlibWidget" name="pdf_plot">
+        <widget class="MatplotlibWidget" name="pdf_plot" native="true">
          <property name="sizePolicy">
           <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
            <horstretch>99</horstretch>
@@ -357,9 +357,7 @@
   <tabstop>house_cpe_v</tabstop>
   <tabstop>house_cpe_k</tabstop>
  </tabstops>
- <resources>
-  <include location="../windsim.qrc"/>
- </resources>
+ <resources/>
  <connections>
   <connection>
    <sender>buttonBox</sender>

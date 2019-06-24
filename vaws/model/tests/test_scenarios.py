@@ -14,49 +14,42 @@ import logging
 def simulation(house, wind_speeds, conn_capacity={}, list_connections=[], 
                coverage_capacity={}, list_coverages=[]):
 
+    logger = logging.getLogger(__name__)
+
     # compute zone pressures
-    house.wind_dir_index = 0
-    house.terrain_height_multiplier = 1.0  # profile: 6, height: 4.5
-    house.construction_level = 'medium'
-    house.cpi = 0.0
-    house.debris.damage_incr = 0.0
+    house._wind_dir_index = 0
+    house._terrain_height_multiplier = 1.0  # profile: 6, height: 4.5
+    house._construction_level = 'medium'
+    house.damage_increment = 0.0
 
     for wind_speed in wind_speeds:
 
-        logging.info('wind speed {:.3f}'.format(wind_speed))
+        logger.debug('wind speed {:.3f}'.format(wind_speed))
 
         house.compute_qz(wind_speed)
 
         for _, _zone in house.zones.items():
 
-            _zone.cpe = _zone.cpe_mean[house.wind_dir_index]
-            _zone.cpe_str = _zone.cpe_str_mean[house.wind_dir_index]
-            _zone.cpe_eave = _zone.cpe_eave_mean[house.wind_dir_index]
+            _zone._cpe = _zone.cpe_mean[house.wind_dir_index]
+            _zone._cpe_str = _zone.cpe_str_mean[house.wind_dir_index]
+            _zone._cpe_eave = _zone.cpe_eave_mean[house.wind_dir_index]
+            _zone._differential_shielding = 1.0
+            _zone.shielding_multiplier = 1.0
 
             _zone.calc_zone_pressure(house.cpi, house.qz, house.combination_factor)
 
         if house.coverages is not None:
-            for _, _ps in house.coverages.iterrows():
-                _ps['coverage'].check_damage(
+            for _, coverage in house.coverages['coverage'].iteritems():
+                coverage.check_damage(
                     house.qz, house.cpi, house.combination_factor, wind_speed)
 
-        for _, _connection in house.connections.items():
-            _connection.compute_load()
-
         # check damage by connection type group
-        for _, _group in house.groups.items():
+        [group.check_damage(wind_speed) for _, group in house.groups.items()]
 
-            _group.check_damage(wind_speed)
-            _group.compute_damaged_area()
+        [group.update_influence(house) for _, group in house.groups.items()
+         if group.damage_dist]
 
-            if _group.damage_dist:
-                _group.update_influence(house)
-
-        house.check_internal_pressurisation(wind_speed)
-
-        if house.coverages is not None:
-            house.coverages['breached_area'] = \
-                house.coverages['coverage'].apply(lambda x: x.breached_area)
+        house.run_debris_and_update_cpi(wind_speed)
 
         house.compute_damage_index(wind_speed)
 
@@ -67,17 +60,17 @@ def simulation(house, wind_speeds, conn_capacity={}, list_connections=[],
             conn_capacity2.update({_id: speed})
 
     if conn_capacity2:
-        for _id, _conn in house.connections.items():
+        for _id, conn in house.connections.items():
 
             try:
-                np.testing.assert_almost_equal(_conn.capacity,
+                np.testing.assert_almost_equal(conn.capacity,
                                                conn_capacity2[_id],
                                                decimal=2)
             except KeyError:
                 print('conn #{} is not found'.format(_id))
             except AssertionError:
                 print('conn #{} fails at {} not {}'.format(
-                    _id, _conn.capacity, conn_capacity2[_id]))
+                    _id, conn.capacity, conn_capacity2[_id]))
 
     # compare with reference coverage capacity
     coverage_capacity2 = {x: -1.0 for x in list_coverages}
@@ -86,17 +79,17 @@ def simulation(house, wind_speeds, conn_capacity={}, list_connections=[],
             coverage_capacity2.update({_id: speed})
 
     if coverage_capacity2:
-        for _id, _coverage in house.coverages['coverage'].iteritems():
+        for _id, coverage in house.coverages['coverage'].iteritems():
 
             try:
-                np.testing.assert_almost_equal(_coverage.capacity,
+                np.testing.assert_almost_equal(coverage.capacity,
                                                coverage_capacity2[_id],
                                                decimal=2)
             except KeyError:
                 print('coverage #{} is not found'.format(_id))
             except AssertionError:
                 print('coverage #{} fails at {} not {}'.format(
-                    _id, _coverage.capacity, coverage_capacity2[_id]))
+                    _id, coverage.capacity, coverage_capacity2[_id]))
 
 
 class TestScenario1(unittest.TestCase):
@@ -108,8 +101,11 @@ class TestScenario1(unittest.TestCase):
     def setUpClass(cls):
 
         path = os.sep.join(__file__.split(os.sep)[:-1])
-        cfg = Config(cfg_file=os.path.join(
-            path, 'test_scenarios', 'test_scenario1', 'test_scenario1.cfg'))
+        logging.basicConfig(level=logging.WARNING)
+        logger = logging.getLogger(__name__)
+        file_cfg = os.path.join(path, 'test_scenarios',
+                                'test_scenario1', 'test_scenario1.cfg')
+        cfg = Config(file_cfg=file_cfg, logger=logger)
 
         cls.house = House(cfg, seed=0)
 
@@ -130,9 +126,11 @@ class TestScenario1(unittest.TestCase):
 
         for _, _zone in self.house.zones.items():
 
-            _zone.cpe = _zone.cpe_mean[0]
-            _zone.cpe_str = _zone.cpe_str_mean[0]
-            _zone.cpe_eave = _zone.cpe_eave_mean[0]
+            _zone._cpe = _zone.cpe_mean[0]
+            _zone._cpe_str = _zone.cpe_str_mean[0]
+            _zone._cpe_eave = _zone.cpe_eave_mean[0]
+            _zone.shielding_multiplier = 1.0
+
             _zone.calc_zone_pressure(cpi, qz, self.house.combination_factor)
 
         ref_load = {1: -0.0049, 11: -0.1944, 15: -0.0194, 21: -0.0194,
@@ -141,7 +139,7 @@ class TestScenario1(unittest.TestCase):
 
         for _, _conn in self.house.connections.items():
 
-            _conn.compute_load()
+            _conn.check_damage(20.0)
 
             try:
                 self.assertAlmostEqual(ref_load[_conn.name], _conn.load,
@@ -167,8 +165,11 @@ class TestScenario2(unittest.TestCase):
     def setUpClass(cls):
 
         path = os.sep.join(__file__.split(os.sep)[:-1])
-        cfg = Config(cfg_file=os.path.join(
-            path, 'test_scenarios', 'test_scenario2', 'test_scenario2.cfg'))
+        logging.basicConfig(level=logging.WARNING)
+        logger = logging.getLogger(__name__)
+        file_cfg = os.path.join(path, 'test_scenarios',
+                                'test_scenario2', 'test_scenario2.cfg')
+        cfg = Config(file_cfg=file_cfg, logger=logger)
 
         cls.house = House(cfg, seed=0)
 
@@ -201,8 +202,11 @@ class TestScenario2a(unittest.TestCase):
     def setUpClass(cls):
 
         path = os.sep.join(__file__.split(os.sep)[:-1])
-        cfg = Config(cfg_file=os.path.join(
-            path, 'test_scenarios', 'test_scenario2', 'test_scenario2.cfg'))
+        logging.basicConfig(level=logging.WARNING)
+        logger = logging.getLogger(__name__)
+        file_cfg = os.path.join(path, 'test_scenarios',
+                                'test_scenario2', 'test_scenario2.cfg')
+        cfg = Config(file_cfg=file_cfg, logger=logger)
 
         cls.house = House(cfg, seed=0)
 
@@ -240,8 +244,11 @@ class TestScenario3(unittest.TestCase):
     def setUpClass(cls):
 
         path = os.sep.join(__file__.split(os.sep)[:-1])
-        cfg = Config(cfg_file=os.path.join(
-            path, 'test_scenarios', 'test_scenario3', 'test_scenario3.cfg'))
+        logging.basicConfig(level=logging.WARNING)
+        logger = logging.getLogger(__name__)
+        file_cfg = os.path.join(path, 'test_scenarios',
+                                'test_scenario3', 'test_scenario3.cfg')
+        cfg = Config(file_cfg=file_cfg, logger=logger)
 
         cls.house = House(cfg, seed=0)
 
@@ -281,8 +288,11 @@ class TestScenario4(unittest.TestCase):
     def setUpClass(cls):
 
         path = os.sep.join(__file__.split(os.sep)[:-1])
-        cfg = Config(cfg_file=os.path.join(
-            path, 'test_scenarios', 'test_scenario4', 'test_scenario4.cfg'))
+        logging.basicConfig(level=logging.WARNING)
+        logger = logging.getLogger(__name__)
+        file_cfg = os.path.join(path, 'test_scenarios',
+                                'test_scenario4', 'test_scenario4.cfg')
+        cfg = Config(file_cfg=file_cfg, logger=logger)
 
         cls.house = House(cfg, seed=0)
 
@@ -318,8 +328,11 @@ class TestScenario5(unittest.TestCase):
     def setUpClass(cls):
 
         path = os.sep.join(__file__.split(os.sep)[:-1])
-        cfg = Config(cfg_file=os.path.join(
-            path, 'test_scenarios', 'test_scenario5', 'test_scenario5.cfg'))
+        logging.basicConfig(level=logging.WARNING)
+        logger = logging.getLogger(__name__)
+        file_cfg = os.path.join(path, 'test_scenarios',
+                                'test_scenario5', 'test_scenario5.cfg')
+        cfg = Config(file_cfg=file_cfg, logger=logger)
 
         cls.house = House(cfg, seed=0)
 
@@ -356,14 +369,14 @@ class TestScenario6(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
 
-        path = os.sep.join(__file__.split(os.sep)[:-1])
-
         # set up logging
-        cfg_file = os.path.join(
-            path, 'test_scenarios', 'test_scenario6', 'test_scenario6.cfg')
-        # set_logger(os.path.dirname(cfg_file), logging_level='debug')
+        path = os.sep.join(__file__.split(os.sep)[:-1])
+        logging.basicConfig(level=logging.WARNING)
+        logger = logging.getLogger(__name__)
+        file_cfg = os.path.join(path, 'test_scenarios',
+                                'test_scenario6', 'test_scenario6.cfg')
+        cfg = Config(file_cfg=file_cfg, logger=logger)
 
-        cfg = Config(cfg_file=cfg_file)
         cls.house = House(cfg, seed=0)
 
     def test_damage_sheeting_batten_rafter(self):
@@ -392,8 +405,11 @@ class TestScenario7(unittest.TestCase):
     def setUpClass(cls):
 
         path = os.sep.join(__file__.split(os.sep)[:-1])
-        cfg = Config(cfg_file=os.path.join(
-            path, 'test_scenarios', 'test_scenario7', 'test_scenario7.cfg'))
+        logging.basicConfig(level=logging.WARNING)
+        logger = logging.getLogger(__name__)
+        file_cfg = os.path.join(path, 'test_scenarios',
+                                'test_scenario7', 'test_scenario7.cfg')
+        cfg = Config(file_cfg=file_cfg, logger=logger)
 
         cls.house = House(cfg, seed=0)
 
@@ -423,8 +439,11 @@ class TestScenario8(unittest.TestCase):
     def setUpClass(cls):
 
         path = os.sep.join(__file__.split(os.sep)[:-1])
-        cfg = Config(cfg_file=os.path.join(
-            path, 'test_scenarios', 'test_scenario8', 'test_scenario8.cfg'))
+        logging.basicConfig(level=logging.WARNING)
+        logger = logging.getLogger(__name__)
+        file_cfg = os.path.join(path, 'test_scenarios',
+                                'test_scenario8', 'test_scenario8.cfg')
+        cfg = Config(file_cfg=file_cfg, logger=logger)
 
         cls.house = House(cfg, seed=0)
 
@@ -454,8 +473,11 @@ class TestScenario9(unittest.TestCase):
     def setUpClass(cls):
 
         path = os.sep.join(__file__.split(os.sep)[:-1])
-        cfg = Config(cfg_file=os.path.join(
-            path, 'test_scenarios', 'test_scenario9', 'test_scenario9.cfg'))
+        logging.basicConfig(level=logging.WARNING)
+        logger = logging.getLogger(__name__)
+        file_cfg = os.path.join(path, 'test_scenarios',
+                                'test_scenario9', 'test_scenario9.cfg')
+        cfg = Config(file_cfg=file_cfg, logger=logger)
 
         cls.house = House(cfg, seed=0)
 
@@ -479,15 +501,18 @@ class TestScenario9(unittest.TestCase):
 
 class TestScenario10(unittest.TestCase):
     """
-    FIXME!! NEED TO CHECK THE RESULTS
+    test10
     """
 
     @classmethod
     def setUpClass(cls):
 
         path = os.sep.join(__file__.split(os.sep)[:-1])
-        cfg = Config(cfg_file=os.path.join(
-            path, 'test_scenarios', 'test_scenario10', 'test_scenario10.cfg'))
+        logging.basicConfig(level=logging.WARNING)
+        logger = logging.getLogger(__name__)
+        file_cfg = os.path.join(path, 'test_scenarios',
+                                'test_scenario10', 'test_scenario10.cfg')
+        cfg = Config(file_cfg=file_cfg, logger=logger)
 
         cls.house = House(cfg, seed=0)
 
@@ -507,15 +532,18 @@ class TestScenario10(unittest.TestCase):
 
 class TestScenario11(unittest.TestCase):
     """
-    FIXME!! NEED TO CHECK THE RESULTS
+    Test11
     """
 
     @classmethod
     def setUpClass(cls):
 
         path = os.sep.join(__file__.split(os.sep)[:-1])
-        cfg = Config(cfg_file=os.path.join(
-            path, 'test_scenarios', 'test_scenario11', 'test_scenario11.cfg'))
+        logging.basicConfig(level=logging.WARNING)
+        logger = logging.getLogger(__name__)
+        file_cfg = os.path.join(path, 'test_scenarios',
+                                'test_scenario11', 'test_scenario11.cfg')
+        cfg = Config(file_cfg=file_cfg, logger=logger)
 
         cls.house = House(cfg, seed=0)
 
@@ -538,15 +566,18 @@ class TestScenario11(unittest.TestCase):
 
 class TestScenario12(unittest.TestCase):
     """
-    FIXME!! NEED TO CHECK THE RESULTS
+    Test12
     """
 
     @classmethod
     def setUpClass(cls):
 
         path = os.sep.join(__file__.split(os.sep)[:-1])
-        cfg = Config(cfg_file=os.path.join(
-            path, 'test_scenarios', 'test_scenario12', 'test_scenario12.cfg'))
+        logging.basicConfig(level=logging.WARNING)
+        logger = logging.getLogger(__name__)
+        file_cfg = os.path.join(path, 'test_scenarios',
+                                'test_scenario12', 'test_scenario12.cfg')
+        cfg = Config(file_cfg=file_cfg, logger=logger)
 
         cls.house = House(cfg, seed=0)
 
@@ -570,15 +601,18 @@ class TestScenario12(unittest.TestCase):
 
 class TestScenario13(unittest.TestCase):
     """
-    FIXME!! NEED TO CHECK THE RESULTS
+    Test13
     """
 
     @classmethod
     def setUpClass(cls):
 
         path = os.sep.join(__file__.split(os.sep)[:-1])
-        cfg = Config(cfg_file=os.path.join(
-            path, 'test_scenarios', 'test_scenario13', 'test_scenario13.cfg'))
+        logging.basicConfig(level=logging.WARNING)
+        logger = logging.getLogger(__name__)
+        file_cfg = os.path.join(path, 'test_scenarios',
+                                'test_scenario13', 'test_scenario13.cfg')
+        cfg = Config(file_cfg=file_cfg, logger=logger)
 
         cls.house = House(cfg, seed=0)
 
@@ -601,15 +635,18 @@ class TestScenario13(unittest.TestCase):
 
 class TestScenario14(unittest.TestCase):
     """
-    FIXME!! NEED TO CHECK THE RESULTS
+    Test14
     """
 
     @classmethod
     def setUpClass(cls):
 
         path = os.sep.join(__file__.split(os.sep)[:-1])
-        cfg = Config(cfg_file=os.path.join(
-            path, 'test_scenarios', 'test_scenario14', 'test_scenario14.cfg'))
+        logging.basicConfig(level=logging.WARNING)
+        logger = logging.getLogger(__name__)
+        file_cfg = os.path.join(path, 'test_scenarios',
+                                'test_scenario14', 'test_scenario14.cfg')
+        cfg = Config(file_cfg=file_cfg, logger=logger)
 
         cls.house = House(cfg, seed=0)
 
@@ -637,8 +674,12 @@ class TestScenario15(unittest.TestCase):
     def setUpClass(cls):
 
         path = os.sep.join(__file__.split(os.sep)[:-1])
-        cfg = Config(cfg_file=os.path.join(
-            path, 'test_scenarios', 'test_scenario15', 'test_scenario15.cfg'))
+        logging.basicConfig(level=logging.WARNING)
+        logger = logging.getLogger(__name__)
+        file_cfg = os.path.join(path, 'test_scenarios',
+                                'test_scenario15', 'test_scenario15.cfg')
+        cfg = Config(file_cfg=file_cfg, logger=logger)
+
         cls.house = House(cfg, seed=0)
 
     def test_damage_sheeting_batten_rafter(self):
@@ -661,8 +702,11 @@ class TestScenario16(unittest.TestCase):
     def setUpClass(cls):
 
         path = os.sep.join(__file__.split(os.sep)[:-1])
-        cfg = Config(cfg_file=os.path.join(
-            path, 'test_scenarios', 'test_scenario16', 'test_scenario16.cfg'))
+        logging.basicConfig(level=logging.WARNING)
+        logger = logging.getLogger(__name__)
+        file_cfg = os.path.join(path, 'test_scenarios',
+                                'test_scenario16', 'test_scenario16.cfg')
+        cfg = Config(file_cfg=file_cfg, logger=logger)
         cls.house = House(cfg, seed=0)
 
     def test_damage_sheeting_batten_rafter(self):
@@ -695,8 +739,11 @@ class TestScenario17(unittest.TestCase):
     def setUpClass(cls):
 
         path = os.sep.join(__file__.split(os.sep)[:-1])
-        cfg = Config(cfg_file=os.path.join(
-            path, 'test_scenarios', 'test_scenario17', 'test_scenario17.cfg'))
+        logging.basicConfig(level=logging.WARNING)
+        logger = logging.getLogger(__name__)
+        file_cfg = os.path.join(path, 'test_scenarios',
+                                'test_scenario17', 'test_scenario17.cfg')
+        cfg = Config(file_cfg=file_cfg, logger=logger)
         cls.house = House(cfg, seed=0)
 
     def test_damage_sheeting_batten_rafter(self):
@@ -740,8 +787,11 @@ class TestScenario18(unittest.TestCase):
     def setUpClass(cls):
 
         path = os.sep.join(__file__.split(os.sep)[:-1])
-        cfg = Config(cfg_file=os.path.join(
-            path, 'test_scenarios', 'test_scenario18', 'test_scenario18.cfg'))
+        logging.basicConfig(level=logging.WARNING)
+        logger = logging.getLogger(__name__)
+        file_cfg = os.path.join(path, 'test_scenarios',
+                                'test_scenario18', 'test_scenario18.cfg')
+        cfg = Config(file_cfg=file_cfg, logger=logger)
         cls.house = House(cfg, seed=0)
 
     def test_damage_sheeting_batten_rafter(self):
@@ -776,8 +826,13 @@ class TestScenario19(unittest.TestCase):
     def setUpClass(cls):
 
         path = os.sep.join(__file__.split(os.sep)[:-1])
-        cfg = Config(cfg_file=os.path.join(
-            path, 'test_scenarios', 'test_scenario19', 'test_scenario19.cfg'))
+        path_cfg = os.path.join(path, 'test_scenarios', 'test_scenario19')
+        file_cfg = os.path.join(path_cfg, 'test_scenario19.cfg')
+        # set_logger(path_cfg=path_cfg, logging_level='debug')
+        logging.basicConfig(level=logging.WARNING)
+        logger = logging.getLogger(__name__)
+        cfg = Config(file_cfg=file_cfg, logger=logger)
+        # cfg = Config(file_cfg=file_cfg)
         cls.house = House(cfg, seed=0)
 
     def test_damage_coverage(self):
@@ -798,11 +853,11 @@ class TestScenario19(unittest.TestCase):
                 conn_capacity2.update({_id: speed})
 
         # compute zone pressures
-        self.house.terrain_height_multiplier = 1.0  # profile: 6, height: 4.5
+        self.house._terrain_height_multiplier = 1.0  # profile: 6, height: 4.5
 
         for wind_speed in wind_speeds:
 
-            logging.info('wind speed {:.3f}'.format(wind_speed))
+            logging.debug('wind speed {:.3f}'.format(wind_speed))
 
             self.house.compute_qz(wind_speed)
 
@@ -814,7 +869,7 @@ class TestScenario19(unittest.TestCase):
 
                 # ignore cpi refinement
                 if _ps['coverage'].breached:
-                    self.house.cpi = 0.7
+                    self.house._cpi = 0.7
 
         # compare with reference capacity
         for _id, _coverage in self.house.coverages['coverage'].iteritems():
@@ -839,8 +894,11 @@ class TestScenario20(unittest.TestCase):
     def setUpClass(cls):
 
         path = os.sep.join(__file__.split(os.sep)[:-1])
-        cfg = Config(cfg_file=os.path.join(
-            path, 'test_scenarios', 'test_scenario20', 'test_scenario20.cfg'))
+        logging.basicConfig(level=logging.WARNING)
+        logger = logging.getLogger(__name__)
+        file_cfg = os.path.join(path, 'test_scenarios',
+                                'test_scenario20', 'test_scenario20.cfg')
+        cfg = Config(file_cfg=file_cfg, logger=logger)
         cls.house = House(cfg, seed=0)
 
     def test_dead_load(self):
@@ -883,8 +941,11 @@ class TestScenario21(unittest.TestCase):
     def setUpClass(cls):
 
         path = os.sep.join(__file__.split(os.sep)[:-1])
-        cfg = Config(cfg_file=os.path.join(
-            path, 'test_scenarios', 'test_scenario21', 'test_scenario21.cfg'))
+        logging.basicConfig(level=logging.WARNING)
+        logger = logging.getLogger(__name__)
+        file_cfg = os.path.join(path, 'test_scenarios',
+                                'test_scenario21', 'test_scenario21.cfg')
+        cfg = Config(file_cfg=file_cfg, logger=logger)
         cls.house = House(cfg, seed=0)
 
     def test_dead_load(self):
@@ -933,8 +994,11 @@ class TestScenario22a(unittest.TestCase):
     def setUpClass(cls):
 
         path = os.sep.join(__file__.split(os.sep)[:-1])
-        cfg = Config(cfg_file=os.path.join(
-            path, 'test_scenarios', 'test_scenario22', 'test_scenario22.cfg'))
+        logging.basicConfig(level=logging.WARNING)
+        logger = logging.getLogger(__name__)
+        file_cfg = os.path.join(path, 'test_scenarios',
+                                'test_scenario22', 'test_scenario22.cfg')
+        cfg = Config(file_cfg=file_cfg, logger=logger)
         cfg.wind_dir_index = 0
 
         cls.house = House(cfg, seed=0)
@@ -954,6 +1018,7 @@ class TestScenario22a(unittest.TestCase):
                    coverage_capacity=coverage_capacity,
                    list_coverages=list_coverages)
 
+
 class TestScenario22b(unittest.TestCase):
     """
     to test different strength for inward and outward direction
@@ -963,16 +1028,18 @@ class TestScenario22b(unittest.TestCase):
     def setUpClass(cls):
 
         path = os.sep.join(__file__.split(os.sep)[:-1])
-        cfg = Config(cfg_file=os.path.join(
-            path, 'test_scenarios', 'test_scenario22', 'test_scenario22.cfg'))
-
+        logging.basicConfig(level=logging.WARNING)
+        logger = logging.getLogger(__name__)
+        file_cfg = os.path.join(path, 'test_scenarios',
+                                'test_scenario22', 'test_scenario22.cfg')
+        cfg = Config(file_cfg=file_cfg, logger=logger)
         cfg.wind_dir_index = 4
         cls.house = House(cfg, seed=0)
 
     def test_directional_strength_wind_direction_N(self):
 
         assert self.house.wind_dir_index == 4
-        self.house.terrain_height_multiplier = 1.0  # profile: 6, height: 4.5
+        self.house._terrain_height_multiplier = 1.0  # profile: 6, height: 4.5
 
         # change it to conn to speed
         coverage_capacity = {34.0: [4],
@@ -995,8 +1062,11 @@ class TestScenario23a(unittest.TestCase):
     def setUpClass(cls):
 
         path = os.sep.join(__file__.split(os.sep)[:-1])
-        cfg = Config(cfg_file=os.path.join(
-            path, 'test_scenarios', 'test_scenario23', 'test_scenario23.cfg'))
+        logging.basicConfig(level=logging.WARNING)
+        logger = logging.getLogger(__name__)
+        file_cfg = os.path.join(path, 'test_scenarios',
+                                'test_scenario23', 'test_scenario23.cfg')
+        cfg = Config(file_cfg=file_cfg, logger=logger)
 
         cfg.wind_dir_index = 0
         cls.house = House(cfg, seed=0)
@@ -1004,7 +1074,7 @@ class TestScenario23a(unittest.TestCase):
     def test_directional_strength_wind_direction_S(self):
 
         assert self.house.wind_dir_index == 0
-        self.house.terrain_height_multiplier = 1.0  # profile: 6, height: 4.5
+        self.house._terrain_height_multiplier = 1.0  # profile: 6, height: 4.5
 
         # change it to conn to speed
         coverage_capacity = {34.0: [2],
@@ -1029,8 +1099,11 @@ class TestScenario23b(unittest.TestCase):
     def setUpClass(cls):
 
         path = os.sep.join(__file__.split(os.sep)[:-1])
-        cfg = Config(cfg_file=os.path.join(
-            path, 'test_scenarios', 'test_scenario23', 'test_scenario23.cfg'))
+        logging.basicConfig(level=logging.WARNING)
+        logger = logging.getLogger(__name__)
+        file_cfg = os.path.join(path, 'test_scenarios',
+                                'test_scenario23', 'test_scenario23.cfg')
+        cfg = Config(file_cfg=file_cfg, logger=logger)
 
         cfg.wind_dir_index = 1
         cls.house = House(cfg, seed=0)
@@ -1038,7 +1111,7 @@ class TestScenario23b(unittest.TestCase):
     def test_directional_strength_wind_direction_SE(self):
 
         assert self.house.wind_dir_index == 1
-        self.house.terrain_height_multiplier = 1.0  # profile: 6, height: 4.5
+        self.house._terrain_height_multiplier = 1.0  # profile: 6, height: 4.5
 
         # change it to conn to speed
         coverage_capacity = {28.0: [2],
@@ -1062,9 +1135,11 @@ class TestScenario23c(unittest.TestCase):
     def setUpClass(cls):
 
         path = os.sep.join(__file__.split(os.sep)[:-1])
-
-        cfg = Config(cfg_file=os.path.join(
-            path, 'test_scenarios', 'test_scenario23', 'test_scenario23.cfg'))
+        logging.basicConfig(level=logging.WARNING)
+        logger = logging.getLogger(__name__)
+        file_cfg = os.path.join(path, 'test_scenarios',
+                                'test_scenario23', 'test_scenario23.cfg')
+        cfg = Config(file_cfg=file_cfg, logger=logger)
 
         cfg.wind_dir_index = 2
         cls.house = House(cfg, seed=0)
@@ -1072,7 +1147,7 @@ class TestScenario23c(unittest.TestCase):
     def test_directional_strength_wind_direction_E(self):
 
         assert self.house.wind_dir_index == 2
-        self.house.terrain_height_multiplier = 1.0  # profile: 6, height: 4.5
+        self.house._terrain_height_multiplier = 1.0  # profile: 6, height: 4.5
 
         # change it to conn to speed
         coverage_capacity = {34.0: [4],
@@ -1097,13 +1172,11 @@ class TestScenario26(unittest.TestCase):
     def setUpClass(cls):
 
         path = os.sep.join(__file__.split(os.sep)[:-1])
-        cfg_file = os.path.join(
-            path, 'test_scenarios', 'test_scenario26', 'test_scenario26.cfg')
-
-        # set up logging
-        # set_logger(os.path.dirname(cfg_file), logging_level='debug')
-
-        cfg = Config(cfg_file=cfg_file)
+        logging.basicConfig(level=logging.WARNING)
+        logger = logging.getLogger(__name__)
+        file_cfg = os.path.join(path, 'test_scenarios',
+                                'test_scenario26', 'test_scenario26.cfg')
+        cfg = Config(file_cfg=file_cfg, logger=logger)
 
         cls.house = House(cfg, seed=0)
 
@@ -1134,13 +1207,11 @@ class TestScenario27(unittest.TestCase):
     def setUpClass(cls):
 
         path = os.sep.join(__file__.split(os.sep)[:-1])
-        cfg_file = os.path.join(
-            path, 'test_scenarios', 'test_scenario27', 'test_scenario27.cfg')
-
-        # set up logging
-        # set_logger(os.path.dirname(cfg_file), logging_level='debug')
-
-        cfg = Config(cfg_file=cfg_file)
+        logging.basicConfig(level=logging.WARNING)
+        logger = logging.getLogger(__name__)
+        file_cfg = os.path.join(path, 'test_scenarios',
+                                'test_scenario27', 'test_scenario27.cfg')
+        cfg = Config(file_cfg=file_cfg, logger=logger)
 
         cls.house = House(cfg, seed=0)
 
@@ -1163,6 +1234,6 @@ class TestScenario27(unittest.TestCase):
                    list_connections=range(1, 36))
 
 if __name__ == '__main__':
-    #suite = unittest.TestLoader().loadTestsFromTestCase(TestScenario27)
-    #unittest.TextTestRunner(verbosity=2).run(suite)
-    unittest.main(verbosity=2)
+    suite = unittest.TestLoader().loadTestsFromTestCase(TestScenario27)
+    unittest.TextTestRunner(verbosity=2).run(suite)
+    #unittest.main(verbosity=2)

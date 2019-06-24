@@ -18,15 +18,15 @@ Copyright © 2005 Florent Rougon, 2006 Darren Dale
 
 __version__ = "1.0.0"
 
-from PyQt4.QtGui import QSizePolicy, QVBoxLayout, QWidget
-from PyQt4.QtCore import QSize
-
-from matplotlib.backends.backend_qt4agg import FigureCanvasQTAgg as Canvas
-from matplotlib.backends.backend_qt4agg import NavigationToolbar2QT as NavigationToolbar
+from PyQt5.QtCore import QSize
+from PyQt5.QtWidgets import QSizePolicy, QVBoxLayout, QWidget, QMainWindow
+from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as Canvas
+from matplotlib.backends.backend_qt5agg import NavigationToolbar2QT as NavigationToolbar
 from matplotlib.figure import Figure
+import matplotlib
 
-from matplotlib import rcParams
-rcParams['font.size'] = 9
+matplotlib.use('QT5Agg')
+matplotlib.rcParams['font.size'] = 9
 
 
 class MatplotlibWidget2(Canvas):
@@ -79,7 +79,10 @@ class MatplotlibWidget2(Canvas):
             self.axes.set_xlim(*xlim)
         if ylim is not None:
             self.axes.set_ylim(*ylim)
-        self.axes.hold(hold)
+
+        if not hold:
+            #self.axes.hold(hold)
+            self.figure.clear()
 
         Canvas.__init__(self, self.figure)
         self.setParent(parent)
@@ -121,13 +124,10 @@ class MatplotlibWidget(QWidget):
         self.figure = self.canvas.figure
         
         
-
-#===============================================================================
-#   Example
-#===============================================================================
 if __name__ == '__main__':
+    #   Example
     import sys
-    from PyQt4.QtGui import QMainWindow, QApplication
+    from PyQt5.QtWidgets import QMainWindow, QApplication
     from numpy import linspace
     
     class ApplicationWindow(QMainWindow):

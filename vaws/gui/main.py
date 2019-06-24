@@ -8,28 +8,20 @@ import logging
 import warnings
 
 import matplotlib.pyplot as plt
-from matplotlib.patches import Polygon as patches_Polygon
-
+import numpy as np
 from collections import OrderedDict
+from mpl_toolkits.axes_grid1.parasite_axes import SubplotHost
+from mpl_toolkits.axisartist.parasite_axes import ParasiteAxes
+from PyQt5.QtGui import QPixmap
+from PyQt5.QtCore import QSettings, QVariant, QFile
+from PyQt5.QtWidgets import QProgressBar, QLabel, QMainWindow, QApplication, QTableWidget, \
+                        QTableWidgetItem, QFileDialog, \
+                        QMessageBox, QTreeWidgetItem, QInputDialog, QSplashScreen
 
-from mpl_toolkits.axes_grid.parasite_axes import SubplotHost
-
-from PyQt4.QtCore import SIGNAL, QTimer, Qt, QSettings, QVariant, QString, QFile
-from PyQt4.QtGui import QProgressBar, QLabel, QMainWindow, QApplication, QTableWidget, QPixmap,\
-                        QTableWidgetItem, QDialog, QCheckBox, QFileDialog, QIntValidator,\
-                        QDoubleValidator, QMessageBox, QTreeWidgetItem, QInputDialog, QSplashScreen
-from numpy import ones, where, float32, mean, nanmean, empty, array, \
-    count_nonzero, nan, append, ones_like, nan_to_num, newaxis, zeros
-
-import pandas as pd
-import h5py
-from vaws.model.house import House
+from vaws.model.constants import WIND_DIR, DEBRIS_TYPES_KEYS, VUL_DIC, BLDG_SPACING, DEBRIS_VULNERABILITY
+from vaws.model.debris import generate_debris_items
 from vaws.gui.house import HouseViewer
-from vaws.model.curve import vulnerability_lognorm, vulnerability_weibull, \
-    vulnerability_weibull_pdf
-from vaws.model.stats import compute_arithmetic_mean_stddev, sample_lognorm_given_mean_stddev
-
-from numpy.random import RandomState
+from vaws.model.curve import vulnerability_lognorm, vulnerability_weibull, vulnerability_weibull_pdf
 
 from vaws.gui.main_ui import Ui_main
 from vaws.model.main import process_commandline, set_logger, \
@@ -41,9 +33,9 @@ from vaws.model.damage_costing import compute_water_ingress_given_damage
 from vaws.gui.output import plot_wind_event_damage, plot_wind_event_mean, \
                         plot_wind_event_show, plot_fitted_curve, \
                         plot_fragility_show, plot_damage_show, plot_influence, \
-                        plot_influence_patch
+                        plot_influence_patch, plot_load_show, plot_pressure_show
 
-from mixins import PersistSizePosMixin, setupTable, finiTable
+from vaws.gui.mixins import PersistSizePosMixin, setupTable, finiTable
 
 my_app = None
 
@@ -53,6 +45,9 @@ SCENARIOS_DIR = os.sep.join(SOURCE_DIR.split(os.sep)[:-1])
 SCENARIOS_DIR = os.path.join(SCENARIOS_DIR, 'scenarios')
 CONFIG_TEMPL = "Scenarios (*.cfg)"
 DEFAULT_SCENARIO = os.path.join(SCENARIOS_DIR, 'default', 'default.cfg')
+
+PRESSURE_KEYS = ['cpe_mean', 'cpe_str_mean', 'cpe_eave_mean', 'cpi_alpha',
+                 'edge']
 
 warnings.filterwarnings("ignore")
 
@@ -71,12 +66,14 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
     def __init__(self, parent=None, init_scenario=None):
         super(MyForm, self).__init__(parent)
         PersistSizePosMixin.__init__(self, "MainWindow")
-        
+
+        self.logger = logging.getLogger(__name__)
+
         self.ui = Ui_main()
         self.ui.setupUi(self)
 
         windowTitle = VERSION_DESC
-        self.setWindowTitle(unicode(windowTitle))
+        self.setWindowTitle(windowTitle)
 
         self.cfg = init_scenario
         self.results_dict = None
@@ -100,117 +97,172 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
         self.statusProgressBar.setMinimum(0)
         self.statusProgressBar.setMaximum(100)
         self.statusBar().addPermanentWidget(self.statusProgressBar)
-        self.statusProgressBar.hide()        
+        self.statusProgressBar.hide()
         self.statusBarScenarioLabel = QLabel()
         self.statusBarScenarioLabel.setText('Scenario: None')
         self.statusBar().addPermanentWidget(self.statusBarScenarioLabel)
-        
+
         self.dirty_scenario = False         # means scenario has changed
-        self.dirty_conntypes = False        # means connection_types have been modified
+        # self.dirty_conntypes = False        # means connection_types have been modified
         self.has_run = False
         self.initSizePosFromSettings()
 
         # top panel
-        self.connect(self.ui.actionOpen_Scenario, SIGNAL("triggered()"),
-                     self.open_scenario)
-        self.connect(self.ui.actionRun, SIGNAL("triggered()"),
-                     self.runScenario)
-        self.connect(self.ui.actionStop, SIGNAL("triggered()"),
-                     self.stopScenario)
-        self.connect(self.ui.actionSave_Scenario, SIGNAL("triggered()"),
-                     self.save_scenario)
-        self.connect(self.ui.actionSave_Scenario_As, SIGNAL("triggered()"),
-                     self.save_as_scenario)
-        self.connect(self.ui.actionHouse_Info, SIGNAL("triggered()"),
-                     self.showHouseInfoDlg)
+        self.ui.actionOpen_Scenario.triggered.connect(self.open_scenario)
+        self.ui.actionRun.triggered.connect(self.runScenario)
+        self.ui.actionStop.triggered.connect(self.stopScenario)
+        self.ui.actionSave_Scenario.triggered.connect(self.save_scenario)
+        self.ui.actionSave_Scenario_As.triggered.connect(self.save_as_scenario)
+        self.ui.actionHouse_Info.triggered.connect(self.showHouseInfoDlg)
+        # TODO: actionNew missing
 
         # test panel
-        self.connect(self.ui.testDebrisButton, SIGNAL("clicked()"),
-                     self.testDebrisSettings)
-        self.connect(self.ui.testConstructionButton, SIGNAL("clicked()"),
-                     self.testConstructionLevels)
-        self.connect(self.ui.testWaterIngressButton, SIGNAL("clicked()"),
-                     self.testWaterIngress)
+        self.ui.testDebrisButton.clicked.connect(self.testDebrisSettings)
+        self.ui.testWaterIngressButton.clicked.connect(self.testWaterIngress)
 
         # Scenario panel
-        self.connect(self.ui.windMin, SIGNAL("valueChanged(int)"),
-                     lambda x: self.onSliderChanged(self.ui.windMinLabel, x))
-        self.connect(self.ui.windMax, SIGNAL("valueChanged(int)"),
-                     lambda x: self.onSliderChanged(self.ui.windMaxLabel, x))
+        self.ui.windMin.valueChanged.connect(
+            lambda x: self.onSliderChanged(self.ui.windMinLabel, x))
+        self.ui.windMax.valueChanged.connect(
+            lambda x: self.onSliderChanged(self.ui.windMaxLabel, x))
 
         # debris panel
-        self.connect(self.ui.debrisRadius, SIGNAL("valueChanged(int)"),
+        self.ui.debrisRadius.valueChanged.connect(
                      lambda x: self.onSliderChanged(self.ui.debrisRadiusLabel, x))
-        self.connect(self.ui.debrisAngle, SIGNAL("valueChanged(int)"),
+        self.ui.debrisAngle.valueChanged.connect(
                      lambda x: self.onSliderChanged(self.ui.debrisAngleLabel, x))
-        self.connect(self.ui.sourceItems, SIGNAL("valueChanged(int)"),
+        self.ui.sourceItems.valueChanged.connect(
                      lambda x: self.onSliderChanged(self.ui.sourceItemsLabel, x))
 
         # options
-        self.connect(self.ui.redV, SIGNAL("valueChanged(int)"),
+        self.ui.redV.valueChanged.connect(
                      lambda x: self.onSliderChanged(self.ui.redVLabel, x))
-        self.connect(self.ui.blueV, SIGNAL("valueChanged(int)"),
+        self.ui.blueV.valueChanged.connect(
                      lambda x: self.onSliderChanged(self.ui.blueVLabel, x))
-        self.connect(self.ui.vStep, SIGNAL("valueChanged(int)"),
+        self.ui.vStep.valueChanged.connect(
                      lambda x: self.onSliderChanged(self.ui.vStepLabel, x))
-        self.connect(self.ui.applyDisplayChangesButton, SIGNAL("clicked()"),
+        self.ui.applyDisplayChangesButton.clicked.connect(
                      self.updateDisplaySettings)
-
-        self.connect(self.ui.heatmap_house, SIGNAL("valueChanged(int)"),
-                     lambda x: self.onSliderChanged(self.ui.heatmap_houseLabel, x))
-        self.ui.heatmap_house.valueChanged.connect(self.heatmap_house_change)
-
-        self.connect(self.ui.slider_influence, SIGNAL("valueChanged(int)"),
-                     lambda x: self.onSliderChanged(self.ui.slider_influenceLabel, x))
-        self.ui.slider_influence.valueChanged.connect(self.updateInfluence)
-
-        self.connect(self.ui.slider_patch, SIGNAL("valueChanged(int)"),
-                     lambda x: self.onSliderChanged(self.ui.slider_patchLabel, x))
 
         self.statusBar().showMessage('Loading')
         self.stopTriggered = False
-        self.selected_zone = None
-        self.selected_conn = None
-        self.selected_plotKey = None
+        # self.selected_zone = None
+        # self.selected_conn = None
+        # self.selected_plotKey = None
 
         # self.ui.sourceItems.setValue(-1)
-        # initial setting
+        # scenario
         self.init_terrain_category()
-        self.init_debris_region()
-
         self.ui.windDirection.clear()
-        self.ui.windDirection.addItems(self.cfg.wind_dir)
+        self.ui.windDirection.addItems(WIND_DIR)
 
+        # debris
+        self.init_debris_region()
         self.ui.buildingSpacing.clear()
-        self.ui.buildingSpacing.addItems(('20.0', '40.0'))
+        self.ui.buildingSpacing.addItems([str(x) for x in BLDG_SPACING])
+
+        # init combobox
+        self.init_debrisvuln()
+
+        # RHS window
+        self.init_pressure()
 
         self.init_influence_and_patch()
+
+        self.init_heatmap_group()
+
+        self.init_load_plot()
+
+        # self.connect(self.ui.slider_influence, SIGNAL("valueChanged(int)"),
+        #              lambda x: self.onSliderChanged(self.ui.slider_influenceLabel, x))
+
+        # self.connect(self.ui.slider_patch, SIGNAL("valueChanged(int)"),
+        #              lambda x: self.onSliderChanged(self.ui.slider_patchLabel, x))
+
+        # self.connect(self.ui.cpi_house, SIGNAL("valueChanged(int)"),
+        #              lambda x: self.onSliderChanged(self.ui.cpi_houseLabel, x))
+        self.ui.spinBox_cpi.valueChanged.connect(self.cpi_plot_change)
+
+        self.ui.ln_checkBox.stateChanged.connect(self.updateVulnCurve)
+        self.ui.wb_checkBox.stateChanged.connect(self.updateVulnCurve)
+
         self.update_ui_from_config()
         # QTimer.singleShot(0, self.set_scenario)
 
         self.statusBar().showMessage('Ready')
 
     def init_terrain_category(self):
+        try:
+            self.ui.terrainCategory.currentTextChanged.disconnect(
+                self.updateTerrainCategoryTable)
+        except TypeError:
+            pass
 
-        self.disconnect(self.ui.terrainCategory,
-                        SIGNAL("currentIndexChanged(QString)"),
-                        self.updateTerrainCategoryTable)
         self.ui.terrainCategory.clear()
         self.ui.terrainCategory.addItems(os.listdir(self.cfg.path_wind_profiles))
-        self.connect(self.ui.terrainCategory,
-                     SIGNAL("currentIndexChanged(QString)"),
-                     self.updateTerrainCategoryTable)
+        self.ui.terrainCategory.currentTextChanged.connect(
+            self.updateTerrainCategoryTable)
 
     def init_debris_region(self):
 
-        self.disconnect(self.ui.debrisRegion,
-                        SIGNAL("currentIndexChanged(QString)"),
-                        self.updateDebrisRegionsTable)
+        try:
+            self.ui.debrisRegion.currentIndexChanged.disconnect(
+                self.updateDebrisRegionsTable)
+        except TypeError:
+            pass
+
         self.ui.debrisRegion.clear()
         self.ui.debrisRegion.addItems(self.cfg.debris_regions.keys())
-        self.connect(self.ui.debrisRegion,
-                     SIGNAL("currentIndexChanged(QString)"),
-                     self.updateDebrisRegionsTable)
+        self.ui.debrisRegion.currentIndexChanged.connect(self.updateDebrisRegionsTable)
+
+    def init_heatmap_group(self):
+
+        try:
+            self.ui.comboBox_heatmap.currentIndexChanged.disconnect(
+                self.heatmap_house_change)
+        except TypeError:
+            pass
+
+        self.ui.comboBox_heatmap.clear()
+        self.ui.comboBox_heatmap.addItems(self.cfg.list_groups)
+        self.ui.comboBox_heatmap.currentIndexChanged.connect(self.heatmap_house_change)
+        self.ui.spinBox_heatmap.valueChanged.connect(self.heatmap_house_change)
+
+    def init_pressure(self):
+
+        self.ui.mplpressure.figure.clear()
+        self.ui.mplpressure.axes.cla()
+        self.ui.mplpressure.axes.figure.canvas.draw()
+
+        # init combobox
+        try:
+            self.ui.comboBox_pressure.currentIndexChanged.disconnect(
+                self.updatePressurePlot)
+        except TypeError:
+            pass
+        self.ui.comboBox_pressure.clear()
+        self.ui.comboBox_pressure.addItems(PRESSURE_KEYS)
+        self.ui.comboBox_pressure.currentIndexChanged.connect(self.updatePressurePlot)
+
+        if str(self.ui.comboBox_pressure.currentText()) == PRESSURE_KEYS[0]:
+            self.updatePressurePlot()
+        else:
+            self.ui.comboBox_pressure.setValue(PRESSURE_KEYS[0])
+
+        # init combobox2
+        try:
+            self.ui.comboBox2_pressure.currentIndexChanged.disconnect(
+                self.updatePressurePlot)
+        except TypeError:
+            pass
+        self.ui.comboBox2_pressure.clear()
+        self.ui.comboBox2_pressure.addItems(WIND_DIR[:-1])
+        self.ui.comboBox2_pressure.currentIndexChanged.connect(self.updatePressurePlot)
+
+        if str(self.ui.comboBox2_pressure.currentText()) == WIND_DIR[0]:
+            self.updatePressurePlot()
+        else:
+            self.ui.comboBox2_pressure.setValue(WIND_DIR[0])
 
     def init_influence_and_patch(self):
         # init_influence
@@ -218,34 +270,35 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
         self.ui.mplinfluecnes.axes.cla()
         self.ui.mplinfluecnes.axes.figure.canvas.draw()
 
-        _list = self.cfg.connections.index.tolist()
-        self.ui.slider_influence.setRange(_list[0], _list[-1])
-        if self.ui.slider_influence.value() == _list[0]:
-            self.onSliderChanged(self.ui.slider_influenceLabel, _list[0])
+        self.ui.spinBox_influence.valueChanged.connect(self.updateInfluence)
+
+        self.ui.spinBox_influence.setRange(self.cfg.list_connections[0],
+                                           self.cfg.list_connections[-1])
+        if self.ui.spinBox_influence.value() == self.cfg.list_connections[0]:
             self.updateInfluence()
         else:
-            self.ui.slider_influence.setValue(_list[0])
+            self.ui.spinBox_influence.setValue(self.cfg.list_connections[0])
 
         # init_patch
         self.ui.mplpatches.figure.clear()
         self.ui.mplpatches.axes.cla()
         self.ui.mplpatches.axes.figure.canvas.draw()
 
-        self.disconnect(self.ui.slider_patch, SIGNAL("valueChanged(int)"),
-                        self.updateComboBox)
-
         _list = sorted(self.cfg.influence_patches.keys())
 
         if _list:
-            self.connect(self.ui.slider_patch, SIGNAL("valueChanged(int)"),
-                         self.updateComboBox)
+            self.ui.spinBox_patch.valueChanged.connect(self.updateComboBox_patch)
 
-            self.ui.slider_patch.setRange(_list[0], _list[-1])
-            if self.ui.slider_patch.value() == _list[0]:
-                self.onSliderChanged(self.ui.slider_patchLabel, _list[0])
-                self.updateComboBox()
+            self.ui.spinBox_patch.setRange(_list[0], _list[-1])
+            if self.ui.spinBox_patch.value() == _list[0]:
+                self.updateComboBox_patch()
             else:
-                self.ui.slider_patch.setValue(_list[0])
+                self.ui.spinBox_patch.setValue(_list[0])
+        else:
+            self.logger.info('patch is not defined')
+
+        # self.disconnect(self.ui.slider_patch, SIGNAL("valueChanged(int)"),
+        #                 self.updateComboBox)
 
     # def onZoneSelected(self, z, plotKey):
     #     self.selected_zone = z
@@ -263,97 +316,23 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
     #             self.ui.zones.setCurrentCell(irow, 0)
     #             break
 
+    def init_load_plot(self):
+
+        try:
+            self.ui.comboBox_load.currentIndexChanged.disconnect(
+                self.load_connection_change)
+        except TypeError:
+            pass
+        self.ui.comboBox_load.clear()
+        self.ui.comboBox_load.addItems(self.cfg.list_groups)
+        self.ui.comboBox_load.currentIndexChanged.connect(self.load_connection_change)
+
+        self.ui.spinBox_load.valueChanged.connect(self.load_connection_change)
+
+        self.ui.doubleSpinBox_load.valueChanged.connect(self.load_connection_change)
+
     def onSliderChanged(self, label, x):
         label.setText('{:d}'.format(x))
-
-    def updateVulnCurve(self, _array):
-        self.ui.mplvuln.axes.hold(True)
-
-        plot_wind_event_show(self.ui.mplvuln, self.cfg.no_models,
-                             self.cfg.speeds[0], self.cfg.speeds[-1])
-
-        mean_cols = mean(_array.T, axis=0)
-        plot_wind_event_mean(self.ui.mplvuln, self.cfg.speeds, mean_cols)
-
-        # plot the individuals
-        for col in _array.T:
-            plot_wind_event_damage(self.ui.mplvuln, self.cfg.speeds, col)
-
-        with h5py.File(self.cfg.file_results, "r") as f:
-            try:
-                param1 = f['vulnearbility']['weibull']['param1'].value
-                param2 = f['vulnearbility']['weibull']['param2'].value
-            except KeyError:
-                pass
-            else:
-                try:
-                    y = vulnerability_weibull(self.cfg.speeds, param1, param2)
-                except KeyError as msg:
-                    logging.warning(msg)
-                else:
-                    plot_fitted_curve(self.ui.mplvuln,
-                                      self.cfg.speeds,
-                                      y,
-                                      col='r',
-                                      label="Weibull")
-
-                    self.ui.wb_coeff_1.setText('{:.3f}'.format(param1))
-                    self.ui.wb_coeff_2.setText('{:.3f}'.format(param2))
-
-            try:
-                param1 = f['vulnearbility']['lognorm']['param1'].value
-                param2 = f['vulnearbility']['lognorm']['param2'].value
-            except KeyError:
-                pass
-            else:
-                try:
-                    y = vulnerability_lognorm(self.cfg.speeds, param1, param2)
-                except KeyError as msg:
-                    logging.warning(msg)
-                else:
-                    plot_fitted_curve(self.ui.mplvuln,
-                                      self.cfg.speeds,
-                                      y,
-                                      col='b',
-                                      label="Lognormal")
-
-                    self.ui.ln_coeff_1.setText('{:.3f}'.format(param1))
-                    self.ui.ln_coeff_2.setText('{:.3f}'.format(param2))
-
-            self.ui.mplvuln.axes.legend(loc=2,
-                                        fancybox=True,
-                                        shadow=True,
-                                        fontsize='small')
-
-            self.ui.mplvuln.axes.figure.canvas.draw()
-
-    def updateFragCurve(self, _array):
-        plot_fragility_show(self.ui.mplfrag, self.cfg.no_models,
-                            self.cfg.speeds[0], self.cfg.speeds[-1])
-
-        self.ui.mplfrag.axes.hold(True)
-        self.ui.mplfrag.axes.plot(self.cfg.speeds, _array, 'k+', 0.3)
-
-        with h5py.File(self.cfg.file_results, "r") as f:
-
-            for ds, value in self.cfg.fragility.iterrows():
-                try:
-                    param1 = f['fragility'][ds]['param1'].value
-                    param2 = f['fragility'][ds]['param2'].value
-                except KeyError as msg:
-                    logging.warning(msg)
-                else:
-                    y = vulnerability_lognorm(self.cfg.speeds, param1, param2)
-
-                    plot_fitted_curve(self.ui.mplfrag, self.cfg.speeds, y,
-                                      col=value['color'], label=ds)
-
-        self.ui.mplfrag.axes.legend(loc=2,
-                                    fancybox=True,
-                                    shadow=True,
-                                    fontsize='small')
-
-        self.ui.mplfrag.axes.figure.canvas.draw()
 
     def updateDisplaySettings(self):
         if self.has_run:
@@ -363,6 +342,23 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
         dlg = HouseViewer(self.cfg)
         dlg.exec_()
 
+    def init_debrisvuln(self):
+
+        try:
+            self.ui.comboBox_debrisVul.currentIndexChanged.disconnect(
+                self.updateDebrisVuln)
+        except TypeError:
+            pass
+        self.ui.comboBox_debrisVul.clear()
+        self.ui.comboBox_debrisVul.addItems(DEBRIS_VULNERABILITY)
+        self.ui.comboBox_debrisVul.currentIndexChanged.connect(self.updateDebrisVuln)
+
+    def updateDebrisVuln(self):
+
+        self.ui.debrisVul_param1.clear()
+        self.ui.debrisVul_param2.clear()
+
+
     def updateDebrisRegionsTable(self):
 
         self.cfg.set_region_name(str(self.ui.debrisRegion.currentText()))
@@ -371,7 +367,9 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
         _debris_region = self.cfg.debris_regions[self.cfg.region_name]
         setupTable(self.ui.debrisRegions, _debris_region)
 
-        for i, key in enumerate(self.cfg.debris_types_keys):
+        no_values = len(self.cfg.debris_types[list(self.cfg.debris_types)[0]])
+
+        for i, key in enumerate(DEBRIS_TYPES_KEYS):
 
             _list = [(k, v) for k, v in _debris_region.items() if key in k]
 
@@ -379,9 +377,9 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
 
             for j, (k, v) in enumerate(_list):
 
-                self.ui.debrisRegions.setItem(6*i + j, 0,
+                self.ui.debrisRegions.setItem(no_values*i + j, 0,
                                               QTableWidgetItem(k))
-                self.ui.debrisRegions.setItem(6*i + j, 1,
+                self.ui.debrisRegions.setItem(no_values*i + j, 1,
                                               QTableWidgetItem('{:.3f}'.format(v)))
 
         finiTable(self.ui.debrisRegions)
@@ -426,7 +424,7 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
             self.ui.connectionsTypes.setItem(
                 irow, 6, QTableWidgetItem('{:.3f}'.format(ctype['costing_area'])))
         finiTable(self.ui.connectionsTypes)
-        
+
     def updateZonesTable(self):
         setupTable(self.ui.zones, self.cfg.zones)
 
@@ -435,19 +433,19 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
                 irow, 0, QTableWidgetItem(index))
             self.ui.zones.setItem(
                 irow, 1, QTableWidgetItem('{:.3f}'.format(z['area'])))
-            self.ui.zones.setItem(
-                irow, 2, QTableWidgetItem('{:.3f}'.format(z['cpi_alpha'])))
-            for _dir in range(8):
-                self.ui.zones.setItem(
-                    irow, 3 + _dir, QTableWidgetItem('{:.3f}'.format(z['cpe_mean'][_dir])))
-            for _dir in range(8):
-                self.ui.zones.setItem(
-                    irow, 11 + _dir, QTableWidgetItem('{:.3f}'.format(z['cpe_str_mean'][_dir])))
-            for _dir in range(8):
-                self.ui.zones.setItem(
-                    irow, 19 + _dir, QTableWidgetItem('{:.3f}'.format(z['cpe_eave_mean'][_dir])))
+            # self.ui.zones.setItem(
+            #     irow, 2, QTableWidgetItem('{:.3f}'.format(z['cpi_alpha'])))
+            # for _dir in range(8):
+            #     self.ui.zones.setItem(
+            #         irow, 3 + _dir, QTableWidgetItem('{:.3f}'.format(z['cpe_mean'][_dir])))
+            # for _dir in range(8):
+            #     self.ui.zones.setItem(
+            #         irow, 11 + _dir, QTableWidgetItem('{:.3f}'.format(z['cpe_str_mean'][_dir])))
+            # for _dir in range(8):
+            #     self.ui.zones.setItem(
+            #         irow, 19 + _dir, QTableWidgetItem('{:.3f}'.format(z['cpe_eave_mean'][_dir])))
         finiTable(self.ui.zones)
-    
+
     def updateConnectionGroupTable(self):
         setupTable(self.ui.connGroups, self.cfg.groups)
         for irow, (index, ctg) in enumerate(self.cfg.groups.items()):
@@ -515,35 +513,43 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
     #         self.dirty_conntypes = False
     #
     #     self.cfg.updateModel()
-    
+
     def stopScenario(self):
         self.stopTriggered = True
-        
+
     def runScenario(self):
         self.statusBar().showMessage('Running Scenario')
         self.statusProgressBar.show()
         self.update_config_from_ui()
         self.cfg.process_config()
 
-        # self.ui.heatmap_house.setMaximum(self.cfg.no_models)
-        self.ui.heatmap_house.setRange(0, self.cfg.no_models)
-        self.ui.heatmap_house.setValue(0)
-        self.ui.heatmap_houseLabel.setText('{:d}'.format(0))
+        self.ui.spinBox_heatmap.setRange(0, self.cfg.no_models)
+        #self.ui.heatmap_houseLabel.setText('{:d}'.format(0))
+
+        self.ui.spinBox_load.setRange(1, self.cfg.no_models)
+        self.ui.doubleSpinBox_load.setRange(self.cfg.wind_speeds[0], self.cfg.wind_speeds[-1])
 
         self.ui.mplsheeting.axes.cla()
         self.ui.mplsheeting.axes.figure.canvas.draw()
 
-        self.ui.mplbatten.axes.cla()
-        self.ui.mplbatten.axes.figure.canvas.draw()
-
-        self.ui.mplrafter.axes.cla()
-        self.ui.mplrafter.axes.figure.canvas.draw()
+        # self.ui.mplbatten.axes.cla()
+        # self.ui.mplbatten.axes.figure.canvas.draw()
+        #
+        # self.ui.mplrafter.axes.cla()
+        # self.ui.mplrafter.axes.figure.canvas.draw()
 
         self.ui.connection_type_plot.axes.cla()
         self.ui.connection_type_plot.axes.figure.canvas.draw()
 
         self.ui.breaches_plot.axes.cla()
         self.ui.breaches_plot.axes.figure.canvas.draw()
+
+        self.ui.spinBox_cpi.setRange(0, self.cfg.no_models)
+        # self.ui.cpi_house.setValue(0)
+        # self.ui.cpi_houseLabel.setText('{:d}'.format(0))
+
+        self.ui.cpi_plot.axes.cla()
+        self.ui.cpi_plot.axes.figure.canvas.draw()
 
         self.ui.wateringress_plot.axes.cla()
         self.ui.wateringress_plot.axes.figure.canvas.draw()
@@ -563,32 +569,31 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
 
         # attempt to run the simulator, being careful with exceptions...
         try:
-            run_time, bucket = simulate_wind_damage_to_houses(self.cfg,
+            run_time, self.results_dict = simulate_wind_damage_to_houses(self.cfg,
                                                               call_back=progress_callback)
 
             if run_time is not None:
                 self.statusBar().showMessage(
-                    unicode('Simulation complete in {:0.3f}'.format(run_time)))
+                    'Simulation complete in {:0.3f}'.format(run_time))
 
-                self.results_dict = bucket
-                self.updateVulnCurve(bucket['house']['di'])
-                self.updateFragCurve(bucket['house']['di'])
-                self.updateHouseResultsTable(bucket)
-                self.updateConnectionTable_with_results(bucket)
-                self.updateConnectionTypePlots(bucket)
-                self.updateHeatmap(bucket)
-                self.updateWaterIngressPlot(bucket)
-                self.updateBreachPlot(bucket)
+                # self.results_dict = bucket
+                self.updateVulnCurve()
+                self.updateFragCurve()
+                self.updateHouseResultsTable()
+                self.updateConnectionTable_with_results()
+                self.updateConnectionTypePlots()
+                self.updateHeatmap()
+                self.updateWaterIngressPlot()
+                self.updateBreachPlot()
+                self.updateCpiPlot()
                 self.has_run = True
 
         except IOError:
-            msg = unicode('A report file is still open by another program, '
-                          'unable to run simulation.')
+            msg = 'A report file is still open by another program unable to run simulation.'
             QMessageBox.warning(self, 'VAWS Program Warning', msg)
-            self.statusBar().showMessage(unicode(''))
+            self.statusBar().showMessage('')
         except Exception as err:
-            self.statusBar().showMessage(
-                unicode('Fatal Error Occurred: {}'.format(err)))
+            self.statusBar().showMessage('Fatal Error Occurred: {}'.format(err))
             raise
         finally:
             self.statusProgressBar.hide()
@@ -600,65 +605,102 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
             self.statusBar().showMessage('Ready')
 
     def heatmap_house_change(self):
-        if self.has_run:
-            house_number = self.ui.heatmap_house.value()
-            bucket = self.results_dict
-            self.updateHeatmap(bucket, house_number)
 
-    def updateHeatmap(self, bucket, house_number=0):
+        if self.has_run:
+            # idx = self.ui.comboBox_heatmap.findText(self.cfg.list_groups[0])
+            # if self.ui.comboBox_heatmap.currentIndex() == idx:
+            self.updateHeatmap()
+            # else:
+            #     self.ui.comboBox_heatmap.setCurrentIndex(idx)
+
+    def load_connection_change(self):
+
+        if self.has_run:
+            # idx = self.ui.comboBox_heatmap.findText(self.cfg.list_groups[0])
+            # if self.ui.comboBox_heatmap.currentIndex() == idx:
+            self.updateLoadPlot()
+            # else:
+            #     self.ui.comboBox_heatmap.setCurrentIndex(idx)
+
+    def updateHeatmap(self):
+
+        # group_name = self.cfg.list_groups[
+        #     self.ui.comboBox_heatmap.currentIndex()]
+
+        group_name = str(self.ui.comboBox_heatmap.currentText())
+        house_number = self.ui.spinBox_heatmap.value()
+
+        grouped = self.cfg.connections.loc[
+            self.cfg.connections.group_name == group_name]
+
+        capacity = np.array([self.results_dict['connection']['capacity'][i]
+                             for i in grouped.index])[:, 0, :]
+
+        capacity[capacity == -1] = np.nan
+        if house_number == 0:
+            if len(capacity) > 0:
+                mean_connection_capacity = np.nanmean(capacity, axis=1)
+            else:
+                mean_connection_capacity = np.zeros(1)
+        else:
+            mean_connection_capacity = capacity[:, house_number - 1]
+
+        mean_connection_capacity = np.nan_to_num(mean_connection_capacity)
+
         red_v = self.ui.redV.value()
         blue_v = self.ui.blueV.value()
         vstep = self.ui.vStep.value()
-        self.ui.damages_tab.setUpdatesEnabled(False)
 
-        group_widget = {
-            'sheeting': [self.ui.mplsheeting, self.ui.tab_19, 0, "Sheeting"],
-            'batten': [self.ui.mplbatten, self.ui.tab_20, 1, "Batten"],
-            'rafter': [self.ui.mplrafter, self.ui.tab_21, 2, "Rafter"],
-            'piersgroup': [self.ui.mplpiers, self.ui.tab_27, 3, "PiersGroup"],
-            'wallcladding': [self.ui.mplwallcladding, self.ui.tab_26, 4, "WallCladding"],
-            'wallracking_cladding': [self.ui.mplwallracking_cladding, self.ui.tab_25, 5, "WallRackingCladding"],
-            'wallracking_bracing': [self.ui.mplwallracking_bracing, self.ui.tab_35, 6, "WallRackingBracing"],
-            'wallcollapse': [self.ui.mplwallcollapse, self.ui.tab_29, 7, "WallCollapse"],
-            'tiles': [self.ui.mpltile, self.ui.tab_32, 8, "Tiles"],
-            'truss': [self.ui.mpltruss, self.ui.tab_31, 9, "Truss"],
-        }
+        plot_damage_show(self.ui.mplsheeting, grouped,
+                         mean_connection_capacity,
+                         self.cfg.house['length'],
+                         self.cfg.house['width'],
+                         red_v, blue_v, vstep,
+                         house_number)
 
-        for group_name, widget in group_widget.items():
-            tab_index = self.ui.damages_tab.indexOf(widget[1])
-            if group_name not in self.cfg.connections['group_name'].values and tab_index >= 0:
-                self.ui.damages_tab.removeTab(tab_index)
+    def updatePressurePlot(self):
 
-        for group_name, grouped in self.cfg.connections.groupby('group_name'):
-            if group_name not in group_widget:
-                continue
+        pressure_key = str(self.ui.comboBox_pressure.currentText())
+        wind_dir_idx = int(self.ui.comboBox2_pressure.currentIndex())
 
-            base_tab = group_widget[group_name][1]
+        coords = [(key, value['coords'], value['centroid'])
+                  for key, value in self.cfg.zones.items()]
 
-            if self.ui.damages_tab.indexOf(base_tab) == -1:
-                self.ui.damages_tab.insertTab(group_widget[group_name][2],
-                                              group_widget[group_name][1],
-                                              group_widget[group_name][3])
+        if pressure_key == 'cpi_alpha':
+            pressure_value = np.array([value[pressure_key]
+                                       for _, value in self.cfg.zones.items()])
+        else:
+            pressure_value = np.array([value[pressure_key][wind_dir_idx]
+                                       for _, value in self.cfg.zones.items()])
 
-            _array = array([bucket['connection']['capacity'][i]
-                            for i in grouped.index])
-            _array[_array == -1] = nan
-            if house_number == 0:
-                if len(_array) > 0:
-                    mean_connection_capacity = nanmean(_array, axis=1)
-                else:
-                    mean_connection_capacity = zeros(1)
+        if pressure_key == 'edge':
+            v_min = 0.0
+            v_max = 1.0
+        else:
+            _min, _max = min(pressure_value), max(pressure_value)
+
+            if _min == _max:
+                v_min = -1.0 + _min
+                v_max = 1.0 + _max
             else:
-                mean_connection_capacity = _array[:, house_number-1]
+                v_min = _min - np.sign(_min) * 0.05*_min
+                v_max = _max + np.sign(_max) * 0.05*_max
 
-            mean_connection_capacity = nan_to_num(mean_connection_capacity)
+        try:
+            plot_pressure_show(self.ui.mplpressure,
+                               coords,
+                               pressure_value,
+                               self.cfg.house['length'],
+                               self.cfg.house['width'],
+                               v_min=v_min,
+                               v_max=v_max)
+        except ValueError:
+            self.logger.warning('Cannot plot {}'.format(pressure_key))
 
-            plot_damage_show(group_widget[group_name][0], grouped,
-                             mean_connection_capacity,
-                             self.cfg.house['length'],
-                             self.cfg.house['width'],
-                             red_v, blue_v, vstep,
-                             house_number)
+    def cpi_plot_change(self):
+        if self.has_run:
+            house_number = self.ui.spinBox_cpi.value()
+            self.updateCpiPlot(house_number)
 
         # wall_major_rows = 2
         # wall_major_cols = self.cfg.house['roof_cols']
@@ -716,221 +758,390 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
         #                           v_east_grid, wall_major_cols, wall_major_rows,
         #                           wall_minor_cols, wall_minor_rows,red_v, blue_v)
 
-        self.ui.damages_tab.setUpdatesEnabled(True)
+        # self.ui.damages_tab.setUpdatesEnabled(True)
 
     def updateInfluence(self):
-        conn_name = self.ui.slider_influence.value()
+        conn_name = int(self.ui.spinBox_influence.value())
         plot_influence(self.ui.mplinfluecnes, self.cfg, conn_name)
 
-    def updateComboBox(self):
+    def updateComboBox_patch(self):
 
-        failed_conn_name = self.ui.slider_patch.value()
+        failed_conn_name = int(self.ui.spinBox_patch.value())
 
         try:
-            _sub_list = sorted(self.cfg.influence_patches[failed_conn_name].keys())
+            sub_list = sorted(self.cfg.influence_patches[failed_conn_name].keys())
         except KeyError:
-            pass
+            self.logger.info('patch is not defined for conn {}'.format(failed_conn_name))
+            self.ui.comboBox_patch.clear()
         else:
-            _sub_list = [str(x) for x in _sub_list]
-            self.disconnect(self.ui.comboBox,
-                            SIGNAL("currentIndexChanged(QString)"),
-                            self.updatePatch)
-            self.ui.comboBox.clear()
-            self.ui.comboBox.addItems(_sub_list)
-            self.connect(self.ui.comboBox,
-                         SIGNAL("currentIndexChanged(QString)"),
+            sub_list = [str(x) for x in sub_list]
+            # self.disconnect(self.ui.comboBox_patch,
+            #                 SIGNAL("currentIndexChanged(QString)"),
+            #                 self.updatePatch)
+            self.ui.comboBox_patch.clear()
+            self.ui.comboBox_patch.addItems(sub_list)
+            self.ui.comboBox_patch.currentIndexChanged.connect(
                          self.updatePatch)
 
-            idx = self.ui.comboBox.findText(_sub_list[0])
-            if self.ui.comboBox.currentIndex() == idx:
+            idx = self.ui.comboBox_patch.findText(sub_list[0])
+            if self.ui.comboBox_patch.currentIndex() == idx:
                 self.updatePatch()
             else:
-                self.ui.comboBox.setCurrentIndex(idx)
+                self.ui.comboBox_patch.setCurrentIndex(idx)
 
     def updatePatch(self):
-        failed_conn_name = self.ui.slider_patch.value()
-        conn_name = int(self.ui.comboBox.currentText())
-
-        plot_influence_patch(self.ui.mplpatches, self.cfg, failed_conn_name,
+        failed_conn_name = self.ui.spinBox_patch.value()
+        try:
+            conn_name = int(self.ui.comboBox_patch.currentText())
+        except ValueError:
+            pass
+        else:
+            plot_influence_patch(self.ui.mplpatches, self.cfg, failed_conn_name,
                              conn_name)
 
-    def updateWaterIngressPlot(self, bucket):
+    def updateVulnCurve(self):
+
+        self.ui.mplvuln.axes.figure.clf()
+        ax = self.ui.mplvuln.axes.figure.add_subplot(111)
+
+        plot_wind_event_show(ax, self.cfg.no_models,
+                             self.cfg.wind_speeds[0], self.cfg.wind_speeds[-1])
+
+        _array = self.results_dict['house']['di']
+
+        mean_cols = _array.T.mean(axis=0)
+        plot_wind_event_mean(ax, self.cfg.wind_speeds, mean_cols)
+
+        # plot the individuals
+        for col in _array.T:
+            plot_wind_event_damage(ax, self.cfg.wind_speeds, col)
+
+        try:
+            param1 = self.results_dict['vulnerability']['weibull']['param1']
+            param2 = self.results_dict['vulnerability']['weibull']['param2']
+        except KeyError as mg:
+            self.logger.warning(msg)
+        else:
+            self.ui.wb_coeff_1.setText('{:.3f}'.format(param1))
+            self.ui.wb_coeff_2.setText('{:.3f}'.format(param2))
+
+            if self.ui.wb_checkBox.isChecked():
+                y = vulnerability_weibull(self.cfg.wind_speeds, param1, param2)
+                plot_fitted_curve(ax, self.cfg.wind_speeds, y, col='r',
+                                  label="Weibull")
+
+        try:
+            param1 = self.results_dict['vulnerability']['lognorm']['param1']
+            param2 = self.results_dict['vulnerability']['lognorm']['param2']
+        except KeyError as msg:
+            self.logger.warning(msg)
+        else:
+            self.ui.ln_coeff_1.setText('{:.3f}'.format(param1))
+            self.ui.ln_coeff_2.setText('{:.3f}'.format(param2))
+
+            if self.ui.ln_checkBox.isChecked():
+                y = vulnerability_lognorm(self.cfg.wind_speeds, param1, param2)
+                plot_fitted_curve(ax, self.cfg.wind_speeds, y, col='b',
+                                      label="Lognormal")
+
+        ax.legend(loc=2, fancybox=True, shadow=True, fontsize='small')
+
+        self.ui.mplvuln.axes.figure.canvas.draw()
+
+
+    def updateFragCurve(self):
+
+        self.ui.mplfrag.axes.figure.clf()
+        ax = self.ui.mplfrag.axes.figure.add_subplot(111)
+
+        plot_fragility_show(ax, self.cfg.no_models,
+                            self.cfg.wind_speeds[0], self.cfg.wind_speeds[-1])
+
+        try:
+            df_counted = self.results_dict['fragility']['counted'].values
+
+        except KeyError:
+            self.logger.warning('Fragility curve can not be constructed')
+
+        else:
+
+            for i, (ds, value) in enumerate(self.cfg.fragility.iterrows(), 1):
+
+                ax.plot(self.cfg.wind_speeds,
+                        df_counted[:, len(self.cfg.fragility_i_states) + i],
+                        '{}+'.format(value['color']))
+
+                try:
+                    param1 = self.results_dict['fragility']['MLE'][ds]['param1']
+                    param2 = self.results_dict['fragility']['MLE'][ds]['param2']
+                except KeyError:
+                    try:
+                        param1 = self.results_dict['fragility']['OLS'][ds]['param1']
+                        param2 = self.results_dict['fragility']['OLS'][ds]['param2']
+                    except KeyError:
+                        self.logger.warning('Value of {} can not be determined'.format(ds))
+                    else:
+                        y = vulnerability_lognorm(self.cfg.wind_speeds, param1, param2)
+
+                        plot_fitted_curve(ax, self.cfg.wind_speeds, y,
+                                          col=value['color'], label=ds)
+                else:
+                    y = vulnerability_lognorm(self.cfg.wind_speeds, param1, param2)
+
+                    plot_fitted_curve(ax, self.cfg.wind_speeds, y,
+                                      col=value['color'], label=ds)
+
+        ax.legend(loc=2, fancybox=True, shadow=True, fontsize='small')
+
+        self.ui.mplfrag.axes.figure.canvas.draw()
+
+    def updateWaterIngressPlot(self):
+
         self.statusBar().showMessage('Plotting Water Ingress')
 
-        _array = bucket['house']['water_ingress_cost']
+        self.ui.wateringress_plot.axes.figure.clf()
+        ax = self.ui.wateringress_plot.axes.figure.add_subplot(111)
+
+        _array = self.results_dict['house']['water_ingress_cost']
         wi_means = _array.mean(axis=1)
 
-        self.ui.wateringress_plot.axes.hold(True)
-        self.ui.wateringress_plot.axes.scatter(
-            self.cfg.speeds[:, newaxis] * ones(shape=(1, self.cfg.no_models)),
+        ax.scatter(
+            self.cfg.wind_speeds[:, np.newaxis] * np.ones(shape=(1, self.cfg.no_models)),
             _array, c='k', s=8, marker='+', label='_nolegend_')
-        self.ui.wateringress_plot.axes.plot(self.cfg.speeds, wi_means, c='b', marker='o')
-        self.ui.wateringress_plot.axes.set_title('Water Ingress By Wind Speed')
-        self.ui.wateringress_plot.axes.set_xlabel('Impact Wind speed (m/s)')
-        self.ui.wateringress_plot.axes.set_ylabel('Water Ingress Cost')
+        ax.plot(self.cfg.wind_speeds, wi_means, c='b', marker='o')
+
+        ax.set_title('Water Ingress By Wind Speed')
+        ax.set_xlabel('Impact Wind speed (m/s)')
+        ax.set_ylabel('Water Ingress Cost')
+        ax.set_xlim(self.cfg.wind_speeds[0], self.cfg.wind_speeds[-1])
+        ax.set_ylim(0)
+
         self.ui.wateringress_plot.axes.figure.canvas.draw()
-        self.ui.wateringress_plot.axes.set_xlim(self.cfg.speeds[0],
-                                                self.cfg.speeds[-1])
-        # self.ui.wateringress_plot.axes.set_ylim(0)
-        
-    def updateBreachPlot(self, bucket):
+
+    def updateCpiPlot(self, house_number=0):
+
+        self.statusBar().showMessage('Plotting Cpi')
+        ax = self.ui.cpi_plot.axes.figure.add_subplot(111)
+        ax.clear()
+
+        _array = self.results_dict['house']['cpi']
+        _means = _array.mean(axis=1)
+
+        ax.plot(self.cfg.wind_speeds, _means, c='b', marker='o', label='mean')
+
+        if house_number:
+            ax.plot(self.cfg.wind_speeds, _array[:, house_number-1],
+                                       c='r', marker='+', label='{:d}'.format(house_number))
+
+        ax.set_title('Internal Pressure Coefficient')
+        ax.set_xlabel('Wind speed (m/s)')
+        ax.set_ylabel('Cpi')
+        ax.legend(loc=0, scatterpoints=1)
+        ax.set_xlim(self.cfg.wind_speeds[0], self.cfg.wind_speeds[-1])
+        ax.set_ylim(0)
+
+        self.ui.cpi_plot.axes.figure.canvas.draw()
+
+    def updateBreachPlot(self):
+
         self.statusBar().showMessage('Plotting Debris Results')
         self.ui.breaches_plot.axes.figure.clf()
         # we'll have three seperate y axis running at different scales
 
-        breaches = bucket['house']['window_breached_by_debris'].sum(axis=1) / self.cfg.no_models
-        nv_means = bucket['debris']['no_impacts'].mean(axis=1)
-        num_means = bucket['debris']['no_items'].mean(axis=1)
+        breaches = self.results_dict['house']['window_breached'].sum(axis=1) / self.cfg.no_models
+        nv_means = self.results_dict['house']['no_debris_impacts'].mean(axis=1)
+        num_means = self.results_dict['house']['no_debris_items'].mean(axis=1)
 
         host = SubplotHost(self.ui.breaches_plot.axes.figure, 111)
-        par1 = host.twinx()
-        par2 = host.twinx()
+
+        par1 = ParasiteAxes(host, sharex=host)
+        par2 = ParasiteAxes(host, sharex=host)
+
+        host.parasites.append(par1)
+        host.parasites.append(par2)
+
+        # host
+        host.set_ylabel('Perc Breached')
+        host.set_xlabel('Wind Speed (m/s)')
+        host.set_xlim(self.cfg.wind_speeds[0], self.cfg.wind_speeds[-1])
+
+        # par1
+        host.axis["right"].set_visible(False)
+        par1.axis["right"].set_visible(True)
+        par1.set_ylabel('Impacts')
+
+        par1.axis["right"].major_ticklabels.set_visible(True)
+        par1.axis["right"].label.set_visible(True)
+
+        #  par2
         par2.axis['right'].set_visible(False)
         offset = 60, 0
         new_axisline = par2.get_grid_helper().new_fixed_axis
         par2.axis['right2'] = new_axisline(loc='right', axes=par2, offset=offset)
         par2.axis['right2'].label.set_visible(True)
         par2.axis['right2'].set_label('Supply')
-            
+
         self.ui.breaches_plot.axes.figure.add_axes(host)
         self.ui.breaches_plot.axes.figure.subplots_adjust(right=0.75)
 
-        host.set_ylabel('Perc Breached')
-        host.set_xlabel('Wind Speed (m/s)')
-        par1.set_ylabel('Impacts')
-        host.set_xlim(self.cfg.speeds[0], self.cfg.speeds[-1])
-                
-        p1, = host.plot(self.cfg.speeds, breaches, label='Breached', c='b')
-        p2, = par1.plot(self.cfg.speeds, nv_means, label='Impacts', c='g')
-        p2b = par1.plot(self.cfg.speeds, nv_means.cumsum(), label='_nolegend_', c='g')
-        p3, = par2.plot(self.cfg.speeds, num_means, label='Supply', c='r')
-        p3b = par2.plot(self.cfg.speeds, num_means.cumsum(), label='_nolegend_', c='r')
-        
+        p1, = host.plot(self.cfg.wind_speeds, breaches, label='Breached', c='b')
+        p2, = par1.plot(self.cfg.wind_speeds, nv_means, label='Impacts', c='g')
+        _, = par1.plot(self.cfg.wind_speeds, nv_means.cumsum(), label='_nolegend_', c='g', ls='--')
+        p3, = par2.plot(self.cfg.wind_speeds, num_means, label='Supply', c='r')
+        _, = par2.plot(self.cfg.wind_speeds, num_means.cumsum(), label='_nolegend_', c='r', ls='--')
+
         host.axis['left'].label.set_color(p1.get_color())
         par1.axis['right'].label.set_color(p2.get_color())
         par2.axis['right2'].label.set_color(p3.get_color())
-        
+
         host.legend(loc=2)
         self.ui.breaches_plot.axes.figure.canvas.draw()
 
-    def updateStrengthPlot(self, bucket):
-        self.ui.connection_type_plot.axes.hold(False)
-        
+    def updateStrengthPlot(self):
+
+        self.ui.connection_type_plot.axes.figure.clf()
+        ax = self.ui.connection_type_plot.axes.figure.add_subplot(111)
+
         xlabels = []
         for _id, (type_name, grouped) in enumerate(self.cfg.connections.groupby('type_name')):
-            _array = array([bucket['connection']['strength'][i] for i in grouped.index]).flatten()
+            _array = np.array([self.results_dict['connection']['strength'][i] for i in grouped.index]).flatten()
 
-            self.ui.connection_type_plot.axes.scatter(
-                _id * ones_like(_array), _array, s=8, marker='+')
-            self.ui.connection_type_plot.axes.hold(True)
-            self.ui.connection_type_plot.axes.scatter(_id, _array.mean(), s=20,
+            ax.scatter(
+                _id * np.ones_like(_array), _array, s=8, marker='+')
+            # ax.hold(True)
+            ax.scatter(_id, _array.mean(), s=20,
                                                       c='r', marker='o')
             xlabels.append(type_name)
 
-        self.ui.connection_type_plot.axes.set_xticks(range(_id + 1))
-        self.ui.connection_type_plot.axes.set_xticklabels(xlabels, rotation='vertical')
-        self.ui.connection_type_plot.axes.set_title('Connection Type Strengths')
-        self.ui.connection_type_plot.axes.set_position([0.05, 0.20, 0.9, 0.75])
-        self.ui.connection_type_plot.axes.figure.canvas.draw()     
-        self.ui.connection_type_plot.axes.set_xlim((-0.5, len(xlabels)))
+        ax.set_xticks(range(_id + 1))
+        ax.set_xticklabels(xlabels, rotation='vertical')
+        ax.set_title('Connection Type Strengths')
+        ax.set_position([0.05, 0.20, 0.9, 0.75])
+        ax.figure.canvas.draw()
+        ax.set_xlim((-0.5, len(xlabels)))
 
-    def updateTypeDamagePlot(self, bucket):
+        self.ui.connection_type_plot.figure.canvas.draw()
 
-        self.ui.connection_type_damages_plot.axes.hold(False)
+    def updateTypeDamagePlot(self):
+
+        self.ui.connection_type_damages_plot.axes.figure.clf()
+        ax = self.ui.connection_type_damages_plot.axes.figure.add_subplot(111)
 
         xlabels = []
         for _id, (type_name, grouped) in enumerate(self.cfg.connections.groupby('type_name')):
-            _array = array([bucket['connection']['capacity'][i] for i in grouped.index]).flatten()
-            _array[_array == -1] = nan
-
-            self.ui.connection_type_damages_plot.axes.scatter(
-                _id * ones_like(_array), _array, s=8, marker='+')
-            self.ui.connection_type_damages_plot.axes.hold(True)
-            self.ui.connection_type_damages_plot.axes.scatter(_id,
-                                                              nanmean(_array),
-                                                              s=20,
-                                                              c='r',
-                                                              marker='o')
+            _array = np.array(
+                [self.results_dict['connection']['capacity'][i] for i in grouped.index]).flatten()
+            _array[_array == -1] = np.nan
+            ax.scatter(_id * np.ones_like(_array), _array, s=8, marker='+')
+            ax.scatter(_id, np.nanmean(_array), s=20, c='r', marker='o')
             xlabels.append(type_name)
 
-        self.ui.connection_type_damages_plot.axes.set_xticks(range(_id + 1))
-        self.ui.connection_type_damages_plot.axes.set_xticklabels(xlabels, rotation='vertical')
-        self.ui.connection_type_damages_plot.axes.set_title('Connection Type Damage Speeds')
-        self.ui.connection_type_damages_plot.axes.set_position([0.05, 0.20, 0.9, 0.75])
-        self.ui.connection_type_damages_plot.axes.figure.canvas.draw()     
-        self.ui.connection_type_damages_plot.axes.set_xlim((-0.5, len(xlabels)))
+        ax.set_xticks(range(_id + 1))
+        ax.set_xticklabels(xlabels, rotation='vertical')
+        ax.set_title('Connection Type Damage Speeds')
+        ax.set_ylabel('Wind speed (m/s)')
+        ax.set_position([0.05, 0.20, 0.9, 0.75])
+        ax.set_xlim((-0.5, len(xlabels)))
+        ax.figure.canvas.draw()
 
-    def updateConnectionTypePlots(self, bucket):
+    def updateLoadPlot(self):
+
+        self.statusBar().showMessage('updating connection load')
+
+        group_name = str(self.ui.comboBox_load.currentText())
+        house_number = self.ui.spinBox_load.value()
+        ispeed = np.argmin(np.abs(self.cfg.wind_speeds-self.ui.doubleSpinBox_load.value()))
+
+        grouped = self.cfg.connections.loc[
+            self.cfg.connections.group_name == group_name]
+
+        load = np.array([self.results_dict['connection']['load'][i]
+                         for i in grouped.index])[:, ispeed, house_number-1]
+
+        _min, _max = min(load), max(load)
+        v_min = _min - np.sign(_min) * 0.05 * _min
+        v_max = _max + np.sign(_max) * 0.05 * _max
+
+        load[load == 0.0] = -1.0 * np.inf
+
+        try:
+            plot_load_show(self.ui.mplload, grouped,
+                           load,
+                           self.cfg.house['length'],
+                           self.cfg.house['width'],
+                           v_min=v_min,
+                           v_max=v_max)
+        except ValueError:
+            self.logger.warning('Can not plot connection load')
+
+    def updateConnectionTypePlots(self):
         self.statusBar().showMessage('Plotting Connection Types')
-        self.updateStrengthPlot(bucket)
-        self.updateTypeDamagePlot(bucket)
+        self.updateStrengthPlot()
+        self.updateTypeDamagePlot()
+        self.updateLoadPlot()
 
-    def updateConnectionTable_with_results(self, bucket):
+    def updateConnectionTable_with_results(self):
         self.statusBar().showMessage('Updating Connections Table')
 
-        connections_damaged = bucket['connection']['damaged']
+        connections_damaged = self.results_dict['connection']['damaged']
         for irow, item in enumerate(self.cfg.connections.iterrows()):
             conn_id = item[0]
-            failure_count = count_nonzero(connections_damaged[conn_id])
-            failure_mean = mean(connections_damaged[conn_id])
+            failure_count = np.count_nonzero(connections_damaged[conn_id])
+            failure_mean = np.mean(connections_damaged[conn_id])
             self.ui.connections.setItem(irow, 4, QTableWidgetItem('{:.3}'.format(failure_mean)))
             self.ui.connections.setItem(irow, 5, QTableWidgetItem('{}'.format(failure_count)))
 
-    def determine_capacities(self, bucket):
+    # def determine_capacities(self):
+    #
+    #     _array = np.array([self.results_dict['connection']['capacity'][i]
+    #                     for i in self.cfg.list_connections])
+    #
+    #     _array[_array == -1] = np.nan
+    #
+    #     return np.nanmean(_array, axis=1)
 
-        _array = array([bucket['connection']['capacity'][i]
-                        for i in self.cfg.list_connections])
-
-        _array[_array == -1] = nan
-
-        return nanmean(_array, axis=1)
-
-    def updateHouseResultsTable(self, bucket):
+    def updateHouseResultsTable(self):
 
         self.statusBar().showMessage('Updating Zone Results')
         self.ui.zoneResults.clear()
 
-        wind_dir = [bucket['house']['wind_dir_index'][i]
+        wind_dir = [self.results_dict['house']['wind_dir_index'][i]
                     for i in range(self.cfg.no_models)]
-        construction_level = [bucket['house']['construction_level'][i]
-                              for i in range(self.cfg.no_models)]
+        # construction_level = [self.results_dict['house']['construction_level'][i]
+        #                       for i in range(self.cfg.no_models)]
 
         for i in range(self.cfg.no_models):
             parent = QTreeWidgetItem(self.ui.zoneResults,
-                                     ['H{} ({}/{})'.format(i + 1,
-                                                           self.cfg.wind_dir[wind_dir[i]],
-                                                           construction_level[i]), '', '', ''])
+                                     ['#{} {}'.format(i + 1, WIND_DIR[wind_dir[i]]), '', '', ''])
             for zr_key in self.cfg.zones:
                 QTreeWidgetItem(parent, ['',
                                          zr_key,
-                                         '{:.3}'.format(bucket['zone']['cpe'][zr_key][i]),
-                                         '{:.3}'.format(bucket['zone']['cpe_str'][zr_key][i]),
-                                         '{:.3}'.format(bucket['zone']['cpe_eave'][zr_key][i])])
-                
+                                         '{:.3}'.format(self.results_dict['zone']['cpe'][zr_key][0, i]),
+                                         '{:.3}'.format(self.results_dict['zone']['cpe_str'][zr_key][0, i]),
+                                         '{:.3}'.format(self.results_dict['zone']['cpe_eave'][zr_key][0, i])])
+
         self.ui.zoneResults.resizeColumnToContents(0)
         self.ui.zoneResults.resizeColumnToContents(1)
         self.ui.zoneResults.resizeColumnToContents(2)
         self.ui.zoneResults.resizeColumnToContents(3)
         self.ui.zoneResults.resizeColumnToContents(4)
         self.ui.zoneResults.resizeColumnToContents(5)
-                
+
         self.statusBar().showMessage('Updating Connection Results')
 
         self.ui.connectionResults.clear()
         for i in range(self.cfg.no_models):
             parent = QTreeWidgetItem(self.ui.connectionResults,
-                                     ['H{} ({}/{})'.format(i + 1,
-                                                           self.cfg.wind_dir[wind_dir[i]],
-                                                           construction_level[i]), '', '', ''])
+                                     ['#{} {}'.format(i + 1, WIND_DIR[wind_dir[i]]), '', '', ''])
 
             for _id, value in self.cfg.connections.iterrows():
 
-                capacity = bucket['connection']['capacity'][_id][i]
-                # load = bucket['connection']['load'][_id][house_num]
-                dead_load = bucket['connection']['dead_load'][_id][i]
-                strength = bucket['connection']['strength'][_id][i]
+                capacity = self.results_dict['connection']['capacity'][_id][0, i]
+                # load = self.results_dict['connection']['load'][_id][house_num]
+                dead_load = self.results_dict['connection']['dead_load'][_id][0, i]
+                strength = self.results_dict['connection']['strength'][_id][0, i]
 
-                load_last = bucket['connection']['load'][_id][-1, i]
+                load_last = self.results_dict['connection']['load'][_id][-1, i]
                 if load_last:
                     load_desc = '{:.3}'.format(load_last)
                 else:
@@ -963,36 +1174,36 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
             scenario_path = config_file
         elif settings.contains("ScenarioFolder"):
             # we have a saved scenario path so use that
-            scenario_path = unicode(settings.value("ScenarioFolder").toString())
+            scenario_path = settings.value("ScenarioFolder")
 
-        filename = QFileDialog.getOpenFileName(self,
-                                               "Scenarios",
-                                               scenario_path,
-                                               "Scenarios (*.cfg)")
+        filename, _ = QFileDialog.getOpenFileName(self,
+                                                  "Scenarios",
+                                                  scenario_path,
+                                                  "Scenarios (*.cfg)")
         if not filename:
             return
 
         config_file = '{}'.format(filename)
         if os.path.isfile(config_file):
             self.file_load(config_file)
-            settings.setValue("ScenarioFolder", QVariant(QString(os.path.dirname(config_file))))
+            settings.setValue("ScenarioFolder", QVariant(os.path.dirname(config_file)))
         else:
             msg = 'Unable to load scenario: {}\nFile not found.'.format(config_file)
-            QMessageBox.warning(self, "VAWS Program Warning", unicode(msg))
+            QMessageBox.warning(self, "VAWS Program Warning", msg)
 
     def save_scenario(self):
         self.update_config_from_ui()
         self.cfg.save_config()
-        self.ui.statusbar.showMessage('Saved to file {}'.format(self.cfg.cfg_file))
+        self.ui.statusbar.showMessage('Saved to file {}'.format(self.cfg.file_cfg))
         # self.update_ui_from_config()
-        
+
     def save_as_scenario(self):
         # TODO: check
         self.update_config_from_ui()
         current_parent, _ = os.path.split(self.cfg.path_cfg)
 
-        fname = unicode(QFileDialog.getSaveFileName(self, "VAWS - Save Scenario",
-                                                    current_parent, CONFIG_TEMPL))
+        fname, _ = QFileDialog.getSaveFileName(self, "VAWS - Save Scenario",
+                                            current_parent, CONFIG_TEMPL)
         if len(fname) > 0:
             if "." not in fname:
                 fname += ".cfg"
@@ -1015,9 +1226,9 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
                 os.mkdir(os.path.join(path_cfg, OUTPUT_DIR))
 
             settings = QSettings()
-            settings.setValue("ScenarioFolder", QVariant(QString(path_cfg)))
+            settings.setValue("ScenarioFolder", QVariant(path_cfg))
             self.cfg.path_cfg = path_cfg
-            self.cfg.cfg_file = os.path.join(path_cfg, file_suffix_name)
+            self.cfg.file_cfg = os.path.join(path_cfg, file_suffix_name)
             self.cfg.output_path = os.path.join(path_cfg, OUTPUT_DIR)
 
             self.cfg.save_config()
@@ -1025,7 +1236,7 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
             self.update_ui_from_config()
         else:
             msg = 'No scenario name entered. Action cancelled'
-            QMessageBox.warning(self, "VAWS Program Warning", unicode(msg))
+            QMessageBox.warning(self, "VAWS Program Warning", msg)
 
 #    def set_scenario(self, s=None):
         # if s:
@@ -1038,14 +1249,14 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
 
     def closeEvent(self, event):
         if self.okToContinue():
-            if self.cfg.cfg_file and QFile.exists(self.cfg.cfg_file):
+            if self.cfg.file_cfg and QFile.exists(self.cfg.file_cfg):
                 settings = QSettings()
-                filename = QVariant(QString(self.cfg.cfg_file))
+                filename = QVariant(self.cfg.file_cfg)
                 settings.setValue("LastFile", filename)
             self.storeSizePosToSettings()
         else:
             event.ignore()
-        
+
     def update_ui_from_config(self):
         if self.cfg:
             self.statusBar().showMessage('Updating', 1000)
@@ -1083,23 +1294,32 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
             self.ui.sourceItems.setValue(self.cfg.source_items)
             self.ui.debrisBoundary.setText(
                 '{:.3f}'.format(self.cfg.boundary_radius))
-            self.ui.flighttimeMean.setText(
-                '{:.3f}'.format(self.cfg.flight_time_mean))
-            self.ui.flighttimeStddev.setText(
-                '{:.3f}'.format(self.cfg.flight_time_stddev))
             self.ui.staggeredDebrisSources.setChecked(self.cfg.staggered_sources)
             self.ui.debris.setChecked(self.cfg.flags['debris'])
 
+            if self.cfg.flags['debris_vulnerability']:
+                idx = self.ui.comboBox_debrisVul.findText(
+                    self.cfg.debris_vuln_input['function'].capitalize())
+                if self.ui.comboBox_debrisVul.currentIndex() == idx:
+                    self.updateDebrisVuln()
+                else:
+                    self.ui.comboBox_debrisVul.setCurrentIndex(idx)
+
+                self.ui.debrisVul_param1.setText(
+                    '{}'.format(self.cfg.debris_vuln_input['param1']))
+                self.ui.debrisVul_param2.setText(
+                    '{}'.format(self.cfg.debris_vuln_input['param2']))
+
             # construction levels
-            self.ui.constructionEnabled.setChecked(self.cfg.flags['construction_levels'])
-            self.ui.constLevels.setText(
-                ', '.join(self.cfg.construction_levels_i_levels))
-            self.ui.constProbs.setText(
-                ', '.join([str(x) for x in self.cfg.construction_levels_i_probabilities]))
-            self.ui.constMeans.setText(
-                ', '.join([str(x) for x in self.cfg.construction_levels_i_mean_factors]))
-            self.ui.constCovs.setText(
-                ', '.join([str(x) for x in self.cfg.construction_levels_i_cv_factors]))
+            # self.ui.constructionEnabled.setChecked(self.cfg.flags['construction_levels'])
+            # self.ui.constLevels.setText(
+            #     ', '.join(self.cfg.construction_levels_levels))
+            # self.ui.constProbs.setText(
+            #     ', '.join([str(x) for x in self.cfg.construction_levels_probs]))
+            # self.ui.constMeans.setText(
+            #     ', '.join([str(x) for x in self.cfg.construction_levels_mean_factors]))
+            # self.ui.constCovs.setText(
+            #     ', '.join([str(x) for x in self.cfg.construction_levels_cv_factors]))
 
             # water ingress
             self.ui.waterThresholds.setText(
@@ -1126,25 +1346,25 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
 
             self.ui.actionRun.setEnabled(True)
 
-            if self.cfg.cfg_file:
+            if self.cfg.file_cfg:
                 self.statusBarScenarioLabel.setText(
-                    'Scenario: {}'.format(os.path.basename(self.cfg.cfg_file)))
+                    'Scenario: {}'.format(os.path.basename(self.cfg.file_cfg)))
         else:
             self.statusBarScenarioLabel.setText('Scenario: None')
-        
+
     def update_config_from_ui(self):
         new_cfg = self.cfg
 
         # Scenario section
         new_cfg.no_models = int(self.ui.numHouses.text())
-        new_cfg.model_name = str(self.ui.houseName.text())
-        new_cfg.file_wind_profiles = str(self.ui.terrainCategory.currentText())
+        new_cfg.model_name = self.ui.houseName.text()
+        new_cfg.file_wind_profiles = self.ui.terrainCategory.currentText()
         new_cfg.regional_shielding_factor = float(self.ui.regionalShielding.text())
         new_cfg.wind_speed_min = self.ui.windMin.value()
         new_cfg.wind_speed_max = self.ui.windMax.value()
         new_cfg.wind_speed_increment = float(self.ui.windIncrement.text())
         # new_cfg.set_wind_speeds()
-        new_cfg.wind_direction = self.cfg.wind_dir[
+        new_cfg.wind_direction = WIND_DIR[
             self.ui.windDirection.currentIndex()]
 
         # Debris section
@@ -1153,13 +1373,22 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
         new_cfg.debris_radius = self.ui.debrisRadius.value()
         new_cfg.debris_angle = self.ui.debrisAngle.value()
         new_cfg.source_items = self.ui.sourceItems.value()
-        if self.ui.flighttimeMean.text():
-            new_cfg.flight_time_mean = float(self.ui.flighttimeMean.text())
-        if self.ui.flighttimeStddev.text():
-            new_cfg.flight_time_stddev = float(self.ui.flighttimeStddev.text())
+        # if self.ui.flighttimeMean.text():
+        #     new_cfg.flight_time_mean = float(self.ui.flighttimeMean.text())
+        # if self.ui.flighttimeStddev.text():
+        #     new_cfg.flight_time_stddev = float(self.ui.flighttimeStddev.text())
         if self.ui.debrisBoundary.text():
             new_cfg.boundary_radius = float(self.ui.debrisBoundary.text())
         new_cfg.staggered_sources = self.ui.staggeredDebrisSources.isChecked()
+
+        if self.ui.comboBox_debrisVul.currentText() == 'N/A':
+            new_cfg.flags['debris_vulnerability'] = False
+            new_cfg.debris_vuln_input = {}
+        else:
+            new_cfg.flags['debris_vulnerability'] = True
+            new_cfg.debris_vuln_input['function'] = self.ui.comboBox_debrisVul.currentText()
+            new_cfg.debris_vuln_input['param1'] = float(self.ui.debrisVul_param1.text())
+            new_cfg.debris_vuln_input['param2'] = float(self.ui.debrisVul_param2.text())
 
         new_cfg.flags['water_ingress'] = self.ui.waterEnabled.isChecked()
         new_cfg.flags['differential_shielding'] = self.ui.diffShielding.isChecked()
@@ -1172,30 +1401,30 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
         new_cfg.heatmap_vstep = float(self.ui.vStep.value())
 
         # construction section
-        new_cfg.flags['construction_levels'] = self.ui.constructionEnabled.isChecked()
-        new_cfg.construction_levels_i_levels = [
-            x.strip() for x in str(self.ui.constLevels.text()).split(',')]
-        new_cfg.construction_levels_i_probs = [
-            float(x) for x in unicode(self.ui.constProbs.text()).split(',')]
-        new_cfg.construction_levels_i_mean_factors = [
-            float(x) for x in unicode(self.ui.constMeans.text()).split(',')]
-        new_cfg.construction_levels_i_cov_factors = [
-            float(x) for x in unicode(self.ui.constCovs.text()).split(',')]
+        # new_cfg.flags['construction_levels'] = self.ui.constructionEnabled.isChecked()
+        # new_cfg.construction_levels_levels = [
+        #     x.strip() for x in str(self.ui.constLevels.text()).split(',')]
+        # new_cfg.construction_levels_probs = [
+        #     float(x) for x in self.ui.constProbs.text().split(',')]
+        # new_cfg.construction_levels_mean_factors = [
+        #     float(x) for x in self.ui.constMeans.text().split(',')]
+        # new_cfg.construction_levels_cov_factors = [
+        #     float(x) for x in self.ui.constCovs.text().split(',')]
 
         # fragility section
         new_cfg.fragility_i_thresholds = [
-            float(x) for x in unicode(self.ui.fragilityThresholds.text()).split(',')]
+            float(x) for x in self.ui.fragilityThresholds.text().split(',')]
         new_cfg.fragility_i_states = [
-            x.strip() for x in unicode(self.ui.fragilityStates.text()).split(',')]
+            x.strip() for x in self.ui.fragilityStates.text().split(',')]
 
         # water ingress
         new_cfg.flags['water_ingress'] = self.ui.waterEnabled.isChecked()
         new_cfg.water_ingress_i_thresholds = [
-            float(x) for x in unicode(self.ui.waterThresholds.text()).split(',')]
+            float(x) for x in self.ui.waterThresholds.text().split(',')]
         new_cfg.water_ingress_i_zero_wi = [
-            float(x) for x in unicode(self.ui.waterSpeed0.text()).split(',')]
+            float(x) for x in self.ui.waterSpeed0.text().split(',')]
         new_cfg.water_ingress_i_full_wi = [
-            float(x) for x in unicode(self.ui.waterSpeed1.text()).split(',')]
+            float(x) for x in self.ui.waterSpeed1.text().split(',')]
 
         # house / groups section
         # for irow, (index, ctg) in enumerate(self.cfg.groups.items()):
@@ -1210,14 +1439,16 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
             self.cfg = Config(fname)
             self.init_terrain_category()
             self.init_debris_region()
+            self.init_debrisvuln()
+            self.init_pressure()
             self.init_influence_and_patch()
             self.update_ui_from_config()
             self.statusBar().showMessage('Ready')
         except Exception as excep:
-            logging.exception("Loading configuration caused exception")
+            self.logger.exception("Loading configuration caused exception")
 
             msg = 'Unable to load previous scenario: %s\nLoad cancelled.' % fname
-            QMessageBox.warning(self, "VAWS Program Warning", unicode(msg))
+            QMessageBox.warning(self, "VAWS Program Warning", msg)
 
     def okToContinue(self):
         self.update_config_from_ui()
@@ -1232,56 +1463,55 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
             elif reply == QMessageBox.Yes:
                 self.save_scenario()
         return True
-    
+
     def testDebrisSettings(self):
         self.update_config_from_ui()
         self.cfg.process_config()
 
-        vul_dic = {'Capital_city': (0.1585, 3.8909),
-                   'Tropical_town': (0.10304, 4.18252)}
-
         shape_type = {'Compact': 'c', 'Sheet': 'g', 'Rod': 'r'}
 
-        wind_speed, ok = QInputDialog.getInteger(
+        wind_speed, ok = QInputDialog.getInt(
             self, "Debris Test", "Wind speed (m/s):", 50, 10, 200)
 
         if ok:
 
-            house = House(self.cfg, rnd_state=RandomState(self.cfg.random_seed))
-
-            incr_speed = self.cfg.speeds[1] - self.cfg.speeds[0]
+            rnd_state = np.random.RandomState(1)
+            incr_speed = self.cfg.wind_speeds[1] - self.cfg.wind_speeds[0]
 
             damage_incr = vulnerability_weibull_pdf(
-                x=wind_speed,
-                alpha_=vul_dic[self.cfg.region_name][0],
-                beta_=vul_dic[self.cfg.region_name][1]) * incr_speed
+                x=wind_speed, **VUL_DIC[self.cfg.region_name]) * incr_speed
 
-            house.debris.no_items_mean = damage_incr
+            mean_no_debris_items = np.rint(self.cfg.source_items * damage_incr)
 
-            house.debris.run(wind_speed)
+            debris_items = generate_debris_items(
+                rnd_state=rnd_state,
+                wind_speed=wind_speed,
+                cfg=self.cfg,
+                mean_no_debris_items=mean_no_debris_items)
 
             fig = plt.figure()
             ax = fig.add_subplot(111)
 
-            source_x, source_y = [], []
-            for source in self.cfg.debris_sources:
-                source_x.append(source.x)
-                source_y.append(source.y)
-            ax.scatter(source_x, source_y, label='source', color='b')
-            ax.scatter(0, 0, label='target', color='r')
+            # source_x, source_y = [], []
+            # for source in self.cfg.debris_sources:
+            #     source_x.append(source.x)
+            #     source_y.append(source.y)
+            # ax.scatter(source_x, source_y, label='source', color='b')
+            # ax.scatter(0, 0, label='target', color='r')
 
             # add footprint
-            _array = array(house.debris.footprint.exterior.xy).T
+            # _array = np.array(house.debris.footprint.exterior.xy).T
+            #
+            # ax.add_patch(patches.Polygon(_array, alpha=0.5))
+            # ax.add_patch(patches.Polygon(self.cfg.impact_boundary.exterior, alpha=0.5))
 
-            ax.add_patch(patches_Polygon(_array, alpha=0.5))
+            for item in debris_items:
+                _x, _y = item.trajectory.xy[0][1], item.trajectory.xy[1][1]
+                ax.scatter(_x, _y, color=shape_type[item.type], alpha=0.2)
 
-            for debris_type, line_string in house.debris.debris_items:
-                _x, _y = line_string.xy
-                ax.plot(_x, _y,
-                        linestyle='-',
-                        color=shape_type[debris_type],
-                        alpha=0.5,
-                        label=debris_type)
+            for source in self.cfg.debris_sources:
+                ax.scatter(source.x, source.y, color='b', label='source')
+            ax.scatter(0, 0, label='target', color='r')
 
             handles, labels = ax.get_legend_handles_labels()
             by_label = OrderedDict(zip(labels, handles))
@@ -1296,39 +1526,37 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
             # fig.canvas.draw()
             fig.show()
 
-    def testConstructionLevels(self):
-        self.update_config_from_ui()
-        self.cfg.process_config()
-
-        selected_type, ok = QInputDialog.getItem(self, "Construction Test", "Connection Type:",
-            self.cfg.types.keys(), 0, False)
-
-        if ok:
-
-            house = House(self.cfg, rnd_state=RandomState(self.cfg.random_seed))
-            house.set_construction_level()
-            lognormal_strength = self.cfg.types['{}'.format(selected_type)]['lognormal_strength']
-            mu, std = compute_arithmetic_mean_stddev(*lognormal_strength)
-            mu *= house.mean_factor
-            std *= house.cov_factor
-
-            x = []
-            n = 50000
-            for i in xrange(n):
-                rv = sample_lognorm_given_mean_stddev(mu, std, house.rnd_state)
-                x.append(rv)
-
-            fig = plt.figure()
-            ax = fig.add_subplot(111)
-            ax.hist(x, 50, normed=1, facecolor='green', alpha=0.75)
-            _mean = self.cfg.types['{}'.format(selected_type)]['strength_mean']
-            _std = self.cfg.types['{}'.format(selected_type)]['strength_std']
-            title_str = 'Sampled strength of {0} \n ' \
-                        'construction level: {1}, mean: {2:.2f}, std: {3:.2f}'.format(
-                selected_type, house.construction_level, _mean, _std)
-            ax.set_title(title_str)
-            # fig.canvas.draw()
-            fig.show()
+    # def testConstructionLevels(self):
+    #     self.update_config_from_ui()
+    #     self.cfg.process_config()
+    #
+    #     selected_type, ok = QInputDialog.getItem(self, "Construction Test", "Connection Type:",
+    #         self.cfg.types.keys(), 0, False)
+    #
+    #     if ok:
+    #
+    #         house = House(self.cfg, seed=1)
+    #         lognormal_strength = self.cfg.types['{}'.format(selected_type)]['lognormal_strength']
+    #         mu, std = compute_arithmetic_mean_stddev(*lognormal_strength)
+    #         mu *= house.mean_factor
+    #         std *= house.cv_factor * house.mean_factor
+    #
+    #         x = []
+    #         n = 50000
+    #         for i in xrange(n):
+    #             rv = sample_lognorm_given_mean_stddev(mu, std, house.rnd_state)
+    #             x.append(rv)
+    #
+    #         fig = plt.figure()
+    #         ax = fig.add_subplot(111)
+    #         ax.hist(x, 50, normed=1, facecolor='green', alpha=0.75)
+    #         _mean = self.cfg.types['{}'.format(selected_type)]['strength_mean']
+    #         _std = self.cfg.types['{}'.format(selected_type)]['strength_std']
+    #         title_str = 'Sampled strength of {0} \n ' \
+    #                     'construction level: {1}, mean: {2:.2f}, std: {3:.2f}'.format(
+    #             selected_type, house.construction_level, _mean, _std)
+    #         ax.set_title(title_str)
+    #         fig.show()
 
     def testWaterIngress(self):
 
@@ -1345,17 +1573,17 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
 
             di_array.append(0.5*(dic_thresholds[i][0] + dic_thresholds[i][1]))
 
-        a = zeros((len(di_array), len(self.cfg.speeds)))
+        a = np.zeros((len(di_array), len(self.cfg.wind_speeds)))
 
         for i, di in enumerate(di_array):
-            for j, speed in enumerate(self.cfg.speeds):
+            for j, speed in enumerate(self.cfg.wind_speeds):
                 a[i, j] = 100.0 * compute_water_ingress_given_damage(
                     di, speed, self.cfg.water_ingress)
 
         fig = plt.figure()
         ax = fig.add_subplot(111)
         for j in range(a.shape[0]):
-            ax.plot(self.cfg.speeds, a[j, :],
+            ax.plot(self.cfg.wind_speeds, a[j, :],
                     label='{:.1f} <= DI < {:.1f}'.format(*dic_thresholds[j]))
 
         ax.legend(loc=1)
@@ -1380,7 +1608,7 @@ def run_gui():
     else:
         set_logger(path_cfg)
 
-    initial_config = Config(cfg_file=initial_scenario)
+    initial_config = Config(file_cfg=initial_scenario)
 
     app = QApplication(sys.argv)
     app.setOrganizationName("Geoscience Australia")
@@ -1406,6 +1634,7 @@ def run_gui():
     splash.finish(my_app)
 
     sys.exit(app.exec_())
+
 
 if __name__ == '__main__':
     run_gui()

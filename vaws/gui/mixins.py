@@ -1,6 +1,7 @@
 
-from PyQt4.QtCore import QVariant, QSettings
-from PyQt4.QtGui import QTableWidget
+from PyQt5.QtCore import QVariant, QSettings
+from PyQt5.QtWidgets import QTableWidget
+
 
 class PersistSizePosMixin(object):
     def __init__(self, name):
@@ -10,17 +11,18 @@ class PersistSizePosMixin(object):
         settings = QSettings()
         key = self.name + "/Geometry"
         if settings.contains(key):
-            self.restoreGeometry(settings.value(key).toByteArray())
+            self.restoreGeometry(settings.value(key))
             
         key = self.name + "/State"
         if settings.contains(key):
-            val = settings.value(key).toByteArray()
+            val = settings.value(key)
             self.restoreState(val)
       
     def storeSizePosToSettings(self):
         settings = QSettings()  
         settings.setValue(self.name + "/Geometry", QVariant(self.saveGeometry()))
         settings.setValue(self.name + "/State", QVariant(self.saveState()))
+
 
 def setupTable(t, l=None):
     t.setUpdatesEnabled(False)
@@ -29,7 +31,8 @@ def setupTable(t, l=None):
     if l is not None:
         t.setRowCount(len(l))
     t.setSelectionBehavior(QTableWidget.SelectRows)
-        
+
+
 def finiTable(t):
     t.resizeColumnsToContents()
     t.setUpdatesEnabled(True)
