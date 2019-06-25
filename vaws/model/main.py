@@ -211,7 +211,7 @@ def save_results_to_files(cfg, bucket):
             group.create_dataset('counted', data=df_counted)
             column_names = ','.join([x for x in df_counted.columns.tolist()])
             group['counted'].attrs['column_names'] = column_names
-            bucket['fragility']['counted'] = df_counted
+            # bucket['fragility']['counted'] = df_counted
 
             for fitting in ['MLE', 'OLS']:
                 if frag_counted[fitting]:
@@ -226,6 +226,9 @@ def save_results_to_files(cfg, bucket):
 
         group = hf.create_group('vulnerability')
         bucket['vulnerability'] = {}
+        group.create_dataset('mean_di', data=np.mean(bucket['house']['di'], axis=1))
+        # bucket['fragility']['counted'] = df_counted
+
         for key, value in fitted_curve.items():
             for sub_key, sub_value in value.items():
                 group.create_dataset('{}/{}'.format(key, sub_key),
