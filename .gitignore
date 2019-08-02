@@ -13,6 +13,7 @@ outputs/
 
 # pycharm
 .idea
+.vscode
 
 # output directories
 output*/
