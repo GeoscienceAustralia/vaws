@@ -23,7 +23,7 @@ install:
 
   # Replace dep1 dep2 ... with your dependencies
 #  - conda create -q -n test-environment -f vaws_env.yml python=$TRAVIS_PYTHON_VERSION
-  - conda create -n vaws_env -f vaws_linux64_py3.6.7.yml
+  - conda create -n vaws_env --file vaws_linux64_py3.6.7.yml
   - conda activate vaws_env
 #  - conda build ./build/
 #  - conda install your-package --use-local
