@@ -2,10 +2,8 @@ language: python
 os:
   - linux
 python:
-  # We don't actually use the Travis Python, but this keeps it organized.
-  #  - "2.7"
-#  - "3.5"
   - "3.6"
+dist: bionic
 install:
   - sudo apt-get update
   # We do this conditionally because it saves us some downloading if the
@@ -25,8 +23,8 @@ install:
 
   # Replace dep1 dep2 ... with your dependencies
 #  - conda create -q -n test-environment -f vaws_env.yml python=$TRAVIS_PYTHON_VERSION
-  - conda env create -n vaws_env -f vaws_linux64_py3.6.7.yml
-  - source activate vaws_env
+  - conda env create -n vaws_env -f=vaws_linux64_py3.6.7.yml
+  - conda activate vaws_env
 #  - conda build ./build/
 #  - conda install your-package --use-local
 
