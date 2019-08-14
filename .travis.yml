@@ -42,4 +42,4 @@ after_success:
 #  - sleep 3 # give xvfb some time to start
 
 script:
-  - xvfb-run python -m unittest discover ./vaws/model/tests
+  - xvfb-run -a python -m unittest discover ./vaws/model/tests
