@@ -90,7 +90,7 @@ def plot_heatmap(grouped, values, vmin, vmax, vstep, xlim_max, ylim_max,
             ax1.annotate(irow, row['centroid'], color='w', weight='bold',
                          fontsize=8, ha='center', va='center')
 
-        ax1.set_title('Heatmap of failure wind speed for {}'.format(group_key))
+        ax1.set_title(f'Heatmap of failure wind speed for {group_name}')
 
         ax1.set_xlim([0, xlim_max])
         ax1.set_ylim([0, ylim_max])
@@ -112,7 +112,7 @@ def plot_heatmap(grouped, values, vmin, vmax, vstep, xlim_max, ylim_max,
         # ax1.yaxis.set_minor_formatter(ticker.FixedFormatter(_list))
 
     if file_name:
-        fig.savefig('{}.png'.format(file_name), dpi=150)
+        fig.savefig(f'{file_name}.png', dpi=150)
     plt.close(fig)
 
 
@@ -130,7 +130,7 @@ def draw_influence(cfg, infl_dic, dic_ax, conn_name):
     for key, value in infl_dic.items():
 
         face_color, font_weight, font_size = 'orange', 'bold', 'x-small'
-        _str = '{}:{}'.format(key, value)
+        _str = f'{key}:{value}'
 
         if key in cfg.zones:
             item = cfg.zones[key]
@@ -177,7 +177,7 @@ def plot_influence(cfg, conn_name, file_name=None):
     try:
         infl_dic = cfg.influences[conn_name]
     except KeyError:
-        logging.warning('influence is not defined for {}'.format(conn_name))
+        logging.warning(f'influence is not defined for {conn_name}')
     else:
         _list_groups = [cfg.connections.loc[conn_name].group_name]
         for key in infl_dic.keys():
@@ -216,13 +216,13 @@ def plot_influence(cfg, conn_name, file_name=None):
     finally:
 
         for item in _list_groups:
-            dic_ax[item].set_title('{}'.format(item))
+            dic_ax[item].set_title(f'{item}')
             set_axis_etc(dic_ax[item], xlim_max, ylim_max)
 
         fig.canvas.draw()
 
     if file_name:
-        fig.savefig('{}.png'.format(file_name), dpi=150)
+        fig.savefig(f'{file_name}.png', dpi=150)
     fig.close()
 
 '''

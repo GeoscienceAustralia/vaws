@@ -133,7 +133,7 @@ class WaterIngressTestCase(unittest.TestCase):
             try:
                 self.assertEqual(est, row['expected'])
             except AssertionError:
-                print('scenario should be {} not {}'.format(row, est))
+                print(f'scenario should be {row} not {est}')
 
     def test_water_costs(self):
 
@@ -184,7 +184,7 @@ class WaterIngressTestCase(unittest.TestCase):
             plt.figure()
             for j in range(a.shape[0]):
                 plt.plot(di_array, a[j, :],
-                         label='WI={:.0f}%'.format(wi_array[j]))
+                         label=f'WI={wi_array[j]:.0f}%')
 
             plt.legend()
             plt.xlabel('Damage index')

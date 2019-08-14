@@ -24,7 +24,7 @@ def simulation(house, wind_speeds, conn_capacity={}, list_connections=[],
 
     for wind_speed in wind_speeds:
 
-        logger.debug('wind speed {:.3f}'.format(wind_speed))
+        logger.debug(f'wind speed {wind_speed:.3f}')
 
         house.compute_qz(wind_speed)
 
@@ -67,10 +67,9 @@ def simulation(house, wind_speeds, conn_capacity={}, list_connections=[],
                                                conn_capacity2[_id],
                                                decimal=2)
             except KeyError:
-                print('conn #{} is not found'.format(_id))
+                print(f'conn #{_id} is not found')
             except AssertionError:
-                print('conn #{} fails at {} not {}'.format(
-                    _id, conn.capacity, conn_capacity2[_id]))
+                print(f'conn #{_id} fails at {conn.capacity} not {conn_capacity2[_id]}')
 
     # compare with reference coverage capacity
     coverage_capacity2 = {x: -1.0 for x in list_coverages}
@@ -86,10 +85,9 @@ def simulation(house, wind_speeds, conn_capacity={}, list_connections=[],
                                                coverage_capacity2[_id],
                                                decimal=2)
             except KeyError:
-                print('coverage #{} is not found'.format(_id))
+                print(f'coverage #{_id} is not found')
             except AssertionError:
-                print('coverage #{} fails at {} not {}'.format(
-                    _id, coverage.capacity, coverage_capacity2[_id]))
+                print(f'coverage #{_id} fails at {coverage.capacity} not {coverage_capacity2[_id]}')
 
 
 class TestScenario1(unittest.TestCase):
@@ -147,8 +145,7 @@ class TestScenario1(unittest.TestCase):
             except KeyError:
                 pass
             except AssertionError:
-                print('{} is different from {} for conn #{}'.format(
-                    ref_load[_conn.name], _conn.load, _conn.name))
+                print(f'{ref_load[_conn.name]} is different from {_conn.load} for conn #{_conn.name}')
 
 
 class TestScenario2(unittest.TestCase):
@@ -857,7 +854,7 @@ class TestScenario19(unittest.TestCase):
 
         for wind_speed in wind_speeds:
 
-            logging.debug('wind speed {:.3f}'.format(wind_speed))
+            logging.debug(f'wind speed {wind_speed:.3f}')
 
             self.house.compute_qz(wind_speed)
 
@@ -879,10 +876,9 @@ class TestScenario19(unittest.TestCase):
                                                conn_capacity2[_id],
                                                decimal=2)
             except KeyError:
-                print('coverage #{} is not found'.format(_id))
+                print(f'coverage #{_id} is not found')
             except AssertionError:
-                print('coverage #{} fails at {} not {}'.format(
-                    _id, _coverage.capacity, conn_capacity2[_id]))
+                print(f'coverage #{_id} fails at {_coverage.capacity} not {conn_capacity2[_id]}')
 
 
 class TestScenario20(unittest.TestCase):
@@ -928,8 +924,7 @@ class TestScenario20(unittest.TestCase):
                                                dead_load[_id],
                                                decimal=2)
             except AssertionError:
-                print('conn #{} dead load should be {} not {}'.format(
-                    _id, dead_load[_id], _conn.dead_load))
+                print(f'conn #{_id} dead load should be {dead_load[_id]} not {_conn.dead_load}')
 
 
 class TestScenario21(unittest.TestCase):
@@ -981,8 +976,7 @@ class TestScenario21(unittest.TestCase):
                                                dead_load[_id],
                                                decimal=2)
             except AssertionError:
-                print('conn #{} dead load should be {} not {}'.format(
-                    _id, dead_load[_id], _conn.dead_load))
+                print(f'conn #{_id} dead load should be {dead_load[_id]} not {_conn.dead_load}')
 
 
 class TestScenario22a(unittest.TestCase):

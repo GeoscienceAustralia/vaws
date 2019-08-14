@@ -169,8 +169,7 @@ class DebrisOriginal(object):
             self.no_items_mean, size=len(self.cfg.debris_sources))
 
         self.no_items = no_items_by_source.sum()
-        logging.debug('no_item_by_source at speed {:.3f}: {} sampled with {}'.format(
-            wind_speed, self.no_items, self.no_items_mean))
+        logging.debug(f'no_item_by_source at speed {wind_speed:.3f}: {self.no_items} sampled with {self.no_items_mean}')
 
         # loop through sources
         for no_item, source in zip(no_items_by_source, self.cfg.debris_sources):
@@ -202,8 +201,7 @@ class DebrisOriginal(object):
             self.no_items_mean, size=len(self.cfg.debris_sources))
 
         self.no_items = no_items_by_source.sum()
-        logging.debug('no_item_by_source at speed {:.3f}: {} sampled with {}'.format(
-            wind_speed, self.no_items, self.no_items_mean))
+        logging.debug(f'no_item_by_source at speed {wind_speed:.3f}: {self.no_items} sampled with {self.no_items_mean}')
 
         # loop through sources
         for no_item, source in zip(no_items_by_source, self.cfg.debris_sources):
@@ -426,9 +424,8 @@ class DebrisOriginal(object):
         try:
             assert 0.0 <= _mean <= 1.0
         except AssertionError:
-            logging.warning('invalid mean of beta dist.: {} with b: {},'
-                            'flight_distance: {}'.format(_mean, param_b,
-                                                         flight_distance))
+            logging.warning(f'invalid mean of beta dist.: {_mean} with b: {param_b},'
+                            'flight_distance: {flight_distance}')
 
         try:
             dispersion = max(1.0 / _mean, 1.0 / (1.0 - _mean)) + 3.0
@@ -961,23 +958,23 @@ class CompareCase(unittest.TestCase):
 
         label1 = 'original'
         no_items1, no_touched1, no_breached1, damaged_area1, elapsed1 = self.run_original()
-        print('Elapsed time: {}'.format(elapsed1))
+        print(f'Elapsed time: {elapsed1}')
 
         label2 = 'moment'
         no_items2, no_touched2, no_breached2, damaged_area2, elapsed2 = self.run_moment()
-        print('Elapsed time: {}'.format(elapsed2))
+        print(f'Elapsed time: {elapsed2}')
 
         label3 = 'moment+mc'
         no_items3, no_touched3, no_breached3, damaged_area3, elapsed3 = self.run_mc()
-        print('Elapsed time: {}'.format(elapsed3))
+        print(f'Elapsed time: {elapsed3}')
 
         label4 = 'boundary'
         no_items4, no_touched4, no_breached4, damaged_area4, elapsed4 = self.run_boundary()
-        print('Elapsed time: {}'.format(elapsed4))
+        print(f'Elapsed time: {elapsed4}')
 
         label5 = 'implemented'
         no_items5, no_touched5, no_breached5, damaged_area5, elapsed5 = self.run_debris()
-        print('Elapsed time: {}'.format(elapsed5))
+        print(f'Elapsed time: {elapsed5}')
 
         plt.figure()
         plt.plot(self.wind_speeds, np.cumsum(no_items1), 'b.-', label=label1)
@@ -1153,7 +1150,7 @@ class MyTestCase(unittest.TestCase):
             ax.plot(x, y, 'b-', label='stretched')
             ax.set_xlim([-40, 20])
             ax.set_ylim([-20, 20])
-            plt.title('Wind direction: {}'.format(idx))
+            plt.title(f'Wind direction: {idx}')
             plt.legend(loc=2)
             # plt.show()
             plt.pause(1.0)
@@ -1184,18 +1181,17 @@ class MyTestCase(unittest.TestCase):
                              wind_speed=wind_speed,
                              rnd_state=self.rnd_state)
             _debris._frontal_area = self.cfg.debris_regions[key][
-                '{}_frontal_area_mean'.format(debris_type)]
+                f'{debris_type}_frontal_area_mean']
             _debris._mass = self.cfg.debris_regions[key][
-                '{}_mass_mean'.format(debris_type)]
+                f'{debris_type}_mass_mean']
             _debris._flight_time = self.cfg.debris_regions[key][
-                '{}_flight_time_mean'.format(debris_type)]
+                f'{debris_type}_flight_time_mean']
 
             try:
                 self.assertAlmostEqual(expected[debris_type],
                                        _debris.flight_distance, places=2)
             except AssertionError:
-                print('{}: {} is expected but {}'.format(
-                    debris_type, expected[debris_type], _debris.flight_distance))
+                print(f'{debris_type}: {expected[debris_type]} is expected but {_debris.flight_distance}')
 
     def test_bivariate_gaussian(self):
 
@@ -1264,8 +1260,7 @@ class MyTestCase(unittest.TestCase):
 
         plt.figure()
         plt.hist(momentum)
-        plt.title('sampled momentum with mean: {:.2f}, sd: {:.2f}'.format(
-            momentum.mean(), momentum.std()))
+        plt.title(f'sampled momentum with mean: {momentum.mean():.2f}, sd: {momentum.std():.2f}')
         plt.pause(1.0)
         plt.close()
         # plt.show()
@@ -1347,12 +1342,12 @@ class MyTestCase(unittest.TestCase):
         plt.figure()
         for _str, _value in flight_distance.items():
             plt.plot(wind_speeds, _value, color=dic_[_str],
-                     label='{}'.format(_str),
+                     label=f'{_str}',
                      linestyle='-')
 
         for _str, _value in flight_distance_poly5.items():
             plt.plot(wind_speeds, _value, color=dic_[_str],
-                     label='{} {}'.format(_str, '(Lin and Vanmarcke, 2008)'),
+                     label=f'{_str} (Lin and Vanmarcke, 2008)',
                      linestyle='--')
 
         plt.title('Flight distance')
@@ -1397,7 +1392,7 @@ class MyTestCase(unittest.TestCase):
                            self.footprint_inst, self.boundary)
             par_time.append(time.time()-tic)
 
-        print('Parallel vs Serial: {} vs {}'.format(sum(par_time), sum(ser_time)))
+        print(f'Parallel vs Serial: {sum(par_time)} vs {sum(ser_time)}')
 
     def test_number_of_touched(self):
 
@@ -1441,7 +1436,7 @@ class MyTestCase(unittest.TestCase):
         fig = plt.figure(1)
         ax = fig.add_subplot(111)
 
-        title_str = 'total no. of impacts: {} out of {}'.format(no_impacts, no_generated)
+        title_str = f'total no. of impacts: {no_impacts} out of {no_generated}'
         ax.set_title(title_str)
         ax.set_xlim([-150, 150])
         ax.set_ylim([-100, 100])

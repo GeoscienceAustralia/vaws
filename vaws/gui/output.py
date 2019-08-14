@@ -91,10 +91,9 @@ def plot_damage_show(fig, grouped, values_grid, xlim_max, ylim_max,
 
     group_key = grouped['group_name'].unique()[0]
     if house_number == 0:
-        axPlot.set_title('Heatmap of failure wind speed for {}'.format(group_key))
+        axPlot.set_title(f'Heatmap of failure wind speed for {group_key}')
     else:
-        axPlot.set_title('Heatmap of failure wind speed for {} of model {} '.format(group_key,
-                                                                                    house_number))
+        axPlot.set_title(f'Heatmap of failure wind speed for {group_key} of model {house_number}')
     # axPlot.format_coord = format_coord
 
     fig.canvas.draw()
@@ -258,7 +257,7 @@ def plot_wind_event_show(ax, num_iters, Vmin, Vmax):
 
 def plot_fragility_show(ax, num_iters, Vmin, Vmax):
 
-    ax.set_title('Fragility Curve (n = {})'.format(num_iters))
+    ax.set_title(f'Fragility Curve (n = {num_iters})')
     ax.set_xlabel('Impact Wind speed (m/s)')
     ax.set_ylabel('Probability of Damage State')
     ax.set_xlim((Vmin, Vmax))
@@ -283,9 +282,9 @@ def plot_influence(fig, cfg, conn_name, file_name=None):
         infl_dic = cfg.influences[conn_name]
     except KeyError:
         if conn_name in cfg.connections:
-            logger.warning('influence is not defined for {}'.format(conn_name))
+            logger.warning(f'influence is not defined for {conn_name}')
         else:
-            logger.info('skipped: conn {} is not defined'.format(conn_name))
+            logger.info(f'skipped: conn {conn_name} is not defined')
     else:
         _list_groups = [cfg.connections.loc[conn_name].group_name]
         for key in infl_dic.keys():
@@ -332,7 +331,7 @@ def plot_influence(fig, cfg, conn_name, file_name=None):
         fig.canvas.draw()
 
     if file_name:
-        fig.savefig('{}.png'.format(file_name), dpi=150)
+        fig.savefig(f'{file_name}.png', dpi=150)
 
 
 def set_axis_etc(ax, title, xlim_max, ylim_max):
@@ -358,7 +357,7 @@ def plot_influence_patch(fig, cfg, failed_conn_name, conn_name, file_name=None):
     try:
         infl_dic = cfg.influence_patches[failed_conn_name][conn_name]
     except KeyError:
-        logger.warning('influence patch is not defined for {}:{}'.format(failed_conn_name, conn_name))
+        logger.warning(f'influence patch is not defined for {failed_conn_name}:{conn_name}')
     else:
 
         _list_groups = [cfg.connections.loc[failed_conn_name].group_name]
@@ -418,7 +417,7 @@ def plot_influence_patch(fig, cfg, failed_conn_name, conn_name, file_name=None):
         fig.canvas.draw()
 
     if file_name:
-        fig.savefig('{}.png'.format(file_name), dpi=150)
+        fig.savefig(f'{file_name}.png', dpi=150)
 
 
 def draw_influence(cfg, infl_dic, dic_ax, conn_name):
@@ -435,7 +434,7 @@ def draw_influence(cfg, infl_dic, dic_ax, conn_name):
     for key, value in infl_dic.items():
 
         face_color, font_weight, font_size = 'orange', 'bold', 'x-small'
-        _str = '{}:{}'.format(key, value)
+        _str = f'{key}:{value}'
 
         if key in cfg.zones:
             item = cfg.zones[key]

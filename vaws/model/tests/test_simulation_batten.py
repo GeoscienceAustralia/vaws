@@ -19,19 +19,19 @@ def check_file_consistency(file1, file2, **kwargs):
     try:
         identical = filecmp.cmp(file1, file2)
     except OSError:
-        print('{} does not exist'.format(file2))
+        print(f'{file2} does not exist')
     else:
         if not identical:
             try:
                 data1 = pd.read_csv(file1, **kwargs)
                 data2 = pd.read_csv(file2, **kwargs)
             except ValueError:
-                print('No columns to parse from {}'.format(file2))
+                print(f'No columns to parse from {file2}')
             else:
                 try:
                     pd.util.testing.assert_frame_equal(data1, data2)
                 except AssertionError:
-                    print('{} and {} are different'.format(file1, file2))
+                    print(f'{file1} and {file2} are different')
 
 
 def consistency_house_damage_idx(path_reference, path_output):
@@ -43,13 +43,13 @@ def consistency_house_damage_idx(path_reference, path_output):
 
     data2 = pd.read_hdf(file2, 'di')
 
-    print('comparing {} and {}'.format(file1, file2))
+    print(f'comparing {file1} and {file2}')
     for i in range(data2.shape[0]):
 
         try:
             pd.util.testing.assert_frame_equal(data1[str(i)], data2.loc[i])
         except AssertionError:
-            print('different at {}'.format(i))
+            print(f'different at {i}')
 
 
 def consistency_house_cpi(path_reference, path_output):
@@ -60,7 +60,7 @@ def consistency_house_cpi(path_reference, path_output):
     try:
         identical = filecmp.cmp(file1, file2)
     except OSError:
-        print('{} does not exist'.format(file2))
+        print(f'{file2} does not exist')
     else:
         if not identical:
             data1 = pd.read_csv(file1)
@@ -69,7 +69,7 @@ def consistency_house_cpi(path_reference, path_output):
                 np.testing.assert_almost_equal(data1.values, data2.values,
                                                decimal=3)
             except AssertionError:
-                print('{} and {} are different'.format(file1, file2))
+                print(f'{file1} and {file2} are different')
 
 
 def consistency_house_damage(path_reference, path_output):
@@ -81,7 +81,7 @@ def consistency_house_damage(path_reference, path_output):
     try:
         identical = filecmp.cmp(file1, file2)
     except OSError:
-        print('{} does not exist'.format(file2))
+        print(f'{file2} does not exist')
     else:
         if not identical:
             data1 = pd.read_csv(file1)
@@ -98,8 +98,7 @@ def consistency_house_damage(path_reference, path_output):
                                                        data2[col].values,
                                                        decimal=3)
                     except AssertionError:
-                        print('{} and {} are different in {}'.format(
-                            file1, file2, col))
+                        print(f'{file1} and {file2} are different in {col}')
 
 
 def consistency_fragilites(path_reference, path_output):
@@ -109,7 +108,7 @@ def consistency_fragilites(path_reference, path_output):
     try:
         identical = filecmp.cmp(file1, file2)
     except OSError:
-        print('{} does not exist'.format(file2))
+        print(f'{file2} does not exist')
     else:
         if not identical:
             data1 = pd.read_csv(file1)
@@ -124,11 +123,9 @@ def consistency_fragilites(path_reference, path_output):
                                                        value[key],
                                                        decimal=3)
                     except KeyError:
-                        print('invalid key: {}/{}'.format(str_, key))
+                        print(f'invalid key: {str_}/{key}')
                     except AssertionError:
-                        print('different: {}, {}, {}'.format(state,
-                                                             ref_value,
-                                                             value[key]))
+                        print(f'different: {state}, {ref_value}, {value[key]}')
 
 
 def consistency_houses_damaged(path_reference, path_output):
@@ -140,7 +137,7 @@ def consistency_houses_damaged(path_reference, path_output):
     try:
         identical = filecmp.cmp(file1, file2)
     except OSError:
-        print('{} does not exist'.format(file2))
+        print(f'{file2} does not exist')
     else:
         if not identical:
             data1 = pd.read_csv(file1, skiprows=3)
@@ -153,8 +150,7 @@ def consistency_houses_damaged(path_reference, path_output):
                                                    data2[col].values,
                                                    decimal=3)
                 except AssertionError:
-                    print('{} and {} are different in {}'.format(
-                        file1, file2, col))
+                    print(f'{file1} and {file2} are different in {col}')
 
 
 def consistency_wateringress(path_reference, path_output):
@@ -165,7 +161,7 @@ def consistency_wateringress(path_reference, path_output):
     try:
         identical = filecmp.cmp(file1, file2)
     except OSError:
-        print('{} does not exist'.format(file2))
+        print(f'{file2} does not exist')
     else:
         if not identical:
             data1 = pd.read_csv(file1)
@@ -179,11 +175,11 @@ def consistency_wateringress(path_reference, path_output):
                     try:
                         assert (value == data1[key]).all()
                     except AssertionError:
-                        msg = 'Not equal: {}'.format(key)
+                        msg = f'Not equal: {key}'
                         print(msg)
 
                 except AssertionError:
-                    msg = 'Not equal: {}'.format(key)
+                    msg = f'Not equal: {key}'
                     print(msg)
 
 
@@ -223,7 +219,7 @@ class TestDistributeMultiSwitchesOFF(unittest.TestCase):
                            'wallcollapse', 'wallracking']
 
         for component in components_list:
-            cfg.flags['dmg_distribute_{}'.format(component)] = False
+            cfg.flags[f'dmg_distribute_{component}'] = False
 
         _ = simulate_wind_damage_to_houses(cfg)
 
@@ -261,7 +257,7 @@ class TestDistributeMultiSwitchesOn(unittest.TestCase):
                            'wallcollapse', 'wallracking']
 
         for component in components_list:
-            cfg.flags['dmg_distribute_{}'.format(component)] = False
+            cfg.flags[f'dmg_distribute_{component}'] = False
 
         _ = simulate_wind_damage_to_houses(cfg)
 

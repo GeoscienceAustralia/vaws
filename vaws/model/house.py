@@ -393,7 +393,7 @@ class House(object):
                         max_cpe = max(cpe_array.min(), cpe_array.max(), key=abs)
                         cpi *= max_cpe
 
-                    self.logger.debug('cpi for bldg with dominant opening: {}'.format(cpi))
+                    self.logger.debug(f'cpi for bldg with dominant opening: {cpi}')
 
                 elif len(max_breached) == len(breached_area_by_wall):  # all equal openings
                     if max_breached.iloc[0]:
@@ -401,7 +401,7 @@ class House(object):
                     else:  # in case no opening
                         cpi = 0.0
 
-                    self.logger.debug('cpi for bldg without dominant opening: {}'.format(cpi))
+                    self.logger.debug(f'cpi for bldg without dominant opening: {cpi}')
 
                 else:
                     if breached_area_by_wall['windward']:
@@ -409,7 +409,7 @@ class House(object):
                     else:
                         cpi = -0.3
 
-                    self.logger.debug('cpi for bldg without dominant opening: {}'.format(cpi))
+                    self.logger.debug(f'cpi for bldg without dominant opening: {cpi}')
 
             self._cpi = cpi
 
@@ -419,7 +419,7 @@ class House(object):
 
         if not self.collapse:
 
-            self.logger.debug('wind speed {:.3f}'.format(wind_speed))
+            self.logger.debug(f'wind speed {wind_speed:.3f}')
 
             # compute load by zone
             self.compute_qz(wind_speed)
@@ -467,13 +467,13 @@ class House(object):
         for comp in self.cfg.list_components:
             self.bucket[comp] = {}
             if comp == 'debris':
-                for att, _ in getattr(self.cfg, '{}_bucket'.format(comp)):
+                for att, _ in getattr(self.cfg, f'{comp}_bucket'):
                     self.bucket[comp][att] = None
             else:
-                for att, _ in getattr(self.cfg, '{}_bucket'.format(comp)):
+                for att, _ in getattr(self.cfg, f'{comp}_bucket'):
                     self.bucket[comp][att] = {}
                     try:
-                        for item in getattr(self.cfg, 'list_{}s'.format(comp)):
+                        for item in getattr(self.cfg, f'list_{comp}s'):
                             self.bucket[comp][att][item] = None
                     except TypeError:
                         pass
@@ -501,8 +501,8 @@ class House(object):
                         self.bucket[comp][att] = [getattr(x, att)
                                                   for x in self.debris_items]
             else:  # dictionary
-                dic = getattr(self, '{}s'.format(comp))
-                for att, _ in getattr(self.cfg, '{}_bucket'.format(comp)):
+                dic = getattr(self, f'{comp}s')
+                for att, _ in getattr(self.cfg, f'{comp}_bucket'):
                     for item, value in dic.items():
                         self.bucket[comp][att][item] = getattr(value, att)
 
@@ -617,7 +617,7 @@ class House(object):
             try:
                 tmp = self.cfg.costings[key].compute_cost(value)
             except AssertionError:
-                self.logger.error('{} of {} is invalid'.format(value, key))
+                self.logger.error(f'{value} of {key} is invalid')
             else:
                 _list.append(tmp)
         self.repair_cost = np.array(_list).sum()
@@ -668,7 +668,7 @@ class House(object):
                 prop_area_by_scenario[name]
             except KeyError:
                 self.logger.warning(
-                    '{} is not defined in the costing'.format(name))
+                    f'{name} is not defined in the costing')
             else:
                 if prop_area_by_scenario[name]:
                     damage_name = name
@@ -790,11 +790,10 @@ class House(object):
                     group.damage_grid[connection.grid] = 0  # intact
                 except IndexError:
                     self.logger.warning(
-                        'conn grid {} does not exist within group grid {}'.format(
-                            connection.grid, group.damage_grid))
+                        f'conn grid {connection.grid} does not exist within group grid {group.damage_grid}')
                 except TypeError:
                     self.logger.warning(
-                        'conn grid does not exist for group {}'.format(group.name))
+                        f'conn grid does not exist for group {group.name}')
 
                 group.connection_by_grid = connection.grid, connection
 

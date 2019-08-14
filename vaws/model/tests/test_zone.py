@@ -112,7 +112,7 @@ FALSE, 20, 0.85, 0, 1, Diff shielding not considered""")
             try:
                 self.assertAlmostEqual(outcome, row['Expected factor'], places=3)
             except AssertionError:
-                print('{}: expecting {} but returned {}'.format(irow, row['Expected factor'], outcome))
+                print(f"{irow}: expecting {row['Expected factor']} but returned {outcome}")
 
 if __name__ == '__main__':
     unittest.main()

@@ -30,7 +30,7 @@ def compute_load_by_zone(flag_pressure, dic_influences):
     for _, inf in dic_influences.items():
 
         if isinstance(inf.source, Zone):
-            pressure = getattr(inf.source, 'pressure_{}'.format(flag_pressure))
+            pressure = getattr(inf.source, f'pressure_{flag_pressure}')
             load += inf.coeff * inf.source.area * pressure
 
             # logger.debug(msg1.format(name=inf.source.name,
@@ -298,8 +298,7 @@ class ConnectionTypeGroup(object):
         else:
             self._damaged_area = 0.0
 
-        self.logger.debug('group {}: damaged area: {:.3f}'.format(
-            self.name, self._damaged_area))
+        self.logger.debug(f'group {self.name}: damaged area: {self._damaged_area:.3f}')
 
         return self._damaged_area
 
@@ -316,8 +315,7 @@ class ConnectionTypeGroup(object):
         else:
             self._prop_damaged = 0
 
-        self.logger.debug('group {}: prop damaged: {:.3f}'.format(
-            self.name, self._prop_damaged))
+        self.logger.debug(f'group {self.name}: prop damaged: {self._prop_damaged:.3f}')
 
         return self._prop_damaged
 
@@ -406,7 +404,7 @@ class ConnectionTypeGroup(object):
                     except IndexError:
                         pass
 
-                self.logger.debug('row/col of intact zones: {}'.format(intact))
+                self.logger.debug(f'row/col of intact zones: {intact}')
 
                 if intact_left.size * intact_right.size > 0:
                     influence_coeff = 0.5
@@ -417,8 +415,7 @@ class ConnectionTypeGroup(object):
                     try:
                         target_connection = self.connection_by_grid[intact_grid]
                     except IndexError:
-                        self.logger.error('wrong intact_grid {} for {}'.format(
-                            intact_grid, self.name))
+                        self.logger.error(f'wrong intact_grid {intact_grid} for {self.name}')
                     else:
                         target_connection.update_influence(source_connection,
                                                            influence_coeff)

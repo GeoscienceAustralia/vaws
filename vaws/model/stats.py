@@ -73,8 +73,7 @@ def calc_parameters_gev(mean_est, cov_est, big_a, big_b):
         a_est = abs(mean_est) * cov_est / big_b
         u_est = abs(mean_est) - a_est * big_a
     except TypeError:
-        logger.warning('mean_est:{}, cov_est:{}, big_a:{}, big_b:{}'.format(
-            mean_est, cov_est, big_a, big_b))
+        logger.warning(f'mean_est:{mean_est}, cov_est:{cov_est}, big_a:{big_a}, big_b:{big_b}')
     else:
         return a_est, u_est
 

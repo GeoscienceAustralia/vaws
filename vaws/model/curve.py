@@ -18,13 +18,13 @@ SMALL_VALUE = 1.0e-2
 
 def no_within_bounds(row, bounds):
     freq = np.histogram(row, bins=bounds)[0]
-    return pd.Series({'n{}'.format(i): freq[i] for i in range(5)})
+    return pd.Series({f'n{i}': freq[i] for i in range(5)})
 
 
 def compute_pe(row, denom):
     _dic = {}
     for i in range(1, 5):
-        _dic['pe{}'.format(i)] = np.sum([row['n{}'.format(j)] for j in range(4, i-1, -1)]) / denom
+        _dic[f'pe{i}'] = np.sum([row[f'n{i}'] for j in range(4, i-1, -1)]) / denom
     return pd.Series(_dic)
 
 
@@ -37,7 +37,7 @@ def likelihood(param, data, idx):
     :return:
     """
     med, std = param[0], param[1]
-    pe = 'pe{}'.format(idx)
+    pe = f'pe{idx}'
     temp = 0.0
 
     for speed, row in data.iterrows():
@@ -73,9 +73,9 @@ def fit_vulnerability_curve(cfg, df_dmg_idx):
             try:
                 popt, pcov = curve_fit(eval(func_), xdata, ydata)
             except RuntimeError as e:
-                logger.warning(str(e) + ' at {} curve fitting'.format(key))
+                logger.warning(str(e) + f' at {key} curve fitting')
             except OptimizeWarning as e:
-                logger.warning(str(e) + ' at {} curve fitting'.format(key))
+                logger.warning(str(e) + f' at {key} curve fitting')
             else:
                 sigma = np.sqrt(np.diag(pcov))
                 fitted_curve[key] = dict(param1=popt[0],
@@ -111,14 +111,13 @@ def fit_fragility_curves(cfg, dmg_idx):
     frag_counted = {'OLS': OrderedDict(), 'MLE': OrderedDict()}
     use_old = False
     for i, (state, value) in enumerate(cfg.fragility.iterrows(), 1):
-        pe = 'pe{}'.format(i)
+        pe = f'pe{i}'
 
         # OLS
         try:
             popt, pcov = curve_fit(vulnerability_lognorm, cfg.wind_speeds, df[pe])
         except RuntimeError as e:
-            logger.warning(str(e) + ' at {} damage state fragility fitting'.
-                            format(state))
+            logger.warning(str(e) + f' at {state} damage state fragility fitting')
         else:
             _sigma = np.sqrt(np.diag(pcov))
             frag_counted['OLS'][state] = dict(param1=popt[0],
@@ -173,7 +172,7 @@ def fit_fragility_curves_using_mle(cfg, df_dmg_idx):
     # calculate damage probability
     plt.figure()
     for i in range(1, 5):
-        pe = 'pe{}'.format(i)
+        pe = f'pe{i}'
         lower = df.loc[df[pe] == 0.0, 'speed'].min()
         upper = df.loc[df[pe].idxmax(), 'speed']
         max_zero = df.loc[df[pe] == 0.0, 'speed'].max()

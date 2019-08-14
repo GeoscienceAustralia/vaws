@@ -48,7 +48,7 @@ def simulate_wind_damage_to_houses(cfg, call_back=None):
 
         for ihouse, house in enumerate(list_house_damage):
 
-            logger.debug('model {}'.format(ihouse))
+            logger.debug(f'model {ihouse}')
 
             house.damage_increment = damage_increment
 
@@ -59,7 +59,7 @@ def simulate_wind_damage_to_houses(cfg, call_back=None):
         bucket = update_bucket(cfg, bucket, results_by_speed, ispeed)
         damage_increment = compute_damage_increment(cfg, bucket, ispeed)
 
-        logger.debug('damage index increment {}'.format(damage_increment))
+        logger.debug(f'damage index increment {damage_increment}')
         percent_done = 100.0 * (ispeed + 1) / len(cfg.wind_speeds)
         int_percent = int(percent_done)
         if not call_back:
@@ -74,7 +74,7 @@ def simulate_wind_damage_to_houses(cfg, call_back=None):
     save_results_to_files(cfg, bucket)
 
     elapsed = time.time()-tic
-    logging.info('Simulation completed: {:.4f}'.format(elapsed))
+    logging.info(f'Simulation completed: {elapsed:.4f}')
 
     return elapsed, bucket
 
@@ -94,14 +94,14 @@ def init_bucket(cfg):
     for comp in cfg.list_components:
         bucket[comp] = {}
         if comp == 'debris':
-            for att, _ in getattr(cfg, '{}_bucket'.format(comp)):
+            for att, _ in getattr(cfg, f'{comp}_bucket'):
                 bucket[comp][att] = np.zeros(
                     shape=(cfg.wind_speed_steps, cfg.no_models), dtype=object)
         else:
-            for att, flag_time in getattr(cfg, '{}_bucket'.format(comp)):
+            for att, flag_time in getattr(cfg, f'{comp}_bucket'):
                 bucket[comp][att] = {}
                 try:
-                    for item in getattr(cfg, 'list_{}s'.format(comp)):
+                    for item in getattr(cfg, f'list_{comp}s'):
                         if flag_time:
                             bucket[comp][att][item] = np.zeros(
                                 shape=(cfg.wind_speed_steps, cfg.no_models), dtype=float)
@@ -124,7 +124,7 @@ def update_bucket(cfg, bucket, results_by_speed, ispeed):
             for att, flag_time in cfg.debris_bucket:
                 bucket['debris'][att][ispeed] = [x['debris'][att] for x in results_by_speed]
         else:
-            for att, flag_time in getattr(cfg, '{}_bucket'.format(comp)):
+            for att, flag_time in getattr(cfg, f'{comp}_bucket'):
                 if flag_time:
                     for item, value in bucket[comp][att].items():
                         value[ispeed] = [x[comp][att][item] for x in
@@ -138,7 +138,7 @@ def update_bucket(cfg, bucket, results_by_speed, ispeed):
                 bucket['house'][att] = [x['house'][att] for x in results_by_speed]
 
         for comp in cfg.list_components:
-            for att, flag_time in getattr(cfg, '{}_bucket'.format(comp)):
+            for att, flag_time in getattr(cfg, f'{comp}_bucket'):
                 if not flag_time:
                     for item, value in bucket[comp][att].items():
                         value[0] = [x[comp][att][item] for x in results_by_speed]
@@ -217,7 +217,7 @@ def save_results_to_files(cfg, bucket):
                 if frag_counted[fitting]:
                     for key, value in frag_counted[fitting].items():
                         for sub_key, sub_value in value.items():
-                            name = '{}/{}/{}'.format(fitting, key, sub_key)
+                            name = f'{fitting}/{key}/{sub_key}'
                             group.create_dataset(name=name, data=sub_value)
                             bucket['fragility'].setdefault(fitting, {}).setdefault(key, {})[sub_key] = sub_value
 
@@ -231,8 +231,7 @@ def save_results_to_files(cfg, bucket):
 
         for key, value in fitted_curve.items():
             for sub_key, sub_value in value.items():
-                group.create_dataset('{}/{}'.format(key, sub_key),
-                                     data=sub_value)
+                group.create_dataset(f'{key}/{sub_key}', data=sub_value)
                 bucket['vulnerability'].setdefault(key, {})[
                     sub_key] = sub_value
 
@@ -246,8 +245,7 @@ def save_results_to_files(cfg, bucket):
                                  for i in grouped.index])[:, 0, id_sim]
 
                 file_name = os.path.join(cfg.path_output,
-                                         '{}_id{}'.format(group_name,
-                                                          id_sim))
+                                         f'{group_name}_id{id_sim}')
                 plot_heatmap(grouped,
                              value,
                              vmin=cfg.heatmap_vmin,
@@ -297,7 +295,7 @@ def set_logger(path_cfg, logging_level=None):
             logging_level = 'DEBUG'
             level = 'DEBUG'
         finally:
-            file_log = os.path.join(path_cfg, 'output', '{}.log'.format(logging_level))
+            file_log = os.path.join(path_cfg, 'output', f'{logging_level}.log')
             added_file_handler = {"added_file_handler": {
                                   "class": "logging.handlers.RotatingFileHandler",
                                   "level": level,

@@ -285,7 +285,7 @@ class Config(object):
         self.flags = {}
 
         if not os.path.isfile(file_cfg):
-            msg = 'Error: {} not found'.format(file_cfg)
+            msg = f'Error: {file_cfg} not found'
             sys.exit(msg)
         else:
             self.path_cfg = os.sep.join(os.path.abspath(file_cfg).split(os.sep)[:-1])
@@ -305,9 +305,8 @@ class Config(object):
                 self.path_house_data, FILE_CONNECTIONS)
             self.file_zones = os.path.join(self.path_house_data, FILE_ZONES)
             for item in ['cpe_mean', 'cpe_str_mean', 'cpe_eave_mean', 'edge']:
-                setattr(self, 'file_zones_{}'.format(item),
-                        os.path.join(self.path_house_data,
-                                     'zones_{}.csv'.format(item)))
+                setattr(self, f'file_zones_{item}',
+                        os.path.join(self.path_house_data, f'zones_{item}.csv'))
 
             self.file_influences = os.path.join(
                 self.path_house_data, FILE_INFLUENCES)
@@ -399,10 +398,10 @@ class Config(object):
 
     def read_main(self, conf, key):
         """
-        
+
         Args:
-            conf: 
-            key: 
+            conf:
+            key:
 
         Returns:
 
@@ -443,9 +442,9 @@ class Config(object):
         TODO:
         """
         if conf.has_section(key):
-            for k in ['thresholds', 'speed_at_zero_wi', 'speed_at_full_wi']:
-                setattr(self, 'water_ingress_i_{}'.format(k),
-                        self.read_column_separated_entry(conf.get(key, k)))
+            for item in ['thresholds', 'speed_at_zero_wi', 'speed_at_full_wi']:
+                setattr(self, f'water_ingress_i_{item}',
+                        self.read_column_separated_entry(conf.get(key, item)))
         else:
             self.logger.info('default water ingress thresholds is used')
 
@@ -475,14 +474,13 @@ class Config(object):
                 coverage_types['failure_strength_out_mean'] > 0].index.tolist()
             if not_good:
                 raise ValueError(
-                    'Invalid failure_strength_out_mean for coverage(s): {}'.format(not_good))
+                    f'Invalid failure_strength_out_mean for coverage(s):{not_good}')
 
             # Check that the remaining numerical entries are >=0.
             sub_df = coverage_types.loc[:, coverage_types.columns != 'failure_strength_out_mean']
             not_good = sub_df.loc[(sub_df < 0).any(axis=1)].index.tolist()
             if not_good:
-                raise ValueError('Invalid value(s) for coverage(s): {}'.format(
-                    not_good))
+                raise ValueError(f'Invalid value(s) for coverage(s): {not_good}')
 
             coverage_types = coverage_types.to_dict('index')
 
@@ -503,14 +501,14 @@ class Config(object):
 
                 if not_good:
                     raise ValueError(
-                        'Invalid wall name for coverages: {}'.format(not_good))
+                        f'Invalid wall name for coverages: {not_good}')
 
                 # check area >= 0
                 not_good = self.coverages.loc[
                     self.coverages['area'] < 0.0].index.tolist()
                 if not_good:
                     raise ValueError(
-                        'Invalid area for coverages: {}'.format(not_good))
+                        f'Invalid area for coverages: {not_good}')
 
                 # check coverage_type
                 not_good = self.coverages.loc[
@@ -519,7 +517,7 @@ class Config(object):
 
                 if not_good:
                     raise ValueError(
-                        'Invalid coverage_type for coverages: {}'.format(not_good))
+                        f'Invalid coverage_type for coverages: {not_good}')
 
                 for key in COVERAGE_FAILURE_KEYS:
                     df = self.coverages.apply(self.get_lognormal_tuple,
@@ -562,12 +560,12 @@ class Config(object):
             self.logger.warning(msg)
         else:
             if not coverages_cpe_mean.empty:
-                msg = 'Invalid value(s) for coverage(s): {} in {}'
                 not_good = coverages_cpe_mean.loc[
                     ((coverages_cpe_mean > 5) | (coverages_cpe_mean < -5)).any(
                         axis=1)].index.tolist()
                 if not_good:
-                    self.logger.warning(msg.format(not_good, self.file_coverages_cpe))
+                    msg = f'Invalid value(s) for coverage(s): {not_good} in {self.file_coverages_cpe}'
+                    self.logger.warning(msg)
                 else:
                     self.coverages['cpe_mean'] = pd.Series(
                         coverages_cpe_mean.to_dict('index'))
@@ -635,9 +633,9 @@ class Config(object):
 
     def read_fragility_thresholds(self, conf, key):
         if conf.has_section(key):
-            for k in ['states', 'thresholds']:
-                setattr(self, 'fragility_i_{}'.format(k),
-                        self.read_column_separated_entry(conf.get(key, k)))
+            for item in ['states', 'thresholds']:
+                setattr(self, f'fragility_i_{item}',
+                        self.read_column_separated_entry(conf.get(key, item)))
         else:
             self.logger.warning('default fragility thresholds is used')
 
@@ -673,7 +671,7 @@ class Config(object):
     def read_heatmap(self, conf, key):
         try:
             for item in ['vmin', 'vmax', 'vstep']:
-                setattr(self, 'heatmap_{}'.format(item), conf.getfloat(key, item))
+                setattr(self, f'heatmap_{item}', conf.getfloat(key, item))
         except configparser.NoSectionError:
             self.logger.warning('default value is used for heatmap')
 
@@ -754,8 +752,7 @@ class Config(object):
             tmp = df_types.loc[:, df_types.columns != 'group_name']
             not_good = df_types.loc[(tmp < 0).any(axis=1)].index.tolist()
             if not_good:
-                raise Exception('Invalid value(s) for type(s): {}'.format(
-                    not_good))
+                raise Exception(f'Invalid value(s) for type(s): {not_good}')
 
             # change arithmetic mean, std to logarithmic mean, std
             df_types['lognormal_strength'] = df_types.apply(
@@ -777,8 +774,7 @@ class Config(object):
         not_good = df_types.loc[~df_types.group_name.isin(
             df_groups.index.tolist())].index.tolist()
         if not_good:
-            raise Exception(
-                'invalid group_name for type(s): {}'.format(not_good))
+            raise Exception(f'invalid group_name for type(s): {not_good}')
 
         # connections
         try:
@@ -809,26 +805,25 @@ class Config(object):
     def set_influences(self):
 
         # influences
-        msg_conn = "Invalid connection name in {}"
-        msg_conn_zone = "Invalid zone or connection name in {}"
+        msg_conn = f"Invalid connection name in {self.file_influences}"
+        msg_conn_zone = f"Invalid zone or connection name in {self.file_influences}"
         try:
             self.influences = self.read_influences(self.file_influences)
         except IOError as msg:
             self.logger.error(msg, exc_info=True)
         else:
             # check conn_name is also listed in connections.csv
-            assert set(self.influences.keys()).issubset(self.list_connections), \
-                msg_conn.format(self.file_influences)
+            assert set(self.influences.keys()).issubset(self.list_connections), msg_conn
 
             # # check zone name is listed in zones.csv
             for _, value in self.influences.items():
-                assert set(value.keys()).issubset(self.list_connections + self.list_zones), \
-                    msg_conn_zone.format(self.file_influences)
+                assert set(value.keys()).issubset(self.list_connections +
+                        self.list_zones), msg_conn_zone
 
     def set_influence_patches(self):
 
-        msg_conn = "Invalid connection name in {}"
-        msg_conn_zone = "Invalid zone or connection name in {}"
+        msg_conn = f"Invalid connection name in {self.file_influences}"
+        msg_conn_zone = f"Invalid zone or connection name in {self.file_influences}"
         try:
             self.influence_patches = self.read_influence_patches(
                 self.file_influence_patches)
@@ -836,15 +831,14 @@ class Config(object):
             self.logger.error(msg, exc_info=True)
         else:
             # check conn_name is also listed in connections.csv
-            assert set(self.influence_patches.keys()).issubset(self.list_connections), \
-                msg_conn.format(self.file_influences)
+            assert set(self.influence_patches.keys()).issubset(self.list_connections), msg_conn
 
             for _, value in self.influence_patches.items():
                 assert set(value.keys()).issubset(
-                    self.list_connections), msg_conn.format(self.file_influences)
+                    self.list_connections), msg_conn
                 for _, sub_value in value.items():
                     assert set(sub_value.keys()).issubset(
-                        self.list_connections + self.list_zones), msg_conn_zone.format(self.file_influences)
+                        self.list_connections + self.list_zones), msg_conn_zone
 
     def set_costings(self, df_groups):
 
@@ -885,12 +879,11 @@ class Config(object):
                 del self.water_ingress_costings[key]
 
     def set_water_ingress_costings(self):
-        msg = 'Invalid or missing name in {}'
+        msg = f'Invalid or missing name in {self.file_water_ingress_costing_data}'
         self.water_ingress_costings = self.read_water_ingress_costing_data(
             self.file_water_ingress_costing_data)
         assert set(self.water_ingress_costings.keys()).difference(
-            self.costings.keys()) == {'WI only'}, msg.format(
-            self.file_water_ingress_costing_data)
+            self.costings.keys()) == {'WI only'}, msg
 
     def set_zones(self):
 
@@ -904,7 +897,7 @@ class Config(object):
             self.zones = OrderedDict((k, dic.get(k)) for k in self.list_zones)
 
         for item in ['cpe_mean', 'cpe_str_mean', 'cpe_eave_mean', 'edge']:
-            _file = getattr(self, 'file_zones_{}'.format(item))
+            _file = getattr(self, f'file_zones_{item}')
             try:
                 value = pd.read_csv(_file, names=self.header_for_cpe,
                                     index_col=0, skiprows=1).fillna(value=np.nan)
@@ -912,14 +905,14 @@ class Config(object):
                 self.logger.error(msg, exc_info=True)
             else:
                 # name is listed in zones
-                msg = "Invalid or missing zone names in {}"
-                assert set(value.index) == set(df.index), msg.format(_file)
+                msg = f"Invalid or missing zone names in {_file}"
+                assert set(value.index) == set(df.index), msg
 
                 # check zone has values for 8 directions
                 not_good = value.loc[value.isnull().any(axis=1)].index.tolist()
                 if not_good:
                     raise ValueError(
-                        'Invalid entry(ies) for zone(s): {} in {}'.format(not_good, _file))
+                        f'Invalid entry(ies) for zone(s): {not_good} in {_file}')
 
                 if 'cpe' in item:
                     # Cpe is between -5 and 5
@@ -927,16 +920,14 @@ class Config(object):
                         ((value < -5.0) | (value > 5.0)).any(axis=1)].index.tolist()
                     if not_good:
                         self.logger.warning(
-                            'Invalid Cpe for zone(s): {} in {}'.format(
-                                not_good, _file))
+                            f'Invalid Cpe for zone(s): {not_good} in {_file}')
                 else:
                     # edge value should be either 0 or 1.
                     not_good = value.loc[
                         (~(value.isin([0, 1]))).any(axis=1)].index.tolist()
                     if not_good:
                         raise ValueError(
-                            'Invalid value for zone(s): {} in {}'.format(
-                                not_good, _file))
+                            f'Invalid value for zone(s): {not_good} in {_file}')
 
                 for name, zone in self.zones.items():
                     zone[item] = value.loc[name].tolist()
@@ -961,7 +952,7 @@ class Config(object):
                             array = array.reshape((-1, 2))
                         except ValueError:
                             logger.warning(
-                                'Coordinates are incomplete: {}'.format(tmp[0]))
+                                f'Coordinates are incomplete: {tmp[0]}')
                         else:
                             if array.size < 6:
                                 logger.warning(msg.format(tmp[0]))
@@ -984,14 +975,14 @@ class Config(object):
         not_good = df.loc[df['area'] < 0.0].index.tolist()
         if not_good:
             raise ValueError(
-                'Invalid area for zone(s): {}'.format(not_good))
+                f'Invalid area for zone(s): {not_good}')
 
         # check 0=< cpi_alpha <=1
         not_good = df.loc[
             (df['cpi_alpha'] < 0.0) | (df['cpi_alpha'] > 1.0)].index.tolist()
         if not_good:
             raise ValueError(
-                'Invalid cpi_alpha for zone(s): {}'.format(not_good))
+                f'Invalid cpi_alpha for zone(s): {not_good}')
 
         return df
 
@@ -1021,7 +1012,7 @@ class Config(object):
                             array = array.reshape((-1, 2))
                         except ValueError:
                             logger.warning(
-                                'Coordinates are incomplete: {}'.format(tmp[0]))
+                                f'Coordinates are incomplete: {tmp[0]}')
                         else:
                             if array.size < 6:
                                 logger.warning(msg.format(tmp[0]))
@@ -1099,7 +1090,7 @@ class Config(object):
                 (~damage_costing[sel_col].isin(COSTING_FORMULA_TYPES)).any(axis=1)].index.tolist()
             if not_good:
                 raise ValueError(
-                    'Invalid formula_type for damage scenario(s): {}'.format(not_good))
+                    f'Invalid formula_type for damage scenario(s): {not_good}')
 
             for key, item in damage_costing.iterrows():
                 # if groups['damage_scenario'].isin([key]).any():
@@ -1126,7 +1117,7 @@ class Config(object):
                 (~tmp['formula_type'].isin([1, 2]))].index.tolist()
             if not_good:
                 raise ValueError(
-                    'Invalid formula_type for water ingress costing: {}'.format(not_good))
+                    f'Invalid formula_type for water ingress costing: {not_good}')
             for key, grouped in tmp.groupby('name'):
                 # if groups['damage_scenario'].isin([key]).any() or (key == 'WI only'):
                 grouped = grouped.set_index('water_ingress')
@@ -1148,12 +1139,12 @@ class Config(object):
     @staticmethod
     def get_lognormal_tuple(row, dic_, key):
         _type = row['coverage_type']
-        _mean = dic_[_type]['{}_mean'.format(key)]
+        _mean = dic_[_type][f'{key}_mean']
         _sign = np.sign(_mean)
         _mean = abs(_mean)
-        _sd = dic_[_type]['{}_std'.format(key)]
-        return pd.Series({'log_{}'.format(key): compute_logarithmic_mean_stddev(_mean, _sd),
-                          'sign_{}'.format(key): _sign})
+        _sd = dic_[_type][f'{key}_std']
+        return pd.Series({f'log_{key}': compute_logarithmic_mean_stddev(_mean, _sd),
+                          f'sign_{key}': _sign})
 
     @staticmethod
     def read_damage_factorings(filename):
@@ -1256,8 +1247,8 @@ class Config(object):
         try:
             assert value in self.debris_regions
         except AssertionError:
-            self.logger.error('region_name {} is not defined'.format(value))
-            raise AssertionError('region_name {} is not defined'.format(value))
+            self.logger.error(f'region_name {value} is not defined')
+            raise AssertionError(f'region_name {value} is not defined')
         else:
             self.region_name = value
 
@@ -1266,8 +1257,8 @@ class Config(object):
         try:
             df = pd.read_csv(_file, skiprows=1, header=None, index_col=0)
         except (IOError, ValueError):
-            self.logger.error('invalid wind_profiles file: {}'.format(_file))
-            raise IOError('invalid wind_profiles file: {}'.format(_file))
+            self.logger.error(f'invalid wind_profiles file: {_file}')
+            raise IOError(f'invalid wind_profiles file: {_file}')
         else:
             self.profile_heights = df.index.tolist()
             self.wind_profiles = df.to_dict('list')
@@ -1281,13 +1272,13 @@ class Config(object):
 
             for item in DEBRIS_TYPES_ATTS:
                 if item in ['frontal_area', 'mass', 'flight_time']:
-                    mean = debris_region['{0}_{1}_mean'.format(key, item)]
-                    std = debris_region['{0}_{1}_stddev'.format(key, item)]
+                    mean = debris_region[f'{key}_{item}_mean']
+                    std = debris_region[f'{key}_{item}_stddev']
                     mu_lnx, std_lnx = compute_logarithmic_mean_stddev(mean, std)
-                    self.debris_types[key]['{}_mu'.format(item)] = mu_lnx
-                    self.debris_types[key]['{}_std'.format(item)] = std_lnx
+                    self.debris_types[key][f'{item}_mu'] = mu_lnx
+                    self.debris_types[key][f'{item}_std'] = std_lnx
                 else:
-                    self.debris_types[key][item] = debris_region['{}_{}'.format(key, item)]
+                    self.debris_types[key][item] = debris_region[f'{key}_{item}']
 
             self.debris_types_ratio.append(self.debris_types[key]['ratio'] / 100)
 
@@ -1376,8 +1367,8 @@ class Config(object):
         if filename:
             with open(filename, 'w') as configfile:
                 config.write(configfile)
-                self.logger.info('{} is created'.format(filename))
+                self.logger.info(f'{file_name} is created')
         else:
             with open(self.file_cfg, 'w') as configfile:
                 config.write(configfile)
-                self.logger.info('{} is created'.format(self.file_cfg))
+                self.logger.info(f'{self.file_cfg} is created')

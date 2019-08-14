@@ -61,11 +61,10 @@ class Coverage(Zone):
         self._breached_area = 0
 
     def __str__(self):
-        return 'Coverage(name={}, area={:.2f})'.format(
-            self.name, self.area)
+        return f'Coverage(name={self.name}, area={self.area:.2f})'
 
     def __repr__(self):
-        return 'Coverage(name={})'.format(self.name)
+        return f'Coverage(name={self.name})'
 
     @property
     def momentum_capacity(self):

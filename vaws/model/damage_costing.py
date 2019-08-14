@@ -46,7 +46,7 @@ class Costing(object):
         if self._envelope_repair is None:
             assert self.envelope_factor_formula_type in COSTING_FORMULA_TYPES, msg
             self._envelope_repair = getattr(
-                self, 'type{}'.format(int(self.envelope_factor_formula_type)))
+                    self, f'type{self.envelope_factor_formula_type:.0f}')
         return self._envelope_repair
 
     @property
@@ -55,7 +55,7 @@ class Costing(object):
         if self._internal_repair is None:
             assert self.internal_factor_formula_type in COSTING_FORMULA_TYPES, msg
             self._internal_repair = getattr(
-                self, 'type{}'.format(int(self.internal_factor_formula_type)))
+                    self, f'type{self.internal_factor_formula_type:.0f}')
         return self._internal_repair
 
     def compute_cost(self, x):
@@ -135,7 +135,7 @@ class WaterIngressCosting(object):
         msg = 'Invalid formula type'
         if self._cost is None:
             assert self.formula_type in COSTING_FORMULA_TYPES, msg
-            self._cost = getattr(Costing, 'type{}'.format(int(self.formula_type)))
+            self._cost = getattr(Costing, f'type{self.formula_type}')
         return self._cost
 
     def compute_cost(self, x):

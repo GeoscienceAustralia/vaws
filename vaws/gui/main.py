@@ -332,7 +332,7 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
         self.ui.doubleSpinBox_load.valueChanged.connect(self.load_connection_change)
 
     def onSliderChanged(self, label, x):
-        label.setText('{:d}'.format(x))
+        label.setText(f'{x:d}')
 
     def updateDisplaySettings(self):
         if self.has_run:
@@ -380,7 +380,7 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
                 self.ui.debrisRegions.setItem(no_values*i + j, 0,
                                               QTableWidgetItem(k))
                 self.ui.debrisRegions.setItem(no_values*i + j, 1,
-                                              QTableWidgetItem('{:.3f}'.format(v)))
+                                              QTableWidgetItem(f'{v:.3f}'))
 
         finiTable(self.ui.debrisRegions)
 
@@ -396,12 +396,12 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
 
         for irow, head_col in enumerate(self.cfg.profile_heights):
             self.ui.boundaryProfile.setItem(
-                irow, 0, QTableWidgetItem('{:.3f}'.format(head_col)))
+                irow, 0, QTableWidgetItem(f'{head_col:.3f}'))
 
         for key, _list in self.cfg.wind_profiles.items():
             for irow, value in enumerate(_list):
                 self.ui.boundaryProfile.setItem(
-                    irow, key, QTableWidgetItem('{:.3f}'.format(value)))
+                    irow, key, QTableWidgetItem(f'{value:.3f}'))
 
         self.ui.boundaryProfile.resizeColumnsToContents()
 
@@ -412,17 +412,17 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
             self.ui.connectionsTypes.setItem(
                 irow, 0, QTableWidgetItem(index))
             self.ui.connectionsTypes.setItem(
-                irow, 1, QTableWidgetItem('{:.3f}'.format(ctype['strength_mean'])))
+                irow, 1, QTableWidgetItem(f"{ctype['strength_mean']:.3f}"))
             self.ui.connectionsTypes.setItem(
-                irow, 2, QTableWidgetItem('{:.3f}'.format(ctype['strength_std'])))
+                irow, 2, QTableWidgetItem(f"{ctype['strength_std']:.3f}"))
             self.ui.connectionsTypes.setItem(
-                irow, 3, QTableWidgetItem('{:.3f}'.format(ctype['dead_load_mean'])))
+                irow, 3, QTableWidgetItem(f"{ctype['dead_load_mean']:.3f}"))
             self.ui.connectionsTypes.setItem(
-                irow, 4, QTableWidgetItem('{:.3f}'.format(ctype['dead_load_std'])))
+                irow, 4, QTableWidgetItem(f"{ctype['dead_load_std']:.3f}"))
             self.ui.connectionsTypes.setItem(
                 irow, 5, QTableWidgetItem(ctype['group_name']))
             self.ui.connectionsTypes.setItem(
-                irow, 6, QTableWidgetItem('{:.3f}'.format(ctype['costing_area'])))
+                irow, 6, QTableWidgetItem(f"{ctype['costing_area']:.3f}"))
         finiTable(self.ui.connectionsTypes)
 
     def updateZonesTable(self):
@@ -432,7 +432,7 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
             self.ui.zones.setItem(
                 irow, 0, QTableWidgetItem(index))
             self.ui.zones.setItem(
-                irow, 1, QTableWidgetItem('{:.3f}'.format(z['area'])))
+                irow, 1, QTableWidgetItem(f"{z['area']:.3f}"))
             # self.ui.zones.setItem(
             #     irow, 2, QTableWidgetItem('{:.3f}'.format(z['cpi_alpha'])))
             # for _dir in range(8):
@@ -450,7 +450,7 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
         setupTable(self.ui.connGroups, self.cfg.groups)
         for irow, (index, ctg) in enumerate(self.cfg.groups.items()):
             self.ui.connGroups.setItem(irow, 0, QTableWidgetItem(index))
-            self.ui.connGroups.setItem(irow, 1, QTableWidgetItem('{:d}'.format(ctg['dist_order'])))
+            self.ui.connGroups.setItem(irow, 1, QTableWidgetItem(f"{ctg['dist_order']:d}"))
             self.ui.connGroups.setItem(irow, 2, QTableWidgetItem(ctg['dist_dir']))
             self.ui.connGroups.setItem(irow, 3, QTableWidgetItem(index))
 
@@ -474,11 +474,11 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
         for irow, (name, _inst) in enumerate(self.cfg.costings.items()):
             self.ui.damageScenarios.setItem(irow, 0, QTableWidgetItem(name))
             self.ui.damageScenarios.setItem(irow, 1, QTableWidgetItem(
-                '{:.3f}'.format(_inst.surface_area)))
+                f'{_inst.surface_area:.3f}'))
             self.ui.damageScenarios.setItem(irow, 2, QTableWidgetItem(
-                '{:.3f}'.format(_inst.envelope_repair_rate)))
+                f'{_inst.envelope_repair_rate:.3f}'))
             self.ui.damageScenarios.setItem(irow, 3, QTableWidgetItem(
-                '{:.3f}'.format(_inst.internal_repair_rate)))
+                f'{_inst.internal_repair_rate:.3f}'))
         finiTable(self.ui.damageScenarios)
 
     def updateConnectionTable(self):
@@ -574,7 +574,7 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
 
             if run_time is not None:
                 self.statusBar().showMessage(
-                    'Simulation complete in {:0.3f}'.format(run_time))
+                    f'Simulation complete in {run_time:0.3f}')
 
                 # self.results_dict = bucket
                 self.updateVulnCurve()
@@ -593,7 +593,7 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
             QMessageBox.warning(self, 'VAWS Program Warning', msg)
             self.statusBar().showMessage('')
         except Exception as err:
-            self.statusBar().showMessage('Fatal Error Occurred: {}'.format(err))
+            self.statusBar().showMessage(f'Fatal Error Occurred: {str}')
             raise
         finally:
             self.statusProgressBar.hide()
@@ -695,7 +695,7 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
                                v_min=v_min,
                                v_max=v_max)
         except ValueError:
-            self.logger.warning('Cannot plot {}'.format(pressure_key))
+            self.logger.warning(f'Cannot plot {pressure_key}')
 
     def cpi_plot_change(self):
         if self.has_run:
@@ -771,7 +771,7 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
         try:
             sub_list = sorted(self.cfg.influence_patches[failed_conn_name].keys())
         except KeyError:
-            self.logger.info('patch is not defined for conn {}'.format(failed_conn_name))
+            self.logger.info(f'patch is not defined for conn {failed_conn_name}')
             self.ui.comboBox_patch.clear()
         else:
             sub_list = [str(x) for x in sub_list]
@@ -822,8 +822,8 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
         except KeyError as mg:
             self.logger.warning(msg)
         else:
-            self.ui.wb_coeff_1.setText('{:.3f}'.format(param1))
-            self.ui.wb_coeff_2.setText('{:.3f}'.format(param2))
+            self.ui.wb_coeff_1.setText(f'{param1:.3f}')
+            self.ui.wb_coeff_2.setText(f'{param2:.3f}')
 
             if self.ui.wb_checkBox.isChecked():
                 y = vulnerability_weibull(self.cfg.wind_speeds, param1, param2)
@@ -836,8 +836,8 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
         except KeyError as msg:
             self.logger.warning(msg)
         else:
-            self.ui.ln_coeff_1.setText('{:.3f}'.format(param1))
-            self.ui.ln_coeff_2.setText('{:.3f}'.format(param2))
+            self.ui.ln_coeff_1.setText(f'{param1:.3f}')
+            self.ui.ln_coeff_2.setText(f'{param2:.3f}')
 
             if self.ui.ln_checkBox.isChecked():
                 y = vulnerability_lognorm(self.cfg.wind_speeds, param1, param2)
@@ -869,7 +869,7 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
 
                 ax.plot(self.cfg.wind_speeds,
                         df_counted[:, len(self.cfg.fragility_i_states) + i],
-                        '{}+'.format(value['color']))
+                        f"{value['color']}+")
 
                 try:
                     param1 = self.results_dict['fragility']['MLE'][ds]['param1']
@@ -879,7 +879,7 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
                         param1 = self.results_dict['fragility']['OLS'][ds]['param1']
                         param2 = self.results_dict['fragility']['OLS'][ds]['param2']
                     except KeyError:
-                        self.logger.warning('Value of {} can not be determined'.format(ds))
+                        self.logger.warning(f'Value of {ds} can not be determined')
                     else:
                         y = vulnerability_lognorm(self.cfg.wind_speeds, param1, param2)
 
@@ -931,7 +931,7 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
 
         if house_number:
             ax.plot(self.cfg.wind_speeds, _array[:, house_number-1],
-                                       c='r', marker='+', label='{:d}'.format(house_number))
+                                       c='r', marker='+', label=f'{house_number:d}')
 
         ax.set_title('Internal Pressure Coefficient')
         ax.set_xlabel('Wind speed (m/s)')
@@ -1088,8 +1088,8 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
             conn_id = item[0]
             failure_count = np.count_nonzero(connections_damaged[conn_id])
             failure_mean = np.mean(connections_damaged[conn_id])
-            self.ui.connections.setItem(irow, 4, QTableWidgetItem('{:.3}'.format(failure_mean)))
-            self.ui.connections.setItem(irow, 5, QTableWidgetItem('{}'.format(failure_count)))
+            self.ui.connections.setItem(irow, 4, QTableWidgetItem(f'{failure_mean:.3}'))
+            self.ui.connections.setItem(irow, 5, QTableWidgetItem(f'{failure_count}'))
 
     # def determine_capacities(self):
     #
@@ -1112,13 +1112,13 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
 
         for i in range(self.cfg.no_models):
             parent = QTreeWidgetItem(self.ui.zoneResults,
-                                     ['#{} {}'.format(i + 1, WIND_DIR[wind_dir[i]]), '', '', ''])
+                                     [f'#{i+1} {WIND_DIR[wind_dir[i]]}', '', '', ''])
             for zr_key in self.cfg.zones:
                 QTreeWidgetItem(parent, ['',
                                          zr_key,
-                                         '{:.3}'.format(self.results_dict['zone']['cpe'][zr_key][0, i]),
-                                         '{:.3}'.format(self.results_dict['zone']['cpe_str'][zr_key][0, i]),
-                                         '{:.3}'.format(self.results_dict['zone']['cpe_eave'][zr_key][0, i])])
+                                         f"{self.results_dict['zone']['cpe'][zr_key][0, i]:.3}",
+                                         f"{self.results_dict['zone']['cpe_str'][zr_key][0, i]:.3}",
+                                         f"{self.results_dict['zone']['cpe_eave'][zr_key][0, i]:.3}"])
 
         self.ui.zoneResults.resizeColumnToContents(0)
         self.ui.zoneResults.resizeColumnToContents(1)
@@ -1132,7 +1132,7 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
         self.ui.connectionResults.clear()
         for i in range(self.cfg.no_models):
             parent = QTreeWidgetItem(self.ui.connectionResults,
-                                     ['#{} {}'.format(i + 1, WIND_DIR[wind_dir[i]]), '', '', ''])
+                                     [f'#{i+1} {WIND_DIR[wind_dir[i]]}', '', '', ''])
 
             for _id, value in self.cfg.connections.iterrows():
 
@@ -1143,15 +1143,15 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
 
                 load_last = self.results_dict['connection']['load'][_id][-1, i]
                 if load_last:
-                    load_desc = '{:.3}'.format(load_last)
+                    load_desc = f'{load_last:.3}'
                 else:
                     load_desc = 'collapse'
 
-                conn_parent = QTreeWidgetItem(parent, ['{}_{}'.format(value['type_name'], _id),
+                conn_parent = QTreeWidgetItem(parent, [f"{value['type_name']}_{_id}",
                                                        '{:.3}'.format(capacity if capacity > 0 else 'NA'),
-                                                       '{:.3}'.format(strength),
-                                                       '{:.3}'.format(dead_load),
-                                                       '{}'.format(load_desc)])
+                                                       f'{strength:.3}',
+                                                       f'{dead_load:.3}',
+                                                       f'{load_desc}'])
 
                 # TODO for infl_dict in damage_report.get('infls', {}):
                 #     QTreeWidgetItem(conn_parent, ['%.3f(%s) = %.3f(i) * %.3f(area) * %.3f(pz)' % (infl_dict['load'],
@@ -1188,13 +1188,13 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
             self.file_load(config_file)
             settings.setValue("ScenarioFolder", QVariant(os.path.dirname(config_file)))
         else:
-            msg = 'Unable to load scenario: {}\nFile not found.'.format(config_file)
+            msg = f'Unable to load scenario: {config_file}\nFile not found.'
             QMessageBox.warning(self, "VAWS Program Warning", msg)
 
     def save_scenario(self):
         self.update_config_from_ui()
         self.cfg.save_config()
-        self.ui.statusbar.showMessage('Saved to file {}'.format(self.cfg.file_cfg))
+        self.ui.statusbar.showMessage(f'Saved to file {self.cfg.file_cfg}')
         # self.update_ui_from_config()
 
     def save_as_scenario(self):
@@ -1262,7 +1262,7 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
             self.statusBar().showMessage('Updating', 1000)
 
             # Scenario
-            self.ui.numHouses.setText('{:d}'.format(self.cfg.no_models))
+            self.ui.numHouses.setText(f'{self.cfg.no_models:d}')
             self.ui.houseName.setText(self.cfg.model_name)
             self.ui.seedRandom.setText(str(self.cfg.random_seed))
 
@@ -1272,11 +1272,10 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
             else:
                 self.ui.terrainCategory.setCurrentIndex(idx)
 
-            self.ui.regionalShielding.setText('{:.1f}'.format(
-                self.cfg.regional_shielding_factor))
+            self.ui.regionalShielding.setText(f'{self.cfg.regional_shielding_factor:.1f}')
             self.ui.windMin.setValue(self.cfg.wind_speed_min)
             self.ui.windMax.setValue(self.cfg.wind_speed_max)
-            self.ui.windIncrement.setText('{:.3f}'.format(self.cfg.wind_speed_increment))
+            self.ui.windIncrement.setText(f'{self.cfg.wind_speed_increment:.3f}')
             self.ui.windDirection.setCurrentIndex(self.cfg.wind_dir_index)
 
             # Debris
@@ -1288,12 +1287,12 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
 
             self.ui.buildingSpacing.setCurrentIndex(
                 self.ui.buildingSpacing.findText(
-                    '{:.1f}'.format(self.cfg.building_spacing)))
+                    f'{self.cfg.building_spacing:.1f}'))
             self.ui.debrisRadius.setValue(self.cfg.debris_radius)
             self.ui.debrisAngle.setValue(self.cfg.debris_angle)
             self.ui.sourceItems.setValue(self.cfg.source_items)
             self.ui.debrisBoundary.setText(
-                '{:.3f}'.format(self.cfg.boundary_radius))
+                f'{self.cfg.boundary_radius:.3f}')
             self.ui.staggeredDebrisSources.setChecked(self.cfg.staggered_sources)
             self.ui.debris.setChecked(self.cfg.flags['debris'])
 
@@ -1306,9 +1305,9 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
                     self.ui.comboBox_debrisVul.setCurrentIndex(idx)
 
                 self.ui.debrisVul_param1.setText(
-                    '{}'.format(self.cfg.debris_vuln_input['param1']))
+                    f"{self.cfg.debris_vuln_input['param1']}")
                 self.ui.debrisVul_param2.setText(
-                    '{}'.format(self.cfg.debris_vuln_input['param2']))
+                    f"{self.cfg.debris_vuln_input['param2']}")
 
             # construction levels
             # self.ui.constructionEnabled.setChecked(self.cfg.flags['construction_levels'])
@@ -1348,7 +1347,7 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
 
             if self.cfg.file_cfg:
                 self.statusBarScenarioLabel.setText(
-                    'Scenario: {}'.format(os.path.basename(self.cfg.file_cfg)))
+                   f'Scenario: {os.path.basename(self.cfg.file_cfg)}')
         else:
             self.statusBarScenarioLabel.setText('Scenario: None')
 
@@ -1517,8 +1516,7 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
             by_label = OrderedDict(zip(labels, handles))
             ax.legend(by_label.values(), by_label.keys(), loc=2, scatterpoints=1)
 
-            title_str = 'Debris samples at {0:.3f} m/s in region of {1}'.format(
-                wind_speed, self.cfg.region_name)
+            title_str = f'Debris samples at {wind_speed:.3f} m/s in region of {self.cfg.region_name}'
             ax.set_title(title_str)
 
             ax.axes.set_xlim(-0.5*self.cfg.debris_radius, self.cfg.debris_radius)

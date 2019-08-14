@@ -313,7 +313,7 @@ class TestHouseCoverage(unittest.TestCase):
             except AssertionError:
                 print([house.coverages.loc[k, 'coverage'].breached_area
                        for k in range(1, 9)])
-                print('cpi should be {}, but {}'.format(expected_cpi[key], house.cpi))
+                print(f'cpi should be {expected_cpi[key]}, but {house.cpi}')
 
             del house._cpi
 
@@ -363,7 +363,7 @@ class TestHouseCoverage(unittest.TestCase):
             except AssertionError:
                 print([house.coverages.loc[k, 'coverage'].breached_area
                        for k in range(1, 9)])
-                print('cpi should be {}, but {}'.format(item[-1], house.cpi))
+                print(f'cpi should be {item[-1]}, but {house.cpi}')
 
             del house._cpi
 
@@ -568,7 +568,7 @@ dmg_ratio_sheeting,dmg_ratio_batten,dmg_ratio_rafter,loss_ratio
 
             for group_name, group in self.house.groups.items():
 
-                damaged_area = item['dmg_ratio_{}'.format(group.name)] * group.costing_area
+                damaged_area = item[f'dmg_ratio_{group.name}'] * group.costing_area
                 group.connections[self.sel_conn[group_name]].costing_area = damaged_area
 
             self.house.compute_damage_index(20.0)
@@ -784,7 +784,7 @@ dmg_ratio_debris,dmg_ratio_wallcladding,dmg_ratio_wallcollapse,loss_ratio
             for group_name, group in self.house.groups.items():
 
                 if group.name in ['wallcladding', 'wallcollapse']:
-                    damaged_area = item['dmg_ratio_{}'.format(group.name)] * group.costing_area
+                    damaged_area = item[f'dmg_ratio_{group.name}'] * group.costing_area
                     group.connections[self.sel_conn[group_name]].costing_area = damaged_area
 
             self.house.compute_damage_index(20.0)
@@ -793,7 +793,7 @@ dmg_ratio_debris,dmg_ratio_wallcladding,dmg_ratio_wallcollapse,loss_ratio
                 self.assertAlmostEqual(self.house.di,
                                        min(item['loss_ratio'], 1.0), places=4)
             except AssertionError:
-                print('{} vs {}'.format(self.house.di, item))
+                print(f'{self.house.di} vs {item}')
 
 
 if __name__ == '__main__':

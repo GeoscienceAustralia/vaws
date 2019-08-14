@@ -55,11 +55,10 @@ class Zone(object):
         self._differential_shielding = None
 
     def __str__(self):
-        return 'Zone(name={}, area={:.2f}, cpi_alpha={:.2f})'.format(
-            self.name, self.area, self.cpi_alpha)
+        return f'Zone(name={self.name}, area={self.area:.2f}, cpi_alpha={self.cpi_alpha:.2f})'
 
     def __repr__(self):
-        return 'Zone(name={})'.format(self.name)
+        return f'Zone(name={self.name})'
 
     @property
     def cpe(self):

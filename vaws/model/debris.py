@@ -229,9 +229,8 @@ class Debris(object):
         try:
             assert 0.0 <= mean <= 1.0
         except AssertionError:
-            self.logger.warning('invalid mean of beta dist.: {} with b: {},'
-                            'flight_distance: {}'.format(mean, param_b,
-                                                         self.flight_distance))
+            self.logger.warning(f'invalid mean of beta dist.: {mean} with b: {param_b}),'
+                                f'flight_distance: {self.flight_distance}')
 
         try:
             dispersion = max(1.0 / mean, 1.0 / (1.0 - mean)) + 3.0

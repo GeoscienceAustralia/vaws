@@ -143,8 +143,7 @@ class MyTestCase(unittest.TestCase):
             try:
                 self.assertEqual(_conn.damaged, ref_dic[id_conn])
             except AssertionError:
-                print('{}: {} vs {}'.format(_conn.name, _conn.damaged,
-                                            ref_dic[id_conn]))
+                print(f'{_conn.name}: {_conn.damaged} vs {ref_dic[id_conn]}')
 
         # ref_prop = {'sheetinggable': 0.25, 'sheetingeave': 0.0,
         #            'sheetingcorner': 0.0, 'sheeting': 0.25}
@@ -174,8 +173,7 @@ class MyTestCaseConnectionGroup(unittest.TestCase):
                 try:
                     self.assertEqual(code_value, value1)
                 except AssertionError:
-                    print('infl for {}:{} should be {} not {}'.format(
-                        key0, key1, value1, code_value))
+                    print(f'infl for {key0}:{key1} should be {value1} not {code_value}')
 
     def test_update_influence_by_patch1(self):
 

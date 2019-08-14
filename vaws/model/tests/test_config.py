@@ -320,16 +320,16 @@ rafter,3,patch,Loss of roof structure,0,0,3
         for key, value in self.cfg.debris_types.items():
 
             self.assertEqual(value['cdav'], self.cfg.debris_types[key]['cdav'])
-            self.assertEqual(value['ratio'], _dic['{}_ratio'.format(key)])
+            self.assertEqual(value['ratio'], _dic[f'{key}_ratio'])
 
             for item in ['frontal_area', 'mass']:
-                _mean = _dic['{}_{}_mean'.format(key, item)]
-                _sd = _dic['{}_{}_stddev'.format(key, item)]
+                _mean = _dic[f'{key}_{item}_mean']
+                _sd = _dic[f'{key}_{item}_stddev']
 
                 _mu, _std = compute_logarithmic_mean_stddev(_mean, _sd)
 
-                self.assertAlmostEqual(_mu, value['{}_mu'.format(item)])
-                self.assertAlmostEqual(_std, value['{}_std'.format(item)])
+                self.assertAlmostEqual(_mu, value[f'{item}_mu'])
+                self.assertAlmostEqual(_std, value[f'{item}_std'])
 
     # def test_get_construction_level(self):
     #
@@ -864,8 +864,8 @@ WI only,0,0,dummy,0,0,1
 
         for item in ['cpe_mean', 'cpe_str_mean', 'cpe_eave_mean', 'edge']:
             file_org = os.path.join(
-                self.path_cfg, 'input', 'house', 'zones_{}.csv'.format(item))
-            setattr(self.cfg, 'file_zones_{}'.format(item), file_org)
+                self.path_cfg, 'input', 'house', f'zones_{item}.csv')
+            setattr(self.cfg, f'file_zones_{item}', file_org)
 
         try:
             _file = tempfile.NamedTemporaryFile(mode='w+t', delete=False)
@@ -893,8 +893,8 @@ WI only,0,0,dummy,0,0,1
 
         for item in ['cpe_mean', 'cpe_str_mean', 'cpe_eave_mean', 'edge']:
             file_org = os.path.join(
-                self.path_cfg, 'input', 'house', 'zones_{}.csv'.format(item))
-            setattr(self.cfg, 'file_zones_{}'.format(item), file_org)
+                self.path_cfg, 'input', 'house', f'zones_{item}.csv')
+            setattr(self.cfg, f'file_zones_{item}', file_org)
 
         try:
             _file = tempfile.NamedTemporaryFile(mode='w+t', delete=False)
@@ -922,8 +922,8 @@ WI only,0,0,dummy,0,0,1
 
         for item in ['cpe_mean', 'cpe_str_mean', 'cpe_eave_mean', 'edge']:
             file_org = os.path.join(
-                self.path_cfg, 'input', 'house', 'zones_{}.csv'.format(item))
-            setattr(self.cfg, 'file_zones_{}'.format(item), file_org)
+                self.path_cfg, 'input', 'house', f'zones_{item}.csv')
+            setattr(self.cfg, f'file_zones_{item}', file_org)
 
         try:
             _file = tempfile.NamedTemporaryFile(mode='w+t', delete=False)
@@ -951,8 +951,8 @@ WI only,0,0,dummy,0,0,1
 
         for item in ['cpe_mean', 'cpe_str_mean', 'cpe_eave_mean', 'edge']:
             file_org = os.path.join(
-                self.path_cfg, 'input', 'house', 'zones_{}.csv'.format(item))
-            setattr(self.cfg, 'file_zones_{}'.format(item), file_org)
+                self.path_cfg, 'input', 'house', f'zones_{item}.csv')
+            setattr(self.cfg, f'file_zones_{item}', file_org)
 
         try:
             _file = tempfile.NamedTemporaryFile(mode='w+t', delete=False)
