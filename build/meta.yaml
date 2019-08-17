@@ -22,19 +22,19 @@ requirements:
 
   run:
     - python
-    - blas >=1.0 # [win]
+    - blas =1.0 # [win]
     - ca-certificates >=2019.3.* # [osx]
-    - ca-certificates >=2019.6.* # [win]
+    - ca-certificates =2019.6 # [win]
     - certifi >=2019.3.*
     - cycler >=0.10.*
     - freetype >=2.10.*
     - geos >=3.7.*
     - h5py >=2.8.*
     - hdf5 >=1.10.*
-    - icc_rt >=2019.0.* # [win]
-    - icu >=58.1 # [win]
+    - icc_rt =2019.0 # [win]
+    - icu =58.1 # [win]
     - icu >=58.2 # [osx]
-    - intel-openmp >=2019.* # [win]
+    - intel-openmp =2019.4 # [win]
     - jpeg >=9c
     - kiwisolver >=1.1.*
     - libblas >=3.8.*
@@ -47,7 +47,7 @@ requirements:
     - libpng >=1.6.* 
     - matplotlib >=3.0.*
     - matplotlib-base >=3.0.*
-    - mkl >=2019.4 # [win]
+    - mkl =2019.4 # [win]
     - ncurses >=6.1.* # [osx]
     - numpy >=1.16.*
     - openblas >=0.3.* # [osx]
@@ -56,13 +56,13 @@ requirements:
     - pip >=19.1.*
     - pyparsing >=2.4.*
     - pyqt >=5.6.* # [osx]
-    - pyqt >=5.9.* # [win]
-    - pyreadline >=2.1 # [win]
+    - pyqt =5.9 # [win]
+    - pyreadline =2.1 # [win]
     - python >=3.6.7
     - python-dateutil >=2.8.*
     - pytz >=2019.1
     - qt >=5.6.* # [osx]
-    - qt >=5.9.* # [win]
+    - qt =5.9 # [win]
     - readline >=7.0.* # [osx]
     - scipy >=1.2.*
     - setuptools >=41.0.*
@@ -72,10 +72,10 @@ requirements:
     - sqlite >=3.28.*
     - tk >=8.6.* # [osx]
     - tornado >=6.0.*
-    - vc >=14.* # [win]
-    - vs2015_runtime >=14.15.* # [win]
+    - vc =14.1 # [win]
+    - vs2015_runtime =14.15 # [win]
     - wheel >=0.33.*
-    - wincertstore >=0.2 # [win]
+    - wincertstore =0.2 # [win]
     - xz >=5.2.* # [osx]
     - zlib >=1.2.*
 

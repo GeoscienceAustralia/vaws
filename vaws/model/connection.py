@@ -12,7 +12,6 @@ from vaws.model.zone import Zone
 from vaws.model.stats import (compute_arithmetic_mean_stddev, sample_lognormal,
                               sample_lognorm_given_mean_stddev)
 
-
 def compute_load_by_zone(flag_pressure, dic_influences):
     """
 
@@ -20,9 +19,6 @@ def compute_load_by_zone(flag_pressure, dic_influences):
     :param dic_influences:
     :return:
     """
-
-    # msg1 = 'load by {name}: {coeff:.2f} * {area:.3f} * {pressure:.3f}'
-    # msg2 = 'load by {name}: {coeff:.2f} * {load:.3f}'
 
     logger = logging.getLogger(__name__)
 
@@ -33,18 +29,15 @@ def compute_load_by_zone(flag_pressure, dic_influences):
             pressure = getattr(inf.source, f'pressure_{flag_pressure}')
             load += inf.coeff * inf.source.area * pressure
 
-            # logger.debug(msg1.format(name=inf.source.name,
-            #                           coeff=inf.coeff,
-            #                           area=inf.source.area,
-            #                           pressure=pressure))
+            logger.debug(f'load by {inf.source.name}: '
+                         f'{inf.coeff:.2f} * {inf.source.area:.3f} * {pressure:.3f}')
 
         else:
             load_by_zone = compute_load_by_zone(flag_pressure, inf.source.influences)
             load += inf.coeff * load_by_zone
 
-            # logger.debug(msg2.format(name=inf.source.name,
-            #                           coeff=inf.coeff,
-            #                           load=load_by_zone))
+            logger.debug(f'load by {inf.source.name}: '
+                         f'{inf.coeff:.2f} * {load_by_zone:.3f}')
 
     return load
 
@@ -125,8 +118,6 @@ class Connection(object):
         """
         if self._strength is None:
             mu, std = compute_arithmetic_mean_stddev(*self.lognormal_strength)
-            # mu *= self.mean_factor
-            # std *= self.cv_factor * self.mean_factor
             self._strength = sample_lognorm_given_mean_stddev(
                 mu, std, self.rnd_state)
         return self._strength
@@ -150,30 +141,23 @@ class Connection(object):
         Returns:
 
         """
-        msg1 = 'load at conn {name}: {load:.3f} + {dead:.3f}'
-        msg3 = 'connection {name} of {group} damaged at {speed:.3f} ' \
-               'b/c {strength:.3f} < {load:.3f}'
-
         self.load = 0.0
 
         if not self.damaged:
 
             self.load = compute_load_by_zone(self.flag_pressure, self.influences)
 
-            self.logger.debug(msg1.format(name=self.name,
-                                          load=self.load,
-                                          dead=self.dead_load))
+            self.logger.debug(f'load at conn {self.name}: '
+                              f'{self.load:.3f} + {self.dead_load:.3f}')
 
             self.load += self.dead_load
 
             # if load is negative, check failure
             if self.load < -1.0 * self.strength:
 
-                self.logger.debug(msg3.format(name=self.name,
-                                         group=self.sub_group,
-                                         speed=wind_speed,
-                                         strength=self.strength,
-                                         load=self.load))
+                self.logger.debug(f'connection {self.name} of {self.sub_group}'
+                                  f'damaged at {wind_speed:.3f}'
+                                  f'as {self.strength:.3f} < {self.load:.3f}')
 
                 self.damaged = 1
                 self.capacity = wind_speed
@@ -345,7 +329,7 @@ class ConnectionTypeGroup(object):
 
     def update_influence(self, house_inst):
         """
-        
+
         Args:
             house_inst: instance of House class
 
@@ -358,8 +342,6 @@ class ConnectionTypeGroup(object):
             dist_dir == 'row': coeff will be distributed over the same number
             row: chr, col: number
         """
-
-        msg = 'Influence of conn {id1} updated: conn {id2} with {coeff:.2f}'
 
         if self.dist_dir == 'patch':
 
@@ -419,9 +401,8 @@ class ConnectionTypeGroup(object):
                     else:
                         target_connection.update_influence(source_connection,
                                                            influence_coeff)
-                        self.logger.debug(msg.format(id1=target_connection.name,
-                                                 id2=source_connection.name,
-                                                 coeff=influence_coeff))
+                        self.logger.debug(f'Influence of conn {target_connection.name} updated:'
+                                          f'conn {source_connection.name} with {influence_coeff:.2f}')
 
                 # empty the influence of source connection
                 source_connection.influences.clear()
@@ -433,7 +414,7 @@ class ConnectionTypeGroup(object):
     @staticmethod
     def update_influence_by_patch(damaged_connection, house_inst):
         """
-        
+
         Args:
             damaged_connection: damaged_connection
             house_inst: instance of House class
@@ -441,23 +422,21 @@ class ConnectionTypeGroup(object):
         Returns:
 
         """
-        msg1 = 'target conn {target} is not found when {damaged} is damaged'
-        msg2 = 'Influence of conn {target} is updated by conn {damaged}'
 
         for name, dic in damaged_connection.influence_patch.items():
 
             try:
                 target_connection = house_inst.connections[name]
             except KeyError:
-                house_inst.logger.error(msg1.format(target=name,
-                                        damaged=damaged_connection.name))
+                house_inst.logger.error(f'target conn {name} is not found when '
+                                        f'{damaged_connection.name} is damaged')
             else:
                 if target_connection.damaged == 0 or (target_connection.damaged == 1
                                                       and damaged_connection.name == name):
                     target_connection.influences = dic
                     house_inst.link_connection_to_influence(target_connection)
-                    house_inst.logger.debug(msg2.format(target=name,
-                                            damaged=damaged_connection.name))
+                    house_inst.logger.debug(f'Influence of conn {name} is'
+                                            f'updatd by conn {damaged_connection.name}')
 
 
 class Influence(object):

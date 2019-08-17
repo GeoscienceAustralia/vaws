@@ -267,3 +267,17 @@ def vulnerability_lognorm(x, med, std):
     """
 
     return lognorm.cdf(x, std, loc=0, scale=med)
+
+def vulnerability_lognorm_pdf(x, med, std):
+    """Return PDF of vulnerability curve in Lognormal
+
+    Args:
+        x: 3sec gust wind speed at 10m height
+        med: exp(mean of log x)
+        std: standard deviation of log x
+
+    Returns: lognorm.pdf(x, std, loc=0, scale=med)
+
+    """
+
+    return lognorm.pdf(x, std, loc=0, scale=med)

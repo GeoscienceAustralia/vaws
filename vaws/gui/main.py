@@ -44,6 +44,7 @@ VAWS_DIR = os.sep.join(SOURCE_DIR.split(os.sep)[:-2])
 SCENARIOS_DIR = os.sep.join(SOURCE_DIR.split(os.sep)[:-1])
 SCENARIOS_DIR = os.path.join(SCENARIOS_DIR, 'scenarios')
 CONFIG_TEMPL = "Scenarios (*.cfg)"
+VUL_OUTPUT_TEMPL = "Output file (*.csv)"
 DEFAULT_SCENARIO = os.path.join(SCENARIOS_DIR, 'default', 'default.cfg')
 
 PRESSURE_KEYS = ['cpe_mean', 'cpe_str_mean', 'cpe_eave_mean', 'cpi_alpha',
@@ -133,6 +134,7 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
                      lambda x: self.onSliderChanged(self.ui.debrisAngleLabel, x))
         self.ui.sourceItems.valueChanged.connect(
                      lambda x: self.onSliderChanged(self.ui.sourceItemsLabel, x))
+        self.ui.vuln_pushButton.clicked.connect(self.save_vuln_file)
 
         # options
         self.ui.redV.valueChanged.connect(
@@ -309,7 +311,7 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
     #         if unicode(self.ui.connections.item(irow, 0).text()) == connection_name:
     #             self.ui.connections.setCurrentCell(irow, 0)
     #             break
-        
+
     # def onSelectZone(self, zoneLoc):
     #     for irow in range(len(self.cfg.house.zones)):
     #         if unicode(self.ui.zones.item(irow, 0).text()) == zoneLoc:
@@ -695,7 +697,8 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
                                v_min=v_min,
                                v_max=v_max)
         except ValueError:
-            self.logger.warning(f'Cannot plot {pressure_key}')
+                msg = f'Cannot plot {pressure_key}'
+                QMessageBox.warning(self, "VAWS Program Warning", msg)
 
     def cpi_plot_change(self):
         if self.has_run:
@@ -807,46 +810,50 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
         plot_wind_event_show(ax, self.cfg.no_models,
                              self.cfg.wind_speeds[0], self.cfg.wind_speeds[-1])
 
-        _array = self.results_dict['house']['di']
-
-        mean_cols = _array.T.mean(axis=0)
-        plot_wind_event_mean(ax, self.cfg.wind_speeds, mean_cols)
-
-        # plot the individuals
-        for col in _array.T:
-            plot_wind_event_damage(ax, self.cfg.wind_speeds, col)
-
         try:
-            param1 = self.results_dict['vulnerability']['weibull']['param1']
-            param2 = self.results_dict['vulnerability']['weibull']['param2']
-        except KeyError as mg:
-            self.logger.warning(msg)
+            _array = self.results_dict['house']['di']
+        except TypeError:
+            msg = 'Simulation results unavailable'
+            QMessageBox.warning(self, "VAWS Program Warning", msg)
         else:
-            self.ui.wb_coeff_1.setText(f'{param1:.3f}')
-            self.ui.wb_coeff_2.setText(f'{param2:.3f}')
+            mean_cols = _array.T.mean(axis=0)
+            plot_wind_event_mean(ax, self.cfg.wind_speeds, mean_cols)
 
-            if self.ui.wb_checkBox.isChecked():
-                y = vulnerability_weibull(self.cfg.wind_speeds, param1, param2)
-                plot_fitted_curve(ax, self.cfg.wind_speeds, y, col='r',
-                                  label="Weibull")
+            # plot the individuals
+            for col in _array.T:
+                plot_wind_event_damage(ax, self.cfg.wind_speeds, col)
 
-        try:
-            param1 = self.results_dict['vulnerability']['lognorm']['param1']
-            param2 = self.results_dict['vulnerability']['lognorm']['param2']
-        except KeyError as msg:
-            self.logger.warning(msg)
-        else:
-            self.ui.ln_coeff_1.setText(f'{param1:.3f}')
-            self.ui.ln_coeff_2.setText(f'{param2:.3f}')
+            try:
+                param1 = self.results_dict['vulnerability']['weibull']['param1']
+                param2 = self.results_dict['vulnerability']['weibull']['param2']
+            except KeyError as msg:
+                self.logger.warning(msg)
+            else:
+                self.ui.wb_coeff_1.setText(f'{param1:.3f}')
+                self.ui.wb_coeff_2.setText(f'{param2:.3f}')
 
-            if self.ui.ln_checkBox.isChecked():
-                y = vulnerability_lognorm(self.cfg.wind_speeds, param1, param2)
-                plot_fitted_curve(ax, self.cfg.wind_speeds, y, col='b',
-                                      label="Lognormal")
+                if self.ui.wb_checkBox.isChecked():
+                    y = vulnerability_weibull(self.cfg.wind_speeds, param1, param2)
+                    plot_fitted_curve(ax, self.cfg.wind_speeds, y, col='r',
+                                      label="Weibull")
 
-        ax.legend(loc=2, fancybox=True, shadow=True, fontsize='small')
+            try:
+                param1 = self.results_dict['vulnerability']['lognorm']['param1']
+                param2 = self.results_dict['vulnerability']['lognorm']['param2']
+            except KeyError as msg:
+                self.logger.warning(msg)
+            else:
+                self.ui.ln_coeff_1.setText(f'{param1:.3f}')
+                self.ui.ln_coeff_2.setText(f'{param2:.3f}')
 
-        self.ui.mplvuln.axes.figure.canvas.draw()
+                if self.ui.ln_checkBox.isChecked():
+                    y = vulnerability_lognorm(self.cfg.wind_speeds, param1, param2)
+                    plot_fitted_curve(ax, self.cfg.wind_speeds, y, col='b',
+                                          label="Lognormal")
+
+            ax.legend(loc=2, fancybox=True, shadow=True, fontsize='small')
+
+            self.ui.mplvuln.axes.figure.canvas.draw()
 
 
     def updateFragCurve(self):
@@ -1197,6 +1204,25 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
         self.ui.statusbar.showMessage(f'Saved to file {self.cfg.file_cfg}')
         # self.update_ui_from_config()
 
+    def save_vuln_file(self):
+
+        fname, _ = QFileDialog.getSaveFileName(self, "VAWS - Save mean vul curve",
+                                               self.cfg.path_output, VUL_OUTPUT_TEMPL)
+        if len(fname) > 0:
+            if "." not in fname:
+                fname += ".csv"
+            try:
+                _array = (self.results_dict['house']['di']).T.mean(axis=0)
+            except TypeError:
+                msg = 'Simultation results unavailable'
+                QMessageBox.warning(self, "VAWS Program Warning", msg)
+            else:
+                combined = np.array([self.cfg.wind_speeds, _array]).T
+                np.savetxt(fname, combined, delimiter=',', header='wind_speed,mean_di')
+        else:
+            msg = 'No file name entered. Action cancelled'
+            QMessageBox.warning(self, "VAWS Program Warning", msg)
+
     def save_as_scenario(self):
         # TODO: check
         self.update_config_from_ui()
@@ -1296,6 +1322,7 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
             self.ui.staggeredDebrisSources.setChecked(self.cfg.staggered_sources)
             self.ui.debris.setChecked(self.cfg.flags['debris'])
 
+            self.ui.checkBox_debrisVul.setChecked(self.cfg.flags['debris_vulnerability'])
             if self.cfg.flags['debris_vulnerability']:
                 idx = self.ui.comboBox_debrisVul.findText(
                     self.cfg.debris_vuln_input['function'].capitalize())
@@ -1327,14 +1354,14 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
                 ', '.join([str(x) for x in self.cfg.water_ingress_i_speed_at_zero_wi]))
             self.ui.waterSpeed1.setText(
                 ', '.join([str(x) for x in self.cfg.water_ingress_i_speed_at_full_wi]))
-            self.ui.waterEnabled.setChecked(self.cfg.flags.get('water_ingress'))
+            self.ui.waterEnabled.setChecked(self.cfg.flags['water_ingress'])
 
             # options
             self.ui.fragilityStates.setText(
                 ', '.join(self.cfg.fragility_i_states))
             self.ui.fragilityThresholds.setText(
                 ', '.join([str(x) for x in self.cfg.fragility_i_thresholds]))
-            self.ui.diffShielding.setChecked(self.cfg.flags.get('differential_shielding'))
+            self.ui.diffShielding.setChecked(self.cfg.flags['differential_shielding'])
 
             self.ui.redV.setValue(self.cfg.heatmap_vmin)
             self.ui.blueV.setValue(self.cfg.heatmap_vmax)
@@ -1380,14 +1407,14 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
             new_cfg.boundary_radius = float(self.ui.debrisBoundary.text())
         new_cfg.staggered_sources = self.ui.staggeredDebrisSources.isChecked()
 
-        if self.ui.comboBox_debrisVul.currentText() == 'N/A':
-            new_cfg.flags['debris_vulnerability'] = False
-            new_cfg.debris_vuln_input = {}
-        else:
+        if self.ui.checkBox_debrisVul.isChecked():
             new_cfg.flags['debris_vulnerability'] = True
             new_cfg.debris_vuln_input['function'] = self.ui.comboBox_debrisVul.currentText()
             new_cfg.debris_vuln_input['param1'] = float(self.ui.debrisVul_param1.text())
             new_cfg.debris_vuln_input['param2'] = float(self.ui.debrisVul_param2.text())
+        else:
+            new_cfg.flags['debris_vulnerability'] = False
+            new_cfg.debris_vuln_input = {}
 
         new_cfg.flags['water_ingress'] = self.ui.waterEnabled.isChecked()
         new_cfg.flags['differential_shielding'] = self.ui.diffShielding.isChecked()
@@ -1472,13 +1499,20 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
         wind_speed, ok = QInputDialog.getInt(
             self, "Debris Test", "Wind speed (m/s):", 50, 10, 200)
 
+        vuln_input = {'param1': float(self.ui.debrisVul_param1.text()),
+                      'param2': float(self.ui.debrisVul_param2.text())}
+
         if ok:
 
             rnd_state = np.random.RandomState(1)
             incr_speed = self.cfg.wind_speeds[1] - self.cfg.wind_speeds[0]
 
-            damage_incr = vulnerability_weibull_pdf(
-                x=wind_speed, **VUL_DIC[self.cfg.region_name]) * incr_speed
+            if self.ui.comboBox_debrisVul.currentText() == 'Weibull':
+                damage_incr = vulnerability_weibull_pdf(
+                    x=wind_speed, alpha=vuln_input['param1'], beta=vuln_input['param2']) * incr_speed
+            else:
+                damage_incr = vulnerability_lognorm_pdf(
+                    x=wind_speed, med=vuln_input['param1'], std=vuln_input['param2']) * incr_speed
 
             mean_no_debris_items = np.rint(self.cfg.source_items * damage_incr)
 
@@ -1499,10 +1533,9 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
             # ax.scatter(0, 0, label='target', color='r')
 
             # add footprint
-            # _array = np.array(house.debris.footprint.exterior.xy).T
-            #
-            # ax.add_patch(patches.Polygon(_array, alpha=0.5))
-            # ax.add_patch(patches.Polygon(self.cfg.impact_boundary.exterior, alpha=0.5))
+            #_array = np.array(house.debris.footprint.exterior.xy).T
+            #ax.add_patch(patches.Polygon(_array, alpha=0.5))
+            #ax.add_patch(patches.Polygon(self.cfg.impact_boundary.exterior, alpha=0.5))
 
             for item in debris_items:
                 _x, _y = item.trajectory.xy[0][1], item.trajectory.xy[1][1]
