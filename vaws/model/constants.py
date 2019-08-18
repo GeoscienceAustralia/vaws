@@ -16,6 +16,8 @@ DEBRIS_TYPES_KEYS = ['Rod', 'Compact', 'Sheet']
 # debris attributes
 DEBRIS_TYPES_ATTS = ['mass', 'frontal_area', 'cdav', 'ratio', 'flight_time']
 
+DEBRIS_TYPES_CLRS = {'Rod': 'r', 'Compact': 'c', 'Sheet': 'g'}
+
 BLDG_SPACING = [20.0, 40.0]  # building spacing for debris impact model
 
 FLAGS_PRESSURE = ['cpe_str', 'cpe']
@@ -56,3 +58,4 @@ DEBRIS_VULNERABILITY = ['Weibull', 'Lognorm']
 
 VUL_DIC = {'Capital_city': {'alpha': 0.1586, 'beta': 3.8909},
            'Tropical_town': {'alpha': 0.1030, 'beta': 4.1825}}
+

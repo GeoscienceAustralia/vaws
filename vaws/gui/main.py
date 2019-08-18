@@ -18,7 +18,7 @@ from PyQt5.QtWidgets import QProgressBar, QLabel, QMainWindow, QApplication, QTa
                         QTableWidgetItem, QFileDialog, \
                         QMessageBox, QTreeWidgetItem, QInputDialog, QSplashScreen
 
-from vaws.model.constants import WIND_DIR, DEBRIS_TYPES_KEYS, VUL_DIC, BLDG_SPACING, DEBRIS_VULNERABILITY
+from vaws.model.constants import WIND_DIR, DEBRIS_TYPES_KEYS, VUL_DIC, BLDG_SPACING, DEBRIS_VULNERABILITY, DEBRIS_TYPES_CLRS
 from vaws.model.debris import generate_debris_items
 from vaws.gui.house import HouseViewer
 from vaws.model.curve import vulnerability_lognorm, vulnerability_weibull, vulnerability_weibull_pdf
@@ -339,6 +339,10 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
     def updateDisplaySettings(self):
         if self.has_run:
             self.heatmap_house_change()
+        else:
+            msg = 'Simulation results unavailable'
+            QMessageBox.warning(self, 'VAWS Program Warning', msg)
+
 
     def showHouseInfoDlg(self):
         dlg = HouseViewer(self.cfg)
@@ -804,18 +808,21 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
 
     def updateVulnCurve(self):
 
-        self.ui.mplvuln.axes.figure.clf()
-        ax = self.ui.mplvuln.axes.figure.add_subplot(111)
-
-        plot_wind_event_show(ax, self.cfg.no_models,
-                             self.cfg.wind_speeds[0], self.cfg.wind_speeds[-1])
-
         try:
             _array = self.results_dict['house']['di']
         except TypeError:
-            msg = 'Simulation results unavailable'
-            QMessageBox.warning(self, "VAWS Program Warning", msg)
+            pass
+            #msg = 'Simulation results unavailable'
+            #QMessageBox.warning(self, "VAWS Program Warning", msg)
+            #self.ui.wb_checkBox.setChecked(False)
+            #self.ui.ln_checkBox.setChecked(False)
         else:
+            self.ui.mplvuln.axes.figure.clf()
+            ax = self.ui.mplvuln.axes.figure.add_subplot(111)
+
+            plot_wind_event_show(ax, self.cfg.no_models,
+                                 self.cfg.wind_speeds[0], self.cfg.wind_speeds[-1])
+
             mean_cols = _array.T.mean(axis=0)
             plot_wind_event_mean(ax, self.cfg.wind_speeds, mean_cols)
 
@@ -898,7 +905,7 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
                     plot_fitted_curve(ax, self.cfg.wind_speeds, y,
                                       col=value['color'], label=ds)
 
-        ax.legend(loc=2, fancybox=True, shadow=True, fontsize='small')
+            ax.legend(loc=2, fancybox=True, shadow=True, fontsize='small')
 
         self.ui.mplfrag.axes.figure.canvas.draw()
 
@@ -1206,22 +1213,22 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
 
     def save_vuln_file(self):
 
-        fname, _ = QFileDialog.getSaveFileName(self, "VAWS - Save mean vul curve",
+        try:
+            _array = (self.results_dict['house']['di']).T.mean(axis=0)
+        except TypeError:
+            msg = 'Simultation results unavailable'
+            QMessageBox.warning(self, "VAWS Program Warning", msg)
+        else:
+            fname, _ = QFileDialog.getSaveFileName(self, "VAWS - Save mean vul curve",
                                                self.cfg.path_output, VUL_OUTPUT_TEMPL)
-        if len(fname) > 0:
-            if "." not in fname:
-                fname += ".csv"
-            try:
-                _array = (self.results_dict['house']['di']).T.mean(axis=0)
-            except TypeError:
-                msg = 'Simultation results unavailable'
-                QMessageBox.warning(self, "VAWS Program Warning", msg)
-            else:
+            if len(fname) > 0:
+                if "." not in fname:
+                    fname += ".csv"
                 combined = np.array([self.cfg.wind_speeds, _array]).T
                 np.savetxt(fname, combined, delimiter=',', header='wind_speed,mean_di')
-        else:
-            msg = 'No file name entered. Action cancelled'
-            QMessageBox.warning(self, "VAWS Program Warning", msg)
+            else:
+                msg = 'No file name entered. Action cancelled'
+                QMessageBox.warning(self, "VAWS Program Warning", msg)
 
     def save_as_scenario(self):
         # TODO: check
@@ -1363,8 +1370,8 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
                 ', '.join([str(x) for x in self.cfg.fragility_i_thresholds]))
             self.ui.diffShielding.setChecked(self.cfg.flags['differential_shielding'])
 
-            self.ui.redV.setValue(self.cfg.heatmap_vmin)
-            self.ui.blueV.setValue(self.cfg.heatmap_vmax)
+            self.ui.redV.setValue(min(self.cfg.wind_speeds[0], self.cfg.heatmap_vmin))
+            self.ui.blueV.setValue(max(self.cfg.wind_speeds[-1], self.cfg.heatmap_vmax))
             self.ui.vStep.setValue(self.cfg.heatmap_vstep)
 
             self.update_house_panel()
@@ -1410,8 +1417,16 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
         if self.ui.checkBox_debrisVul.isChecked():
             new_cfg.flags['debris_vulnerability'] = True
             new_cfg.debris_vuln_input['function'] = self.ui.comboBox_debrisVul.currentText()
-            new_cfg.debris_vuln_input['param1'] = float(self.ui.debrisVul_param1.text())
-            new_cfg.debris_vuln_input['param2'] = float(self.ui.debrisVul_param2.text())
+            try:
+                new_cfg.debris_vuln_input['param1'] = float(self.ui.debrisVul_param1.text())
+            except ValueError:
+                msg = 'Invalid vulnerability parameter value(s)'
+                QMessageBox.warning(self, 'VAWS Program Warning', msg)
+            else:
+                try:
+                    new_cfg.debris_vuln_input['param2'] = float(self.ui.debrisVul_param2.text())
+                except ValueError:
+                    QMessageBox.warning(self, 'VAWS Program Warning', msg)
         else:
             new_cfg.flags['debris_vulnerability'] = False
             new_cfg.debris_vuln_input = {}
@@ -1491,71 +1506,72 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
         return True
 
     def testDebrisSettings(self):
-        self.update_config_from_ui()
-        self.cfg.process_config()
+        try:
+            vuln_input = {'param1': float(self.ui.debrisVul_param1.text()),
+                          'param2': float(self.ui.debrisVul_param2.text())}
+        except ValueError:
+            msg = 'Invalid vulnerability parameter value(s)'
+            QMessageBox.warning(self, 'VAWS Program Warning', msg)
+        else:
+            self.update_config_from_ui()
+            self.cfg.process_config()
+            wind_speed, ok = QInputDialog.getInt(
+                self, "Debris Test", "Wind speed (m/s):", 50, 10, 200)
 
-        shape_type = {'Compact': 'c', 'Sheet': 'g', 'Rod': 'r'}
+            if ok:
 
-        wind_speed, ok = QInputDialog.getInt(
-            self, "Debris Test", "Wind speed (m/s):", 50, 10, 200)
+                rnd_state = np.random.RandomState(1)
+                incr_speed = self.cfg.wind_speeds[1] - self.cfg.wind_speeds[0]
 
-        vuln_input = {'param1': float(self.ui.debrisVul_param1.text()),
-                      'param2': float(self.ui.debrisVul_param2.text())}
+                if self.ui.comboBox_debrisVul.currentText() == 'Weibull':
+                    damage_incr = vulnerability_weibull_pdf(
+                        x=wind_speed, alpha=vuln_input['param1'], beta=vuln_input['param2']) * incr_speed
+                else:
+                    damage_incr = vulnerability_lognorm_pdf(
+                        x=wind_speed, med=vuln_input['param1'], std=vuln_input['param2']) * incr_speed
 
-        if ok:
+                mean_no_debris_items = np.rint(self.cfg.source_items * damage_incr)
 
-            rnd_state = np.random.RandomState(1)
-            incr_speed = self.cfg.wind_speeds[1] - self.cfg.wind_speeds[0]
+                debris_items = generate_debris_items(
+                    rnd_state=rnd_state,
+                    wind_speed=wind_speed,
+                    cfg=self.cfg,
+                    mean_no_debris_items=mean_no_debris_items)
 
-            if self.ui.comboBox_debrisVul.currentText() == 'Weibull':
-                damage_incr = vulnerability_weibull_pdf(
-                    x=wind_speed, alpha=vuln_input['param1'], beta=vuln_input['param2']) * incr_speed
-            else:
-                damage_incr = vulnerability_lognorm_pdf(
-                    x=wind_speed, med=vuln_input['param1'], std=vuln_input['param2']) * incr_speed
+                fig = plt.figure()
+                ax = fig.add_subplot(111)
 
-            mean_no_debris_items = np.rint(self.cfg.source_items * damage_incr)
+                # source_x, source_y = [], []
+                # for source in self.cfg.debris_sources:
+                #     source_x.append(source.x)
+                #     source_y.append(source.y)
+                # ax.scatter(source_x, source_y, label='source', color='b')
+                # ax.scatter(0, 0, label='target', color='r')
 
-            debris_items = generate_debris_items(
-                rnd_state=rnd_state,
-                wind_speed=wind_speed,
-                cfg=self.cfg,
-                mean_no_debris_items=mean_no_debris_items)
+                # add footprint
+                #_array = np.array(house.debris.footprint.exterior.xy).T
+                #ax.add_patch(patches.Polygon(_array, alpha=0.5))
+                #ax.add_patch(patches.Polygon(self.cfg.impact_boundary.exterior, alpha=0.5))
 
-            fig = plt.figure()
-            ax = fig.add_subplot(111)
+                for item in debris_items:
+                    _x, _y = item.trajectory.xy[0][1], item.trajectory.xy[1][1]
+                    ax.scatter(_x, _y, color=DEBRIS_TYPES_CLRS[item.type], alpha=0.2)
 
-            # source_x, source_y = [], []
-            # for source in self.cfg.debris_sources:
-            #     source_x.append(source.x)
-            #     source_y.append(source.y)
-            # ax.scatter(source_x, source_y, label='source', color='b')
-            # ax.scatter(0, 0, label='target', color='r')
+                for source in self.cfg.debris_sources:
+                    ax.scatter(source.x, source.y, color='b', label='source')
+                ax.scatter(0, 0, label='target', color='r')
 
-            # add footprint
-            #_array = np.array(house.debris.footprint.exterior.xy).T
-            #ax.add_patch(patches.Polygon(_array, alpha=0.5))
-            #ax.add_patch(patches.Polygon(self.cfg.impact_boundary.exterior, alpha=0.5))
+                handles, labels = ax.get_legend_handles_labels()
+                by_label = OrderedDict(zip(labels, handles))
+                ax.legend(by_label.values(), by_label.keys(), loc=2, scatterpoints=1)
 
-            for item in debris_items:
-                _x, _y = item.trajectory.xy[0][1], item.trajectory.xy[1][1]
-                ax.scatter(_x, _y, color=shape_type[item.type], alpha=0.2)
+                title_str = f'Debris samples at {wind_speed:.3f} m/s in region of {self.cfg.region_name}'
+                ax.set_title(title_str)
 
-            for source in self.cfg.debris_sources:
-                ax.scatter(source.x, source.y, color='b', label='source')
-            ax.scatter(0, 0, label='target', color='r')
-
-            handles, labels = ax.get_legend_handles_labels()
-            by_label = OrderedDict(zip(labels, handles))
-            ax.legend(by_label.values(), by_label.keys(), loc=2, scatterpoints=1)
-
-            title_str = f'Debris samples at {wind_speed:.3f} m/s in region of {self.cfg.region_name}'
-            ax.set_title(title_str)
-
-            ax.axes.set_xlim(-0.5*self.cfg.debris_radius, self.cfg.debris_radius)
-            ax.axes.set_ylim(-1.0*self.cfg.debris_radius, self.cfg.debris_radius)
-            # fig.canvas.draw()
-            fig.show()
+                ax.axes.set_xlim(-0.5*self.cfg.debris_radius, self.cfg.debris_radius)
+                ax.axes.set_ylim(-1.0*self.cfg.debris_radius, self.cfg.debris_radius)
+                # fig.canvas.draw()
+                fig.show()
 
     # def testConstructionLevels(self):
     #     self.update_config_from_ui()

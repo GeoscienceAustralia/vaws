@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1250</width>
+    <width>1339</width>
     <height>723</height>
    </rect>
   </property>
@@ -1809,6 +1809,26 @@
                <item>
                 <layout class="QHBoxLayout" name="horizontalLayout_8">
                  <item>
+                  <widget class="QCheckBox" name="wb_checkBox">
+                   <property name="text">
+                    <string/>
+                   </property>
+                  </widget>
+                 </item>
+                 <item>
+                  <widget class="QLabel" name="label_30">
+                   <property name="text">
+                    <string>Weibull Coeffs</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item>
+                  <widget class="QLineEdit" name="wb_coeff_2"/>
+                 </item>
+                 <item>
+                  <widget class="QLineEdit" name="ln_coeff_2"/>
+                 </item>
+                 <item>
                   <widget class="QCheckBox" name="ln_checkBox">
                    <property name="text">
                     <string/>
@@ -1826,27 +1846,7 @@
                   <widget class="QLineEdit" name="ln_coeff_1"/>
                  </item>
                  <item>
-                  <widget class="QLineEdit" name="ln_coeff_2"/>
-                 </item>
-                 <item>
-                  <widget class="QCheckBox" name="wb_checkBox">
-                   <property name="text">
-                    <string/>
-                   </property>
-                  </widget>
-                 </item>
-                 <item>
-                  <widget class="QLabel" name="label_30">
-                   <property name="text">
-                    <string>Weibull Coeffs</string>
-                   </property>
-                  </widget>
-                 </item>
-                 <item>
                   <widget class="QLineEdit" name="wb_coeff_1"/>
-                 </item>
-                 <item>
-                  <widget class="QLineEdit" name="wb_coeff_2"/>
                  </item>
                  <item>
                   <widget class="QPushButton" name="vuln_pushButton">
@@ -1983,7 +1983,7 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>1250</width>
+     <width>1339</width>
      <height>22</height>
     </rect>
    </property>
@@ -2140,10 +2140,7 @@
   <tabstop>zoneResults</tabstop>
   <tabstop>connectionResults</tabstop>
   <tabstop>tabWidget_3</tabstop>
-  <tabstop>ln_coeff_1</tabstop>
   <tabstop>ln_coeff_2</tabstop>
-  <tabstop>wb_coeff_1</tabstop>
-  <tabstop>wb_coeff_2</tabstop>
   <tabstop>seedRandom</tabstop>
  </tabstops>
  <resources>
