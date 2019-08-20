@@ -21,8 +21,8 @@ requirements:
     - python
 
   run:
-    - python
-    - blas =1.0 # [win]
+    - python =3.6
+    - blas =1.0
     - ca-certificates >=2019.3.* # [osx]
     - ca-certificates =2019.6 # [win]
     - certifi >=2019.3.*

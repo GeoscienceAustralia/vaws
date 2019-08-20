@@ -59,7 +59,7 @@ from shapely import geometry
 from vaws.model.constants import (WIND_DIR, FLAGS_PRESSURE, FLAGS_DIST_DIR,
                                   DEBRIS_TYPES_KEYS, DEBRIS_TYPES_ATTS,
                                   COVERAGE_FAILURE_KEYS, COSTING_FORMULA_TYPES,
-                                  BLDG_SPACING)
+                                  BLDG_SPACING, DEBRIS_VULNERABILITY)
 from vaws.model.stats import compute_logarithmic_mean_stddev, calc_big_a_b_values
 from vaws.model.damage_costing import Costing, WaterIngressCosting
 from vaws.model.zone import get_grid_from_zone_location
@@ -385,7 +385,7 @@ class Config(object):
 
         self.set_debris_types()
 
-        self.set_wawter_ingress()
+        self.set_water_ingress()
         self.set_fragility_thresholds()
         # self.set_construction_levels()
 
@@ -448,7 +448,7 @@ class Config(object):
         else:
             self.logger.info('default water ingress thresholds is used')
 
-    def set_wawter_ingress(self):
+    def set_water_ingress(self):
         thresholds = [x for x in self.water_ingress_i_thresholds]
         thresholds.append(1.1)
         self.water_ingress = pd.DataFrame(
@@ -573,18 +573,27 @@ class Config(object):
     def set_debris_vulnerability(self):
 
         if self.flags['debris_vulnerability']:
-            func = self.debris_vuln_input['function'].capitalize()
-            param1 = self.debris_vuln_input['param1']
-            param2 = self.debris_vuln_input['param2']
-            if func == 'Lognorm':
-                self.debris_vulnerability = stats.lognorm(
-                    s=param2, loc=0, scale=param1)
-            elif func == 'Weibull':
-                self.debris_vulnerability = stats.weibull_min(
-                    c=1 / param1, loc=0, scale=np.exp(param2))
+            try:
+                func = self.debris_vuln_input['function'].capitalize()
+            except KeyError:
+                self.logger.critical('Missing function in debris_vulnerability section')
             else:
-                self.logger.critical(
-                    'Invalid function defined in debris_vulnerability section')
+                if func in DEBRIS_VULNERABILITY:
+                    try:
+                        param1 = self.debris_vuln_input['param1']
+                        param2 = self.debris_vuln_input['param2']
+                    except KeyError:
+                        self.logger.critical('Missing vulnerability parameter value(s)')
+                    else:
+                        if func == 'Weibull':
+                            self.debris_vulnerability = stats.weibull_min(
+                                c=1 / param1, loc=0, scale=np.exp(param2))
+                        elif func == 'Lognorm':
+                            self.debris_vulnerability = stats.lognorm(
+                                s=param2, loc=0, scale=param1)
+                else:
+                    self.logger.critical(
+                            'Invalid function defined in debris_vulnerability section')
 
     def read_debris(self, conf, key):
 

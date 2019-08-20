@@ -155,8 +155,8 @@ class Connection(object):
             # if load is negative, check failure
             if self.load < -1.0 * self.strength:
 
-                self.logger.debug(f'connection {self.name} of {self.sub_group}'
-                                  f'damaged at {wind_speed:.3f}'
+                self.logger.debug(f'connection {self.name} of {self.sub_group} '
+                                  f'damaged at {wind_speed:.3f} '
                                   f'as {self.strength:.3f} < {self.load:.3f}')
 
                 self.damaged = 1
@@ -401,7 +401,7 @@ class ConnectionTypeGroup(object):
                     else:
                         target_connection.update_influence(source_connection,
                                                            influence_coeff)
-                        self.logger.debug(f'Influence of conn {target_connection.name} updated:'
+                        self.logger.debug(f'Influence of conn {target_connection.name} updated: '
                                           f'conn {source_connection.name} with {influence_coeff:.2f}')
 
                 # empty the influence of source connection
@@ -435,8 +435,8 @@ class ConnectionTypeGroup(object):
                                                       and damaged_connection.name == name):
                     target_connection.influences = dic
                     house_inst.link_connection_to_influence(target_connection)
-                    house_inst.logger.debug(f'Influence of conn {name} is'
-                                            f'updatd by conn {damaged_connection.name}')
+                    house_inst.logger.debug(f'Influence of conn {name} is '
+                                            f'updated by conn {damaged_connection.name}')
 
 
 class Influence(object):

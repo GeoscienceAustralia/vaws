@@ -526,89 +526,90 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
     def runScenario(self):
         self.statusBar().showMessage('Running Scenario')
         self.statusProgressBar.show()
-        self.update_config_from_ui()
-        self.cfg.process_config()
+        ok = self.update_config_from_ui()
+        if ok:
+            self.cfg.process_config()
 
-        self.ui.spinBox_heatmap.setRange(0, self.cfg.no_models)
-        #self.ui.heatmap_houseLabel.setText('{:d}'.format(0))
+            self.ui.spinBox_heatmap.setRange(0, self.cfg.no_models)
+            #self.ui.heatmap_houseLabel.setText('{:d}'.format(0))
 
-        self.ui.spinBox_load.setRange(1, self.cfg.no_models)
-        self.ui.doubleSpinBox_load.setRange(self.cfg.wind_speeds[0], self.cfg.wind_speeds[-1])
+            self.ui.spinBox_load.setRange(1, self.cfg.no_models)
+            self.ui.doubleSpinBox_load.setRange(self.cfg.wind_speeds[0], self.cfg.wind_speeds[-1])
 
-        self.ui.mplsheeting.axes.cla()
-        self.ui.mplsheeting.axes.figure.canvas.draw()
+            self.ui.mplsheeting.axes.cla()
+            self.ui.mplsheeting.axes.figure.canvas.draw()
 
-        # self.ui.mplbatten.axes.cla()
-        # self.ui.mplbatten.axes.figure.canvas.draw()
-        #
-        # self.ui.mplrafter.axes.cla()
-        # self.ui.mplrafter.axes.figure.canvas.draw()
+            # self.ui.mplbatten.axes.cla()
+            # self.ui.mplbatten.axes.figure.canvas.draw()
+            #
+            # self.ui.mplrafter.axes.cla()
+            # self.ui.mplrafter.axes.figure.canvas.draw()
 
-        self.ui.connection_type_plot.axes.cla()
-        self.ui.connection_type_plot.axes.figure.canvas.draw()
+            self.ui.connection_type_plot.axes.cla()
+            self.ui.connection_type_plot.axes.figure.canvas.draw()
 
-        self.ui.breaches_plot.axes.cla()
-        self.ui.breaches_plot.axes.figure.canvas.draw()
+            self.ui.breaches_plot.axes.cla()
+            self.ui.breaches_plot.axes.figure.canvas.draw()
 
-        self.ui.spinBox_cpi.setRange(0, self.cfg.no_models)
-        # self.ui.cpi_house.setValue(0)
-        # self.ui.cpi_houseLabel.setText('{:d}'.format(0))
+            self.ui.spinBox_cpi.setRange(0, self.cfg.no_models)
+            # self.ui.cpi_house.setValue(0)
+            # self.ui.cpi_houseLabel.setText('{:d}'.format(0))
 
-        self.ui.cpi_plot.axes.cla()
-        self.ui.cpi_plot.axes.figure.canvas.draw()
+            self.ui.cpi_plot.axes.cla()
+            self.ui.cpi_plot.axes.figure.canvas.draw()
 
-        self.ui.wateringress_plot.axes.cla()
-        self.ui.wateringress_plot.axes.figure.canvas.draw()
+            self.ui.wateringress_plot.axes.cla()
+            self.ui.wateringress_plot.axes.figure.canvas.draw()
 
-        self.ui.mplvuln.axes.cla()
-        self.ui.mplvuln.axes.figure.canvas.draw()
+            self.ui.mplvuln.axes.cla()
+            self.ui.mplvuln.axes.figure.canvas.draw()
 
-        self.ui.mplfrag.axes.cla()
-        self.ui.mplfrag.axes.figure.canvas.draw()
+            self.ui.mplfrag.axes.cla()
+            self.ui.mplfrag.axes.figure.canvas.draw()
 
-        # run simulation with progress bar
-        self.ui.actionStop.setEnabled(True)
-        self.ui.actionRun.setEnabled(False)
-        self.ui.actionOpen_Scenario.setEnabled(False)
-        self.ui.actionSave_Scenario.setEnabled(False)
-        self.ui.actionSave_Scenario_As.setEnabled(False)
+            # run simulation with progress bar
+            self.ui.actionStop.setEnabled(True)
+            self.ui.actionRun.setEnabled(False)
+            self.ui.actionOpen_Scenario.setEnabled(False)
+            self.ui.actionSave_Scenario.setEnabled(False)
+            self.ui.actionSave_Scenario_As.setEnabled(False)
 
-        # attempt to run the simulator, being careful with exceptions...
-        try:
-            run_time, self.results_dict = simulate_wind_damage_to_houses(self.cfg,
-                                                              call_back=progress_callback)
+            # attempt to run the simulator, being careful with exceptions...
+            try:
+                run_time, self.results_dict = simulate_wind_damage_to_houses(self.cfg,
+                                                                  call_back=progress_callback)
 
-            if run_time is not None:
-                self.statusBar().showMessage(
-                    f'Simulation complete in {run_time:0.3f}')
+                if run_time is not None:
+                    self.statusBar().showMessage(
+                        f'Simulation complete in {run_time:0.3f}')
 
-                # self.results_dict = bucket
-                self.updateVulnCurve()
-                self.updateFragCurve()
-                self.updateHouseResultsTable()
-                self.updateConnectionTable_with_results()
-                self.updateConnectionTypePlots()
-                self.updateHeatmap()
-                self.updateWaterIngressPlot()
-                self.updateBreachPlot()
-                self.updateCpiPlot()
-                self.has_run = True
+                    # self.results_dict = bucket
+                    self.updateVulnCurve()
+                    self.updateFragCurve()
+                    self.updateHouseResultsTable()
+                    self.updateConnectionTable_with_results()
+                    self.updateConnectionTypePlots()
+                    self.updateHeatmap()
+                    self.updateWaterIngressPlot()
+                    self.updateBreachPlot()
+                    self.updateCpiPlot()
+                    self.has_run = True
 
-        except IOError:
-            msg = 'A report file is still open by another program unable to run simulation.'
-            QMessageBox.warning(self, 'VAWS Program Warning', msg)
-            self.statusBar().showMessage('')
-        except Exception as err:
-            self.statusBar().showMessage(f'Fatal Error Occurred: {str}')
-            raise
-        finally:
-            self.statusProgressBar.hide()
-            self.ui.actionStop.setEnabled(False)
-            self.ui.actionRun.setEnabled(True)
-            self.ui.actionOpen_Scenario.setEnabled(True)
-            self.ui.actionSave_Scenario.setEnabled(True)
-            self.ui.actionSave_Scenario_As.setEnabled(True)
-            self.statusBar().showMessage('Ready')
+            except IOError:
+                msg = 'A report file is still open by another program unable to run simulation.'
+                QMessageBox.warning(self, 'VAWS Program Warning', msg)
+                self.statusBar().showMessage('')
+            except Exception as err:
+                self.statusBar().showMessage(f'Fatal Error Occurred: {str}')
+                raise
+            finally:
+                self.statusProgressBar.hide()
+                self.ui.actionStop.setEnabled(False)
+                self.ui.actionRun.setEnabled(True)
+                self.ui.actionOpen_Scenario.setEnabled(True)
+                self.ui.actionSave_Scenario.setEnabled(True)
+                self.ui.actionSave_Scenario_As.setEnabled(True)
+                self.statusBar().showMessage('Ready')
 
     def heatmap_house_change(self):
 
@@ -1206,9 +1207,10 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
             QMessageBox.warning(self, "VAWS Program Warning", msg)
 
     def save_scenario(self):
-        self.update_config_from_ui()
-        self.cfg.save_config()
-        self.ui.statusbar.showMessage(f'Saved to file {self.cfg.file_cfg}')
+        ok = self.update_config_from_ui()
+        if ok:
+            self.cfg.save_config()
+            self.ui.statusbar.showMessage(f'Saved to file {self.cfg.file_cfg}')
         # self.update_ui_from_config()
 
     def save_vuln_file(self):
@@ -1232,44 +1234,45 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
 
     def save_as_scenario(self):
         # TODO: check
-        self.update_config_from_ui()
-        current_parent, _ = os.path.split(self.cfg.path_cfg)
+        ok = self.update_config_from_ui()
+        if ok:
+            current_parent, _ = os.path.split(self.cfg.path_cfg)
 
-        fname, _ = QFileDialog.getSaveFileName(self, "VAWS - Save Scenario",
-                                            current_parent, CONFIG_TEMPL)
-        if len(fname) > 0:
-            if "." not in fname:
-                fname += ".cfg"
-            # check we have a directory for the scenario
-            path_cfg, file_suffix_name = os.path.split(fname)
-            file_name, ext = os.path.splitext(file_suffix_name)
-            if file_name not in path_cfg:
-                # we need to create a directory for the scenario
-                path_cfg = os.path.join(path_cfg, file_name)
+            fname, _ = QFileDialog.getSaveFileName(self, "VAWS - Save Scenario",
+                                                current_parent, CONFIG_TEMPL)
+            if len(fname) > 0:
+                if "." not in fname:
+                    fname += ".cfg"
+                # check we have a directory for the scenario
+                path_cfg, file_suffix_name = os.path.split(fname)
+                file_name, ext = os.path.splitext(file_suffix_name)
+                if file_name not in path_cfg:
+                    # we need to create a directory for the scenario
+                    path_cfg = os.path.join(path_cfg, file_name)
 
-            if not os.path.isdir(path_cfg):
-                os.mkdir(path_cfg)
+                if not os.path.isdir(path_cfg):
+                    os.mkdir(path_cfg)
 
-            if not os.path.isdir(os.path.join(path_cfg, INPUT_DIR)):
-                default_input = os.path.join(self.cfg.path_cfg, INPUT_DIR)
-                shutil.copytree(default_input,
-                                os.path.join(path_cfg, INPUT_DIR))
+                if not os.path.isdir(os.path.join(path_cfg, INPUT_DIR)):
+                    default_input = os.path.join(self.cfg.path_cfg, INPUT_DIR)
+                    shutil.copytree(default_input,
+                                    os.path.join(path_cfg, INPUT_DIR))
 
-            if not os.path.isdir(os.path.join(path_cfg, OUTPUT_DIR)):
-                os.mkdir(os.path.join(path_cfg, OUTPUT_DIR))
+                if not os.path.isdir(os.path.join(path_cfg, OUTPUT_DIR)):
+                    os.mkdir(os.path.join(path_cfg, OUTPUT_DIR))
 
-            settings = QSettings()
-            settings.setValue("ScenarioFolder", QVariant(path_cfg))
-            self.cfg.path_cfg = path_cfg
-            self.cfg.file_cfg = os.path.join(path_cfg, file_suffix_name)
-            self.cfg.output_path = os.path.join(path_cfg, OUTPUT_DIR)
+                settings = QSettings()
+                settings.setValue("ScenarioFolder", QVariant(path_cfg))
+                self.cfg.path_cfg = path_cfg
+                self.cfg.file_cfg = os.path.join(path_cfg, file_suffix_name)
+                self.cfg.output_path = os.path.join(path_cfg, OUTPUT_DIR)
 
-            self.cfg.save_config()
-            set_logger(self.cfg)
-            self.update_ui_from_config()
-        else:
-            msg = 'No scenario name entered. Action cancelled'
-            QMessageBox.warning(self, "VAWS Program Warning", msg)
+                self.cfg.save_config()
+                set_logger(self.cfg)
+                self.update_ui_from_config()
+            else:
+                msg = 'No scenario name entered. Action cancelled'
+                QMessageBox.warning(self, "VAWS Program Warning", msg)
 
 #    def set_scenario(self, s=None):
         # if s:
@@ -1387,7 +1390,7 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
 
     def update_config_from_ui(self):
         new_cfg = self.cfg
-
+        ok = True
         # Scenario section
         new_cfg.no_models = int(self.ui.numHouses.text())
         new_cfg.model_name = self.ui.houseName.text()
@@ -1417,16 +1420,18 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
         if self.ui.checkBox_debrisVul.isChecked():
             new_cfg.flags['debris_vulnerability'] = True
             new_cfg.debris_vuln_input['function'] = self.ui.comboBox_debrisVul.currentText()
+            msg = 'Invalid vulnerability parameter value(s)'
             try:
                 new_cfg.debris_vuln_input['param1'] = float(self.ui.debrisVul_param1.text())
             except ValueError:
-                msg = 'Invalid vulnerability parameter value(s)'
                 QMessageBox.warning(self, 'VAWS Program Warning', msg)
+                ok = False
             else:
                 try:
                     new_cfg.debris_vuln_input['param2'] = float(self.ui.debrisVul_param2.text())
                 except ValueError:
                     QMessageBox.warning(self, 'VAWS Program Warning', msg)
+                    ok = False
         else:
             new_cfg.flags['debris_vulnerability'] = False
             new_cfg.debris_vuln_input = {}
@@ -1472,6 +1477,7 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
         #     cellWidget = self.ui.connGroups.cellWidget(irow, 4)
         #     new_cfg.flags['conn_type_group_{}'.format(index)] = True \
         #         if cellWidget.checkState() == Qt.Checked else False
+        return ok
 
     def file_load(self, fname):
         try:
@@ -1492,8 +1498,8 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
             QMessageBox.warning(self, "VAWS Program Warning", msg)
 
     def okToContinue(self):
-        self.update_config_from_ui()
-        if self.dirty_scenario:
+        ok = self.update_config_from_ui()
+        if ok and self.dirty_scenario:
             reply = QMessageBox.question(self,
                                          "WindSim - Unsaved Changes",
                                          "Save unsaved changes?",
@@ -1504,6 +1510,61 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
             elif reply == QMessageBox.Yes:
                 self.save_scenario()
         return True
+    def testDebrisRun(self, wind_speed, vuln_input):
+
+        rnd_state = np.random.RandomState(1)
+        incr_speed = self.cfg.wind_speeds[1] - self.cfg.wind_speeds[0]
+
+        if self.ui.comboBox_debrisVul.currentText() == 'Weibull':
+            damage_incr = vulnerability_weibull_pdf(
+                x=wind_speed, alpha=vuln_input['param1'], beta=vuln_input['param2']) * incr_speed
+        else:
+            damage_incr = vulnerability_lognorm_pdf(
+                x=wind_speed, med=vuln_input['param1'], std=vuln_input['param2']) * incr_speed
+
+        mean_no_debris_items = np.rint(self.cfg.source_items * damage_incr)
+
+        debris_items = generate_debris_items(
+            rnd_state=rnd_state,
+            wind_speed=wind_speed,
+            cfg=self.cfg,
+            mean_no_debris_items=mean_no_debris_items)
+
+        fig = plt.figure()
+        ax = fig.add_subplot(111)
+
+        # source_x, source_y = [], []
+        # for source in self.cfg.debris_sources:
+        #     source_x.append(source.x)
+        #     source_y.append(source.y)
+        # ax.scatter(source_x, source_y, label='source', color='b')
+        # ax.scatter(0, 0, label='target', color='r')
+
+        # add footprint
+        #_array = np.array(house.debris.footprint.exterior.xy).T
+        #ax.add_patch(patches.Polygon(_array, alpha=0.5))
+        #ax.add_patch(patches.Polygon(self.cfg.impact_boundary.exterior, alpha=0.5))
+
+        for item in debris_items:
+            _x, _y = item.trajectory.xy[0][1], item.trajectory.xy[1][1]
+            ax.scatter(_x, _y, color=DEBRIS_TYPES_CLRS[item.type], alpha=0.2)
+
+        for source in self.cfg.debris_sources:
+            ax.scatter(source.x, source.y, color='b', label='source')
+        ax.scatter(0, 0, label='target', color='r')
+
+        handles, labels = ax.get_legend_handles_labels()
+        by_label = OrderedDict(zip(labels, handles))
+        ax.legend(by_label.values(), by_label.keys(), loc=2, scatterpoints=1)
+
+        title_str = f'Debris samples at {wind_speed:.3f} m/s in region of {self.cfg.region_name}'
+        ax.set_title(title_str)
+
+        ax.axes.set_xlim(-0.5*self.cfg.debris_radius, self.cfg.debris_radius)
+        ax.axes.set_ylim(-1.0*self.cfg.debris_radius, self.cfg.debris_radius)
+        # fig.canvas.draw()
+        fig.show()
+
 
     def testDebrisSettings(self):
         try:
@@ -1513,124 +1574,85 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
             msg = 'Invalid vulnerability parameter value(s)'
             QMessageBox.warning(self, 'VAWS Program Warning', msg)
         else:
-            self.update_config_from_ui()
-            self.cfg.process_config()
-            wind_speed, ok = QInputDialog.getInt(
-                self, "Debris Test", "Wind speed (m/s):", 50, 10, 200)
-
+            ok = self.update_config_from_ui()
             if ok:
+                self.cfg.process_config()
+                wind_speed, ok = QInputDialog.getInt(
+                    self, "Debris Test", "Wind speed (m/s):", 50, 10, 200)
+                if ok:
+                    self.testDebrisRun(wind_speed, vuln_input)
 
-                rnd_state = np.random.RandomState(1)
-                incr_speed = self.cfg.wind_speeds[1] - self.cfg.wind_speeds[0]
-
-                if self.ui.comboBox_debrisVul.currentText() == 'Weibull':
-                    damage_incr = vulnerability_weibull_pdf(
-                        x=wind_speed, alpha=vuln_input['param1'], beta=vuln_input['param2']) * incr_speed
-                else:
-                    damage_incr = vulnerability_lognorm_pdf(
-                        x=wind_speed, med=vuln_input['param1'], std=vuln_input['param2']) * incr_speed
-
-                mean_no_debris_items = np.rint(self.cfg.source_items * damage_incr)
-
-                debris_items = generate_debris_items(
-                    rnd_state=rnd_state,
-                    wind_speed=wind_speed,
-                    cfg=self.cfg,
-                    mean_no_debris_items=mean_no_debris_items)
-
-                fig = plt.figure()
-                ax = fig.add_subplot(111)
-
-                # source_x, source_y = [], []
-                # for source in self.cfg.debris_sources:
-                #     source_x.append(source.x)
-                #     source_y.append(source.y)
-                # ax.scatter(source_x, source_y, label='source', color='b')
-                # ax.scatter(0, 0, label='target', color='r')
-
-                # add footprint
-                #_array = np.array(house.debris.footprint.exterior.xy).T
-                #ax.add_patch(patches.Polygon(_array, alpha=0.5))
-                #ax.add_patch(patches.Polygon(self.cfg.impact_boundary.exterior, alpha=0.5))
-
-                for item in debris_items:
-                    _x, _y = item.trajectory.xy[0][1], item.trajectory.xy[1][1]
-                    ax.scatter(_x, _y, color=DEBRIS_TYPES_CLRS[item.type], alpha=0.2)
-
-                for source in self.cfg.debris_sources:
-                    ax.scatter(source.x, source.y, color='b', label='source')
-                ax.scatter(0, 0, label='target', color='r')
-
-                handles, labels = ax.get_legend_handles_labels()
-                by_label = OrderedDict(zip(labels, handles))
-                ax.legend(by_label.values(), by_label.keys(), loc=2, scatterpoints=1)
-
-                title_str = f'Debris samples at {wind_speed:.3f} m/s in region of {self.cfg.region_name}'
-                ax.set_title(title_str)
-
-                ax.axes.set_xlim(-0.5*self.cfg.debris_radius, self.cfg.debris_radius)
-                ax.axes.set_ylim(-1.0*self.cfg.debris_radius, self.cfg.debris_radius)
-                # fig.canvas.draw()
-                fig.show()
-
-    # def testConstructionLevels(self):
-    #     self.update_config_from_ui()
-    #     self.cfg.process_config()
-    #
-    #     selected_type, ok = QInputDialog.getItem(self, "Construction Test", "Connection Type:",
-    #         self.cfg.types.keys(), 0, False)
-    #
-    #     if ok:
-    #
-    #         house = House(self.cfg, seed=1)
-    #         lognormal_strength = self.cfg.types['{}'.format(selected_type)]['lognormal_strength']
-    #         mu, std = compute_arithmetic_mean_stddev(*lognormal_strength)
-    #         mu *= house.mean_factor
-    #         std *= house.cv_factor * house.mean_factor
-    #
-    #         x = []
-    #         n = 50000
-    #         for i in xrange(n):
-    #             rv = sample_lognorm_given_mean_stddev(mu, std, house.rnd_state)
-    #             x.append(rv)
-    #
-    #         fig = plt.figure()
-    #         ax = fig.add_subplot(111)
-    #         ax.hist(x, 50, normed=1, facecolor='green', alpha=0.75)
-    #         _mean = self.cfg.types['{}'.format(selected_type)]['strength_mean']
-    #         _std = self.cfg.types['{}'.format(selected_type)]['strength_std']
-    #         title_str = 'Sampled strength of {0} \n ' \
-    #                     'construction level: {1}, mean: {2:.2f}, std: {3:.2f}'.format(
-    #             selected_type, house.construction_level, _mean, _std)
-    #         ax.set_title(title_str)
-    #         fig.show()
+        # def testConstructionLevels(self):
+        #     self.update_config_from_ui()
+        #     self.cfg.process_config()
+        #
+        #     selected_type, ok = QInputDialog.getItem(self, "Construction Test", "Connection Type:",
+        #         self.cfg.types.keys(), 0, False)
+        #
+        #     if ok:
+        #
+        #         house = House(self.cfg, seed=1)
+        #         lognormal_strength = self.cfg.types['{}'.format(selected_type)]['lognormal_strength']
+        #         mu, std = compute_arithmetic_mean_stddev(*lognormal_strength)
+        #         mu *= house.mean_factor
+        #         std *= house.cv_factor * house.mean_factor
+        #
+        #         x = []
+        #         n = 50000
+        #         for i in xrange(n):
+        #             rv = sample_lognorm_given_mean_stddev(mu, std, house.rnd_state)
+        #             x.append(rv)
+        #
+        #         fig = plt.figure()
+        #         ax = fig.add_subplot(111)
+        #         ax.hist(x, 50, normed=1, facecolor='green', alpha=0.75)
+        #         _mean = self.cfg.types['{}'.format(selected_type)]['strength_mean']
+        #         _std = self.cfg.types['{}'.format(selected_type)]['strength_std']
+        #         title_str = 'Sampled strength of {0} \n ' \
+        #                     'construction level: {1}, mean: {2:.2f}, std: {3:.2f}'.format(
+        #             selected_type, house.construction_level, _mean, _std)
+        #         ax.set_title(title_str)
+        #         fig.show()
 
     def testWaterIngress(self):
+        new_cfg = self.cfg
 
-        self.update_config_from_ui()
-        self.cfg.process_config()
+        new_cfg.flags['water_ingress'] = self.ui.waterEnabled.isChecked()
+        new_cfg.water_ingress_i_thresholds = [
+            float(x) for x in self.ui.waterThresholds.text().split(',')]
+        new_cfg.water_ingress_i_zero_wi = [
+            float(x) for x in self.ui.waterSpeed0.text().split(',')]
+        new_cfg.water_ingress_i_full_wi = [
+            float(x) for x in self.ui.waterSpeed1.text().split(',')]
+
+        new_cfg.wind_speed_min = self.ui.windMin.value()
+        new_cfg.wind_speed_max = self.ui.windMax.value()
+        new_cfg.wind_speed_increment = float(self.ui.windIncrement.text())
+
+        new_cfg.set_water_ingress()
+        new_cfg.set_wind_speeds()
 
         di_array = []
         dic_thresholds = {}
-        for i, value in enumerate(self.cfg.water_ingress.index):
+        for i, value in enumerate(new_cfg.water_ingress.index):
             if i == 0:
                 dic_thresholds[i] = (0.0, value)
             else:
-                dic_thresholds[i] = (self.cfg.water_ingress.index[i-1], value)
+                dic_thresholds[i] = (new_cfg.water_ingress.index[i-1], value)
 
             di_array.append(0.5*(dic_thresholds[i][0] + dic_thresholds[i][1]))
 
-        a = np.zeros((len(di_array), len(self.cfg.wind_speeds)))
+        a = np.zeros((len(di_array), len(new_cfg.wind_speeds)))
 
         for i, di in enumerate(di_array):
-            for j, speed in enumerate(self.cfg.wind_speeds):
+            for j, speed in enumerate(new_cfg.wind_speeds):
                 a[i, j] = 100.0 * compute_water_ingress_given_damage(
-                    di, speed, self.cfg.water_ingress)
+                    di, speed, new_cfg.water_ingress)
 
         fig = plt.figure()
         ax = fig.add_subplot(111)
         for j in range(a.shape[0]):
-            ax.plot(self.cfg.wind_speeds, a[j, :],
+            ax.plot(new_cfg.wind_speeds, a[j, :],
                     label='{:.1f} <= DI < {:.1f}'.format(*dic_thresholds[j]))
 
         ax.legend(loc=1)

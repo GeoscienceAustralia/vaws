@@ -417,9 +417,9 @@ class House(object):
 
     def run_simulation(self, wind_speed):
 
-        if not self.collapse:
+        self.logger.debug(f'wind speed {wind_speed:.3f}')
 
-            self.logger.debug(f'wind speed {wind_speed:.3f}')
+        if not self.collapse:
 
             # compute load by zone
             self.compute_qz(wind_speed)
@@ -452,6 +452,11 @@ class House(object):
 
             self.compute_damage_index(wind_speed)
 
+            self.fill_bucket()
+
+        else:
+            # still run debris and save results
+            self.run_debris_and_update_cpi(wind_speed)
             self.fill_bucket()
 
         return copy.deepcopy(self.bucket)
@@ -547,6 +552,7 @@ class House(object):
                                                       wind_speed=wind_speed,
                                                       rnd_state=self.rnd_state)
 
+            self.logger.debug(f'no debris items: {len(self.debris_items)}')
             for item in self.debris_items:
                 item.check_impact(footprint=self.footprint,
                                   boundary=self.cfg.impact_boundary)
