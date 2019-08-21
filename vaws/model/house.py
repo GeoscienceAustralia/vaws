@@ -452,12 +452,12 @@ class House(object):
 
             self.compute_damage_index(wind_speed)
 
-            self.fill_bucket()
-
         else:
-            # still run debris and save results
+            # still run debris
             self.run_debris_and_update_cpi(wind_speed)
-            self.fill_bucket()
+
+        # save results
+        self.fill_bucket()
 
         return copy.deepcopy(self.bucket)
 

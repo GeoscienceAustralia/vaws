@@ -514,11 +514,11 @@ Timber_door,142.2,28.44,100,0.0,100,0.0
         """Check that each area entry is >=0"""
 
         self.cfg.file_coverages = StringIO("""
-name,description,wall_name,area,coverage_type
-1,window,1,3.6,Glass_annealed_6mm
-2,door,1,1.8,Timber_door
-3,window,1,1.89,Glass_annealed_6mm
-4,window,1,-1.89,Glass_annealed_6mm
+name,description,wall_name,area,coverage_type,repair_type
+1,window,1,3.6,Glass_annealed_6mm,full
+2,door,1,1.8,Timber_door,full
+3,window,1,1.89,Glass_annealed_6mm,full
+4,window,1,-1.89,Glass_annealed_6mm,full
         """)
 
         self.assertRaises(ValueError, self.cfg.set_coverages)
@@ -527,11 +527,11 @@ name,description,wall_name,area,coverage_type
         """Check each coverage_type entry is also listed in coverage_types"""
 
         self.cfg.file_coverages = StringIO("""
-name,description,wall_name,area,coverage_type
-1,window,1,3.6,Glass_annealed_6mm
-2,door,1,1.8,Timber_door
-3,window,1,1.89,Glass_annealed_6mm
-4,window,1,1.89,dummy
+name,description,wall_name,area,coverage_type,repair_type
+1,window,1,3.6,Glass_annealed_6mm,full
+2,door,1,1.8,Timber_door,full
+3,window,1,1.89,Glass_annealed_6mm,full
+4,window,1,1.89,dummy,full
         """)
 
         self.assertRaises(ValueError, self.cfg.set_coverages)
@@ -557,11 +557,11 @@ name,description,wall_name,area,coverage_type
             self.cfg.file_front_facing_walls = _file.name
 
             self.cfg.file_coverages = StringIO("""
-name,description,wall_name,area,coverage_type
-1,window,1,3.6,Glass_annealed_6mm
-2,door,1,1.8,Timber_door
-3,window,1,1.89,Glass_annealed_6mm
-4,window,dummy,1.89,Glass_annealed_6mm
+name,description,wall_name,area,coverage_type,repair_type
+1,window,1,3.6,Glass_annealed_6mm,full
+2,door,1,1.8,Timber_door,full
+3,window,1,1.89,Glass_annealed_6mm,full
+4,window,dummy,1.89,Glass_annealed_6mm,full
                 """)
 
             self.assertRaises(ValueError, self.cfg.set_coverages)

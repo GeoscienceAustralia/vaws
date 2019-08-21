@@ -187,7 +187,7 @@ class Debris(object):
 
                 coverage.breached = 1
 
-                if coverage.description == 'window':
+                if coverage.repair_type == 'full':
                     coverage.breached_area = coverage.area
                 else:
                     # assume area: size(1) * amplification_factor(1)
@@ -278,7 +278,7 @@ def generate_debris_items(cfg, mean_no_debris_items, wind_speed, rnd_state):
 
     return debris_items
 
-
+'''
 def check_coverages(debris_items, coverages, rnd_state, coverage_area):
     # Complementary CDF of impact momentum
 
@@ -301,7 +301,7 @@ def check_coverages(debris_items, coverages, rnd_state, coverage_area):
         else:
             # assume area: no_impacts * size(1) * amplification_factor(1)
             coverage.breached_area = rnd_state.poisson(poisson_rate)
-
+'''
 
 def create_sources(radius, angle, bldg_spacing, flag_staggered,
                    restrict_y_cord=False):
