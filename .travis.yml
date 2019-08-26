@@ -36,7 +36,7 @@ matrix:
     install:
     - choco install openssl.light;
     - choco install miniconda3 --params="'/AddToPath:1 /D:$MINICONDA_PATH_WIN'";
-    - conda config --set always_yes yes --set changeps1 no
+    - conda config --set always_yes yes
     - conda update -q conda
     - conda info -a
     - conda create -name vaws_env --file vaws_win64_py3.6.7.yml
