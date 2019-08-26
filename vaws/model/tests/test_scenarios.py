@@ -1235,13 +1235,9 @@ class TestScenario29(unittest.TestCase):
 
         path = os.sep.join(__file__.split(os.sep)[:-1])
         path_cfg = os.path.join(path, 'test_scenarios', 'test_scenario29')
-        #logging.basicConfig(level=logging.DEBUG)
         set_logger(path_cfg=path_cfg, logging_level='debug')
-        #logger = logging.getLogger(__name__)
         file_cfg = os.path.join(path_cfg, 'test_scenario29.cfg')
-        #cfg = Config(file_cfg=file_cfg, logger=logger)
         cfg = Config(file_cfg=file_cfg)
-
         cls.house = House(cfg, seed=0)
 
     def test_capacity(self):
