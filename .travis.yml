@@ -1,25 +1,15 @@
-language: python
 os:
   - linux
   - windows
+
 python:
   - "3.6"
-
-before_install:
-  # set conda path info
-  - if [[ "$TRAVIS_OS_NAME" != "windows" ]]; then
-      MINICONDA_PATH=$HOME/miniconda;
-      MINICONDA_SUB_PATH=$MINICONDA_PATH/bin;
-    elif [[ "$TRAVIS_OS_NAME" == "windows" ]]; then
-      MINICONDA_PATH=/c/tools/miniconda3/;
-      MINICONDA_PATH_WIN=`cygpath --windows $MINICONDA_PATH`;
-      MINICONDA_SUB_PATH=$MINICONDA_PATH/Scripts;
-    fi;
 
 matrix:
   include:
   - os: linux
     dist: bionic
+    language: python
     services:
     - xvfb
     install:
@@ -44,6 +34,11 @@ matrix:
     - xvfb-run -a python -m unittest discover ./vaws/model/tests
 
   - os: windows
+    before_install:
+    - MINICONDA_PATH=/c/tools/miniconda3/;
+    - MINICONDA_PATH_WIN=`cygpath --windows $MINICONDA_PATH`;
+    - MINICONDA_SUB_PATH=$MINICONDA_PATH/Scripts;
+ 
     install:
     - choco install openssl.light;
     - choco install miniconda3 --params="'/AddToPath:1 /D:$MINICONDA_PATH_WIN'";
@@ -53,6 +48,7 @@ matrix:
     - conda create -name vaws_env --file vaws_win64_py3.6.7.yml
     - conda activate vaws_env
     - conda --version ; python --version ; pip --version;
+
     after_success:
     - test $TRAVIS_BRANCH = "master" &&
       conda deactivate &&
