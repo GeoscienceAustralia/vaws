@@ -1,7 +1,7 @@
 
 package:
   name: "vaws"
-  version: "3.01"
+  version: "3.1"
 #  version: {{ environ['VERSION'] }}
 
 source:
@@ -12,72 +12,57 @@ build:
   entry_points:
     - vaws = vaws.gui.main:run_gui
     - vaws_cmd = vaws.model.main:main
-#  script_env:
-#   - VERSION
-#   - CONDA_BLD_PATH
+  build:
+    noarch_python: True
 
 requirements:
   build:
     - python
 
   run:
-    - python =3.6
     - blas =1.0
-    - ca-certificates >=2019.3.* # [osx]
-    - ca-certificates =2019.6 # [win]
-    - certifi >=2019.3.*
-    - cycler >=0.10.*
-    - freetype >=2.10.*
-    - geos >=3.7.*
-    - h5py >=2.8.*
-    - hdf5 >=1.10.*
+    - ca-certificates =2019.6.16 # [win]
+    - certifi =2019.6.16
+    - cycler =0.10
+    - freetype =2.10
+    - geos =3.7.2
+    - h5py =2.8
+    - hdf5 =1.10.4
     - icc_rt =2019.0 # [win]
     - icu =58.1 # [win]
-    - icu >=58.2 # [osx]
-    - intel-openmp =2019.4 # [win]
-    - jpeg >=9c
-    - kiwisolver >=1.1.*
-    - libblas >=3.8.*
-    - libcblas >=3.8.*
-    - libcxx >=8.0.* # [osx]
-    - libcxxabi >=8.0.* # [osx]
-    - libffi >=3.2.* # [osx]
-    - libgfortran >=3.0.* # [osx]
-    - liblapack >=3.8.*
-    - libpng >=1.6.* 
-    - matplotlib >=3.0.*
-    - matplotlib-base >=3.0.*
-    - mkl =2019.4 # [win]
-    - ncurses >=6.1.* # [osx]
-    - numpy >=1.16.*
-    - openblas >=0.3.* # [osx]
-    - openssl >=1.1.*
-    - pandas >=0.23.*
-    - pip >=19.1.*
-    - pyparsing >=2.4.*
-    - pyqt >=5.6.* # [osx]
-    - pyqt =5.9 # [win]
+    - intel-openmp =2019.4
+    - jpeg =9c
+    - kiwisolver =1.1.0
+    - libblas =3.8.0 # [win]
+    - libcblas =3.8.0 # [win]
+    - liblapack =3.8.0 # [win]
+    - libpng =1.6 
+    - matplotlib =3.0.3
+    - matplotlib-base =3.0.3 # [win]
+    - mkl =2019.4
+    - numpy x.x
+    - openssl =1.1.1c
+    - pandas =0.23.4
+    - pip =19.1.1
+    - pyparsing =2.4.0
+    - pyqt =5.9.2 
     - pyreadline =2.1 # [win]
-    - python >=3.6.7
-    - python-dateutil >=2.8.*
-    - pytz >=2019.1
-    - qt >=5.6.* # [osx]
-    - qt =5.9 # [win]
-    - readline >=7.0.* # [osx]
-    - scipy >=1.2.*
-    - setuptools >=41.0.*
-    - shapely >=1.6.*
-    - sip >=4.19.*
-    - six >=1.12.*
-    - sqlite >=3.28.*
-    - tk >=8.6.* # [osx]
-    - tornado >=6.0.*
+    - python =3.6.7
+    - python-dateutil =2.8.0
+    - pytz =2019.1
+    - qt =5.9.7
+    - scipy =1.2.1
+    - setuptools =41.0.1
+    - shapely =1.6.4
+    - sip =4.19.8
+    - six =1.12.0
+    - sqlite =3.29.0
+    - tornado =6.0.3
     - vc =14.1 # [win]
     - vs2015_runtime =14.15 # [win]
-    - wheel >=0.33.*
+    - wheel =0.33.4
     - wincertstore =0.2 # [win]
-    - xz >=5.2.* # [osx]
-    - zlib >=1.2.*
+    - zlib =1.2.11
 
 about:
   home: https://github.com/GeoscienceAustralia/vaws

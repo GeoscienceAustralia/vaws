@@ -11,14 +11,14 @@ from vaws.model.main import set_logger
 import logging
 
 
-def simulation(house, wind_speeds, conn_capacity={}, list_connections=[], 
-               coverage_capacity={}, list_coverages=[]):
+def simulation(house, wind_speeds, conn_capacity={}, list_connections=[],
+               coverage_capacity={}, list_coverages=[], multiplier=1.0):
 
     logger = logging.getLogger(__name__)
 
     # compute zone pressures
     house._wind_dir_index = 0
-    house._terrain_height_multiplier = 1.0  # profile: 6, height: 4.5
+    house._terrain_height_multiplier = multiplier  # profile: 6, height: 4.5
     house._construction_level = 'medium'
     house.damage_increment = 0.0
 
@@ -1227,7 +1227,42 @@ class TestScenario27(unittest.TestCase):
                    conn_capacity=conn_capacity,
                    list_connections=range(1, 36))
 
+
+class TestScenario29(unittest.TestCase):
+
+    @classmethod
+    def setUpClass(cls):
+
+        path = os.sep.join(__file__.split(os.sep)[:-1])
+        path_cfg = os.path.join(path, 'test_scenarios', 'test_scenario29')
+        #logging.basicConfig(level=logging.DEBUG)
+        set_logger(path_cfg=path_cfg, logging_level='debug')
+        #logger = logging.getLogger(__name__)
+        file_cfg = os.path.join(path_cfg, 'test_scenario29.cfg')
+        #cfg = Config(file_cfg=file_cfg, logger=logger)
+        cfg = Config(file_cfg=file_cfg)
+
+        cls.house = House(cfg, seed=0)
+
+    def test_capacity(self):
+
+        conn_capacity = {
+                         36.0: [77, 79],
+                         41.0: [74, 82],
+                         51.0: [76],
+                         55.0: [73, 81],
+                         64.0: [80],
+                         67.0: [78],
+                         70.0: [75, 83],
+                         }
+
+        simulation(self.house,
+                   wind_speeds=np.arange(30.0, 80, 1.0),
+                   conn_capacity=conn_capacity,
+                   list_connections=range(1, 83),
+                   multiplier=0.9)
+
 if __name__ == '__main__':
-    suite = unittest.TestLoader().loadTestsFromTestCase(TestScenario27)
+    suite = unittest.TestLoader().loadTestsFromTestCase(TestScenario29)
     unittest.TextTestRunner(verbosity=2).run(suite)
     #unittest.main(verbosity=2)
