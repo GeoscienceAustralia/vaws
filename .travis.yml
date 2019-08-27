@@ -42,7 +42,7 @@ matrix:
     - conda config --set always_yes yes --set changeps1 no;
     - conda update -q conda
     - conda info -a
-    - conda create -name vaws_env --file vaws_win64_py3.6.7.yml
+    - conda env create --name vaws_env --file vaws_win64_py3.6.7.yml
     - conda activate vaws_env
     - conda --version ; python --version ; pip --version;
 
