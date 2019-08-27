@@ -1,57 +1,29 @@
-matrix:
-  include:
-  - os: linux
-    dist: bionic
-    language: python
-    services:
-    - xvfb
-    install:
-    - sudo apt-get update
-    - wget https://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh -O miniconda.sh
-    - bash miniconda.sh -b -p $HOME/miniconda
-    - export PATH="$HOME/miniconda/bin:$PATH"
-    - hash -r
-    - conda config --set always_yes yes --set changeps1 no
-    - conda update -q conda
-    # Useful for debugging any issues with conda
-    - conda info -a
-    - conda create --name vaws_env --file vaws_linux64_py3.6.7.yml
-    - source activate vaws_env
-    #after_success:
-      #- test $TRAVIS_BRANCH = "master"
-      #conda deactivate &&
-      #conda install conda-build &&
-      #conda install anaconda-client &&
-      #bash ./build/conda_upload.sh
-    script:
-    - xvfb-run -a python -m unittest discover ./vaws/model/tests
+language: python
+os: linux
+python:
+    - "3.6"
+dist: bionic
+services:
+  - xvfb
+install:
+  - sudo apt-get update
+  - wget https://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh -O miniconda.sh
+  - bash miniconda.sh -b -p $HOME/miniconda
+  - export PATH="$HOME/miniconda/bin:$PATH"
+  - hash -r
+  - conda config --set always_yes yes --set changeps1 no
+  - conda update -q conda
+  # Useful for debugging any issues with conda
+  - conda info -a
+  - conda create --name vaws_env --file vaws_linux64_py3.6.7.yml
+  - source activate vaws_env
+after_success:
+  - test $TRAVIS_BRANCH = "master" &&
+    conda deactivate &&
+    conda install conda-build &&
+    conda install anaconda-client &&
+    bash ./build/conda_upload.sh
+script:
+  - xvfb-run -a python -m unittest discover ./vaws/model/tests
 
-  - os: windows
-    language: shell
-    before_install:
-    - MINICONDA_PATH=/c/tools/miniconda3/;
-    - MINICONDA_PATH_WIN=`cygpath --windows $MINICONDA_PATH`;
-    - MINICONDA_SUB_PATH=$MINICONDA_PATH/Scripts;
- 
-    install:
-    - choco install openssl.light;
-    - choco install miniconda3 --params="'/AddToPath:1 /D:$MINICONDA_PATH_WIN'";
-    - export PATH="MINICONDA_PATH:$MINICONDA_SUB_PATH:$PATH";
-    - source $MINICONDA_PATH/etc/profile.d/conda.sh;
-    - hash -r;
-    - conda config --set always_yes yes --set changeps1 no;
-    - conda update -q conda
-    - conda info -a
-    - conda config --append channels conda-forge
-    - conda config --get channels
-    - conda env create --name vaws_env --file vaws_win64_py3.6.7.yml
-    - conda activate vaws_env
-    after_success:
-    - test $TRAVIS_BRANCH = "master" &&
-      conda deactivate &&
-      conda install conda-build &&
-      conda install anaconda-client &&
-      bash ./build/conda_upload.sh
-    script:
-    - python -m unittest discover ./vaws/model/tests
 

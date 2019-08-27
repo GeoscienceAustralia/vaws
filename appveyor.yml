@@ -1,0 +1,31 @@
+version: "3.1"
+
+#environment:
+#  auth_token:
+#    secure: JX1qsRmmO9Lw2BUk9rVv4Eht+1vvE3wCS56PXjcWDQhGZs+Kj/38hzYb8T6zMKuS
+pull_requests:
+  do_not_increment_build_number: true
+branches:
+  only:
+  - master
+
+build: false
+
+environment:
+  matrix:
+    - PYTHON_VERSION: 3.6
+      MINICONDA: C:\Miniconda3
+
+init:
+  - "ECHO %PYTHON_VERSION% %MINICONDA%"
+
+install:
+  - "set PATH=%MINICONDA%;%MINICONDA%\\Scripts;%PATH%"
+  - conda config --set always_yes yes --set changeps1 no
+  - conda update -q conda
+  - conda info -a
+  - "conda env create --name test python=%PYTHON_VERSION% numpy scipy nose"
+  - activate test
+
+#test_script:
+#  - nosetests
