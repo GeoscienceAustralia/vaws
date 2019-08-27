@@ -7,13 +7,15 @@ source:
   path: ../
 
 build:
-  number: 0
+  number: 1
   entry_points:
     - vaws = vaws.gui.main:run_gui
     - vaws_cmd = vaws.model.main:main
+
 requirements:
   build:
     - python
+
   run:
     - blas =1.0
     - ca-certificates =2019.6.16 # [win]
@@ -64,8 +66,6 @@ requirements:
     - wheel =0.33.4
     - wincertstore =0.2 # [win]
     - zlib =1.2.11
-  run:
-    - python
 test:
   imports:
     - vaws
