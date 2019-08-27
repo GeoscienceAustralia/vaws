@@ -17,12 +17,12 @@ matrix:
     - conda info -a
     - conda create --name vaws_env --file vaws_linux64_py3.6.7.yml
     - source activate vaws_env
-    after_success:
-    - test $TRAVIS_BRANCH = "master" &&
-      conda deactivate &&
-      conda install conda-build &&
-      conda install anaconda-client &&
-      bash ./build/conda_upload.sh
+    #after_success:
+      #- test $TRAVIS_BRANCH = "master"
+      #conda deactivate &&
+      #conda install conda-build &&
+      #conda install anaconda-client &&
+      #bash ./build/conda_upload.sh
     script:
     - xvfb-run -a python -m unittest discover ./vaws/model/tests
 
@@ -46,8 +46,6 @@ matrix:
     - conda config --get channels
     - conda env create --name vaws_env --file vaws_win64_py3.6.7.yml
     - conda activate vaws_env
-    - conda --version ; python --version ; pip --version;
-
     after_success:
     - test $TRAVIS_BRANCH = "master" &&
       conda deactivate &&
