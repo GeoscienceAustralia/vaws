@@ -13,6 +13,8 @@ build:
     - vaws_cmd = vaws.model.main:main
 requirements:
   build:
+    - python
+  run:
     - blas =1.0
     - ca-certificates =2019.6.16 # [win]
     - ca-certificates =2019.5.15 # [linux]
