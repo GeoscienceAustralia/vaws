@@ -217,6 +217,12 @@
          <verstretch>0</verstretch>
         </sizepolicy>
        </property>
+       <property name="focusPolicy">
+        <enum>Qt::NoFocus</enum>
+       </property>
+       <property name="columnCount">
+        <number>5</number>
+       </property>
        <column>
         <property name="text">
          <string>Wall</string>
@@ -235,6 +241,11 @@
        <column>
         <property name="text">
          <string>Type</string>
+        </property>
+       </column>
+       <column>
+        <property name="text">
+         <string>Repair</string>
         </property>
        </column>
       </widget>

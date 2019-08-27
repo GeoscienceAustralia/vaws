@@ -36,7 +36,9 @@ class HouseViewer(QDialog, Ui_Dialog, PersistSizePosMixin):
             for _, _ps in grouped.iterrows():
                 _ = QTreeWidgetItem(ancestor, ['', _ps['description'],
                                                f"{_ps['area']:.3f}",
-                                               _ps['coverage_type']])
+                                               _ps['coverage_type'],
+                                               _ps['repair_type']],
+                                               )
         self.ui.tree.resizeColumnToContents(0)
         self.ui.tree.resizeColumnToContents(1)
 
