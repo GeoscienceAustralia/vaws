@@ -50,7 +50,8 @@ install:
     - cmd: conda env create --name vaws_env --file vaws_win64_py3.6.7.yml
     - cmd: activate vaws_env
     # add path
-    - cmd: SET PATH=%CONDA_INSTALL_LOCN%\envs\vaws_env\Library\bin;%PATH%
+    - cmd: cd C:\projects\vaws\vaws\gui
+    - cmd: call pyuic5 --from-imports --output main_ui.py ui\main.ui
 # Skip .NET project specific build phase.
 build: off
 
@@ -59,7 +60,6 @@ test_script:
     - cmd: python -m unittest -v
 
 on_success:
-    - cmd: C:\projects\vaws\vaws\gui\build_gui.cmd
     - cmd: conda deactivate 
     - cmd: conda install conda-build 
     - cmd: conda install anaconda-client
