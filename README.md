@@ -1,6 +1,4 @@
-[![Build Status](https://travis-ci.org/GeoscienceAustralia/vaws.svg?branch=master)](https://travis-ci.org/GeoscienceAustralia/vaws)    
-
-[![Build status](https://ci.appveyor.com/api/projects/status/0p3i8vu6s3mttafs?svg=true)](https://ci.appveyor.com/project/dynaryu/vaws)
+[![Build Status](https://travis-ci.org/GeoscienceAustralia/vaws.svg?branch=master)](https://travis-ci.org/GeoscienceAustralia/vaws)  [![Build status](https://ci.appveyor.com/api/projects/status/0p3i8vu6s3mttafs?svg=true)](https://ci.appveyor.com/project/dynaryu/vaws)
 
 # VAWS
 
