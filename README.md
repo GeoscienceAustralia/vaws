@@ -1,5 +1,7 @@
 [![Build Status](https://travis-ci.org/GeoscienceAustralia/vaws.svg?branch=master)](https://travis-ci.org/GeoscienceAustralia/vaws)    
 
+[![Build status](https://ci.appveyor.com/api/projects/status/0p3i8vu6s3mttafs?svg=true)](https://ci.appveyor.com/project/dynaryu/vaws)
+
 # VAWS
 
 Vulnerability and Adaptation to Wind Simulation (VAWS) is a software tool that can be used to model the vulnerability of small buildings such as domestic houses and light industrial sheds to wind. The primary use-case of VAWS is the examination of the change in vulnerability afforded by mitigation measures to upgrade a building’s resilience to wind hazard.
