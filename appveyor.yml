@@ -51,7 +51,6 @@ install:
     - cmd: activate vaws_env
     # add path
     - cmd: SET PATH=%CONDA_INSTALL_LOCN%\envs\vaws_env\Library\bin;%PATH%
-    - cmd: C:\projects\vaws\vaws\gui\build_gui.cmd
 # Skip .NET project specific build phase.
 build: off
 
@@ -60,7 +59,11 @@ test_script:
     - cmd: python -m unittest -v
 
 on_success:
-    - echo %APPVEYOR_REPO_TAG%
+    - cmd: C:\projects\vaws\vaws\gui\build_gui.cmd
+    - cmd: conda deactivate 
+    - cmd: conda install conda-build 
+    - cmd: conda install anaconda-client
+    - cmd: C:\projects\vaws\build\conda_upload.sh
     # Write the output file location to a file...cannot simply use conda build --output
     # because astropy_helpers prints out a message when it is freezing the version number during setup.
     #- python -c "from conda_build.api import get_output_file_path; p=get_output_file_path('extruder.recipe'); f=open('to_upload.txt', 'wb');f.write(p)"
