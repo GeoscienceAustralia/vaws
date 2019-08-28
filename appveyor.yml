@@ -51,7 +51,7 @@ install:
     - cmd: activate vaws_env
     # add path
     - cmd: cd C:\projects\vaws\vaws\gui
-    - cmd: pyuic5
+    - cmd: where pyuic5
       #- cmd: call pyuic5 --from-imports --output main_ui.py ui\main.ui
 # Skip .NET project specific build phase.
 build: off
