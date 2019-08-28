@@ -51,7 +51,6 @@ install:
     - cmd: activate vaws_env
     # add path
     - cmd: SET PATH=%CONDA_INSTALL_LOCN%\envs\vaws_env\Library\bin;%PATH%
-    - cmd: where pyrcc5
     - cmd: C:\projects\vaws\vaws\gui\build_gui.cmd
 # Skip .NET project specific build phase.
 build: off
