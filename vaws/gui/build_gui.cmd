@@ -8,12 +8,14 @@ del %PDIR%\vaws_rc.py
 
 echo Building UI
 where pyuic5
+call pyuic5.bat
 where pyrcc5
-pyuic5 --from-imports --output %PDIR%\main_ui.py %PDIR%\ui\main.ui
+call pyrcc5.bat
+REM pyuic5 --from-imports --output %PDIR%\main_ui.py %PDIR%\ui\main.ui
 REM powershell -Command "(gc %PDIR%\main_ui.py) -replace 'from matplotlibwidget','from vaws.gui.matplotlibwidget' | Out-File -encoding ASCII %PDIR%\main_ui.py
-pyuic5 %PDIR%\ui\house.ui -o %PDIR%\house_ui.py
+REM pyuic5 %PDIR%\ui\house.ui -o %PDIR%\house_ui.py
 
 echo Building resources
-pyrcc5 %PDIR%\vaws.qrc > %PDIR%\vaws_rc.py
+REM pyrcc5 %PDIR%\vaws.qrc > %PDIR%\vaws_rc.py
 
 echo done
