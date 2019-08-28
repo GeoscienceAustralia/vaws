@@ -41,6 +41,7 @@ install:
 
     # No need to install miniconda because appveyor comes with it.
 
+    - cmd: SET PATH=%CONDA_INSTALL_LOCN%;%CONDA_INSTALL_LOCN%\Scripts;%QT_BASE_PATH%;%PATH%
     - cmd: conda config --set always_yes true
     - cmd: conda update --quiet conda
     - cmd: conda info -a
@@ -49,7 +50,7 @@ install:
     - cmd: conda env create --name vaws_env --file vaws_win64_py3.6.7.yml
     - cmd: activate vaws_env
     # add path
-    - cmd: SET PATH=%CONDA_INSTALL_LOCN%;%CONDA_INSTALL_LOCN%\Scripts;%CONDA_INSTALL_LOCN%\envs\vaws_env\Library\bin;%QT_BASE_PATH%;%PATH%
+    - cmd: SET PATH=%CONDA_INSTALL_LOCN%\envs\vaws_env\Library\bin;%PATH%
     - cmd: where pyrcc5
     - cmd: C:\projects\vaws\vaws\gui\build_gui.cmd
 # Skip .NET project specific build phase.
