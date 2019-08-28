@@ -54,7 +54,7 @@ In the terminal client, enter the following command to create the environment ca
 
   .. code-block:: bash
 
-    conda create -n vaws_env python=3.6
+    conda create -n vaws_env
 
 .. _activate_environment:
 

@@ -1,31 +1,67 @@
-version: "3.1"
-
-#environment:
-#  auth_token:
-#    secure: JX1qsRmmO9Lw2BUk9rVv4Eht+1vvE3wCS56PXjcWDQhGZs+Kj/38hzYb8T6zMKuS
+# Configure appveyor for builds.
 pull_requests:
   do_not_increment_build_number: true
 branches:
   only:
   - master
 
-build: false
-
 environment:
-  matrix:
-    - PYTHON_VERSION: 3.6
-      MINICONDA: C:\Miniconda3
+  # Appveyor machines come with miniconda already installed.
+  CONDA_INSTALL_LOCN: "C:\\Miniconda-x64"
 
-init:
-  - "ECHO %PYTHON_VERSION% %MINICONDA%"
+  # Need this to set up compilation on Windows.
+  CMD_IN_ENV: cmd /E:ON /V:ON /C Obvious-CI\scripts\obvci_appveyor_python_build_env.cmd
+
+  #BINSTAR_TOKEN:
+  #  secure: In551w7v371boSMxAcNcHccXMbcLyVImifhayYopb02ZqkUGYV8QyDu1tjVbKaJz
+
+  matrix:
+    # Unfortunately, compiler/SDK configuration for 64 bit builds depends on
+    # python version. Right now conda build does not configure the SDK, and
+    # the appveyor setup only sets up the SDK once, so separate by python
+    # versions.
+   - TARGET_ARCH: "x64"
+     PYTHON_BUILD_RESTRICTIONS: "3.6*"
+     CONDA_PY: "36"
+    # For 32 bit builds there are no compiler issues, let Obvious-CI
+    # handle the matrix.
+    # - TARGET_ARCH: "x86"
+    #   PYTHON_BUILD_RESTRICTIONS: "2.7*|>=3.4"
+
+# We always use a 64-bit machine, but can build x86 distributions
+# with the TARGET_ARCH variable.
+platform:
+    - x64
 
 install:
-  - "set PATH=%MINICONDA%;%MINICONDA%\\Scripts;%PATH%"
-  - conda config --set always_yes yes --set changeps1 no
-  - conda update -q conda
-  - conda info -a
-  - "conda env create --name test python=%PYTHON_VERSION% numpy scipy nose"
-  - activate test
+    # Clone simply to get the script for setting up Windows build environment.
+    - cmd: git clone https://github.com/pelson/Obvious-CI.git
 
-#test_script:
-#  - nosetests
+    # No need to install miniconda because appveyor comes with it.
+    - cmd: SET PATH=%CONDA_INSTALL_LOCN%;%CONDA_INSTALL_LOCN%\Scripts;%PATH%
+
+    - cmd: conda config --set always_yes true
+    - cmd: conda update --quiet conda
+    - cmd: conda info -a
+    # Add for ruamel.yaml
+    - cmd: conda config --add channels conda-forge
+    - cmd: conda env create --name vaws_env --file vaws_win64_py3.6.7.yml
+
+# Skip .NET project specific build phase.
+build: off
+
+test_script:
+    # Not much of a real test yet, just try to build myself...
+    #- "%CMD_IN_ENV% conda build extruder.recipe"
+
+on_success:
+    - echo %APPVEYOR_REPO_TAG%
+    # Write the output file location to a file...cannot simply use conda build --output
+    # because astropy_helpers prints out a message when it is freezing the version number during setup.
+    #- python -c "from conda_build.api import get_output_file_path; p=get_output_file_path('extruder.recipe'); f=open('to_upload.txt', 'wb');f.write(p)"
+    # ...so that we can set a variable to the name of that output file.
+    #- set /P BUILT_PACKAGE=<to_upload.txt
+    #- echo %BUILT_PACKAGE%
+    # If this build is because of a tag make the conda package and upload it.
+    #- cmd: if "%APPVEYOR_REPO_TAG%"=="true" anaconda -t %BINSTAR_TOKEN% upload -u astropy %BUILT_PACKAGE%
+
