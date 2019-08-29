@@ -58,9 +58,9 @@ install:
     - cmd: del vaws_rc.py
     # building UI
     - cmd: python.exe -m PyQt5.uic.pyuic --from-imports --output main_ui.py ui\main.ui
+    - ps:  (gc main_ui.py) -replace 'from matplotlibwidget','from vaws.gui.matplotlibwidget' | Out-File -encoding ASCII main_ui.py
     - cmd: python.exe -m PyQt5.uic.pyuic ui\house.ui -o house_ui.py
     - cmd: python.exe -m PyQt5.pyrcc_main vaws.qrc > vaws_rc.py 
-    #- cmd: call C:\projects\vaws\vaws\gui\build_gui.cmd
 # Skip .NET project specific build phase.
 build: off
 
@@ -71,8 +71,7 @@ test_script:
 on_success:
     - cmd: conda deactivate 
     - cmd: conda install conda-build 
-    - cmd: conda install anaconda-client
-    - cmd: C:\projects\vaws\build\conda_upload.sh
+    - cmd: conda install anaconda-client 
     # Write the output file location to a file...cannot simply use conda build --output
     # because astropy_helpers prints out a message when it is freezing the version number during setup.
     #- python -c "from conda_build.api import get_output_file_path; p=get_output_file_path('extruder.recipe'); f=open('to_upload.txt', 'wb');f.write(p)"
