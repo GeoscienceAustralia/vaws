@@ -67,7 +67,7 @@ build: off
 
 test_script:
     # Not much of a real test yet, just try to build myself...
-    - cmd: python -m unittest -v
+    #- cmd: python -m unittest -v
 
 on_success:
     - cmd: conda env list
