@@ -37,7 +37,7 @@ platform:
 
 install:
     # Clone simply to get the script for setting up Windows build environment.
-    - cmd: git clone https://github.com/pelson/Obvious-CI.git
+    #- cmd: git clone https://github.com/pelson/Obvious-CI.git
 
     # No need to install miniconda because appveyor comes with it.
 
@@ -70,16 +70,17 @@ test_script:
     - cmd: python -m unittest -v
 
 on_success:
-    - cmd: conda deactivate 
+    - cmd: conda env list
+    - cmd: conda activate base
     - cmd: conda install conda-build 
     - cmd: conda install anaconda-client
     - cmd: SET PKG_NAME='vaws'
     - cmd: SET USER='dynaryu'
     - cmd: SET OS='win-64'
     - cmd: conda config --set anaconda_upload no
-    - cmd: conda build --output .> to_upload.txt
+    - cmd: conda-build --output .> to_upload.txt
     - cmd: SET /P BUILT_PACKAGE=<to_upload.txt
-    - cmd: conda build .
+    - cmd: conda-build .
       #- cmd: anaconda -t %BINSTAR_TOKEN% upload -u %USER% %BUILT_PACKAGE%
     # Write the output file location to a file...cannot simply use conda build --output
     # because astropy_helpers prints out a message when it is freezing the version number during setup.
