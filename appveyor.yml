@@ -44,14 +44,14 @@ install:
     - cmd: SET PATH=%CONDA_INSTALL_LOCN%;%CONDA_INSTALL_LOCN%\Scripts;%QT_BASE_PATH%;%PATH%
     - cmd: conda config --set always_yes true
     - cmd: conda update --quiet conda
-    - cmd: conda info -a
     # Add for ruamel.yaml
     - cmd: conda config --add channels conda-forge
     - cmd: conda env create --name vaws_env --file vaws_win64_py3.6.7.yml
     - cmd: activate vaws_env
     # add path
     #- cmd: cd C:\projects\vaws\vaws\gui
-    - cmd: cd %CONDA_INSTALL_LOCN\Lib\site-packages
+    - cmd: conda info -a
+    - cmd: cd %CONDA_INSTALL_LOCN%\Lib\site-packages
     - cmd: dir PyQt5
     - cmd: python.exe -m PyQt5.uic.pyuic 
       #- cmd: call pyuic5 --from-imports --output main_ui.py ui\main.ui
