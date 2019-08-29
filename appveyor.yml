@@ -75,13 +75,12 @@ on_success:
     - cmd: conda install conda-build 
     - cmd: conda install anaconda-client
     - cmd: SET PKG_NAME='vaws'
-    - cmd: SET USER='dynaryu'
     - cmd: SET OS='win-64'
     - cmd: conda config --set anaconda_upload no
     - cmd: conda-build --output .> to_upload.txt
     - cmd: SET /P BUILT_PACKAGE=<to_upload.txt
     - cmd: echo %BUILT_PACKAGE%
-    - cmd: anaconda -t %BINSTAR_TOKEN% upload -u %USER% %BUILT_PACKAGE%
+    - cmd: anaconda -t %BINSTAR_TOKEN% upload --user dynaryu %BUILT_PACKAGE%
     # Write the output file location to a file...cannot simply use conda build --output
     # because astropy_helpers prints out a message when it is freezing the version number during setup.
     #- python -c "from conda_build.api import get_output_file_path; p=get_output_file_path('extruder.recipe'); f=open('to_upload.txt', 'wb');f.write(p)"
