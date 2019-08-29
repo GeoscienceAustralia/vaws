@@ -51,8 +51,9 @@ install:
     # add path
     #- cmd: cd C:\projects\vaws\vaws\gui
     - cmd: conda info -a
-    - cmd: cd %CONDA_INSTALL_LOCN%\envs\vaws_env\Lib\site-packages
-    - cmd: dir PyQt5
+    - cmd: SET PATH=%CONDA_PREFIX%\Lib\site-packages;%PATH%
+    #- cmd: cd %CONDA_INSTALL_LOCN%\envs\vaws_env\Lib\site-packages
+    #- cmd: dir PyQt5
     - cmd: python.exe -m PyQt5.uic.pyuic 
       #- cmd: call pyuic5 --from-imports --output main_ui.py ui\main.ui
 # Skip .NET project specific build phase.
