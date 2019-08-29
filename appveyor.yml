@@ -52,10 +52,15 @@ install:
     #- cmd: cd C:\projects\vaws\vaws\gui
     - cmd: conda info -a
     - cmd: SET PATH=%CONDA_PREFIX%\Lib\site-packages;%PATH%
-    #- cmd: cd %CONDA_INSTALL_LOCN%\envs\vaws_env\Lib\site-packages
-    #- cmd: dir PyQt5
-    #- cmd: python.exe -m PyQt5.uic.pyuic 
-    - cmd: call C:\projects\vaws\vaws\gui\build_gui.cmd
+    # pyuic5
+    - cmd: cd C:\projects\vaws\vaws\gui
+    - cmd: del *_ui.py
+    - cmd: del vaws_rc.py
+    # building UI
+    - cmd: python.exe -m PyQt5.uic.pyuic --from-imports --output main_ui.py ui\main.ui
+    - cmd: python.exe -m PyQt5.uic.pyuic ui\house.ui -o house_ui.py
+    - cmd: python.exe -m PyQt5.pyrcc_main vaws.qrc > vaws_rc.py 
+    #- cmd: call C:\projects\vaws\vaws\gui\build_gui.cmd
 # Skip .NET project specific build phase.
 build: off
 
