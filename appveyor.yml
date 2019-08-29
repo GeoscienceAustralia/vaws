@@ -50,8 +50,10 @@ install:
     - cmd: conda env create --name vaws_env --file vaws_win64_py3.6.7.yml
     - cmd: activate vaws_env
     # add path
-    - cmd: cd C:\projects\vaws\vaws\gui
-    - cmd: python -m PyQT5.uic.pyuic 
+    #- cmd: cd C:\projects\vaws\vaws\gui
+    - cmd: cd %CONDA_INSTALL_LOCN\Lib\site-packages
+    - cmd: dir PyQt5
+    - cmd: python.exe -m PyQt5.uic.pyuic 
       #- cmd: call pyuic5 --from-imports --output main_ui.py ui\main.ui
 # Skip .NET project specific build phase.
 build: off
