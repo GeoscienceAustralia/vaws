@@ -82,7 +82,8 @@ on_success:
     - cmd: DEL to_upload.txt
     - cmd: conda-build %CD% 
     - cmd: if exist %BUILT_PACKAGE% echo %BUILT_PACKAGE%
-    - cmd: if exist %BUILT_PACKAGE% anaconda -t %BINSTAR_TOKEN% upload %BUILT_PACKAGE% -u dynaryu
+    - cmd: if exist %BUILT_PACKAGE% anaconda -t %BINSTAR_TOKEN%
+    - cmd: if exist %BUILT_PACKAGE anaconda upload upload %BUILT_PACKAGE% -u dynaryu
       #- cmd: anaconda -t %CONDA_UPLOAD_TOKEN% upload %BUILT_PACKAGE% -u dynaryu --force
     # Write the output file location to a file...cannot simply use conda build --output
     # because astropy_helpers prints out a message when it is freezing the version number during setup.
