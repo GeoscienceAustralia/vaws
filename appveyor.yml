@@ -67,29 +67,16 @@ build: off
 
 test_script:
     # Not much of a real test yet, just try to build myself...
-    #- cmd: python -m unittest -v
+    - cmd: python -m unittest -v
 
 on_success:
     - cmd: conda activate base
     - cmd: conda install conda-build 
     - cmd: conda install anaconda-client
     - cmd: cd C:\projects\vaws\build
-      #- cmd: SET PKG_NAME='vaws'
-      #- cmd: SET OS='win-64'
-      #- cmd: conda config --set anaconda_upload no
     - cmd: conda-build %CD% --output > to_upload.txt
     - cmd: SET /P BUILT_PACKAGE=<to_upload.txt
     - cmd: DEL to_upload.txt
     - cmd: conda-build %CD% 
-    - cmd: if exist %BUILT_PACKAGE% echo %BUILT_PACKAGE%
-    - cmd: if exist %BUILT_PACKAGE anaconda -t dy-bb05a04c-0364-4127-b968-907f69b10bd9 upload %BUILT_PACKAGE% -u dynaryu --force
-      #- cmd: anaconda -t %CONDA_UPLOAD_TOKEN% upload %BUILT_PACKAGE% -u dynaryu --force
-    # Write the output file location to a file...cannot simply use conda build --output
-    # because astropy_helpers prints out a message when it is freezing the version number during setup.
-    #- python -c "from conda_build.api import get_output_file_path; p=get_output_file_path('extruder.recipe'); f=open('to_upload.txt', 'wb');f.write(p)"
-    # ...so that we can set a variable to the name of that output file.
-    #- set /P BUILT_PACKAGE=<to_upload.txt
-    #- echo %BUILT_PACKAGE%
-    # If this build is because of a tag make the conda package and upload it.
-    #- cmd: if "%APPVEYOR_REPO_TAG%"=="true" anaconda -t %BINSTAR_TOKEN% upload -u astropy %BUILT_PACKAGE%
-
+    - cmd: if exist %BUILT_PACKAGE anaconda -t 5b1134da89a6f38805987e48 upload %BUILT_PACKAGE% -u dynaryu --force
+   
