@@ -15,7 +15,7 @@ environment:
   #CMD_IN_ENV: cmd /E:ON /V:ON /C Obvious-CI\scripts\obvci_appveyor_python_build_env.cmd
 
   BINSTAR_TOKEN:
-    secure: 5b1134da89a6f38805987e48
+    secure: ogT8kvT5wdebz4QKH92LOdbLtq0QMCVSpYmvqhveKE/Nzi/zI7yxVgGlhqJrrKkU
 
   matrix:
     # Unfortunately, compiler/SDK configuration for 64 bit builds depends on
@@ -40,7 +40,6 @@ install:
     #- cmd: git clone https://github.com/pelson/Obvious-CI.git
 
     # No need to install miniconda because appveyor comes with it.
-
     - cmd: SET PATH=%CONDA_INSTALL_LOCN%;%CONDA_INSTALL_LOCN%\Scripts;%QT_BASE_PATH%;%PATH%
     - cmd: conda config --set always_yes true
     - cmd: conda update --quiet conda
@@ -70,6 +69,7 @@ test_script:
     - cmd: python -m unittest -v
 
 on_success:
+    - cmd: ECHO %BINSTAR_TOKEN%
     - cmd: conda activate base
     - cmd: conda install conda-build 
     - cmd: conda install anaconda-client
