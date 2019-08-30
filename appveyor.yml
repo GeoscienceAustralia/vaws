@@ -77,9 +77,9 @@ on_success:
       #- cmd: SET PKG_NAME='vaws'
       #- cmd: SET OS='win-64'
       #- cmd: conda config --set anaconda_upload no
-    - cmd: conda-build --output .> to_upload.txt
-    - cmd: SET /P BUILT_PACKAGE=<to_upload.txt
-    - cmd: echo %BUILT_PACKAGE%
+    - cmd: conda-build %cd% 
+    #- cmd: SET /P BUILT_PACKAGE=<to_upload.txt
+    #- cmd: echo %BUILT_PACKAGE%
     - cmd: cd %CONDA_PREFIX%\conda-bld\win-64
     - cmd: dir
       #- cmd: anaconda upload %BUILT_PACKAGE% -u dynaryu
