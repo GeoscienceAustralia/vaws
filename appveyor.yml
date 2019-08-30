@@ -77,12 +77,12 @@ on_success:
       #- cmd: SET PKG_NAME='vaws'
       #- cmd: SET OS='win-64'
       #- cmd: conda config --set anaconda_upload no
-    - cmd: conda-build %cd% 
-    #- cmd: SET /P BUILT_PACKAGE=<to_upload.txt
-    #- cmd: echo %BUILT_PACKAGE%
-    - cmd: cd %CONDA_PREFIX%\conda-bld\win-64
-    - cmd: dir
-      #- cmd: anaconda upload %BUILT_PACKAGE% -u dynaryu
+    - cmd: conda-build --output %CD% > to_upload.txt
+    - cmd: SET /P BUILT_PACKAGE=<to_upload.txt
+    - cmd: DEL to_upload.txt
+    - cmd: echo %BUILT_PACKAGE%
+      #- cmd: cd %CONDA_PREFIX%\conda-bld\win-64
+    - cmd: if exist %BUILT_PACKAGE% anaconda -t %BINSTAR_TOKEN% upload %BUILT_PACKAGE% -u dynaryu
       #- cmd: anaconda -t %CONDA_UPLOAD_TOKEN% upload %BUILT_PACKAGE% -u dynaryu --force
     # Write the output file location to a file...cannot simply use conda build --output
     # because astropy_helpers prints out a message when it is freezing the version number during setup.
