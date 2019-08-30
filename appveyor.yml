@@ -79,5 +79,5 @@ on_success:
     - cmd: DEL to_upload.txt
     - cmd: conda-build %CD%
     #- cmd: cd %CONDA_INSTALL_LOCN%\conda-bld\win-64\
-    - ps: cmd /C anaconda --token 5b1134da89a6f38805987e48 upload %BUILT_PACKAGE% --force "4>&1"
+    - ps: cmd /C anaconda --token 5b1134da89a6f38805987e48 upload -u dynaryu %BUILT_PACKAGE% --force "4>&1"
       #- cmd: if exist %BUILT_PACKAGE anaconda --token 5b1134da89a6f38805987e48 upload -u dynaryu %BUILT_PACKAGE% --force
