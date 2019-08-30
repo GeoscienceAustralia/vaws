@@ -12,7 +12,7 @@ environment:
   PYQT5_VERSION: 5.9.7
   QT_BASE_PATH: "C:\\QT\\5.9.7"
   # Need this to set up compilation on Windows.
-  CMD_IN_ENV: cmd /E:ON /V:ON /C Obvious-CI\scripts\obvci_appveyor_python_build_env.cmd
+  #CMD_IN_ENV: cmd /E:ON /V:ON /C Obvious-CI\scripts\obvci_appveyor_python_build_env.cmd
 
   BINSTAR_TOKEN:
     secure: dy-bb05a04c-0364-4127-b968-907f69b10bd9
@@ -54,8 +54,8 @@ install:
     - cmd: SET PATH=%CONDA_PREFIX%\Lib\site-packages;%PATH%
     # pyuic5
     - cmd: cd C:\projects\vaws\vaws\gui
-    - cmd: del *_ui.py
-    - cmd: del vaws_rc.py
+    #- cmd: del *_ui.py
+    #- cmd: del vaws_rc.py
     # building UI
     - cmd: python.exe -m PyQt5.uic.pyuic --from-imports --output main_ui.py ui\main.ui
     - ps:  (gc main_ui.py) -replace 'from matplotlibwidget','from vaws.gui.matplotlibwidget' | Out-File -encoding ASCII main_ui.py
