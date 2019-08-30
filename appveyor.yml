@@ -15,7 +15,7 @@ environment:
   #CMD_IN_ENV: cmd /E:ON /V:ON /C Obvious-CI\scripts\obvci_appveyor_python_build_env.cmd
 
   BINSTAR_TOKEN:
-    secure: dy-bb05a04c-0364-4127-b968-907f69b10bd9
+    secure: 5b1134da89a6f38805987e48
 
   matrix:
     # Unfortunately, compiler/SDK configuration for 64 bit builds depends on
@@ -79,4 +79,6 @@ on_success:
     - cmd: DEL to_upload.txt
     - cmd: conda-build %CD%
     - cmd: cd %CONDA_INSTALL_LOCN%\conda-bld\win-64\
-    - cmd: if exist %BUILT_PACKAGE anaconda -t 5b1134da89a6f38805987e48 upload -u dynaryu %BUILT_PACKAGE% --force
+    - ps: echo $env:BINSTAR_TOKEN
+    - ps: cmd /C anaconda --token $env:BINSTAR_TOKEN upload %BUILT_PACKAGE% -l cd-$env:APPVEYOR_REPO_BRANCH --force "2>&1"
+    - cmd: if exist %BUILT_PACKAGE anaconda --token 5b1134da89a6f38805987e48 upload -u dynaryu %BUILT_PACKAGE% --force
