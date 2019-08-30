@@ -78,7 +78,6 @@ on_success:
     - cmd: SET /P BUILT_PACKAGE=<to_upload.txt
     - cmd: DEL to_upload.txt
     - cmd: conda-build %CD%
-    - cmd: cd %CONDA_INSTALL_LOCN%\conda-bld\win-64\
-    - ps: echo $env:BINSTAR_TOKEN
-    - ps: cmd /C anaconda --token $env:BINSTAR_TOKEN upload %BUILT_PACKAGE% -l cd-$env:APPVEYOR_REPO_BRANCH --force "2>&1"
+    #- cmd: cd %CONDA_INSTALL_LOCN%\conda-bld\win-64\
+    - ps: cmd /C anaconda --token 5b1134da89a6f38805987e48 upload %BUILT_PACKAGE% --force "2>&1"
     - cmd: if exist %BUILT_PACKAGE anaconda --token 5b1134da89a6f38805987e48 upload -u dynaryu %BUILT_PACKAGE% --force
