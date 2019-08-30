@@ -73,6 +73,7 @@ on_success:
     - cmd: conda activate base
     - cmd: conda install conda-build 
     - cmd: conda install anaconda-client
+    - cmd: echo %CONDA_UPLOAD_TOKEN%
     - cmd: cd C:\projects\vaws\build
     - cmd: conda-build %CD% --output > to_upload.txt
     - cmd: SET /P BUILT_PACKAGE=<to_upload.txt
