@@ -75,7 +75,7 @@ on_success:
     - cmd: conda install conda-build 
     - cmd: conda install anaconda-client
     - cmd: conda info -a
-    - cmd: conda upload --help
+    - cmd: anaconda upload --help 
       #- cmd: SET PKG_NAME='vaws'
       #- cmd: SET OS='win-64'
       #- cmd: conda config --set anaconda_upload no
