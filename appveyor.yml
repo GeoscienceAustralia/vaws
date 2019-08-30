@@ -70,21 +70,19 @@ test_script:
     #- cmd: python -m unittest -v
 
 on_success:
-    - cmd: conda env list
     - cmd: conda activate base
     - cmd: conda install conda-build 
     - cmd: conda install anaconda-client
-    - cmd: conda info -a
-    - cmd: anaconda upload --help 
-    - cmd: SET PKG_NAME='vaws'
-    - cmd: SET OS='win-64'
-    - cmd: conda config --set anaconda_upload no
+    - cmd: cd C:\projects\vaws\build
+      #- cmd: SET PKG_NAME='vaws'
+      #- cmd: SET OS='win-64'
+      #- cmd: conda config --set anaconda_upload no
     - cmd: conda-build --output .> to_upload.txt
     - cmd: SET /P BUILT_PACKAGE=<to_upload.txt
     - cmd: echo %BUILT_PACKAGE%
     - cmd: cd %CONDA_PREFIX%\conda-bld\win-64
     - cmd: dir
-    - cmd: anaconda upload %BUILT_PACKAGE% -u dynaryu
+      #- cmd: anaconda upload %BUILT_PACKAGE% -u dynaryu
       #- cmd: anaconda -t %CONDA_UPLOAD_TOKEN% upload %BUILT_PACKAGE% -u dynaryu --force
     # Write the output file location to a file...cannot simply use conda build --output
     # because astropy_helpers prints out a message when it is freezing the version number during setup.
