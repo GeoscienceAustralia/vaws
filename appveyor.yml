@@ -50,7 +50,8 @@ install:
     - cmd: conda config --set always_yes true
     - cmd: conda update --quiet conda
     # Add for ruamel.yaml
-    - cmd: conda config --add channels conda-forge
+    - cmd: conda config --append channels conda-forge
+    #- cmd: conda config --add channels conda-forge
     - cmd: conda env create --name vaws_env --file vaws_win64_py3.6.7.yml
     - cmd: activate vaws_env
     # add path
@@ -78,6 +79,8 @@ on_success:
     - cmd: conda activate base
     - cmd: conda install conda-build 
     - cmd: conda install anaconda-client
+    - cmd: conda info -a
+    - cmd: conda list
     - cmd: cd C:\projects\vaws\build
     - cmd: conda-build %CD% --output > to_upload.txt
     - cmd: SET /P BUILT_PACKAGE=<to_upload.txt
