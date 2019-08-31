@@ -83,4 +83,4 @@ on_success:
     - cmd: SET /P BUILT_PACKAGE=<to_upload.txt
     - cmd: DEL to_upload.txt
     - cmd: conda-build %CD%
-    - cmd: if exist %BUILT_PACKAGE% anaconda --token %BINSTAR_TOKEN% upload -u dynaryu %BUILT_PACKAGE% --force "4>&1"
+    - cmd: if exist %BUILT_PACKAGE% anaconda --token %BINSTAR_TOKEN% upload -u dynaryu %BUILT_PACKAGE% --force

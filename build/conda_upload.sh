@@ -7,7 +7,7 @@ OS=$TRAVIS_OS_NAME-64
 conda config --set anaconda_upload no
 # export CONDA_BLD_PATH=~/conda-bld
 #export VERSION=`date +%Y.%m.%d`
-PACKAGE_NAME_FULL=$(conda build --output .)
+PACKAGE_NAME_FULL=$(conda build --output . --python=3.6)
 conda build . --numpy=1.16 --python=3.6
 if [ -e "$PACKAGE_NAME_FULL" ]; then
     anaconda -t $CONDA_UPLOAD_TOKEN upload -u $USER $PACKAGE_NAME_FULL --force
