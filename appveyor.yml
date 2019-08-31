@@ -14,6 +14,12 @@ environment:
   # Need this to set up compilation on Windows.
   #CMD_IN_ENV: cmd /E:ON /V:ON /C Obvious-CI\scripts\obvci_appveyor_python_build_env.cmd
 
+  # below the secure to upload to anaconda cloud
+  # take the anaconda token generated from the command line
+  # anaconda auth -n the_token_name --max-age 22896000 -c --scopes api
+  # and copy paste to
+  # https://ci.appveyor.com/tools/encrypt
+  # then copy/paste the result below
   BINSTAR_TOKEN:
     secure: ogT8kvT5wdebz4QKH92LOdbLtq0QMCVSpYmvqhveKE/Nzi/zI7yxVgGlhqJrrKkU
 
@@ -69,7 +75,6 @@ test_script:
     - cmd: python -m unittest -v
 
 on_success:
-    - cmd: ECHO %BINSTAR_TOKEN%
     - cmd: conda activate base
     - cmd: conda install conda-build 
     - cmd: conda install anaconda-client
@@ -78,6 +83,4 @@ on_success:
     - cmd: SET /P BUILT_PACKAGE=<to_upload.txt
     - cmd: DEL to_upload.txt
     - cmd: conda-build %CD%
-    #- cmd: cd %CONDA_INSTALL_LOCN%\conda-bld\win-64\
-    - ps: cmd /C anaconda --token dy-70728e40-d779-4241-89cc-0a2b258cd8d2 upload -u dynaryu %BUILT_PACKAGE% --force "4>&1"
-      #- cmd: if exist %BUILT_PACKAGE anaconda --token 5b1134da89a6f38805987e48 upload -u dynaryu %BUILT_PACKAGE% --force
+    - cmd: if exist %BUILT_PACKAGE% anaconda --token %BINSTAR_TOKEN% upload -u dynaryu %BUILT_PACKAGE% --force "4>&1"
