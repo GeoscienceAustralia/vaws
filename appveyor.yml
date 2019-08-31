@@ -51,8 +51,7 @@ install:
     - cmd: conda update --quiet conda
     # Add for ruamel.yaml
     # cmd: conda config --append channels conda-forge
-    #- cmd: conda config --add channels conda-forge
-    - cmd: conda info -a
+    - cmd: conda config --add channels conda-forge
     - cmd: conda env create --name vaws_env --file vaws_win64_py3.6.7.yml
     - cmd: activate vaws_env
     # add path
