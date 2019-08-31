@@ -10,6 +10,7 @@ conda config --set anaconda_upload no
 PACKAGE_NAME_FULL=$(conda build --output . --python=3.6)
 conda build . --numpy=1.16 --python=3.6
 if [ -e "$PACKAGE_NAME_FULL" ]; then
+    echo $PACKAGE_NAME_FULL
     anaconda -t $CONDA_UPLOAD_TOKEN upload -u $USER $PACKAGE_NAME_FULL --force
 else
     echo "File does not exist"
