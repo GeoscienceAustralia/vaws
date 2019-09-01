@@ -84,5 +84,5 @@ on_success:
     - cmd: SET /P BUILT_PACKAGE=<to_upload.txt
     - cmd: DEL to_upload.txt
     - cmd: conda build purge
-    - cmd: conda build . --numpy=1.6 --python=3.6
+    - cmd: conda build . --numpy=1.16 --python=3.6
     - cmd: if exist %BUILT_PACKAGE% anaconda --token %BINSTAR_TOKEN% upload -u dynaryu %BUILT_PACKAGE% --force
