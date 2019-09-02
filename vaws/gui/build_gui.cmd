@@ -12,4 +12,5 @@ powershell -Command "(gc %PDIR%\main_ui.py) -replace 'from matplotlibwidget','fr
 call pyuic5 %PDIR%\ui\house.ui -o %PDIR%\house_ui.py
 
 echo Building resources
-call pyrcc5 -o %PDIR%\vaws_rc.py %PDIR%\vaws.qrc 
+call pyrcc5 -o %PDIR%\vaws_rc.py %PDIR%\vaws.qrc
+
