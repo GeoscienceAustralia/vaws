@@ -1,5 +1,5 @@
 # Configure appveyor for builds.
-version: 3.2.{build}
+version: 3.02.{build}
 pull_requests:
   do_not_increment_build_number: true
 branches:
