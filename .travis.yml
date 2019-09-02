@@ -23,7 +23,7 @@ after_success:
     conda deactivate &&
     conda install conda-build &&
     conda install anaconda-client &&
-    bash ./reipe/conda_upload.sh
+    bash ./recipe/conda_upload.sh
 script:
   - xvfb-run -a python -m unittest discover ./vaws/model/tests
 
