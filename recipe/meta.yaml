@@ -18,23 +18,21 @@ requirements:
 
   run:
     - blas ==1.0
-    - ca-certificates ==2019.6.16 # [win]
-    - ca-certificates =2019.5.15 # [linux]
+    - ca-certificates ==2019.5.15
     - certifi ==2019.6.16
     - cycler ==0.10
     - freetype ==2.10 # [win]
-    - freetype =2.9.1 # [linux]
+    - freetype ==2.9.1 # [linux]
     - geos ==3.7.2 # [win]
-    - geos =3.7.1 # [linux]
+    - geos ==3.7.1 # [linux]
     - h5py ==2.8
     - hdf5 ==1.10.4 # [win]
-    - hdf5 =1.10.2 # [linux]
+    - hdf5 ==1.10.2 # [linux]
     - icc_rt ==2019.0 # [win]
-    - icu ==58.1 # [win]
-    - icu =58.2 # [linux]
+    - icu ==58.2 
     - intel-openmp ==2019.4
     - jpeg ==9c # [win]
-    - jpeg =9b # [linux]
+    - jpeg ==9b # [linux]
     - kiwisolver ==1.1.0
     - libblas ==3.8.0 # [win]
     - libcblas ==3.8.0 # [win]
