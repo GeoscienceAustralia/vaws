@@ -94,9 +94,13 @@ class Connection(object):
     @influences.setter
     def influences(self, _dic):
         assert isinstance(_dic, dict)
-        self._influences = {}
-        for key, value in _dic.items():
-            self._influences[key] = Influence(name=key, coeff=value)
+        if self._influences:
+            for key, value in _dic.items():
+                self._influences[key] = Influence(name=key, coeff=value)
+        else:
+            self._influences = {}
+            for key, value in _dic.items():
+                self._influences[key] = Influence(name=key, coeff=value)
 
     @property
     def influence_patch(self):

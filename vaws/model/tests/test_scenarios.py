@@ -1266,7 +1266,47 @@ class TestScenario29(unittest.TestCase):
                    list_connections=range(1, 83),
                    multiplier=0.9)
 
+
+class TestScenario30(unittest.TestCase):
+
+    @classmethod
+    def setUpClass(cls):
+        path = os.sep.join(__file__.split(os.sep)[:-1])
+        logging.basicConfig(level=logging.WARNING)
+        logger = logging.getLogger(__name__)
+        file_cfg = os.path.join(path, 'test_scenarios',
+                                'test_scenario30', 'test_scenario30.cfg')
+        cfg = Config(file_cfg=file_cfg, logger=logger)
+        cls.house = House(cfg, seed=0)
+
+        ''' in case logging
+        path = os.sep.join(__file__.split(os.sep)[:-1])
+        path_cfg = os.path.join(path, 'test_scenarios', 'test_scenario29')
+        set_logger(path_cfg=path_cfg, logging_level='debug')
+        file_cfg = os.path.join(path_cfg, 'test_scenario29.cfg')
+        cfg = Config(file_cfg=file_cfg)
+        cls.house = House(cfg, seed=0)
+        '''
+    def test_capacity(self):
+
+        conn_capacity = {
+                         32.0: [77, 79],
+                         37.0: [74, 82],
+                         41.0: [78],
+                         46.0: [76],
+                         50.0: [73, 81],
+                         58.0: [80],
+                         63.0: [75, 83],
+                         }
+
+        simulation(self.house,
+                   wind_speeds=np.arange(30.0, 80, 1.0),
+                   conn_capacity=conn_capacity,
+                   list_connections=range(1, 83),
+                   multiplier=1.0)
+
+
 if __name__ == '__main__':
-    suite = unittest.TestLoader().loadTestsFromTestCase(TestScenario29)
+    suite = unittest.TestLoader().loadTestsFromTestCase(TestScenario30)
     unittest.TextTestRunner(verbosity=2).run(suite)
     #unittest.main(verbosity=2)

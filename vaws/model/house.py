@@ -806,7 +806,6 @@ class House(object):
                 self.link_connection_to_influence(connection)
 
     def link_connection_to_influence(self, connection):
-        msg = 'unable to associate {conn} with {name} wrt influence'
         # linking connections either zones or connections
         for _, inf in connection.influences.items():
             try:
@@ -815,8 +814,8 @@ class House(object):
                 try:
                     inf.source = self.connections[inf.name]
                 except KeyError:
-                    self.logger.warning(msg.format(conn=connection.name,
-                                               name=inf.name))
+                    msg = f'unable to associate {connection.name} with {inf.name} wrt influence'
+                    self.logger.warning(msg)
 
     def assign_costing(self, damage_scenario):
         """
