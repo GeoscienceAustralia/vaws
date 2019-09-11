@@ -1,6 +1,6 @@
 package:
   name: "vaws"
-  version: "3.2"
+  version: "3.3"
 #  version: {{ environ['VERSION'] }}
 
 source:
@@ -56,7 +56,8 @@ requirements:
     - zlib ==1.2.11
 test:
   imports:
-    - vaws
+    - from vaws.model.main import main 
+    - from vaws.gui.main import run_gui
 
 about:
   home: https://github.com/GeoscienceAustralia/vaws

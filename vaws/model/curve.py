@@ -3,7 +3,6 @@
     This module contains functions related to fragility and vulnerability curves.
 
 """
-from __future__ import division, print_function
 import logging
 import warnings
 
@@ -13,8 +12,6 @@ from scipy.optimize import curve_fit, OptimizeWarning, minimize
 from scipy.stats import weibull_min, lognorm, multinomial
 from collections import OrderedDict
 
-SMALL_VALUE = 1.0e-2
-
 
 def no_within_bounds(row, bounds):
     freq = np.histogram(row, bins=bounds)[0]
@@ -22,10 +19,9 @@ def no_within_bounds(row, bounds):
 
 
 def compute_pe(row, denom):
-    _dic = {}
-    for i in range(1, 5):
-        _dic[f'pe{i}'] = np.sum([row[f'n{i}'] for j in range(4, i-1, -1)]) / denom
-    return pd.Series(_dic)
+    ps = np.cumsum(row[::-1])[:-1] / denom
+    ps.rename({x: x.replace('n', 'pe') for x in ps.index}, inplace=True)
+    return ps[::-1]
 
 
 def likelihood(param, data, idx):
@@ -140,7 +136,7 @@ def fit_fragility_curves(cfg, dmg_idx):
         results = minimize(likelihood, method='L-BFGS-B', x0=[med0, std0],
                            args=(df, i,), bounds=[bounds_med, bounds_sig])
 
-        if results.success:
+        if results.success & (not np.isnan(results.x[0])):
             frag_counted['MLE'][state] = dict(param1=results.x[0],
                                               param2=results.x[1])
             use_old = True

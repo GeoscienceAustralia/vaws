@@ -7,8 +7,6 @@ Debris Module - adapted from JDH Consulting and Martin's work
     - handle collisions (impact)
 """
 
-from __future__ import division, print_function
-
 import logging
 
 import numpy as np

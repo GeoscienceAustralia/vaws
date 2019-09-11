@@ -873,7 +873,7 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
                             self.cfg.wind_speeds[0], self.cfg.wind_speeds[-1])
 
         try:
-            df_counted = self.results_dict['fragility']['counted'].values
+            df_counted = self.results_dict['fragility']['counted']
 
         except KeyError:
             self.logger.warning('Fragility curve can not be constructed')
@@ -883,8 +883,8 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
             for i, (ds, value) in enumerate(self.cfg.fragility.iterrows(), 1):
 
                 ax.plot(self.cfg.wind_speeds,
-                        df_counted[:, len(self.cfg.fragility_i_states) + i],
-                        f"{value['color']}+")
+                        df_counted[f'pe{i}'].values,
+                        f"{value['color']}o")
 
                 try:
                     param1 = self.results_dict['fragility']['MLE'][ds]['param1']
@@ -1070,13 +1070,18 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
         grouped = self.cfg.connections.loc[
             self.cfg.connections.group_name == group_name]
 
-        load = np.array([self.results_dict['connection']['load'][i]
-                         for i in grouped.index])[:, ispeed, house_number-1]
+        #load = np.array([self.results_dict['connection']['load'][i]
+        #                 for i in grouped.index])[:, ispeed, house_number-1]
 
-        _min, _max = min(load), max(load)
+        # maintain vmin, vmax for all speed and house
+        tmp = np.array([self.results_dict['connection']['load'][i]
+                         for i in grouped.index])
+
+        _min, _max = tmp.min(), tmp.max()
         v_min = _min - np.sign(_min) * 0.05 * _min
         v_max = _max + np.sign(_max) * 0.05 * _max
 
+        load = tmp[:, ispeed, house_number-1]
         load[load == 0.0] = -1.0 * np.inf
 
         try:

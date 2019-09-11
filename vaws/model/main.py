@@ -211,7 +211,7 @@ def save_results_to_files(cfg, bucket):
             group.create_dataset('counted', data=df_counted)
             column_names = ','.join([x for x in df_counted.columns.tolist()])
             group['counted'].attrs['column_names'] = column_names
-            # bucket['fragility']['counted'] = df_counted
+            bucket['fragility']['counted'] = df_counted
 
             for fitting in ['MLE', 'OLS']:
                 if frag_counted[fitting]:

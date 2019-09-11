@@ -3,8 +3,6 @@
     This module contains Connection class, ConnectionTypeGroup class, and Influence class.
 
 """
-from __future__ import division, print_function
-
 import numpy as np
 import logging
 

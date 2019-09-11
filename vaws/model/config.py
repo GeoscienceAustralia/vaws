@@ -42,8 +42,6 @@
         * differential shielding may be indirectly disabled by setting 'building_spacing' to 0
 """
 
-from __future__ import division, print_function
-
 import os
 import sys
 import logging
