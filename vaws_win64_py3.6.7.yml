@@ -16,12 +16,8 @@ dependencies:
 - intel-openmp=2019.4
 - jpeg=9b
 - kiwisolver=1.1.0
-- libblas=3.8.0
-- libcblas=3.8.0
-- liblapack=3.8.0
 - libpng=1.6.37
 - matplotlib=3.0.3
-  #- matplotlib-base=3.0.3
 - mkl=2019.4
 - numpy=1.16.4
 - openssl=1.1.1c
@@ -29,7 +25,6 @@ dependencies:
 - pip=19.1.1
 - pyparsing=2.4.0
 - pyqt=5.9.2
-- pyreadline=2.1
 - python=3.6.7
 - python-dateutil=2.8.0
 - pytz=2019.1
@@ -42,7 +37,6 @@ dependencies:
 - sqlite=3.29.0
 - tornado=6.0.3
 - vc=14.1
-- vs2015_runtime=14.15.26706
 - wheel=0.33.4
 - wincertstore=0.2
 - zlib=1.2.11

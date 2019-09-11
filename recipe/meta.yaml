@@ -30,9 +30,6 @@ requirements:
     - intel-openmp ==2019.4
     - jpeg ==9b
     - kiwisolver ==1.1.0
-      #- libblas ==3.8.0 # [win]
-      #- libcblas ==3.8.0 # [win]
-      #- liblapack ==3.8.0 # [win]
     - libpng ==1.6.37 
     - matplotlib ==3.0.3
     - mkl ==2019.4
@@ -42,7 +39,6 @@ requirements:
     - pip ==19.1.1
     - pyparsing ==2.4.0
     - pyqt ==5.9.2 
-    - pyreadline ==2.1 # [win]
     - python ==3.6.7
     - python-dateutil ==2.8.0
     - pytz ==2019.1
@@ -55,7 +51,6 @@ requirements:
     - sqlite ==3.29.0
     - tornado ==6.0.3
     - vc ==14.1 # [win]
-    - vs2015_runtime ==14.15.26706 # [win]
     - wheel ==0.33.4
     - wincertstore ==0.2 # [win]
     - zlib ==1.2.11
