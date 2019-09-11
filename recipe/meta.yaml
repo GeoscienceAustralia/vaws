@@ -56,8 +56,8 @@ requirements:
     - zlib ==1.2.11
 test:
   imports:
-    - from vaws.model.main import main 
-    - from vaws.gui.main import run_gui
+    - vaws.model.main
+    - vaws.gui.main
 
 about:
   home: https://github.com/GeoscienceAustralia/vaws
