@@ -30,9 +30,9 @@ requirements:
     - intel-openmp ==2019.4
     - jpeg ==9b
     - kiwisolver ==1.1.0
-    - libblas ==3.8.0 # [win]
-    - libcblas ==3.8.0 # [win]
-    - liblapack ==3.8.0 # [win]
+      #- libblas ==3.8.0 # [win]
+      #- libcblas ==3.8.0 # [win]
+      #- liblapack ==3.8.0 # [win]
     - libpng ==1.6.37 
     - matplotlib ==3.0.3
     - mkl ==2019.4
