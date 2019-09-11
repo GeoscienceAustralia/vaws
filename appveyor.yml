@@ -55,6 +55,7 @@ install:
     # cmd: conda config --append channels conda-forge
     - cmd: conda env create --name vaws_env --file vaws_win64_py3.6.7.yml
     - cmd: activate vaws_env
+    - cmd: conda list
     # add path
     #- cmd: cd C:\projects\vaws\vaws\gui
     - cmd: SET PATH=%CONDA_PREFIX%\Lib\site-packages;%PATH%
