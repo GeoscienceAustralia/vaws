@@ -1,0 +1,722 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>Program Logic &#8212; VAWS 3.3 documentation</title>
+    <link rel="stylesheet" href="_static/classic.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Glossary" href="glossary.html" />
+    <link rel="prev" title="Use of the GUI" href="ch04_use_GUI.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="glossary.html" title="Glossary"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="ch04_use_GUI.html" title="Use of the GUI"
+             accesskey="P">previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">VAWS 3.3 documentation</a> &#187;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <span class="target" id="logic"></span><div class="section" id="program-logic">
+<h1>Program Logic<a class="headerlink" href="#program-logic" title="Permalink to this headline">¶</a></h1>
+<p>This chapter describes the logic of the program.</p>
+<div class="section" id="overall-logic">
+<h2>Overall logic<a class="headerlink" href="#overall-logic" title="Permalink to this headline">¶</a></h2>
+<p>The program is built around the following high level sequence:</p>
+<ol class="arabic simple">
+<li>Create a group of models</li>
+</ol>
+<blockquote>
+<div><ul class="simple">
+<li>For each model<ul>
+<li><a class="reference internal" href="#sample-wind-direction-section"><span class="std std-ref">sample wind direction</span></a></li>
+<li><a class="reference internal" href="#sample-construction-level-section"><span class="std std-ref">sample construction quality level</span></a></li>
+<li><a class="reference internal" href="#sample-wind-profile-section"><span class="std std-ref">sample wind profile</span></a></li>
+<li><a class="reference internal" href="#set-terrain-height-section"><span class="std std-ref">set terrain height multiplier</span></a></li>
+<li><a class="reference internal" href="#set-shielding-section"><span class="std std-ref">set shielding multiplier</span></a></li>
+<li><a class="reference internal" href="#set-coverages-section"><span class="std std-ref">set up coverages</span></a></li>
+<li><a class="reference internal" href="#set-zones-section"><span class="std std-ref">set up zones</span></a></li>
+<li><a class="reference internal" href="#set-connections-section"><span class="std std-ref">set up connections</span></a></li>
+</ul>
+</li>
+</ul>
+</div></blockquote>
+<ol class="arabic simple" start="2">
+<li>Calculate damage indices of the models over a range of wind speeds</li>
+</ol>
+<blockquote>
+<div><ul class="simple">
+<li>For each wind speed<ul>
+<li>simulate damage for each model<ul>
+<li><a class="reference internal" href="#compute-qz-section"><span class="std std-ref">compute free stream wind pressure</span></a></li>
+<li><a class="reference internal" href="#compute-zone-pressure-section"><span class="std std-ref">compute zone pressures</span></a></li>
+<li><a class="reference internal" href="#compute-coverage-load-section"><span class="std std-ref">compute coverage load and check damage</span></a></li>
+<li><a class="reference internal" href="#compute-connection-load-section"><span class="std std-ref">compute connection loads</span></a></li>
+<li><a class="reference internal" href="#check-connection-damage-section"><span class="std std-ref">check damage of each connection by connection group</span></a></li>
+<li><a class="reference internal" href="#update-influence-section"><span class="std std-ref">update influence by connection group</span></a></li>
+<li><a class="reference internal" href="#check-model-collapse-section"><span class="std std-ref">check model collapse</span></a></li>
+<li><a class="reference internal" href="#update-cpi-section"><span class="std std-ref">run debris model and update Cpi</span></a></li>
+<li><a class="reference internal" href="#compute-damage-index-section"><span class="std std-ref">compute damage index</span></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#compute-damage-increment-section"><span class="std std-ref">compute damage index increment</span></a></li>
+</ul>
+</li>
+</ul>
+</div></blockquote>
+<ol class="arabic simple" start="3">
+<li><a class="reference internal" href="#save-output-section"><span class="std std-ref">Fit fragility and vulnerability curves and save outputs</span></a></li>
+</ol>
+</div>
+<div class="section" id="detailed-logic">
+<h2>Detailed logic<a class="headerlink" href="#detailed-logic" title="Permalink to this headline">¶</a></h2>
+<p>Detailed description of the logic is explained in the following sections by module.</p>
+<div class="section" id="main-module">
+<h3>Main module<a class="headerlink" href="#main-module" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="compute-damage-index-increment-compute-damage-increment">
+<span id="compute-damage-increment-section"></span><h4>compute damage index increment (<code class="xref py py-func docutils literal notranslate"><span class="pre">compute_damage_increment()</span></code>)<a class="headerlink" href="#compute-damage-index-increment-compute-damage-increment" title="Permalink to this headline">¶</a></h4>
+<p>The increment of mean damage index for the group of models is computed. If the computed increment is less than zero, then zero value is returned.</p>
+</div>
+<div class="section" id="fit-fragility-and-vulnerability-curves-and-save-outputs-save-results-to-files">
+<span id="save-output-section"></span><h4>fit fragility and vulnerability curves and save outputs (<code class="xref py py-func docutils literal notranslate"><span class="pre">save_results_to_files()</span></code>)<a class="headerlink" href="#fit-fragility-and-vulnerability-curves-and-save-outputs-save-results-to-files" title="Permalink to this headline">¶</a></h4>
+<p>Based on the simulation results, fragility (see <a class="reference internal" href="#fit-fragility-section"><span class="std std-ref">fit fragility</span></a>) and vulnerability curves (see <a class="reference internal" href="#fit-fragility-section"><span class="std std-ref">fit vulnerability</span></a>) are fitted. The output file <cite>results.h5</cite> is also created, and the values of the selected attributes are saved. See <a class="reference internal" href="ch03_input.html#output-file-section"><span class="std std-ref">output file</span></a> for the list of attributes.</p>
+</div>
+</div>
+<div class="section" id="house-module">
+<h3>House module<a class="headerlink" href="#house-module" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="sample-wind-direction-house-wind-dir-index">
+<span id="sample-wind-direction-section"></span><h4>sample wind direction (<code class="xref py py-attr docutils literal notranslate"><span class="pre">House.wind_dir_index</span></code>)<a class="headerlink" href="#sample-wind-direction-house-wind-dir-index" title="Permalink to this headline">¶</a></h4>
+<p>The wind direction is set up at the time of model creation, and kept constant during the simulation over a range of wind speeds. If <cite>wind_direction</cite> (<a class="reference internal" href="ch03_input.html#section-main-table"><span class="std std-numref">Table 1</span></a>) is ‘RANDOM’, then wind direction is randomly sampled among the eight directions.</p>
+</div>
+<div class="section" id="sample-construction-quality-level-house-construction-level">
+<span id="sample-construction-level-section"></span><h4>sample construction quality level (<code class="xref py py-attr docutils literal notranslate"><span class="pre">House.construction_level</span></code>)<a class="headerlink" href="#sample-construction-quality-level-house-construction-level" title="Permalink to this headline">¶</a></h4>
+<p>A set of mean and coefficient of variation (CV) factors for connection strength is defined for each construction quality level with likelihood as listed in <a class="reference internal" href="ch03_input.html#section-construction-levels-table"><span class="std std-numref">Table 4</span></a>. Construction level for each model is determined from a random sampling, and the corresponding mean and CV factors are later multiplied to arithmetic mean and standard deviation of connection strength as <a class="reference internal" href="#equation-mean-cv-factors-eq">(6)</a>:</p>
+<div class="math notranslate nohighlight" id="equation-mean-cv-factors-eq">
+<span class="eqno">(6)<a class="headerlink" href="#equation-mean-cv-factors-eq" title="Permalink to this equation">¶</a></span>\[\begin{split}\mu_{adj} &amp;= \mu \times f_{\mu} \\
+\sigma_{adj} &amp;= \sigma \times f_{\mu} \times f_{\text{cv}}\end{split}\]</div>
+<p>where <span class="math notranslate nohighlight">\(\mu_{adj}\)</span> and <span class="math notranslate nohighlight">\(\sigma_{adj}\)</span>: adjusted mean and standard deviation of connection strength reflecting construction quality level, respectively, <span class="math notranslate nohighlight">\(\mu\)</span> and <span class="math notranslate nohighlight">\(\sigma\)</span>: mean and standard deviation of connection strength, <span class="math notranslate nohighlight">\(f_{\mu}\)</span> and <span class="math notranslate nohighlight">\(f_{\text{cv}}\)</span>: mean and CV factors for connection strength.</p>
+</div>
+<div class="section" id="sample-wind-profile-house-profile-index">
+<span id="sample-wind-profile-section"></span><h4>sample wind profile (<code class="xref py py-attr docutils literal notranslate"><span class="pre">House.profile_index</span></code>)<a class="headerlink" href="#sample-wind-profile-house-profile-index" title="Permalink to this headline">¶</a></h4>
+<p>A set of gust envelope wind profiles is read from <cite>wind_profiles</cite> (<a class="reference internal" href="ch03_input.html#section-main-table"><span class="std std-numref">Table 1</span></a>). Note that each profile is a normalized profile whose value is normalized to 1 at 10 metres height. An example profile is shown in <a class="reference internal" href="ch03_input.html#wind-profile-fig"><span class="std std-numref">Fig. 9</span></a>. One profile is randomly chosen for each model and kept constant during the simulation over a range of wind speeds.</p>
+</div>
+<div class="section" id="set-terrain-height-multiplier-house-terrain-height-multiplier">
+<span id="set-terrain-height-section"></span><h4>set terrain height multiplier (<code class="xref py py-attr docutils literal notranslate"><span class="pre">House.terrain_height_multiplier</span></code>)<a class="headerlink" href="#set-terrain-height-multiplier-house-terrain-height-multiplier" title="Permalink to this headline">¶</a></h4>
+<p>The terrain height multiplier (<span class="math notranslate nohighlight">\(M_{z,cat}\)</span>) value at the model height is calculated by the interpolation using the selected wind profile over height.</p>
+</div>
+<div class="section" id="set-shielding-multiplier-house-shielding-multiplier">
+<span id="set-shielding-section"></span><h4>set shielding multiplier (<code class="xref py py-attr docutils literal notranslate"><span class="pre">House.shielding_multiplier</span></code>)<a class="headerlink" href="#set-shielding-multiplier-house-shielding-multiplier" title="Permalink to this headline">¶</a></h4>
+<p>The shielding multiplier (<span class="math notranslate nohighlight">\(M_{s}\)</span>) value is determined based on the location. If the value of <cite>regional_shielding_factor</cite> is less or equal to 0.85, which means that the model is located in Australian urban areas, then <span class="math notranslate nohighlight">\(M_{s}\)</span> value is sampled based on the proportion of each type of shielding listed in <a class="reference internal" href="#shielding-table"><span class="std std-numref">Table 26</span></a>. Otherwise, <span class="math notranslate nohighlight">\(M_{s}\)</span> value is set to be 1.0, which corresponds to <cite>No shielding</cite>. The proportion of shielding type is adopted following the recommendation in JDH Consulting, 2010 <a class="reference internal" href="zbibliography.html#jdh2010" id="id1">[3]</a>.</p>
+<span id="shielding-table"></span><table border="1" class="docutils" id="id8">
+<caption><span class="caption-number">Table 26 </span><span class="caption-text">Proportion of shielding type</span><a class="headerlink" href="#id8" title="Permalink to this table">¶</a></caption>
+<colgroup>
+<col width="33%" />
+<col width="33%" />
+<col width="33%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">Type</th>
+<th class="head"><span class="math notranslate nohighlight">\(M_{s}\)</span> value</th>
+<th class="head">Proportion</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td>Full shielding</td>
+<td>0.85</td>
+<td>63%</td>
+</tr>
+<tr class="row-odd"><td>Partial shielding</td>
+<td>0.95</td>
+<td>15%</td>
+</tr>
+<tr class="row-even"><td>No shielding</td>
+<td>1.0</td>
+<td>22%</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="section" id="set-action-combination-factor-house-combination-factor">
+<span id="combination-factor-section"></span><h4>set action combination factor (<code class="xref py py-attr docutils literal notranslate"><span class="pre">House.combination_factor</span></code>)<a class="headerlink" href="#set-action-combination-factor-house-combination-factor" title="Permalink to this headline">¶</a></h4>
+<p>In the AS/NZS 1170.2 <a class="reference internal" href="zbibliography.html#asnzs-1170-2" id="id2">[1]</a>, the action combination factor, <span class="math notranslate nohighlight">\(K_{c}\)</span> is defined to reduce wind pressure when wind pressures from more than one building surfaces, for example walls and roof, contribute significantly to a peak load effect. When <span class="math notranslate nohighlight">\(C_{pi}\)</span> is between -0.2 and +0.2, then the effect is ignored. Otherwise 0.9 is used.</p>
+</div>
+<div class="section" id="set-up-coverages-house-set-coverages">
+<span id="set-coverages-section"></span><h4>set up coverages (<code class="xref py py-meth docutils literal notranslate"><span class="pre">House.set_coverages()</span></code>)<a class="headerlink" href="#set-up-coverages-house-set-coverages" title="Permalink to this headline">¶</a></h4>
+<p>The coverages make up the wall part of the envelope of the model. Two failure mechanism are implemented: 1) failure by wind load and 2) failure by windborne debris.</p>
+<p>A set of coverage components (<a class="reference internal" href="vaws.model.html#vaws.model.coverage.Coverage" title="vaws.model.coverage.Coverage"><code class="xref py py-class docutils literal notranslate"><span class="pre">Coverage</span></code></a>) is defined using the information provided in the input files of <a class="reference internal" href="ch03_input.html#coverages-csv-section"><span class="std std-ref">coverages.csv</span></a>, <a class="reference internal" href="ch03_input.html#coverage-types-csv-section"><span class="std std-ref">coverage_types.csv</span></a> and <a class="reference internal" href="ch03_input.html#coverages-cpe-csv-section"><span class="std std-ref">coverages_cpe.csv</span></a>.
+The <span class="math notranslate nohighlight">\(C_{pe}\)</span> and strength values for each coverage component are sampled when it is defined. The windward direction for each coverage component is assigned from among <cite>windward</cite>, <cite>leeward</cite>, <cite>side1</cite>, or <cite>side2</cite>, which is used in determining the windward direction of dominant opening due to coverage failure.</p>
+</div>
+<div class="section" id="set-up-zones-house-set-zones">
+<span id="set-zones-section"></span><h4>set up zones (<code class="xref py py-meth docutils literal notranslate"><span class="pre">House.set_zones()</span></code>)<a class="headerlink" href="#set-up-zones-house-set-zones" title="Permalink to this headline">¶</a></h4>
+<p>A set of zone components (<a class="reference internal" href="vaws.model.html#vaws.model.zone.Zone" title="vaws.model.zone.Zone"><code class="xref py py-class docutils literal notranslate"><span class="pre">Zone</span></code></a>) is defined using the information provided in the input files of <a class="reference internal" href="ch03_input.html#zones-csv-section"><span class="std std-ref">zones.csv</span></a>, <a class="reference internal" href="ch03_input.html#zones-cpe-mean-csv-section"><span class="std std-ref">zones_cpe_mean.csv</span></a>, <a class="reference internal" href="ch03_input.html#zones-cpe-str-mean-csv-section"><span class="std std-ref">zones_cpe_str_mean.csv</span></a>, <a class="reference internal" href="ch03_input.html#zones-cpe-eave-mean-csv-section"><span class="std std-ref">zones_cpe_eave_mean.csv</span></a>, and <a class="reference internal" href="ch03_input.html#zones-edges-csv-section"><span class="std std-ref">zones_edges.csv</span></a>. The <span class="math notranslate nohighlight">\(C_{pe}\)</span> value for each zone component is sampled when it is defined.</p>
+</div>
+<div class="section" id="set-up-connections-house-set-connections">
+<span id="set-connections-section"></span><h4>set up connections (<code class="xref py py-meth docutils literal notranslate"><span class="pre">House.set_connections()</span></code>)<a class="headerlink" href="#set-up-connections-house-set-connections" title="Permalink to this headline">¶</a></h4>
+<p>A set of connection components (<a class="reference internal" href="vaws.model.html#vaws.model.connection.Connection" title="vaws.model.connection.Connection"><code class="xref py py-class docutils literal notranslate"><span class="pre">Connection</span></code></a>) is defined using the information provided in the input files of <a class="reference internal" href="ch03_input.html#conn-groups-csv-section"><span class="std std-ref">conn_groups.csv</span></a>, <a class="reference internal" href="ch03_input.html#conn-types-csv-section"><span class="std std-ref">conn_types.csv</span></a>, <a class="reference internal" href="ch03_input.html#connections-csv-section"><span class="std std-ref">connections.csv</span></a>, <a class="reference internal" href="ch03_input.html#influences-csv-section"><span class="std std-ref">influences.csv</span></a>, and <a class="reference internal" href="ch03_input.html#influence-patches-csv-section"><span class="std std-ref">influence_patches.csv</span></a>. The strength and dead load values for each connection component are sampled and influence and influence patch for each connection are also defined with reference to either zone or another connection components.</p>
+<p>A set of connection type group (<a class="reference internal" href="vaws.model.html#vaws.model.connection.ConnectionTypeGroup" title="vaws.model.connection.ConnectionTypeGroup"><code class="xref py py-class docutils literal notranslate"><span class="pre">ConnectionTypeGroup</span></code></a>) is also defined, and reference is created to relate a connection component to a connection type group. A connection type group is further divided into sub-group by section in order to represent load distribution area within the same group. For instance roof sheetings on a hip roof are divided into a number of sheeting sub-groups to represent areas divided by roof ridge lines.</p>
+</div>
+<div class="section" id="set-footprint-for-debris-impact-house-footprint">
+<h4>set footprint for debris impact (<code class="xref py py-attr docutils literal notranslate"><span class="pre">House.footprint</span></code>)<a class="headerlink" href="#set-footprint-for-debris-impact-house-footprint" title="Permalink to this headline">¶</a></h4>
+<p>Once the wind direction of the model is determined, the footprint for debris impact is created by rotating the model footprint with regard to the wind direction as set out in <a class="reference internal" href="#rotation-angle-table"><span class="std std-numref">Table 27</span></a> (<code class="xref py py-attr docutils literal notranslate"><span class="pre">House.footprint</span></code>). The boundary for debris impact assessment is also defined with the radius of boundary (<code class="xref py py-attr docutils literal notranslate"><span class="pre">Config.impact_boundary</span></code>). Note that all the debris sources are assumed to be located in the East of the model when debris impact to the model is simulated.</p>
+<span id="rotation-angle-table"></span><table border="1" class="docutils" id="id9">
+<caption><span class="caption-number">Table 27 </span><span class="caption-text">Rotation angle by wind direction</span><a class="headerlink" href="#id9" title="Permalink to this table">¶</a></caption>
+<colgroup>
+<col width="50%" />
+<col width="50%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">Wind direction</th>
+<th class="head">Rotation angle (deg)</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td>S or N</td>
+<td>90</td>
+</tr>
+<tr class="row-odd"><td>SW or NE</td>
+<td>45</td>
+</tr>
+<tr class="row-even"><td>E or W</td>
+<td>0</td>
+</tr>
+<tr class="row-odd"><td>SE or NW</td>
+<td>-45</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="section" id="set-up-coverages-for-debris-impact-house-debris-coverages">
+<h4>set up coverages for debris impact (<code class="xref py py-attr docutils literal notranslate"><span class="pre">House.debris_coverages</span></code>)<a class="headerlink" href="#set-up-coverages-for-debris-impact-house-debris-coverages" title="Permalink to this headline">¶</a></h4>
+<p>Once the wind direction of the model is determined, the coverages for debris impact are selected based on the wind direction.</p>
+</div>
+<div class="section" id="calculate-free-stream-wind-pressure-house-compute-qz">
+<span id="compute-qz-section"></span><h4>calculate free stream wind pressure (<code class="xref py py-meth docutils literal notranslate"><span class="pre">House.compute_qz()</span></code>)<a class="headerlink" href="#calculate-free-stream-wind-pressure-house-compute-qz" title="Permalink to this headline">¶</a></h4>
+<p>The free stream wind pressure, <span class="math notranslate nohighlight">\(q_{z}\)</span> is calculated as <a class="reference internal" href="#equation-qz-eq">(7)</a>:</p>
+<div class="math notranslate nohighlight" id="equation-qz-eq">
+<span class="eqno">(7)<a class="headerlink" href="#equation-qz-eq" title="Permalink to this equation">¶</a></span>\[q_{z} = \frac{1}{2}\times\rho_{air} \times \left( V \times M_{z,cat} \times M_{s} \right)^2 \times 1.0\text{e-}3\]</div>
+<p>where <span class="math notranslate nohighlight">\(\rho_{air}\)</span>: air density (=1.2 <span class="math notranslate nohighlight">\(\text{kg}/\text{m}^{3}\)</span>), <span class="math notranslate nohighlight">\(V\)</span>: 3-sec gust wind speed at 10m height, <span class="math notranslate nohighlight">\(M_{z,cat}\)</span>: terrain-height multiplier, <span class="math notranslate nohighlight">\(M_{s}\)</span>: shielding multiplier. Note that <span class="math notranslate nohighlight">\(1.0\text{e-}3\)</span> is multiplied to convert the unit of the wind pressure from Pa to kPa.</p>
+</div>
+<div class="section" id="check-model-collapse-house-check-collapse">
+<span id="check-model-collapse-section"></span><h4>check model collapse (<code class="xref py py-meth docutils literal notranslate"><span class="pre">House.check_collapse()</span></code>)<a class="headerlink" href="#check-model-collapse-house-check-collapse" title="Permalink to this headline">¶</a></h4>
+<p>The model is deemed to be collapsed if the proportion of damaged components out of the total components is greater than the value of <em>trigger_collapse_at</em>, which is listed in <a class="reference internal" href="ch03_input.html#conn-groups-table"><span class="std std-numref">Table 11</span></a>, for any group with non-zero value of <em>trigger_collapse_at</em>.</p>
+</div>
+<div class="section" id="run-debris-model-and-update-cpi-house-run-debris-and-update-cpi">
+<span id="update-cpi-section"></span><h4>run debris model and update <span class="math notranslate nohighlight">\(C_{pi}\)</span> (<code class="xref py py-meth docutils literal notranslate"><span class="pre">House.run_debris_and_update_cpi()</span></code>)<a class="headerlink" href="#run-debris-model-and-update-cpi-house-run-debris-and-update-cpi" title="Permalink to this headline">¶</a></h4>
+<p>If the value of <em>debris</em> is <em>True</em> (see <a class="reference internal" href="ch03_input.html#section-options-table"><span class="std std-numref">Table 2</span></a>), then debris impact to the model is simulated. See <a class="reference internal" href="#debris-module-section"><span class="std std-ref">Debris module</span></a> for more details.</p>
+<p>The internal pressure coefficient, <span class="math notranslate nohighlight">\(C_{pi}\)</span> is determined based on <a class="reference internal" href="#cpi-no-dominant-table"><span class="std std-numref">Table 28</span></a> and <a class="reference internal" href="#cpi-dominant-table"><span class="std std-numref">Table 29</span></a> depending on the existence of dominant opening by either coverage failure or debris breach, which are revised from Tables 5.1(A) and 5.1(B) of AS/NZS 1170.2 <a class="reference internal" href="zbibliography.html#asnzs-1170-2" id="id3">[1]</a>, respectively.</p>
+<span id="cpi-no-dominant-table"></span><table border="1" class="docutils" id="id10">
+<caption><span class="caption-number">Table 28 </span><span class="caption-text"><span class="math notranslate nohighlight">\(C_{pi}\)</span> for buildings without dominant openings</span><a class="headerlink" href="#id10" title="Permalink to this table">¶</a></caption>
+<colgroup>
+<col width="50%" />
+<col width="50%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">Condition</th>
+<th class="head"><span class="math notranslate nohighlight">\(C_{pi}\)</span></th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td>All walls equally breached</td>
+<td>-0.3</td>
+</tr>
+<tr class="row-odd"><td>Two or three windward walls equally breached</td>
+<td>0.2</td>
+</tr>
+<tr class="row-even"><td>Two or three non-windward walls equally breached</td>
+<td>-0.3</td>
+</tr>
+</tbody>
+</table>
+<span id="cpi-dominant-table"></span><table border="1" class="docutils" id="id11">
+<caption><span class="caption-number">Table 29 </span><span class="caption-text"><span class="math notranslate nohighlight">\(C_{pi}\)</span> for buildings with dominant openings</span><a class="headerlink" href="#id11" title="Permalink to this table">¶</a></caption>
+<colgroup>
+<col width="25%" />
+<col width="25%" />
+<col width="25%" />
+<col width="25%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">Ratio of dominant opening to total open area (<span class="math notranslate nohighlight">\(r\)</span>)</th>
+<th class="head">Dominant opening on windward wall</th>
+<th class="head">Dominant opening on leeward wall</th>
+<th class="head">Dominant opening on side wall</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td><span class="math notranslate nohighlight">\(r &lt;\)</span> 0.5</td>
+<td>-0.3</td>
+<td>-0.3</td>
+<td>-0.3</td>
+</tr>
+<tr class="row-odd"><td>0.5 <span class="math notranslate nohighlight">\(\leq r &lt;\)</span> 1.5</td>
+<td>0.2</td>
+<td>-0.3</td>
+<td>-0.3</td>
+</tr>
+<tr class="row-even"><td>1.5 <span class="math notranslate nohighlight">\(\leq r &lt;\)</span> 2.5</td>
+<td>0.7 <span class="math notranslate nohighlight">\(C_{pe}\)</span></td>
+<td><span class="math notranslate nohighlight">\(C_{pe}\)</span></td>
+<td><span class="math notranslate nohighlight">\(C_{pe}\)</span></td>
+</tr>
+<tr class="row-odd"><td>2.5 <span class="math notranslate nohighlight">\(\leq r &lt;\)</span> 6.0</td>
+<td>0.85 <span class="math notranslate nohighlight">\(C_{pe}\)</span></td>
+<td><span class="math notranslate nohighlight">\(C_{pe}\)</span></td>
+<td><span class="math notranslate nohighlight">\(C_{pe}\)</span></td>
+</tr>
+<tr class="row-even"><td><span class="math notranslate nohighlight">\(r \geq\)</span> 6.0</td>
+<td><span class="math notranslate nohighlight">\(C_{pe}\)</span></td>
+<td><span class="math notranslate nohighlight">\(C_{pe}\)</span></td>
+<td><span class="math notranslate nohighlight">\(C_{pe}\)</span></td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="section" id="compute-damage-index-house-compute-damage-index">
+<span id="compute-damage-index-section"></span><h4>compute damage index (<code class="xref py py-meth docutils literal notranslate"><span class="pre">House.compute_damage_index()</span></code>)<a class="headerlink" href="#compute-damage-index-house-compute-damage-index" title="Permalink to this headline">¶</a></h4>
+<p>The damage index is calculated over the following steps:</p>
+<ol class="arabic simple">
+<li>calculate sum of damaged area by connection group (<code class="xref py py-meth docutils literal notranslate"><span class="pre">House.compute_area_by_group()</span></code>)</li>
+<li>Apply damage factoring (<code class="xref py py-meth docutils literal notranslate"><span class="pre">House.apply_damage_factoring()</span></code>)</li>
+</ol>
+<p>In order to avoid double counting of repair cost, damage cost associated with child group(s) will be factored out of damage cost of the parent group as explained in <a class="reference internal" href="ch03_input.html#damage-factorings-csv-section"><span class="std std-ref">3.4.16</span></a>.</p>
+<ol class="arabic simple" start="3">
+<li>Calculate sum of damaged area by damage scenario (<code class="xref py py-meth docutils literal notranslate"><span class="pre">House.compute_area_by_scenario()</span></code>)</li>
+</ol>
+<p>A damage scenario is assigned to each connection type group as explained in <a class="reference internal" href="ch03_input.html#conn-groups-csv-section"><span class="std std-ref">3.4.2</span></a>.</p>
+<ol class="arabic simple" start="4">
+<li>calculate total damage cost and damage index prior to water ingress (<span class="math notranslate nohighlight">\(DI_p\)</span>) as <a class="reference internal" href="#equation-di-prior">(8)</a>:</li>
+</ol>
+<div class="math notranslate nohighlight" id="equation-di-prior">
+<span class="eqno">(8)<a class="headerlink" href="#equation-di-prior" title="Permalink to this equation">¶</a></span>\[DI_p = \frac{\sum_{i=1}^{S}C_i}{R}\]</div>
+<p>where <span class="math notranslate nohighlight">\(S\)</span>: number of damage scenario, <span class="math notranslate nohighlight">\(C_i\)</span>: damage cost for <span class="math notranslate nohighlight">\(i\)</span> th damage scenario, and <span class="math notranslate nohighlight">\(R\)</span>: total replacement cost.</p>
+<ol class="arabic simple" start="5">
+<li>Calculate cost by water ingress damage, <span class="math notranslate nohighlight">\(C_{wi}\)</span> if required as explained in <a class="reference internal" href="#water-ingress-section"><span class="std std-ref">damage due to water ingress</span></a>.</li>
+<li>calculate damage index as <a class="reference internal" href="#equation-di">(9)</a>:</li>
+</ol>
+<div class="math notranslate nohighlight" id="equation-di">
+<span class="eqno">(9)<a class="headerlink" href="#equation-di" title="Permalink to this equation">¶</a></span>\[DI = \frac{\sum_{i=1}^{S}C_i + C_{wi}}{R}\]</div>
+</div>
+</div>
+<div class="section" id="zone-module-zone">
+<h3>Zone module (<a class="reference internal" href="vaws.model.html#vaws.model.zone.Zone" title="vaws.model.zone.Zone"><code class="xref py py-class docutils literal notranslate"><span class="pre">Zone</span></code></a>)<a class="headerlink" href="#zone-module-zone" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="sample-cpe-zone-cpe">
+<h4>sample Cpe (<a class="reference internal" href="vaws.model.html#vaws.model.zone.Zone.cpe" title="vaws.model.zone.Zone.cpe"><code class="xref py py-attr docutils literal notranslate"><span class="pre">Zone.cpe</span></code></a>)<a class="headerlink" href="#sample-cpe-zone-cpe" title="Permalink to this headline">¶</a></h4>
+<p>The external pressure coefficient, <span class="math notranslate nohighlight">\(C_{pe}\)</span> is used in computing zone pressures, and is sampled from Type III extreme value distribution (<code class="xref py py-meth docutils literal notranslate"><span class="pre">stats.sample_gev()</span></code>) which has the cumulative distribution function and probability density as <a class="reference internal" href="#equation-cdf-gev">(10)</a> and <a class="reference internal" href="#equation-pdf-gev">(11)</a>, respectively.</p>
+<div class="math notranslate nohighlight" id="equation-cdf-gev">
+<span class="eqno">(10)<a class="headerlink" href="#equation-cdf-gev" title="Permalink to this equation">¶</a></span>\[F(s; k) = \exp(-(1-ks)^{1/k})\]</div>
+<div class="math notranslate nohighlight" id="equation-pdf-gev">
+<span class="eqno">(11)<a class="headerlink" href="#equation-pdf-gev" title="Permalink to this equation">¶</a></span>\[f(s; a, k) = \frac{1}{a}(1-ks)^{1/k-1} \exp(-(1-ks)^{1/k})\]</div>
+<p>where <span class="math notranslate nohighlight">\(s=(x-u)/a\)</span>, <span class="math notranslate nohighlight">\(u\)</span>: location factor (<span class="math notranslate nohighlight">\(\in \rm I\!R\)</span>), <span class="math notranslate nohighlight">\(a\)</span>: scale factor (<span class="math notranslate nohighlight">\(&gt; 0\)</span>), and <span class="math notranslate nohighlight">\(k\)</span>: shape factor (<span class="math notranslate nohighlight">\(k\neq0\)</span>).</p>
+<p>The mean and standard deviation are calculated as <a class="reference internal" href="#equation-mean-sd">(12)</a>:</p>
+<div class="math notranslate nohighlight" id="equation-mean-sd">
+<span class="eqno">(12)<a class="headerlink" href="#equation-mean-sd" title="Permalink to this equation">¶</a></span>\[\begin{split}\operatorname{E}(X) &amp;= u + \frac{a}{k}\left[1-\Gamma(1+k)\right] \\
+\operatorname{SD}(X) &amp;= \frac{a}{k}\sqrt{\Gamma(1+2k)-\Gamma^{2}(1+k)}\end{split}\]</div>
+<p>The <span class="math notranslate nohighlight">\(u\)</span> and <span class="math notranslate nohighlight">\(a\)</span> can be estimated given <span class="math notranslate nohighlight">\(c_v\left(=\frac{SD}{E}\right)\)</span> and <span class="math notranslate nohighlight">\(k\)</span> values as <a class="reference internal" href="#equation-a-u">(13)</a>:</p>
+<div class="math notranslate nohighlight" id="equation-a-u">
+<span class="eqno">(13)<a class="headerlink" href="#equation-a-u" title="Permalink to this equation">¶</a></span>\[\begin{split}a &amp;= \operatorname{E} \frac{c_v}{B} \\
+u &amp;= \operatorname{E} - a \times A\end{split}\]</div>
+<p>where <span class="math notranslate nohighlight">\(A=(1/k)\left[1-\Gamma(1+k)\right]\)</span> and <span class="math notranslate nohighlight">\(B=(1/k)\sqrt{\Gamma(1+2k)-\Gamma^{2}(1+k)}\)</span>.</p>
+</div>
+<div class="section" id="calculate-zone-pressure-zone-calc-zone-pressure">
+<span id="compute-zone-pressure-section"></span><h4>calculate zone pressure (<a class="reference internal" href="vaws.model.html#vaws.model.zone.Zone.calc_zone_pressure" title="vaws.model.zone.Zone.calc_zone_pressure"><code class="xref py py-meth docutils literal notranslate"><span class="pre">Zone.calc_zone_pressure()</span></code></a>)<a class="headerlink" href="#calculate-zone-pressure-zone-calc-zone-pressure" title="Permalink to this headline">¶</a></h4>
+<p>Two kinds of zone pressure, <span class="math notranslate nohighlight">\(p_{z}\)</span> for zone component related to sheeting and batten and <span class="math notranslate nohighlight">\(p_{z,str}\)</span> for zone component related to rafter, are computed as <a class="reference internal" href="#equation-zone-pressure-eq">(14)</a>:</p>
+<div class="math notranslate nohighlight" id="equation-zone-pressure-eq">
+<span class="eqno">(14)<a class="headerlink" href="#equation-zone-pressure-eq" title="Permalink to this equation">¶</a></span>\[\begin{split}p_{z} &amp;= q_{z} \times \left( C_{pe} - C_{pi,\alpha} \times C_{pi} \right) \times D_{s} \times K_{c}\\
+p_{z,str} &amp;= q_{z} \times \left( C_{pe,str} - C_{pi, \alpha} \times C_{pi} - C_{pe,eave} \right) \times D_{s} \times K_{c} \\\end{split}\]</div>
+<p>where <span class="math notranslate nohighlight">\(q_{z}\)</span>: free stream wind pressure, <span class="math notranslate nohighlight">\(C_{pe}\)</span>: external pressure coefficient, <span class="math notranslate nohighlight">\(C_{pi}\)</span>: internal pressure coefficient, <span class="math notranslate nohighlight">\(C_{pi,\alpha}\)</span>: proportion of the zone’s area to which internal pressure is applied, <span class="math notranslate nohighlight">\(C_{pe, str}\)</span>: external pressure coefficient for zone component related to rafter, <span class="math notranslate nohighlight">\(C_{pe, eave}\)</span>: external pressure coefficient for zone component related to eave, <span class="math notranslate nohighlight">\(D_{s}\)</span>: differential shielding, and <span class="math notranslate nohighlight">\(K_{c}\)</span>: action combination factor. The value of differential shielding is determined as explained in <a class="reference internal" href="#differential-shielding-section"><span class="std std-ref">set differential shielding</span></a>. The value of action combination factor is determined as explained in <a class="reference internal" href="#combination-factor-section"><span class="std std-ref">set action combination factor</span></a>.</p>
+</div>
+<div class="section" id="set-differential-shielding-zone-differential-shielding">
+<span id="differential-shielding-section"></span><h4>set differential shielding (<a class="reference internal" href="vaws.model.html#vaws.model.zone.Zone.differential_shielding" title="vaws.model.zone.Zone.differential_shielding"><code class="xref py py-attr docutils literal notranslate"><span class="pre">Zone.differential_shielding</span></code></a>)<a class="headerlink" href="#set-differential-shielding-zone-differential-shielding" title="Permalink to this headline">¶</a></h4>
+<p>If the value of <em>differential_shielding</em> (see <a class="reference internal" href="ch03_input.html#section-options-table"><span class="std std-numref">Table 2</span></a>) is <em>True</em>, then differential shielding effect is considered in calculating zone pressure. Based on the recommendations from JDH Consulting, 2010 <a class="reference internal" href="zbibliography.html#jdh2010" id="id4">[3]</a>, adjustment for shielding multiplier is made as follows:</p>
+<ul class="simple">
+<li><dl class="first docutils">
+<dt>For outer suburban situations and country towns (<em>building_spacing</em>=40m),</dt>
+<dd>adjust <span class="math notranslate nohighlight">\(M_{s}\)</span> to 1.0 except for the leading edges of upwind roofs</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt>For inner suburban buildings (<em>building_spacing</em> =20m) with full shielding (<span class="math notranslate nohighlight">\(M_{s}\)</span>=0.85),</dt>
+<dd>adjust <span class="math notranslate nohighlight">\(M_{s}\)</span> to 0.7 for the leading edges of upwind roofs</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt>For inner suburban buildings (<em>building_spacing</em> =20m) with partial shielding (<span class="math notranslate nohighlight">\(M_{s}\)</span>=0.95),</dt>
+<dd>adjust <span class="math notranslate nohighlight">\(M_{s}\)</span> to 0.8 for the leading edges of upwind roofs</dd>
+</dl>
+</li>
+<li>Otherwise, no adjustment is made.</li>
+</ul>
+</div>
+</div>
+<div class="section" id="coverage-module-coverage">
+<h3>Coverage module (<a class="reference internal" href="vaws.model.html#vaws.model.coverage.Coverage" title="vaws.model.coverage.Coverage"><code class="xref py py-class docutils literal notranslate"><span class="pre">Coverage</span></code></a>)<a class="headerlink" href="#coverage-module-coverage" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="calculate-coverage-load-and-check-damage-coverage-check-damage">
+<span id="compute-coverage-load-section"></span><h4>calculate coverage load and check damage (<a class="reference internal" href="vaws.model.html#vaws.model.coverage.Coverage.check_damage" title="vaws.model.coverage.Coverage.check_damage"><code class="xref py py-meth docutils literal notranslate"><span class="pre">Coverage.check_damage()</span></code></a>)<a class="headerlink" href="#calculate-coverage-load-and-check-damage-coverage-check-damage" title="Permalink to this headline">¶</a></h4>
+<p>The load applied for each of coverages are calculated as <a class="reference internal" href="#equation-coverage-load-eq">(15)</a>:</p>
+<div class="math notranslate nohighlight" id="equation-coverage-load-eq">
+<span class="eqno">(15)<a class="headerlink" href="#equation-coverage-load-eq" title="Permalink to this equation">¶</a></span>\[L = q_{z} \times \left(C_{pe} - C_{pi} \right) \times A \times K_{c}\]</div>
+<p>where <span class="math notranslate nohighlight">\(q_{z}\)</span>: free stream wind pressure, <span class="math notranslate nohighlight">\(C_{pe}\)</span>: external pressure coefficient, <span class="math notranslate nohighlight">\(C_{pi}\)</span>: internal pressure coefficient, <span class="math notranslate nohighlight">\(A\)</span>: area, and <span class="math notranslate nohighlight">\(K_{c}\)</span>: action combination factor.</p>
+<p>If the calculated load exceeds either positive or negative strength, which represents strength in either direction, then it is deemed to be damaged.</p>
+</div>
+</div>
+<div class="section" id="connection-module-connection-and-connectiontypegroup">
+<h3>Connection module (<a class="reference internal" href="vaws.model.html#vaws.model.connection.Connection" title="vaws.model.connection.Connection"><code class="xref py py-class docutils literal notranslate"><span class="pre">Connection</span></code></a> and <a class="reference internal" href="vaws.model.html#vaws.model.connection.ConnectionTypeGroup" title="vaws.model.connection.ConnectionTypeGroup"><code class="xref py py-class docutils literal notranslate"><span class="pre">ConnectionTypeGroup</span></code></a>)<a class="headerlink" href="#connection-module-connection-and-connectiontypegroup" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="calculate-connection-load-connection-check-damage">
+<span id="compute-connection-load-section"></span><h4>calculate connection load (<a class="reference internal" href="vaws.model.html#vaws.model.connection.Connection.check_damage" title="vaws.model.connection.Connection.check_damage"><code class="xref py py-meth docutils literal notranslate"><span class="pre">Connection.check_damage()</span></code></a>)<a class="headerlink" href="#calculate-connection-load-connection-check-damage" title="Permalink to this headline">¶</a></h4>
+<p>The load applied for each of connections are calculated as <a class="reference internal" href="#equation-connection-load-eq">(16)</a>:</p>
+<div class="math notranslate nohighlight" id="equation-connection-load-eq">
+<span class="eqno">(16)<a class="headerlink" href="#equation-connection-load-eq" title="Permalink to this equation">¶</a></span>\[L_{i} = D_{i} + \sum_{j=1}^{N_{z}} \left(I_{ji} \times A_{j} \times P_{j}\right) + \sum_{j=1}^{N_{c}} \left(I_{ji} \times L_{j}\right)\]</div>
+<p>where <span class="math notranslate nohighlight">\(L_{i}\)</span>: applied load for <span class="math notranslate nohighlight">\(i\)</span> th connection, <span class="math notranslate nohighlight">\(D_{i}\)</span>: dead load of <span class="math notranslate nohighlight">\(i\)</span> th connection, <span class="math notranslate nohighlight">\(N_{z}\)</span>: number of zones associated with the <span class="math notranslate nohighlight">\(i\)</span> th connection, <span class="math notranslate nohighlight">\(N_{c}\)</span>: number of connections associated with the <span class="math notranslate nohighlight">\(i\)</span> th connection, <span class="math notranslate nohighlight">\(A_{j}\)</span>: area of <span class="math notranslate nohighlight">\(j\)</span> th zone, <span class="math notranslate nohighlight">\(P_{j}\)</span>: wind pressure on <span class="math notranslate nohighlight">\(j\)</span> th zone, <span class="math notranslate nohighlight">\(I_{ji}\)</span>: influence coefficient from <span class="math notranslate nohighlight">\(j\)</span> th either zone or connection to <span class="math notranslate nohighlight">\(i\)</span> th connection.</p>
+<p>If the load applied for a connection is less than the negative value of its strength, then the connection is considered damaged.</p>
+</div>
+<div class="section" id="check-connection-damage-by-connection-type-group-connectiontypegroup-check-damage">
+<span id="check-connection-damage-section"></span><h4>check connection damage by connection type group (<a class="reference internal" href="vaws.model.html#vaws.model.connection.ConnectionTypeGroup.check_damage" title="vaws.model.connection.ConnectionTypeGroup.check_damage"><code class="xref py py-meth docutils literal notranslate"><span class="pre">ConnectionTypeGroup.check_damage()</span></code></a>)<a class="headerlink" href="#check-connection-damage-by-connection-type-group-connectiontypegroup-check-damage" title="Permalink to this headline">¶</a></h4>
+<p>Damage of each connection is checked by connection type group. If the load applied for a connection is less than the negative value of its strength, then the connection is considered damaged. Then damage grid of the connection type group (<a class="reference internal" href="vaws.model.html#vaws.model.connection.ConnectionTypeGroup.damage_grid" title="vaws.model.connection.ConnectionTypeGroup.damage_grid"><code class="xref py py-attr docutils literal notranslate"><span class="pre">ConnectionTypeGroup.damage_grid</span></code></a>) is updated with the index of the damaged connection, which is later used in updating influence of intact components (<a class="reference internal" href="vaws.model.html#vaws.model.connection.ConnectionTypeGroup.update_influence" title="vaws.model.connection.ConnectionTypeGroup.update_influence"><code class="xref py py-meth docutils literal notranslate"><span class="pre">ConnectionTypeGroup.update_influence()</span></code></a>).</p>
+</div>
+<div class="section" id="update-influence-by-connection-group-connectiontypegroup-update-influence">
+<span id="update-influence-section"></span><h4>update influence by connection group (<a class="reference internal" href="vaws.model.html#vaws.model.connection.ConnectionTypeGroup.update_influence" title="vaws.model.connection.ConnectionTypeGroup.update_influence"><code class="xref py py-meth docutils literal notranslate"><span class="pre">ConnectionTypeGroup.update_influence()</span></code></a>)<a class="headerlink" href="#update-influence-by-connection-group-connectiontypegroup-update-influence" title="Permalink to this headline">¶</a></h4>
+<p>The influence coefficient is used to associate one connection with another either zone or connection with regard to load distribution. For instance, if connection 1 has influences of connection 2 and 3 with coefficient 0.5 and 0.5, respectively, then the load on connection 1 is equal to the sum of 0.5 times load on connection 2 and 0.5 times load on connection 3, as shown in <a class="reference internal" href="#equation-connection-load-eq">(16)</a>.</p>
+<p>Once a connection is damaged, then load on the damaged connection needs to be distributed to other intact connections accordingly, which means that influence set of the connections needs to be updated.</p>
+<p>Two types of influence update are implemented:</p>
+<ol class="arabic simple">
+<li>update influence coefficients of the next intact connections for the distribution of load on the damaged connection, when <cite>dist_dir</cite> is either <cite>col</cite> or <cite>row</cite> (<a class="reference internal" href="vaws.model.html#vaws.model.connection.ConnectionTypeGroup.update_influence" title="vaws.model.connection.ConnectionTypeGroup.update_influence"><code class="xref py py-meth docutils literal notranslate"><span class="pre">ConnectionTypeGroup.update_influence()</span></code></a>)</li>
+</ol>
+<p>Given the damage of connection of either sheeting and batten connection type group, the influence coefficient will be distributed evenly to the next intact connections of the same type to the distribution direction (<em>dist_dir</em> listed in <a class="reference internal" href="ch03_input.html#conn-groups-table"><span class="std std-numref">Table 11</span></a>). If both the next connections, which are left and right if <em>dist_dir</em> is ‘row’ or above and below if ‘col’, of the damaged connection are intact, then the half of the load is distributed to the each of next intact connection. Otherwise, the full load of the damaged connection is distributed to the intact connection.</p>
+<ol class="arabic simple" start="2">
+<li>replace the existing influence set with new one, when <cite>dist_dir</cite> is <cite>patch</cite> (<a class="reference internal" href="vaws.model.html#vaws.model.connection.ConnectionTypeGroup.update_influence_by_patch" title="vaws.model.connection.ConnectionTypeGroup.update_influence_by_patch"><code class="xref py py-meth docutils literal notranslate"><span class="pre">ConnectionTypeGroup.update_influence_by_patch()</span></code></a>)</li>
+</ol>
+<p>Unlike sheeting and batten, a connection of rafter group fails, then influence set of each connection associated with the failed connection are replaced with a new set of influence, which is termed “patch”. In the current implementation, the patch is defined for a single failed connection. Thus the failure order of the connections may make difference in the resulting influences as shown in <a class="reference internal" href="#patch-example-table"><span class="std std-numref">Table 30</span></a>.</p>
+<span id="patch-example-table"></span><table border="1" class="docutils" id="id12">
+<caption><span class="caption-number">Table 30 </span><span class="caption-text">Example of how patch works</span><a class="headerlink" href="#id12" title="Permalink to this table">¶</a></caption>
+<colgroup>
+<col width="33%" />
+<col width="33%" />
+<col width="33%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">Failed connection</th>
+<th class="head">Connection</th>
+<th class="head">Patch (connection: influence coeff.)</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td>1</td>
+<td>3</td>
+<td>1:0.0, 2:0.5, 3:0.5</td>
+</tr>
+<tr class="row-odd"><td>2</td>
+<td>3</td>
+<td>1:0.5, 2:0.0, 3:1.0</td>
+</tr>
+<tr class="row-even"><td>1 and then 2</td>
+<td>3</td>
+<td>1:0.0, 2:0.0, 3:1.0</td>
+</tr>
+<tr class="row-odd"><td>2 and then 1</td>
+<td>3</td>
+<td>1:0.0, 2:0.0, 3:0.5</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<div class="section" id="debris-module-debris">
+<span id="debris-module-section"></span><h3>Debris module (<code class="xref py py-class docutils literal notranslate"><span class="pre">Debris</span></code>)<a class="headerlink" href="#debris-module-debris" title="Permalink to this headline">¶</a></h3>
+<p>The methdology of modelling damage from wind-borne debris implemented in the code is described in Holmes et al., 2010 <a class="reference internal" href="zbibliography.html#holmes2010" id="id5">[4]</a> and Wehner et al., 2010 <a class="reference internal" href="zbibliography.html#wehner2010a" id="id6">[6]</a>. The debris damage module consists of four parts: 1) debris source generation, 2) debris generation, 3) debris trajectory, and 4) debris impact.</p>
+<div class="section" id="debris-source-generation">
+<h4>debris source generation<a class="headerlink" href="#debris-source-generation" title="Permalink to this headline">¶</a></h4>
+<p>The debris sources are generated by calling <code class="xref py py-func docutils literal notranslate"><span class="pre">create_sources()</span></code>, which requires a number of parameters as shown in the <a class="reference internal" href="#debris-source-parameters-fig"><span class="std std-numref">Fig. 33</span></a>.</p>
+<div class="figure align-center" id="id13">
+<span id="debris-source-parameters-fig"></span><a class="reference internal image-reference" href="_images/debris_source_parameters.png"><img alt="_images/debris_source_parameters.png" src="_images/debris_source_parameters.png" style="width: 80%;" /></a>
+<p class="caption"><span class="caption-number">Fig. 33 </span><span class="caption-text">Distribution of debris sources with parameters</span></p>
+</div>
+<p>Depending on the value of <em>staggered_sources</em>, different layout of debris sources can be generated as shown in <a class="reference internal" href="#debris-source-staggered-true-fig"><span class="std std-numref">Fig. 34</span></a> and <a class="reference internal" href="#debris-source-staggered-false-fig"><span class="std std-numref">Fig. 35</span></a>.</p>
+<div class="figure align-center" id="id14">
+<span id="debris-source-staggered-true-fig"></span><a class="reference internal image-reference" href="_images/source_staggered_true.png"><img alt="_images/source_staggered_true.png" src="_images/source_staggered_true.png" style="width: 70%;" /></a>
+<p class="caption"><span class="caption-number">Fig. 34 </span><span class="caption-text">Distribution of debris sources generated with debris_radius = 100.0 (m), debris_angle = 45.0 (deg), debris_space = 20.0 (m), and staggered_sources = <em>True</em>.</span></p>
+</div>
+<div class="figure align-center" id="id15">
+<span id="debris-source-staggered-false-fig"></span><a class="reference internal image-reference" href="_images/source_staggered_false.png"><img alt="_images/source_staggered_false.png" src="_images/source_staggered_false.png" style="width: 70%;" /></a>
+<p class="caption"><span class="caption-number">Fig. 35 </span><span class="caption-text">Distribution of debris sources generated with debris_radius = 100.0 (m), debris_angle = 45.0 (deg), debris_space = 20.0 (m), and staggered_sources = <em>False</em>.</span></p>
+</div>
+</div>
+<div class="section" id="debris-generation">
+<h4>debris generation<a class="headerlink" href="#debris-generation" title="Permalink to this headline">¶</a></h4>
+<p>For each wind speed, a group of debris items are generated by calling <code class="xref py py-func docutils literal notranslate"><span class="pre">generate_debris_items()</span></code>. The mean number of debris items to be generated (<span class="math notranslate nohighlight">\(N_{mean}\)</span>) is calculated by <a class="reference internal" href="#equation-number-of-debris-items-eq">(17)</a>.</p>
+<div class="math notranslate nohighlight" id="equation-number-of-debris-items-eq">
+<span class="eqno">(17)<a class="headerlink" href="#equation-number-of-debris-items-eq" title="Permalink to this equation">¶</a></span>\[N_{mean} = \operatorname{nint} \left( \Delta{DI} \times N_{items} \right)\]</div>
+<p>where <span class="math notranslate nohighlight">\(N_{items}\)</span>: number of debris items per source defined in <a class="reference internal" href="ch03_input.html#debris-section"><span class="std std-ref">3.1.3</span></a>, <span class="math notranslate nohighlight">\(\Delta{DI}\)</span>: increment in damage index from previous wind step, and <span class="math notranslate nohighlight">\(\operatorname{nint}\)</span>: nearest integer function.</p>
+<p>The number of generated debris items is assumed to follow the Poisson distribution with parameter <span class="math notranslate nohighlight">\(\lambda=N_{mean}\)</span>. For each debris source, the number of generated debris items is randomly sampled from the distribution, and debris type is randomly chosen as many as number of items with probability proportional to the ratio of each type defined in <a class="reference internal" href="ch03_input.html#debris-item-table"><span class="std std-numref">Table 9</span></a>. The debris types are provided in the section of <a class="reference internal" href="ch03_input.html#debris-csv-section"><span class="std std-ref">3.2 debris.csv</span></a>.</p>
+</div>
+<div class="section" id="debris-trajectory">
+<h4>debris trajectory<a class="headerlink" href="#debris-trajectory" title="Permalink to this headline">¶</a></h4>
+<p>For each generated debris item, mass (<code class="xref py py-attr docutils literal notranslate"><span class="pre">Debris.mass</span></code>), frontal area ((<code class="xref py py-attr docutils literal notranslate"><span class="pre">Debris.frontal_area</span></code>), and flight time (<code class="xref py py-attr docutils literal notranslate"><span class="pre">Debris.flight_time</span></code>) are sampled from the lognormal distribution with parameter values provided in <a class="reference internal" href="ch03_input.html#debris-section"><span class="std std-ref">3.1.3</span></a> and <a class="reference internal" href="ch03_input.html#debris-csv-section"><span class="std std-ref">3.2</span></a>. The flight distance (<code class="xref py py-attr docutils literal notranslate"><span class="pre">Debris.flight_distance</span></code>) is calculated based on the methodology presented in the Appendix of Lin and Vanmarcke, 2008 <a class="reference internal" href="zbibliography.html#lin2008" id="id7">[5]</a>. Note that the original fifth polynomial functions are replaced with quadratic one with the coefficients as listed in <a class="reference internal" href="#flight-distance-table"><span class="std std-numref">Table 31</span></a>. The computed flight distance by debris type using the fifth and quadratic polynomials is shown in <a class="reference internal" href="#flight-distance-fig"><span class="std std-numref">Fig. 36</span></a>.</p>
+<div class="figure align-center" id="id16">
+<span id="flight-distance-fig"></span><a class="reference internal image-reference" href="_images/flight_distance.png"><img alt="_images/flight_distance.png" src="_images/flight_distance.png" style="width: 80%;" /></a>
+<p class="caption"><span class="caption-number">Fig. 36 </span><span class="caption-text">Flight distance of debris item</span></p>
+</div>
+<span id="flight-distance-table"></span><table border="1" class="docutils" id="id17">
+<caption><span class="caption-number">Table 31 </span><span class="caption-text">Coefficients of quadratic function for flight distance computation by debris type</span><a class="headerlink" href="#id17" title="Permalink to this table">¶</a></caption>
+<colgroup>
+<col width="33%" />
+<col width="33%" />
+<col width="33%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">Debris type</th>
+<th class="head">Linear coeff.</th>
+<th class="head">Quadratic coeff.</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td>Compact</td>
+<td>0.011</td>
+<td>0.2060</td>
+</tr>
+<tr class="row-odd"><td>Rod</td>
+<td>0.2376</td>
+<td>0.0723</td>
+</tr>
+<tr class="row-even"><td>Sheet</td>
+<td>0.3456</td>
+<td>0.072</td>
+</tr>
+</tbody>
+</table>
+<p>The probability distribution of point of landing of the debris in a horizontal plane is assumed to follow a bivariate normal distribution as <a class="reference internal" href="#equation-bivariate-normal">(18)</a>.</p>
+<div class="math notranslate nohighlight" id="equation-bivariate-normal">
+<span class="eqno">(18)<a class="headerlink" href="#equation-bivariate-normal" title="Permalink to this equation">¶</a></span>\[f_{x,y} = \frac{1}{2\pi\sigma_x\sigma_y}\exp\left[-\frac{(x-d)^2}{2\sigma_x^2}-\frac{y^2}{2\sigma_y^2}\right]\]</div>
+<p>where <span class="math notranslate nohighlight">\(x\)</span> and <span class="math notranslate nohighlight">\(y\)</span> are the coordinates of the landing position of the debris, <span class="math notranslate nohighlight">\(\sigma_x\)</span> and <span class="math notranslate nohighlight">\(\sigma_y\)</span>: standard deviation for the coordinates of the landing position, and <span class="math notranslate nohighlight">\(d\)</span>: expected flight distance. The value of <span class="math notranslate nohighlight">\(\sigma_x\)</span> and <span class="math notranslate nohighlight">\(\sigma_y\)</span> are set to be <span class="math notranslate nohighlight">\(d/3\)</span> and <span class="math notranslate nohighlight">\(d/12\)</span>, respectively.</p>
+<p>Following Lin and Vanmarcke 2008, the ratio of horizontal velocity of the windborne debris object to the wind gust velocity is modelled as a random variable with a Beta distribution as <a class="reference internal" href="#equation-beta-dist">(19)</a>.</p>
+<div class="math notranslate nohighlight" id="equation-beta-dist">
+<span class="eqno">(19)<a class="headerlink" href="#equation-beta-dist" title="Permalink to this equation">¶</a></span>\[\frac{u_m}{V_s} \sim Beta(\alpha, \beta)\]</div>
+<p>where <span class="math notranslate nohighlight">\(u_m\)</span>: the horizontal velocity of the debris object, <span class="math notranslate nohighlight">\(V_s\)</span>: the local (gust) wind speed, <span class="math notranslate nohighlight">\(\alpha\)</span> and <span class="math notranslate nohighlight">\(\beta\)</span> are two parameters of the Beta distribution and estimated as <a class="reference internal" href="#equation-beta-dist-a-b">(20)</a>.</p>
+<div class="math notranslate nohighlight" id="equation-beta-dist-a-b">
+<span class="eqno">(20)<a class="headerlink" href="#equation-beta-dist-a-b" title="Permalink to this equation">¶</a></span>\[\begin{split}\alpha &amp;= E \times \nu \\
+\beta &amp;= \nu \times (1 - E)\end{split}\]</div>
+<p>where <span class="math notranslate nohighlight">\(E\)</span>: the expected value and <span class="math notranslate nohighlight">\(\nu=\alpha + \beta\)</span>.</p>
+<p>The expected value (<span class="math notranslate nohighlight">\(E\)</span>) and the parameter (<span class="math notranslate nohighlight">\(\nu\)</span>) are assumed to be as <a class="reference internal" href="#equation-velocity-debris">(21)</a>.</p>
+<div class="math notranslate nohighlight" id="equation-velocity-debris">
+<span class="eqno">(21)<a class="headerlink" href="#equation-velocity-debris" title="Permalink to this equation">¶</a></span>\[\begin{split}E &amp;= 1-\exp\left(-b\sqrt{x}\right) \\
+\nu &amp;= \max\left[\frac{1}{E}, \frac{1}{1-E}\right] + 3.0\end{split}\]</div>
+<p>where <span class="math notranslate nohighlight">\(x\)</span>: the flight distance, <span class="math notranslate nohighlight">\(b\)</span>: a dimensional parameter calucalted as <a class="reference internal" href="#equation-b">(22)</a>. If <span class="math notranslate nohighlight">\(E\)</span> is 1, then <span class="math notranslate nohighlight">\(\alpha\)</span> and <span class="math notranslate nohighlight">\(\beta\)</span> are assigned with 3.996 and 0.004, respectively.</p>
+<div class="math notranslate nohighlight" id="equation-b">
+<span class="eqno">(22)<a class="headerlink" href="#equation-b" title="Permalink to this equation">¶</a></span>\[b = \sqrt{\frac{\rho_aC_{D,av}A}{m}}\]</div>
+<p>where <span class="math notranslate nohighlight">\(\rho_a\)</span>: the air density, <span class="math notranslate nohighlight">\(C_{D,av}\)</span>: an average drag coefficient, <span class="math notranslate nohighlight">\(A\)</span>: the frontal area, and <span class="math notranslate nohighlight">\(m\)</span>: the mass of the object.</p>
+<p>The momentum <span class="math notranslate nohighlight">\(\xi\)</span> (<code class="xref py py-attr docutils literal notranslate"><span class="pre">Debris.momentum</span></code>) is calculated using the sampled value of the ratio, <span class="math notranslate nohighlight">\(\frac{u_m}{V_s}\)</span> as <a class="reference internal" href="#equation-momentum">(23)</a>.</p>
+<div class="math notranslate nohighlight" id="equation-momentum">
+<span class="eqno">(23)<a class="headerlink" href="#equation-momentum" title="Permalink to this equation">¶</a></span>\[\xi = \left(\frac{u_m}{V_s}\right) \times m \times V_s\]</div>
+</div>
+<div class="section" id="debris-impact">
+<h4>debris impact<a class="headerlink" href="#debris-impact" title="Permalink to this headline">¶</a></h4>
+<p>Either if the landing point is within the footprint of the model or if the line linking the source to the landing point intersects with the footprint of the model and the landing point is within the boundary, then it is assumed that an impact has occurred. The criteria of debris impact is illustrated in the <a class="reference internal" href="#debris-impact-criteria-fig"><span class="std std-numref">Fig. 37</span></a> where blue line represents debris trajectory with impact while red line represents one without impact.</p>
+<div class="figure align-center" id="id18">
+<span id="debris-impact-criteria-fig"></span><a class="reference internal image-reference" href="_images/debris_impact.png"><img alt="_images/debris_impact.png" src="_images/debris_impact.png" style="width: 70%;" /></a>
+<p class="caption"><span class="caption-number">Fig. 37 </span><span class="caption-text">Graphical presentation of debris impact criteria</span></p>
+</div>
+<p>Based on the methodology presented in HAZUS and Lin and Vanmacke (2008), the number of impact <span class="math notranslate nohighlight">\(N\)</span> is assumed to follow a Poisson distribution as <a class="reference internal" href="#equation-poisson-eqn">(24)</a>.</p>
+<div class="math notranslate nohighlight" id="equation-poisson-eqn">
+<span class="eqno">(24)<a class="headerlink" href="#equation-poisson-eqn" title="Permalink to this equation">¶</a></span>\[\begin{split}N &amp;\sim \operatorname{Pois}(\lambda) \\
+\lambda &amp;= N_v \cdot q \cdot F_{\xi}(\xi&gt;\xi_d)\end{split}\]</div>
+<p>where <span class="math notranslate nohighlight">\(N_v\)</span>: number of impacts at a single wind speed, <span class="math notranslate nohighlight">\(q\)</span>: proportion of coverage area out of the total area of envelope, <span class="math notranslate nohighlight">\(F_{\xi}\)</span>: the cumulative distribution of momentum, and <span class="math notranslate nohighlight">\(\xi_d\)</span>: threshold of momentum or energy for damage of the material of the coverage.</p>
+<p>The probability of damage can be calculated based on the Poisson distribution as <a class="reference internal" href="#equation-p-d">(25)</a>.</p>
+<div class="math notranslate nohighlight" id="equation-p-d">
+<span class="eqno">(25)<a class="headerlink" href="#equation-p-d" title="Permalink to this equation">¶</a></span>\[P_D = 1 - P(N=0) = 1-\exp\left[-\lambda\right]\]</div>
+<p><span class="math notranslate nohighlight">\(q\)</span> and <span class="math notranslate nohighlight">\(F_{\xi}(\xi&gt;\xi_d)\)</span> are estimated for each coverage.</p>
+<p>If the material of the coverage is glass, then <span class="math notranslate nohighlight">\(P_D\)</span> is computed and compared against a random value sampled from unit uniform distribution to determine whether the coverage is damaged or not. If the coverage is damaged, then damaged area is set to be equal to the coverage area.
+For coverage with non-glass material, a random value of number of impact is sampled from the Poisson distribution with <span class="math notranslate nohighlight">\(\lambda\)</span>, and damaged coverage area is then computed assuming that the area requiring repairs due to debris impact is 1.</p>
+<p>Since version 2.2 of the code, a Monte Carlo based approach is implemented (<code class="xref py py-meth docutils literal notranslate"><span class="pre">Debris.check_coverages()</span></code>). For each debris item, a coverage component is chosen based on the ratio of the area out of the total area of the coverages, once debris impact is assumed to occur. If the computed momentum exceeds the momentum capacity of the coverage, then damaged coverage area is computed depending on the material of the coverage as explained above.</p>
+</div>
+</div>
+<div class="section" id="damage-costing-module-costing">
+<h3>damage_costing module (<a class="reference internal" href="vaws.model.html#vaws.model.damage_costing.Costing" title="vaws.model.damage_costing.Costing"><code class="xref py py-class docutils literal notranslate"><span class="pre">Costing</span></code></a>)<a class="headerlink" href="#damage-costing-module-costing" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="damage-due-to-water-ingress">
+<span id="water-ingress-section"></span><h4>damage due to water ingress<a class="headerlink" href="#damage-due-to-water-ingress" title="Permalink to this headline">¶</a></h4>
+<p>The damage cost induced by water ingress is estimated over the following three steps:</p>
+<ol class="arabic simple">
+<li>estimate amount of water ingress (<a class="reference internal" href="vaws.model.html#vaws.model.damage_costing.compute_water_ingress_given_damage" title="vaws.model.damage_costing.compute_water_ingress_given_damage"><code class="xref py py-func docutils literal notranslate"><span class="pre">compute_water_ingress_given_damage()</span></code></a>)</li>
+</ol>
+<p>The amount of water ingress is estimated based on the relationship between water ingress and wind speed, which is listed in <a class="reference internal" href="ch03_input.html#section-water-ingress-table"><span class="std std-numref">Table 5</span></a>. The estimated damage index prior to water ingress is used to choose the right curve as shown in <a class="reference internal" href="ch03_input.html#water-ingress-fig"><span class="std std-numref">Fig. 5</span></a>.</p>
+<ol class="arabic simple" start="2">
+<li>determine damage scenario (<code class="xref py py-meth docutils literal notranslate"><span class="pre">House.determine_scenario_for_water_ingress_costing()</span></code>)</li>
+</ol>
+<p>The damage scenario for water ingress is determined based on the order of damage scenario as listed in <a class="reference internal" href="ch03_input.html#damage-costing-data-table"><span class="std std-numref">Table 20</span></a>. One damage scenario is selected by the order among the damage scenarios with which damage area of connection associated is greater than zero. When the damage index is zero (or no connection damage yet), then damage scenario of ‘WI only’ is used.</p>
+<ol class="arabic simple" start="3">
+<li>calculate cost for water ingress damage (<code class="xref py py-meth docutils literal notranslate"><span class="pre">House.compute_water_ingress_cost()</span></code>)</li>
+</ol>
+<p>The cost for water ingress damage is estimated using the data provided in <a class="reference internal" href="ch03_input.html#water-ingress-costing-data-csv-section"><span class="std std-ref">3.4.17</span></a>. The example plot for the scenario of <em>loss of roof sheeting</em> is shown in <a class="reference internal" href="#water-ingress-cost-fig"><span class="std std-numref">Fig. 38</span></a>. The cost for water ingress damage is estimated using the curve for water ingress closest to the estimated amount of water ingress.</p>
+<div class="figure align-center" id="id19">
+<span id="water-ingress-cost-fig"></span><a class="reference internal image-reference" href="_images/wi_costing_roof_sheeting.png"><img alt="_images/wi_costing_roof_sheeting.png" src="_images/wi_costing_roof_sheeting.png" style="width: 80%;" /></a>
+<p class="caption"><span class="caption-number">Fig. 38 </span><span class="caption-text">Relationship between cost due to water ingress damage and damage index</span></p>
+</div>
+</div>
+</div>
+<div class="section" id="curve-module">
+<h3>Curve module<a class="headerlink" href="#curve-module" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="fit-fragility-curve-fit-fragility-curves">
+<span id="fit-fragility-section"></span><h4>fit fragility (<a class="reference internal" href="vaws.model.html#vaws.model.curve.fit_fragility_curves" title="vaws.model.curve.fit_fragility_curves"><code class="xref py py-func docutils literal notranslate"><span class="pre">curve.fit_fragility_curves()</span></code></a>)<a class="headerlink" href="#fit-fragility-curve-fit-fragility-curves" title="Permalink to this headline">¶</a></h4>
+<p>The probability of exceeding a damage state <span class="math notranslate nohighlight">\(ds\)</span> at a wind speed <span class="math notranslate nohighlight">\(x\)</span> is calculated as <a class="reference internal" href="#equation-fragility-eq">(26)</a>:</p>
+<div class="math notranslate nohighlight" id="equation-fragility-eq">
+<span class="eqno">(26)<a class="headerlink" href="#equation-fragility-eq" title="Permalink to this equation">¶</a></span>\[P\left(DS \geq ds | x \right) = \frac {\sum_{i=1}^N\left[DI_{i|x} \geq t_{ds}\right]}{N}\]</div>
+<p>where <span class="math notranslate nohighlight">\(N\)</span>: number of models, <span class="math notranslate nohighlight">\(DI_{i|x}\)</span>: damage index of <span class="math notranslate nohighlight">\(i\)</span> th model at the wind speed <span class="math notranslate nohighlight">\(x\)</span>, and <span class="math notranslate nohighlight">\(t_{ds}\)</span>: threshold for damage state <span class="math notranslate nohighlight">\(ds\)</span>.</p>
+<p>Then for each damage state, a curve of cumulative lognormal distribution <a class="reference internal" href="ch04_use_GUI.html#equation-cdf-lognormal">(4)</a> is fitted to the computed probabilities of exceeding the damage state.</p>
+</div>
+<div class="section" id="fit-vulnerability-curve-fit-vulnerability-curve">
+<span id="fit-vulnerability-section"></span><h4>fit vulnerability (<a class="reference internal" href="vaws.model.html#vaws.model.curve.fit_vulnerability_curve" title="vaws.model.curve.fit_vulnerability_curve"><code class="xref py py-func docutils literal notranslate"><span class="pre">curve.fit_vulnerability_curve()</span></code></a>)<a class="headerlink" href="#fit-vulnerability-curve-fit-vulnerability-curve" title="Permalink to this headline">¶</a></h4>
+<p>Two types of curves are used to fit the results of damage indices of models: a cumulative lognormal distribution (<a class="reference internal" href="ch04_use_GUI.html#equation-cdf-lognormal">(4)</a>, <code class="xref py py-func docutils literal notranslate"><span class="pre">curve.vulnerability_lognormal()</span></code>) and Weibull distribution (<a class="reference internal" href="ch04_use_GUI.html#equation-cdf-weibull-oz">(5)</a>, <a class="reference internal" href="vaws.model.html#vaws.model.curve.vulnerability_weibull" title="vaws.model.curve.vulnerability_weibull"><code class="xref py py-func docutils literal notranslate"><span class="pre">curve.vulnerability_weibull()</span></code></a>).</p>
+</div>
+</div>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Program Logic</a><ul>
+<li><a class="reference internal" href="#overall-logic">Overall logic</a></li>
+<li><a class="reference internal" href="#detailed-logic">Detailed logic</a><ul>
+<li><a class="reference internal" href="#main-module">Main module</a><ul>
+<li><a class="reference internal" href="#compute-damage-index-increment-compute-damage-increment">compute damage index increment (<code class="docutils literal notranslate"><span class="pre">compute_damage_increment()</span></code>)</a></li>
+<li><a class="reference internal" href="#fit-fragility-and-vulnerability-curves-and-save-outputs-save-results-to-files">fit fragility and vulnerability curves and save outputs (<code class="docutils literal notranslate"><span class="pre">save_results_to_files()</span></code>)</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#house-module">House module</a><ul>
+<li><a class="reference internal" href="#sample-wind-direction-house-wind-dir-index">sample wind direction (<code class="docutils literal notranslate"><span class="pre">House.wind_dir_index</span></code>)</a></li>
+<li><a class="reference internal" href="#sample-construction-quality-level-house-construction-level">sample construction quality level (<code class="docutils literal notranslate"><span class="pre">House.construction_level</span></code>)</a></li>
+<li><a class="reference internal" href="#sample-wind-profile-house-profile-index">sample wind profile (<code class="docutils literal notranslate"><span class="pre">House.profile_index</span></code>)</a></li>
+<li><a class="reference internal" href="#set-terrain-height-multiplier-house-terrain-height-multiplier">set terrain height multiplier (<code class="docutils literal notranslate"><span class="pre">House.terrain_height_multiplier</span></code>)</a></li>
+<li><a class="reference internal" href="#set-shielding-multiplier-house-shielding-multiplier">set shielding multiplier (<code class="docutils literal notranslate"><span class="pre">House.shielding_multiplier</span></code>)</a></li>
+<li><a class="reference internal" href="#set-action-combination-factor-house-combination-factor">set action combination factor (<code class="docutils literal notranslate"><span class="pre">House.combination_factor</span></code>)</a></li>
+<li><a class="reference internal" href="#set-up-coverages-house-set-coverages">set up coverages (<code class="docutils literal notranslate"><span class="pre">House.set_coverages()</span></code>)</a></li>
+<li><a class="reference internal" href="#set-up-zones-house-set-zones">set up zones (<code class="docutils literal notranslate"><span class="pre">House.set_zones()</span></code>)</a></li>
+<li><a class="reference internal" href="#set-up-connections-house-set-connections">set up connections (<code class="docutils literal notranslate"><span class="pre">House.set_connections()</span></code>)</a></li>
+<li><a class="reference internal" href="#set-footprint-for-debris-impact-house-footprint">set footprint for debris impact (<code class="docutils literal notranslate"><span class="pre">House.footprint</span></code>)</a></li>
+<li><a class="reference internal" href="#set-up-coverages-for-debris-impact-house-debris-coverages">set up coverages for debris impact (<code class="docutils literal notranslate"><span class="pre">House.debris_coverages</span></code>)</a></li>
+<li><a class="reference internal" href="#calculate-free-stream-wind-pressure-house-compute-qz">calculate free stream wind pressure (<code class="docutils literal notranslate"><span class="pre">House.compute_qz()</span></code>)</a></li>
+<li><a class="reference internal" href="#check-model-collapse-house-check-collapse">check model collapse (<code class="docutils literal notranslate"><span class="pre">House.check_collapse()</span></code>)</a></li>
+<li><a class="reference internal" href="#run-debris-model-and-update-cpi-house-run-debris-and-update-cpi">run debris model and update <span class="math notranslate nohighlight">\(C_{pi}\)</span> (<code class="docutils literal notranslate"><span class="pre">House.run_debris_and_update_cpi()</span></code>)</a></li>
+<li><a class="reference internal" href="#compute-damage-index-house-compute-damage-index">compute damage index (<code class="docutils literal notranslate"><span class="pre">House.compute_damage_index()</span></code>)</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#zone-module-zone">Zone module (<code class="docutils literal notranslate"><span class="pre">Zone</span></code>)</a><ul>
+<li><a class="reference internal" href="#sample-cpe-zone-cpe">sample Cpe (<code class="docutils literal notranslate"><span class="pre">Zone.cpe</span></code>)</a></li>
+<li><a class="reference internal" href="#calculate-zone-pressure-zone-calc-zone-pressure">calculate zone pressure (<code class="docutils literal notranslate"><span class="pre">Zone.calc_zone_pressure()</span></code>)</a></li>
+<li><a class="reference internal" href="#set-differential-shielding-zone-differential-shielding">set differential shielding (<code class="docutils literal notranslate"><span class="pre">Zone.differential_shielding</span></code>)</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#coverage-module-coverage">Coverage module (<code class="docutils literal notranslate"><span class="pre">Coverage</span></code>)</a><ul>
+<li><a class="reference internal" href="#calculate-coverage-load-and-check-damage-coverage-check-damage">calculate coverage load and check damage (<code class="docutils literal notranslate"><span class="pre">Coverage.check_damage()</span></code>)</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#connection-module-connection-and-connectiontypegroup">Connection module (<code class="docutils literal notranslate"><span class="pre">Connection</span></code> and <code class="docutils literal notranslate"><span class="pre">ConnectionTypeGroup</span></code>)</a><ul>
+<li><a class="reference internal" href="#calculate-connection-load-connection-check-damage">calculate connection load (<code class="docutils literal notranslate"><span class="pre">Connection.check_damage()</span></code>)</a></li>
+<li><a class="reference internal" href="#check-connection-damage-by-connection-type-group-connectiontypegroup-check-damage">check connection damage by connection type group (<code class="docutils literal notranslate"><span class="pre">ConnectionTypeGroup.check_damage()</span></code>)</a></li>
+<li><a class="reference internal" href="#update-influence-by-connection-group-connectiontypegroup-update-influence">update influence by connection group (<code class="docutils literal notranslate"><span class="pre">ConnectionTypeGroup.update_influence()</span></code>)</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#debris-module-debris">Debris module (<code class="docutils literal notranslate"><span class="pre">Debris</span></code>)</a><ul>
+<li><a class="reference internal" href="#debris-source-generation">debris source generation</a></li>
+<li><a class="reference internal" href="#debris-generation">debris generation</a></li>
+<li><a class="reference internal" href="#debris-trajectory">debris trajectory</a></li>
+<li><a class="reference internal" href="#debris-impact">debris impact</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#damage-costing-module-costing">damage_costing module (<code class="docutils literal notranslate"><span class="pre">Costing</span></code>)</a><ul>
+<li><a class="reference internal" href="#damage-due-to-water-ingress">damage due to water ingress</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#curve-module">Curve module</a><ul>
+<li><a class="reference internal" href="#fit-fragility-curve-fit-fragility-curves">fit fragility (<code class="docutils literal notranslate"><span class="pre">curve.fit_fragility_curves()</span></code>)</a></li>
+<li><a class="reference internal" href="#fit-vulnerability-curve-fit-vulnerability-curve">fit vulnerability (<code class="docutils literal notranslate"><span class="pre">curve.fit_vulnerability_curve()</span></code>)</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="ch04_use_GUI.html"
+                        title="previous chapter">Use of the GUI</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="glossary.html"
+                        title="next chapter">Glossary</a></p>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="_sources/ch05_logic.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="glossary.html" title="Glossary"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="ch04_use_GUI.html" title="Use of the GUI"
+             >previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">VAWS 3.3 documentation</a> &#187;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2017, Geoscience Australia.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.7.9.
+    </div>
+  </body>
+</html>

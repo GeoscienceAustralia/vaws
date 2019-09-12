@@ -1,0 +1,11 @@
+:orphan:
+
+.. only:: html
+
+    **********
+    References
+    **********
+
+.. bibliography:: refs.bib
+    :style: plain
+
