@@ -76,21 +76,38 @@ In the terminal client, enter the following to install the code.
 
     conda install -c dynaryu vaws
 
-In case you see `PackageNotFoundError: Packages missing in current channels:` then enter the following in the terminal client and try above command again.
-
-  .. code-block:: bash
-
-    conda config --add channels conda-forge
-
 Updating
 --------
 
-In case new version of the code is available, you may update the code. The conda environment *vaws_env* should be activated first as :ref:`2.1.1 step 3 <activate_environment>`. And then enter the following commands in the terminal to remove the old version and re-install the new version of the code.
+In case new version of the code is available, you may update the code. The conda environment *vaws_env* should be activated first as :ref:`2.1.1 step 3 <activate_environment>`. And then enter the following commands with in the terminal to update with the new version of the code.
 
   .. code-block:: bash
 
-    conda remove vaws
-    conda install -c dynaryu vaws
+    conda update -c dynaryu vaws
+
+    ## Package Plan ##
+
+	  environment location: /foo/vaws_env
+
+	  added / updated specs:
+		- vaws
+
+
+	The following packages will be downloaded:
+
+		package          |            build
+		-----------------|-----------------
+		vaws-3.3         |           py36_1         2.3 MB  dynaryu
+		--------------------------------------------------
+		                             Total:         2.3 MB
+
+	The following packages will be UPDATED:
+
+	  vaws                                 3.2-py36_1 --> 3.3-py36_1
+
+
+	Proceed ([y]/n)? 
+
 
 
 Running through GUI
@@ -145,14 +162,14 @@ Make sure either miniconda or anaconda is installed. Otherwise install either Mi
     .. code-block:: bash
 
       cd <vaws dir>
-      conda env create --name vaws_env --file vaws_win_py3.6.7.yml
+      conda env create --name vaws_env --file vaws_win64_py3.6.7.yml
 
   * Linux/Mac
 
     .. code-block:: bash
 
       cd <vaws dir>
-      conda env create --name vaws_env --file vaws_osx_py3.6.7.yml
+      conda env create --name vaws_env --file vaws_linux64_py3.6.7.yml
 
 This will create the environment called vaws_env. The *vaws_env* can be activated as :ref:`2.1.1 step 3 <activate_environment>`.
 
