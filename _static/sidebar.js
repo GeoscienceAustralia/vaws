@@ -16,11 +16,7 @@
  * Once the browser is closed the cookie is deleted and the position
  * reset to the default (expanded).
  *
-<<<<<<< HEAD
  * :copyright: Copyright 2007-2018 by the Sphinx team, see AUTHORS.
-=======
- * :copyright: Copyright 2007-2019 by the Sphinx team, see AUTHORS.
->>>>>>> fc6d0b756961a47846b5c31fce83def5afcbaa50
  * :license: BSD, see LICENSE for details.
  *
  */
