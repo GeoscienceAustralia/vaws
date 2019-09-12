@@ -4,7 +4,11 @@
  *
  * Sphinx stylesheet -- basic theme.
  *
+<<<<<<< HEAD
  * :copyright: Copyright 2007-2018 by the Sphinx team, see AUTHORS.
+=======
+ * :copyright: Copyright 2007-2019 by the Sphinx team, see AUTHORS.
+>>>>>>> fc6d0b756961a47846b5c31fce83def5afcbaa50
  * :license: BSD, see LICENSE for details.
  *
  */
@@ -81,6 +85,13 @@ div.sphinxsidebar input {
     font-size: 1em;
 }
 
+<<<<<<< HEAD
+=======
+div.sphinxsidebar #searchbox form.search {
+    overflow: hidden;
+}
+
+>>>>>>> fc6d0b756961a47846b5c31fce83def5afcbaa50
 div.sphinxsidebar #searchbox input[type="text"] {
     float: left;
     width: 80%;
@@ -227,6 +238,19 @@ a.headerlink {
     visibility: hidden;
 }
 
+<<<<<<< HEAD
+=======
+a.brackets:before,
+span.brackets > a:before{
+    content: "[";
+}
+
+a.brackets:after,
+span.brackets > a:after {
+    content: "]";
+}
+
+>>>>>>> fc6d0b756961a47846b5c31fce83def5afcbaa50
 h1:hover > a.headerlink,
 h2:hover > a.headerlink,
 h3:hover > a.headerlink,
@@ -275,6 +299,15 @@ img.align-center, .figure.align-center, object.align-center {
   margin-right: auto;
 }
 
+<<<<<<< HEAD
+=======
+img.align-default, .figure.align-default {
+  display: block;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+>>>>>>> fc6d0b756961a47846b5c31fce83def5afcbaa50
 .align-left {
     text-align: left;
 }
@@ -283,6 +316,13 @@ img.align-center, .figure.align-center, object.align-center {
     text-align: center;
 }
 
+<<<<<<< HEAD
+=======
+.align-default {
+    text-align: center;
+}
+
+>>>>>>> fc6d0b756961a47846b5c31fce83def5afcbaa50
 .align-right {
     text-align: right;
 }
@@ -354,6 +394,14 @@ table.align-center {
     margin-right: auto;
 }
 
+<<<<<<< HEAD
+=======
+table.align-default {
+    margin-left: auto;
+    margin-right: auto;
+}
+
+>>>>>>> fc6d0b756961a47846b5c31fce83def5afcbaa50
 table caption span.caption-number {
     font-style: italic;
 }
@@ -387,6 +435,19 @@ table.citation td {
     border-bottom: none;
 }
 
+<<<<<<< HEAD
+=======
+th > p:first-child,
+td > p:first-child {
+    margin-top: 0px;
+}
+
+th > p:last-child,
+td > p:last-child {
+    margin-bottom: 0px;
+}
+
+>>>>>>> fc6d0b756961a47846b5c31fce83def5afcbaa50
 /* -- figures --------------------------------------------------------------- */
 
 div.figure {
@@ -427,6 +488,16 @@ table.field-list td, table.field-list th {
     hyphens: manual;
 }
 
+<<<<<<< HEAD
+=======
+/* -- hlist styles ---------------------------------------------------------- */
+
+table.hlist td {
+    vertical-align: top;
+}
+
+
+>>>>>>> fc6d0b756961a47846b5c31fce83def5afcbaa50
 /* -- other body styles ----------------------------------------------------- */
 
 ol.arabic {
@@ -449,11 +520,64 @@ ol.upperroman {
     list-style: upper-roman;
 }
 
+<<<<<<< HEAD
+=======
+li > p:first-child {
+    margin-top: 0px;
+}
+
+li > p:last-child {
+    margin-bottom: 0px;
+}
+
+dl.footnote > dt,
+dl.citation > dt {
+    float: left;
+}
+
+dl.footnote > dd,
+dl.citation > dd {
+    margin-bottom: 0em;
+}
+
+dl.footnote > dd:after,
+dl.citation > dd:after {
+    content: "";
+    clear: both;
+}
+
+dl.field-list {
+    display: flex;
+    flex-wrap: wrap;
+}
+
+dl.field-list > dt {
+    flex-basis: 20%;
+    font-weight: bold;
+    word-break: break-word;
+}
+
+dl.field-list > dt:after {
+    content: ":";
+}
+
+dl.field-list > dd {
+    flex-basis: 70%;
+    padding-left: 1em;
+    margin-left: 0em;
+    margin-bottom: 0em;
+}
+
+>>>>>>> fc6d0b756961a47846b5c31fce83def5afcbaa50
 dl {
     margin-bottom: 15px;
 }
 
+<<<<<<< HEAD
 dd p {
+=======
+dd > p:first-child {
+>>>>>>> fc6d0b756961a47846b5c31fce83def5afcbaa50
     margin-top: 0px;
 }
 
@@ -526,6 +650,15 @@ dl.glossary dt {
     font-style: oblique;
 }
 
+<<<<<<< HEAD
+=======
+.classifier:before {
+    font-style: normal;
+    margin: 0.5em;
+    content: ":";
+}
+
+>>>>>>> fc6d0b756961a47846b5c31fce83def5afcbaa50
 abbr, acronym {
     border-bottom: dotted 1px;
     cursor: help;

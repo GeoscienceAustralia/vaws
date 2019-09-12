@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 :orphan:
 
 .. only:: html
@@ -9,3 +10,16 @@
 .. bibliography:: refs.bib
     :style: plain
 
+=======
+:orphan:
+
+.. only:: html
+
+    **********
+    References
+    **********
+
+.. bibliography:: refs.bib
+    :style: plain
+
+>>>>>>> fc6d0b756961a47846b5c31fce83def5afcbaa50
