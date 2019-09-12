@@ -54,11 +54,7 @@ In the terminal client, enter the following command to create the environment ca
 
   .. code-block:: bash
 
-<<<<<<< HEAD
     conda create -n vaws_env
-=======
-    conda create -n vaws_env python=3.6
->>>>>>> fc6d0b756961a47846b5c31fce83def5afcbaa50
 
 .. _activate_environment:
 
@@ -80,7 +76,6 @@ In the terminal client, enter the following to install the code.
 
     conda install -c dynaryu vaws
 
-<<<<<<< HEAD
 Updating
 --------
 
@@ -113,23 +108,6 @@ In case new version of the code is available, you may update the code. The conda
 
 	Proceed ([y]/n)? 
 
-=======
-In case you see `PackageNotFoundError: Packages missing in current channels:` then enter the following in the terminal client and try above command again.
-
-  .. code-block:: bash
-
-    conda config --add channels conda-forge
-
-Updating
---------
-
-In case new version of the code is available, you may update the code. The conda environment *vaws_env* should be activated first as :ref:`2.1.1 step 3 <activate_environment>`. And then enter the following commands in the terminal to remove the old version and re-install the new version of the code.
-
-  .. code-block:: bash
-
-    conda remove vaws
-    conda install -c dynaryu vaws
->>>>>>> fc6d0b756961a47846b5c31fce83def5afcbaa50
 
 
 Running through GUI
@@ -184,22 +162,14 @@ Make sure either miniconda or anaconda is installed. Otherwise install either Mi
     .. code-block:: bash
 
       cd <vaws dir>
-<<<<<<< HEAD
       conda env create --name vaws_env --file vaws_win64_py3.6.7.yml
-=======
-      conda env create --name vaws_env --file vaws_win_py3.6.7.yml
->>>>>>> fc6d0b756961a47846b5c31fce83def5afcbaa50
 
   * Linux/Mac
 
     .. code-block:: bash
 
       cd <vaws dir>
-<<<<<<< HEAD
       conda env create --name vaws_env --file vaws_linux64_py3.6.7.yml
-=======
-      conda env create --name vaws_env --file vaws_osx_py3.6.7.yml
->>>>>>> fc6d0b756961a47846b5c31fce83def5afcbaa50
 
 This will create the environment called vaws_env. The *vaws_env* can be activated as :ref:`2.1.1 step 3 <activate_environment>`.
 
