@@ -45,6 +45,9 @@ def simulation(house, wind_speeds, conn_capacity={}, list_connections=[],
         # check damage by connection type group
         [group.check_damage(wind_speed) for _, group in house.groups.items()]
 
+        for _, connection in house.connections.items():
+            connection.damaged_previous = connection.damaged
+
         [group.update_influence(house) for _, group in house.groups.items()
          if group.damage_dist]
 
@@ -360,6 +363,7 @@ class TestScenario5(unittest.TestCase):
 class TestScenario6(unittest.TestCase):
     """
     FIXME!! NEED TO CHECK THE RESULTS
+    conn #44 fails at 99.0
     """
 
     @classmethod
@@ -663,7 +667,7 @@ class TestScenario14(unittest.TestCase):
                    conn_capacity=conn_capacity,
                    list_connections=range(1, 21))
 
-
+#TODO
 class TestScenario15(unittest.TestCase):
 
     @classmethod
@@ -691,7 +695,7 @@ class TestScenario15(unittest.TestCase):
                    conn_capacity=conn_capacity,
                    list_connections=range(1, 28))
 
-
+#TODO
 class TestScenario16(unittest.TestCase):
 
     @classmethod
@@ -728,7 +732,7 @@ class TestScenario16(unittest.TestCase):
                    conn_capacity=conn_capacity,
                    list_connections=range(1, 136))
 
-
+#TODO
 class TestScenario17(unittest.TestCase):
 
     @classmethod
@@ -773,7 +777,7 @@ class TestScenario17(unittest.TestCase):
                    conn_capacity=conn_capacity,
                    list_connections=range(1, 137))
 
-
+#TODO
 class TestScenario18(unittest.TestCase):
     """
      Connection 78 (batten) should fail at about 55m/s and then progressively 
@@ -1195,6 +1199,11 @@ class TestScenario26(unittest.TestCase):
 
 
 class TestScenario27(unittest.TestCase):
+    """
+    FIXME
+    conn #33 fails at 84.0
+    conn #78 fails at 51 not 67
+    """
 
     @classmethod
     def setUpClass(cls):

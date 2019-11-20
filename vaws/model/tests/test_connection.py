@@ -29,7 +29,7 @@ class MyTestCase(unittest.TestCase):
         # 4: sheeting(4): 8 - 11, 14 - 17, 20 - 23, 26 - 29
         for _id in [1, 4, 5, 7, 8, 11, 12]:
             house.connections[_id].capacity = 20.0
-            house.connections[_id].damaged = 1
+            house.connections[_id].damaged = True
 
         ref_dic = {'sheetinggable': 4, 'sheetingeave': 8,
                    'sheetingcorner': 2, 'sheeting': 16}
@@ -187,7 +187,7 @@ class MyTestCaseConnectionGroup(unittest.TestCase):
 
         # connection 121 failed
         failed = house.groups['rafter0'].connections[121]
-        failed.damaged = 1
+        failed.damaged = True
         house.groups['rafter0'].update_influence_by_patch(failed,
                                                           house)
 
@@ -382,7 +382,7 @@ class MyTestCaseConnectionGroup(unittest.TestCase):
         _group = house.groups['rafter0']
         _group.damage_grid[0, 0] = 1
         _group.damage_grid_index = [(0, 0)]
-        _group.connections[121].damaged = 1.0
+        _group.connections[121].damaged = True
         _group.update_influence(house)
 
         _dic = {121: {'A13': 0.0, 'A14': 0.0},
@@ -394,7 +394,7 @@ class MyTestCaseConnectionGroup(unittest.TestCase):
         # connection 122 failed after 121
         _group.damage_grid[0, 4] = 1
         _group.damage_grid_index = [(0, 4)]
-        _group.connections[122].damaged = 1.0
+        _group.connections[122].damaged = True
         _group.update_influence(house)
 
         _dic = {121: {'A13': 0.0, 'A14': 0.0},

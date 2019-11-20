@@ -440,6 +440,10 @@ class House(object):
             for _, group in self.groups.items():
                 group.check_damage(wind_speed=wind_speed)
 
+            # update connection damage status
+            for _, connection in self.connections.items():
+                connection.damaged_previous = connection.damaged
+
             # change influence / influence patch
             for _, group in self.groups.items():
                 if group.damage_dist:

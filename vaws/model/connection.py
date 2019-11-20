@@ -21,21 +21,29 @@ def compute_load_by_zone(flag_pressure, dic_influences):
     logger = logging.getLogger(__name__)
 
     load = 0.0
+
     for _, inf in dic_influences.items():
 
         if isinstance(inf.source, Zone):
+
             pressure = getattr(inf.source, f'pressure_{flag_pressure}')
+
             load += inf.coeff * inf.source.area * pressure
 
             logger.debug(f'load by {inf.source.name}: '
                          f'{inf.coeff:.2f} * {inf.source.area:.3f} * {pressure:.3f}')
 
         else:
-            load_by_zone = compute_load_by_zone(flag_pressure, inf.source.influences)
-            load += inf.coeff * load_by_zone
 
-            logger.debug(f'load by {inf.source.name}: '
-                         f'{inf.coeff:.2f} * {load_by_zone:.3f}')
+            if not inf.source.damaged_previous:
+
+                load_by_zone = compute_load_by_zone(flag_pressure, inf.source.influences)
+                load += inf.coeff * load_by_zone
+                logger.debug(f'load by {inf.source.name}: '
+                             f'{inf.coeff:.2f} * {load_by_zone:.3f}')
+
+            else:
+                logger.debug(f'skip {inf.source.name}')
 
     return load
 
@@ -79,7 +87,8 @@ class Connection(object):
         self._dead_load = None
         self.load = None
         self.capacity = -1.0  # default
-        self.damaged = 0
+        self.damaged_previous = False
+        self.damaged = False
 
     @property
     def influences(self):
@@ -143,14 +152,15 @@ class Connection(object):
         Returns:
 
         """
+        self.logger.debug(f'check damage {self.name}')
         self.load = 0.0
 
-        if not self.damaged:
+        if not self.damaged_previous:
 
             self.load = compute_load_by_zone(self.flag_pressure, self.influences)
 
             self.logger.debug(f'load at conn {self.name}: '
-                              f'{self.load:.3f} + {self.dead_load:.3f}')
+                    f'{self.load:.3f} + {self.dead_load:.3f} vs {self.strength:.3f}')
 
             self.load += self.dead_load
 
@@ -161,7 +171,7 @@ class Connection(object):
                                   f'damaged at {wind_speed:.3f} '
                                   f'as {self.strength:.3f} < {self.load:.3f}')
 
-                self.damaged = 1
+                self.damaged = True
                 self.capacity = wind_speed
 
     def update_influence(self, source_connection, influence_coeff):
@@ -408,7 +418,7 @@ class ConnectionTypeGroup(object):
 
                 # empty the influence of source connection
                 source_connection.influences.clear()
-                source_connection.damaged = 1
+                source_connection.damaged = True
 
                 # update influence patch if applicable
                 self.update_influence_by_patch(source_connection, house_inst)
@@ -433,7 +443,7 @@ class ConnectionTypeGroup(object):
                 house_inst.logger.error(f'target conn {name} is not found when '
                                         f'{damaged_connection.name} is damaged')
             else:
-                if target_connection.damaged == 0 or (target_connection.damaged == 1
+                if target_connection.damaged == False or (target_connection.damaged == True
                                                       and damaged_connection.name == name):
                     target_connection.influences = dic
                     house_inst.link_connection_to_influence(target_connection)
