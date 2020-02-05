@@ -1,0 +1,10 @@
+replace_cost,3085
+height,4.1
+length,1
+width,6
+cpe_cv,0.17
+cpe_k,0.1
+cpe_str_cv,0.33
+cpe_str_k,0.1
+roof_cols,1
+roof_rows,6

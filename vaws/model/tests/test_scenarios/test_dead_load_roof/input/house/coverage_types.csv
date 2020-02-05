@@ -1,0 +1,11 @@
+Name,failure_momentum_mean,failure_momentum_std,failure_strength_in_mean,failure_strength_in_std,failure_strength_out_mean,failure_strength_out_std
+Glass_annealed_6mm_balcony_door,0.05,0.01,3.6,0.36,-3.6,0.36
+Glass_annealed_6mm_standard_window,0.05,0.01,1.89,0.19,-1.89,0.19
+Glass_annealed_6mm_bathroom_window,0.05,0.01,0.54,0.054,-0.54,0.054
+Glass_annealed_6mm_toilet_window,0.05,0.01,0.27,0.027,-0.27,0.027
+Glass_heatstr_6mm,0.06,0.012,7.6,0,-7.6,0
+Glass_temp_6mm,0.1,0.02,7.6,0,-7.6,0
+Cement_sheeting,142.2,28.44,100,0,-40,0
+Weatherboard,142.2,28.44,100,0,-40,0
+Brick_veneer,1000,0,1000,0,-1000,0
+Timber_door,142.2,28.44,1.8,0.18,-20,2

@@ -948,10 +948,10 @@ class TestScenario21(unittest.TestCase):
 
     def test_dead_load(self):
 
-        conn_capacity = {48.0: [10],
-                         51.0: [9, 11],
-                         52.0: [8, 12],
-                         53.0: [7],
+        conn_capacity = {49.0: [10],
+                         52.0: [9, 11],
+                         53.0: [8, 12],
+                         54.0: [7],
                          57.0: range(1, 7)}
 
         dead_load = {1: 0.1,
@@ -1202,7 +1202,6 @@ class TestScenario27(unittest.TestCase):
     """
     FIXME
     conn #33 fails at 84.0
-    conn #78 fails at 51 not 67
     """
 
     @classmethod
@@ -1237,7 +1236,10 @@ class TestScenario27(unittest.TestCase):
 
 
 class TestScenario29(unittest.TestCase):
-
+    """
+    FIXME
+    conn #78 fails at 51 not 67
+    """
     @classmethod
     def setUpClass(cls):
         path = os.sep.join(__file__.split(os.sep)[:-1])
@@ -1311,6 +1313,39 @@ class TestScenario30(unittest.TestCase):
                    wind_speeds=np.arange(30.0, 80, 1.0),
                    conn_capacity=conn_capacity,
                    list_connections=range(1, 83),
+                   multiplier=1.0)
+
+class TestScenarioDeadLoadRoof(unittest.TestCase):
+
+    @classmethod
+    def setUpClass(cls):
+        """
+        path = os.sep.join(__file__.split(os.sep)[:-1])
+        logging.basicConfig(level=logging.WARNING)
+        logger = logging.getLogger(__name__)
+        file_cfg = os.path.join(path, 'test_scenarios',
+                                'test_dead_load_roof', 'test_dead_load_roof.cfg')
+        cfg = Config(file_cfg=file_cfg, logger=logger)
+        cls.house = House(cfg, seed=0)
+        """
+
+        path = os.sep.join(__file__.split(os.sep)[:-1])
+        path_cfg = os.path.join(path, 'test_scenarios', 'test_dead_load_roof')
+        set_logger(path_cfg=path_cfg, logging_level='debug')
+        file_cfg = os.path.join(path_cfg, 'test_dead_load_roof.cfg')
+        cfg = Config(file_cfg=file_cfg)
+        cls.house = House(cfg, seed=0)
+
+    def test_capacity(self):
+
+        conn_capacity = {
+                         37.0: [1, 2, 3, 4, 5, 6],
+                         }
+
+        simulation(self.house,
+                   wind_speeds=np.arange(30.0, 80, 1.0),
+                   conn_capacity=conn_capacity,
+                   list_connections=range(1, 15),
                    multiplier=1.0)
 
 

@@ -1,0 +1,4 @@
+group_name,dist_order,dist_dir,damage_dist,damage_scenario,trigger_collapse_at,flag_pressure
+sheeting,1,col,0,Loss of roof tiles,0,cpe
+batten,2,row,1,Loss of roof tiles & battens,0,cpe
+rafter,3,patch,1,Loss of roof structure,0,cpe_str

@@ -38,9 +38,9 @@ def compute_load_by_zone(flag_pressure, dic_influences):
             if not inf.source.damaged_previous:
 
                 load_by_zone = compute_load_by_zone(flag_pressure, inf.source.influences)
-                load += inf.coeff * load_by_zone
+                load += inf.coeff * (load_by_zone + inf.source.dead_load)
                 logger.debug(f'load by {inf.source.name}: '
-                             f'{inf.coeff:.2f} * {load_by_zone:.3f}')
+                        f'{inf.coeff:.2f} * ({load_by_zone:.3f} + {inf.source.dead_load:.3f})')
 
             else:
                 logger.debug(f'skip {inf.source.name}')

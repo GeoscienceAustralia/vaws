@@ -1,0 +1,43 @@
+name,water_ingress,base_cost,formula_type,coeff1,coeff2,coeff3
+Loss of roof tiles,0,0,1,0,0,1
+Loss of roof tiles,5,0,1,0,0,1
+Loss of roof tiles,18,0,1,0,0,1
+Loss of roof tiles,37,0,1,0,0,1
+Loss of roof tiles,67,0,1,0,0,1
+Loss of roof tiles,100,0,1,0,0,1
+Loss of roof tiles & battens,0,0,1,0,0,1
+Loss of roof tiles & battens,5,0,1,0,0,1
+Loss of roof tiles & battens,18,0,1,0,0,1
+Loss of roof tiles & battens,37,0,1,0,0,1
+Loss of roof tiles & battens,67,0,1,0,0,1
+Loss of roof tiles & battens,100,0,1,0,0,1
+Loss of roof structure,0,0,1,0,0,1
+Loss of roof structure,5,0,1,0,0,1
+Loss of roof structure,18,0,1,0,0,1
+Loss of roof structure,37,0,1,0,0,1
+Loss of roof structure,67,0,1,0,0,1
+Loss of roof structure,100,0,1,0,0,1
+Wall debris damage,0,0,1,0,0,1
+Wall debris damage,5,0,1,0,0,1
+Wall debris damage,18,0,1,0,0,1
+Wall debris damage,37,0,1,0,0,1
+Wall debris damage,67,0,1,0,0,1
+Wall debris damage,100,0,1,0,0,1
+Wall collapse,0,0,1,0,0,1
+Wall collapse,5,0,1,0,0,1
+Wall collapse,18,0,1,0,0,1
+Wall collapse,37,0,1,0,0,1
+Wall collapse,67,0,1,0,0,1
+Wall collapse,100,0,1,0,0,1
+Loss of guttering,0,0,1,0,0,1
+Loss of guttering,5,0,1,0,0,1
+Loss of guttering,18,0,1,0,0,1
+Loss of guttering,37,0,1,0,0,1
+Loss of guttering,67,0,1,0,0,1
+Loss of guttering,100,0,1,0,0,1
+WI only,0,0,1,0,0,1
+WI only,5,0,1,0,0,1
+WI only,18,0,1,0,0,1
+WI only,37,0,1,0,0,1
+WI only,67,0,1,0,0,1
+WI only,100,0,1,0,0,1
