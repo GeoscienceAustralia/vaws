@@ -1319,12 +1319,12 @@ class TestScenarioDeadLoadRoof(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        """
+
         path = os.sep.join(__file__.split(os.sep)[:-1])
+        path_cfg = os.path.join(path, 'test_scenarios', 'test_dead_load_roof')
+        file_cfg = os.path.join(path_cfg, 'test_dead_load_roof.cfg')
         logging.basicConfig(level=logging.WARNING)
         logger = logging.getLogger(__name__)
-        file_cfg = os.path.join(path, 'test_scenarios',
-                                'test_dead_load_roof', 'test_dead_load_roof.cfg')
         cfg = Config(file_cfg=file_cfg, logger=logger)
         cls.house = House(cfg, seed=0)
         """
@@ -1335,7 +1335,7 @@ class TestScenarioDeadLoadRoof(unittest.TestCase):
         file_cfg = os.path.join(path_cfg, 'test_dead_load_roof.cfg')
         cfg = Config(file_cfg=file_cfg)
         cls.house = House(cfg, seed=0)
-
+        """
     def test_capacity(self):
 
         conn_capacity = {
