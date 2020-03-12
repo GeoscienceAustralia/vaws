@@ -18,9 +18,9 @@ def simulation(house, wind_speeds, conn_capacity={}, list_connections=[],
     # compute zone pressures
     house._wind_dir_index = 0
     house._terrain_height_multiplier = multiplier  # profile: 6, height: 4.5
-    house._construction_level = 'medium'
+    #house._construction_level = 'medium'
     house.damage_increment = 0.0
-
+    bucket = []
     for wind_speed in wind_speeds:
 
         logger.debug(f'wind speed {wind_speed:.3f}')
@@ -54,6 +54,8 @@ def simulation(house, wind_speeds, conn_capacity={}, list_connections=[],
         house.run_debris_and_update_cpi(wind_speed)
 
         house.compute_damage_index(wind_speed)
+
+        bucket.append(house.di) 
 
     # compare with reference connection capacity
     conn_capacity2 = {x: -1.0 for x in list_connections}
@@ -90,7 +92,7 @@ def simulation(house, wind_speeds, conn_capacity={}, list_connections=[],
                 print(f'coverage #{_id} is not found')
             except AssertionError:
                 print(f'coverage #{_id} fails at {coverage.capacity} not {coverage_capacity2[_id]}')
-
+    return bucket
 
 class TestScenario1(unittest.TestCase):
     """
@@ -1348,8 +1350,47 @@ class TestScenarioDeadLoadRoof(unittest.TestCase):
                    list_connections=range(1, 15),
                    multiplier=1.0)
 
+class TestScenarioWallCollapse(unittest.TestCase):
+
+    @classmethod
+    def setUpClass(cls):
+
+        path = os.sep.join(__file__.split(os.sep)[:-1])
+        path_cfg = os.path.join(path, 'test_scenarios', 'test_wallcollapse')
+        file_cfg = os.path.join(path_cfg, 'test_wallcollapse.cfg')
+        logging.basicConfig(level=logging.WARNING)
+        logger = logging.getLogger(__name__)
+        cfg = Config(file_cfg=file_cfg, logger=logger)
+        cls.house = House(cfg, seed=0)
+        """
+
+        path = os.sep.join(__file__.split(os.sep)[:-1])
+        path_cfg = os.path.join(path, 'test_scenarios', 'test_dead_load_roof')
+        set_logger(path_cfg=path_cfg, logging_level='debug')
+        file_cfg = os.path.join(path_cfg, 'test_dead_load_roof.cfg')
+        cfg = Config(file_cfg=file_cfg)
+        cls.house = House(cfg, seed=0)
+        """
+    def test_damage_idx(self):
+
+        di = {40: 0.013,
+              45: 0.04,
+              50: 0.08,
+              55: 0.20,
+              }
+
+        wind_speeds = np.arange(30.0, 90, 1.0)
+        bucket = simulation(self.house,
+                   wind_speeds=wind_speeds,
+                   conn_capacity={},
+                   list_connections=[],
+                   multiplier=1.0)
+
+        for k, v in di.items():
+            idx = np.where(wind_speeds==k)[0][0]
+            self.assertAlmostEqual(v, bucket[idx], places=2)
 
 if __name__ == '__main__':
-    suite = unittest.TestLoader().loadTestsFromTestCase(TestScenario30)
+    suite = unittest.TestLoader().loadTestsFromTestCase(TestScenarioWallCollapse)
     unittest.TextTestRunner(verbosity=2).run(suite)
     #unittest.main(verbosity=2)

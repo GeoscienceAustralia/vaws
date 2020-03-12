@@ -105,6 +105,9 @@ class House(object):
             if self.cfg.coverages_area:
                 self._total_area_by_group['debris'] = self.cfg.coverages_area
 
+            if self.cfg.roof_wall_connections:
+                self._total_area_by_group['wall'] = self.cfg.coverages_area
+
         return self._total_area_by_group
 
     @property
@@ -597,7 +600,7 @@ class House(object):
 
         Note:
 
-            1. compute sum of damaged area by group 
+            1. compute sum of damaged area by group
             2. revised damage area by group by applying damage factoring
             3. calculate sum of revised damaged area by damage scenario
             4. apply costing modules
@@ -616,7 +619,7 @@ class House(object):
         # assign damaged area by group
         for key, value in revised_area_by_group.items():
             self.bucket['group']['damaged_area'][key] = value
-            if key != 'debris':
+            if key not in ['debris', 'wall']:
                 self.bucket['group']['prop_damaged'][key] = prop_by_group[key] / self.cfg.groups[key]['no_connections']
 
         # sum of area by scenario
@@ -724,6 +727,16 @@ class House(object):
         # include DEBRIS when debris is ON
         if self.cfg.coverages_area:
             area_by_group['debris'] = self.breached_area
+
+        if self.cfg.roof_wall_connections:
+            # first compute % of roof to wall connections
+            no_damaged = sum([self.connections[k].damaged
+                for k in self.cfg.roof_wall_connections['connections']])
+            roof_loss = no_damaged / self.cfg.roof_wall_connections['no'] * 100
+            wall_loss = np.interp(roof_loss, self.cfg.roof_wall_connections['roof_damage'],
+                                  self.cfg.roof_wall_connections['wall_damage']) / 100
+            wall_loss *= self.total_area_by_group['wall']
+            area_by_group['wall'] = max(wall_loss - self.breached_area, 0)
 
         return area_by_group, prop_by_group
 

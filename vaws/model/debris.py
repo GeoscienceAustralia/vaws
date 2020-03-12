@@ -188,7 +188,7 @@ class Debris(object):
                 if coverage.repair_type == 'full':
                     coverage.breached_area = coverage.area
                 else:
-                    # assume area: size(1) * amplification_factor(1)
+                    # assume area: size(1m2) * amplification_factor(1)
                     coverage.breached_area = 1.0
                     # coverage.breached_area = min(
                     #     # frontal_area * self.__class__.amplification_factor,

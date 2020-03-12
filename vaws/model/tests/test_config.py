@@ -11,14 +11,14 @@ import tempfile
 from vaws.model.config import Config
 from vaws.model.stats import compute_logarithmic_mean_stddev
 
+_PATH_ = os.sep.join(__file__.split(os.sep)[:-1])
 
 class TestConfig(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
 
-        path = os.sep.join(__file__.split(os.sep)[:-1])
         scenario_filename1 = os.path.abspath(os.path.join(
-            path, 'test_scenarios', 'test_house', 'test_house.cfg'))
+            _PATH_, 'test_scenarios', 'test_house', 'test_house.cfg'))
         logging.basicConfig(level=logging.INFO)
         logger = logging.getLogger(__name__)
         cls.cfg = Config(file_cfg=scenario_filename1, logger=logger)
@@ -365,9 +365,8 @@ class TestInputChecks(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
 
-        path = os.sep.join(__file__.split(os.sep)[:-1])
         scenario_filename1 = os.path.abspath(os.path.join(
-            path, 'test_scenarios', 'test_house', 'test_house.cfg'))
+            _PATH_, 'test_scenarios', 'test_house', 'test_house.cfg'))
         cls.cfg = Config(file_cfg=scenario_filename1)
         cls.path_cfg = os.path.dirname(os.path.realpath(scenario_filename1))
 
@@ -1170,6 +1169,21 @@ A4,0,1,0,0,0,0,0,-1
 
         finally:
             os.unlink(_file.name)
+
+class TestConfig2(unittest.TestCase):
+    @classmethod
+    def setUpClass(cls):
+
+        scenario_filename1 = os.path.abspath(os.path.join(
+            _PATH_, 'test_scenarios', 'test_house', 'test_house.cfg'))
+        logging.basicConfig(level=logging.INFO)
+        logger = logging.getLogger(__name__)
+        cls.cfg = Config(file_cfg=scenario_filename1, logger=logger)
+        cls.path_cfg = os.path.dirname(os.path.realpath(scenario_filename1))
+
+    def test_(self):
+        self.assertEqual(self.cfg.flags['debris'], True)
+
 
 if __name__ == '__main__':
     unittest.main()

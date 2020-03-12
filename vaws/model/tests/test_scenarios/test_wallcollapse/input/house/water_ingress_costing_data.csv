@@ -1,0 +1,43 @@
+name,water_ingress,base_cost,formula_type,coeff1,coeff2,coeff3
+Loss of roof sheeting,0,0,1,0,0,1
+Loss of roof sheeting,5,6736,1,0,0,1
+Loss of roof sheeting,18,24249,1,0,0,1
+Loss of roof sheeting,37,56103,1,0,0,1
+Loss of roof sheeting,67,134730,1,0,0,1
+Loss of roof sheeting,100,186492,1,0,0,1
+Loss of roof sheeting & purlins,0,0,1,0,0,1
+Loss of roof sheeting & purlins,5,6736,1,0,0,1
+Loss of roof sheeting & purlins,18,24249,1,0,0,1
+Loss of roof sheeting & purlins,37,56103,1,0,0,1
+Loss of roof sheeting & purlins,67,134730,1,0,0,1
+Loss of roof sheeting & purlins,100,186492,1,0,0,1
+Loss of roof structure,0,0,1,0,0,1
+Loss of roof structure,5,4562,1,0,0,1
+Loss of roof structure,18,16356,1,0,0,1
+Loss of roof structure,37,37850,1,0,0,1
+Loss of roof structure,67,101203,1,0,0,1
+Loss of roof structure,100,137725,1,0,0,1
+Wall debris damage,0,0,1,0,0,1
+Wall debris damage,5,5835,1,0,0,1
+Wall debris damage,18,21005,1,0,0,1
+Wall debris damage,37,49434,1,0,0,1
+Wall debris damage,67,122655,1,0,0,1
+Wall debris damage,100,168469,1,0,0,1
+Wall collapse,0,0,1,0,0,1
+Wall collapse,5,5118,1,0,0,1
+Wall collapse,18,17997,1,0,0,1
+Wall collapse,37,40635,1,0,0,1
+Wall collapse,67,73697,1,0,0,1
+Wall collapse,100,108572,1,0,0,1
+Loss of guttering,0,0,1,0,0,1
+Loss of guttering,5,6736,1,0,0,1
+Loss of guttering,18,24249,1,0,0,1
+Loss of guttering,37,56103,1,0,0,1
+Loss of guttering,67,134730,1,0,0,1
+Loss of guttering,100,186492,1,0,0,1
+WI only,0,0,1,0,0,1
+WI only,5,6736,1,0,0,1
+WI only,18,24249,1,0,0,1
+WI only,37,56103,1,0,0,1
+WI only,67,134730,1,0,0,1
+WI only,100,186492,1,0,0,1
