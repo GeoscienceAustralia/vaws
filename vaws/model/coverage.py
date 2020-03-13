@@ -118,8 +118,8 @@ class Coverage(Zone):
         :return:
         """
 
-        msg1 = 'load at coverage {name}: {qz:.3f} * ({cpe:.3f} - ' \
-               '{cpi:.3f}) * {area:.3f}'
+        msg1 = 'load at coverage {name}: {load:.3f} = {qz:.3f} * ({cpe:.3f} - ' \
+                '{cpi:.3f}) * {area:.3f}'
         msg2 = 'coverage {name} failed at {speed:.3f} b/c ' \
                '{positive:.3f} or {negative:.3f} < {load:.3f} ' \
                '-> breached area {area:.3f}'
@@ -133,6 +133,7 @@ class Coverage(Zone):
             self.load = qz * (self.cpe - cpi) * self.area * combination_factor
 
             self.logger.debug(msg1.format(name=self.name,
+                                          load=self.load,
                                           qz=qz,
                                           cpe=self.cpe,
                                           cpi=cpi,

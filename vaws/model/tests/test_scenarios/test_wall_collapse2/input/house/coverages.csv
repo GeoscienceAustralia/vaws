@@ -1,0 +1,6 @@
+name,description,wall_name,area,coverage_type,repair_type
+1,block,1,5.8,Brick_veneer,partial
+2,block,2,14.1,Brick_veneer,partial
+3,block,3,10.8,Brick_veneer,partial
+4,block,4,14.1,Brick_veneer,partial
+5,door,1,5,Glass_annealed_6mm_balcony_door,full

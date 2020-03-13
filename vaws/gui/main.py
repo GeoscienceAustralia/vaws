@@ -1371,6 +1371,15 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
                 ', '.join([str(x) for x in self.cfg.water_ingress_i_speed_at_full_wi]))
             self.ui.waterEnabled.setChecked(self.cfg.flags['water_ingress'])
 
+            # wall collapse
+            self.ui.typeName.setText(
+                ', '.join([str(x) for x in self.cfg.wall_collapse['type_name']]))
+            self.ui.roofDamage.setText(
+                ', '.join([str(x) for x in self.cfg.wall_collapse['roof_damage']]))
+            self.ui.wallDamage.setText(
+                ', '.join([str(x) for x in self.cfg.wall_collapse['wall_damage']]))
+            self.ui.wallCollapseEnabled.setChecked(self.cfg.flags['wall_collapse'])
+
             # options
             self.ui.fragilityStates.setText(
                 ', '.join(self.cfg.fragility_i_states))
@@ -1409,6 +1418,7 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
             self.ui.windDirection.currentIndex()]
 
         # Debris section
+        new_cfg.flags['debris'] = self.ui.debris.isChecked()
         new_cfg.set_region_name(str(self.ui.debrisRegion.currentText()))
         new_cfg.building_spacing = float(self.ui.buildingSpacing.currentText())
         new_cfg.debris_radius = self.ui.debrisRadius.value()
@@ -1441,9 +1451,8 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
             new_cfg.flags['debris_vulnerability'] = False
             new_cfg.debris_vuln_input = {}
 
-        new_cfg.flags['water_ingress'] = self.ui.waterEnabled.isChecked()
+        # options 
         new_cfg.flags['differential_shielding'] = self.ui.diffShielding.isChecked()
-        new_cfg.flags['debris'] = self.ui.debris.isChecked()
 
         # option section
         new_cfg.random_seed = int(self.ui.seedRandom.text())
@@ -1476,6 +1485,15 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
             float(x) for x in self.ui.waterSpeed0.text().split(',')]
         new_cfg.water_ingress_i_full_wi = [
             float(x) for x in self.ui.waterSpeed1.text().split(',')]
+
+        # wall collapse
+        new_cfg.flags['wall_collapse'] = self.ui.wallCollapseEnabled.isChecked()
+        new_cfg.wall_collapse['type_name'] = [
+            x.strip() for x in self.ui.typeName.text().split(',')]
+        new_cfg.wall_collapse['roof_damage'] = [
+            float(x) for x in self.ui.roofDamage.text().split(',')]
+        new_cfg.wall_collapse['wall_damage'] = [
+            float(x) for x in self.ui.wallDamage.text().split(',')]
 
         # house / groups section
         # for irow, (index, ctg) in enumerate(self.cfg.groups.items()):

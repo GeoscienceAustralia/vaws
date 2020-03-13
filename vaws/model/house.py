@@ -105,7 +105,7 @@ class House(object):
             if self.cfg.coverages_area:
                 self._total_area_by_group['debris'] = self.cfg.coverages_area
 
-            if self.cfg.roof_wall_connections:
+            if self.cfg.wall_collapse:
                 self._total_area_by_group['wall'] = self.cfg.coverages_area
 
         return self._total_area_by_group
@@ -728,15 +728,17 @@ class House(object):
         if self.cfg.coverages_area:
             area_by_group['debris'] = self.breached_area
 
-        if self.cfg.roof_wall_connections:
+        if self.cfg.flags['wall_collapse']:
             # first compute % of roof to wall connections
             no_damaged = sum([self.connections[k].damaged
-                for k in self.cfg.roof_wall_connections['connections']])
-            roof_loss = no_damaged / self.cfg.roof_wall_connections['no'] * 100
-            wall_loss = np.interp(roof_loss, self.cfg.roof_wall_connections['roof_damage'],
-                                  self.cfg.roof_wall_connections['wall_damage']) / 100
+                for k in self.cfg.wall_collapse['connections']])
+            roof_loss = no_damaged / self.cfg.wall_collapse['no'] * 100
+            wall_loss = np.interp(roof_loss, self.cfg.wall_collapse['roof_damage'],
+                                  self.cfg.wall_collapse['wall_damage']) / 100
             wall_loss *= self.total_area_by_group['wall']
             area_by_group['wall'] = max(wall_loss - self.breached_area, 0)
+
+            self.logger.debug(f'roof_loss: {roof_loss:.1f}%, wall_loss: {wall_loss:.3f}, breached_area: {self.breached_area}, damaged_wall_area: {area_by_group["wall"]:.3f}')
 
         return area_by_group, prop_by_group
 

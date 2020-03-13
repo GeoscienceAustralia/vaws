@@ -60,7 +60,7 @@
          </size>
         </property>
         <property name="currentIndex">
-         <number>1</number>
+         <number>0</number>
         </property>
         <widget class="QWidget" name="scenario_tab">
          <attribute name="title">
@@ -576,44 +576,6 @@
           <string>Water</string>
          </attribute>
          <layout class="QGridLayout" name="gridLayout_7">
-          <item row="4" column="1">
-           <widget class="QLineEdit" name="waterSpeed1"/>
-          </item>
-          <item row="2" column="1">
-           <widget class="QLineEdit" name="waterThresholds"/>
-          </item>
-          <item row="8" column="0">
-           <widget class="QLabel" name="label_41">
-            <property name="sizePolicy">
-             <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
-              <horstretch>0</horstretch>
-              <verstretch>0</verstretch>
-             </sizepolicy>
-            </property>
-            <property name="text">
-             <string/>
-            </property>
-            <property name="alignment">
-             <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-            </property>
-           </widget>
-          </item>
-          <item row="3" column="0">
-           <widget class="QLabel" name="label_34">
-            <property name="sizePolicy">
-             <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
-              <horstretch>0</horstretch>
-              <verstretch>0</verstretch>
-             </sizepolicy>
-            </property>
-            <property name="text">
-             <string>Speeds at 0 WI</string>
-            </property>
-            <property name="alignment">
-             <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-            </property>
-           </widget>
-          </item>
           <item row="5" column="1">
            <layout class="QHBoxLayout" name="horizontalLayout_26">
             <property name="sizeConstraint">
@@ -650,8 +612,8 @@
             </item>
            </layout>
           </item>
-          <item row="9" column="0">
-           <widget class="QLabel" name="label_45">
+          <item row="3" column="0">
+           <widget class="QLabel" name="label_34">
             <property name="sizePolicy">
              <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
               <horstretch>0</horstretch>
@@ -659,7 +621,23 @@
              </sizepolicy>
             </property>
             <property name="text">
-             <string/>
+             <string>Speeds at 0 WI</string>
+            </property>
+            <property name="alignment">
+             <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+            </property>
+           </widget>
+          </item>
+          <item row="4" column="0">
+           <widget class="QLabel" name="label_35">
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
+            </property>
+            <property name="text">
+             <string>Speeds at 100 WI</string>
             </property>
             <property name="alignment">
              <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
@@ -682,57 +660,6 @@
             </property>
            </widget>
           </item>
-          <item row="7" column="0">
-           <widget class="QLabel" name="label_46">
-            <property name="sizePolicy">
-             <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
-              <horstretch>0</horstretch>
-              <verstretch>0</verstretch>
-             </sizepolicy>
-            </property>
-            <property name="text">
-             <string/>
-            </property>
-            <property name="alignment">
-             <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-            </property>
-           </widget>
-          </item>
-          <item row="6" column="0">
-           <widget class="QLabel" name="label_40">
-            <property name="sizePolicy">
-             <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
-              <horstretch>0</horstretch>
-              <verstretch>0</verstretch>
-             </sizepolicy>
-            </property>
-            <property name="text">
-             <string/>
-            </property>
-            <property name="alignment">
-             <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-            </property>
-           </widget>
-          </item>
-          <item row="3" column="1">
-           <widget class="QLineEdit" name="waterSpeed0"/>
-          </item>
-          <item row="4" column="0">
-           <widget class="QLabel" name="label_35">
-            <property name="sizePolicy">
-             <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
-              <horstretch>0</horstretch>
-              <verstretch>0</verstretch>
-             </sizepolicy>
-            </property>
-            <property name="text">
-             <string>Speeds at 100 WI</string>
-            </property>
-            <property name="alignment">
-             <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-            </property>
-           </widget>
-          </item>
           <item row="5" column="0">
            <widget class="QLabel" name="label_36">
             <property name="sizePolicy">
@@ -749,6 +676,118 @@
             </property>
            </widget>
           </item>
+          <item row="4" column="1">
+           <widget class="QLineEdit" name="waterSpeed1"/>
+          </item>
+          <item row="2" column="1">
+           <widget class="QLineEdit" name="waterThresholds"/>
+          </item>
+          <item row="3" column="1">
+           <widget class="QLineEdit" name="waterSpeed0"/>
+          </item>
+         </layout>
+        </widget>
+        <widget class="QWidget" name="wall_tab">
+         <attribute name="title">
+          <string>Wall collapse</string>
+         </attribute>
+         <layout class="QGridLayout" name="gridLayout_7">
+          <item row="4" column="0">
+           <widget class="QLabel" name="label_42">
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
+            </property>
+            <property name="text">
+             <string>Wall damage (%)</string>
+            </property>
+            <property name="alignment">
+             <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+            </property>
+           </widget>
+          </item>
+          <item row="2" column="1">
+           <widget class="QLineEdit" name="typeName"/>
+          </item>
+          <item row="4" column="1">
+           <widget class="QLineEdit" name="wallDamage"/>
+          </item>
+          <item row="2" column="0">
+           <widget class="QLabel" name="label_39">
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
+            </property>
+            <property name="text">
+             <string>Type name</string>
+            </property>
+            <property name="alignment">
+             <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+            </property>
+           </widget>
+          </item>
+          <item row="3" column="0">
+           <widget class="QLabel" name="label_34">
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
+            </property>
+            <property name="text">
+             <string>Roof damage (%)</string>
+            </property>
+            <property name="alignment">
+             <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+            </property>
+           </widget>
+          </item>
+          <item row="5" column="0">
+           <widget class="QLabel" name="label_36">
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
+            </property>
+            <property name="text">
+             <string>Wall collapse</string>
+            </property>
+            <property name="alignment">
+             <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+            </property>
+           </widget>
+          </item>
+          <item row="3" column="1">
+           <widget class="QLineEdit" name="roofDamage"/>
+          </item>
+          <item row="5" column="1">
+           <layout class="QHBoxLayout" name="horizontalLayout_261">
+            <property name="sizeConstraint">
+             <enum>QLayout::SetMinimumSize</enum>
+            </property>
+            <item>
+             <widget class="QCheckBox" name="wallCollapseEnabled">
+              <property name="sizePolicy">
+               <sizepolicy hsizetype="Minimum" vsizetype="Minimum">
+                <horstretch>0</horstretch>
+                <verstretch>0</verstretch>
+               </sizepolicy>
+              </property>
+              <property name="layoutDirection">
+               <enum>Qt::LeftToRight</enum>
+              </property>
+              <property name="text">
+               <string>Enabled</string>
+              </property>
+             </widget>
+            </item>
+           </layout>
+          </item>
          </layout>
         </widget>
         <widget class="QWidget" name="options_tab">
@@ -756,10 +795,10 @@
           <string>Options</string>
          </attribute>
          <layout class="QGridLayout" name="gridLayout_2">
-          <item row="7" column="0">
-           <widget class="QLabel" name="label_38">
+          <item row="1" column="0">
+           <widget class="QLabel" name="label_48">
             <property name="text">
-             <string>Upper limit</string>
+             <string>Damage states</string>
             </property>
             <property name="alignment">
              <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
@@ -815,13 +854,36 @@
             </item>
            </layout>
           </item>
-          <item row="8" column="0">
-           <widget class="QLabel" name="label_43">
+          <item row="3" column="1">
+           <widget class="QCheckBox" name="diffShielding">
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Minimum" vsizetype="Minimum">
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
+            </property>
+            <property name="mouseTracking">
+             <bool>true</bool>
+            </property>
             <property name="text">
-             <string>No. of steps</string>
+             <string>Differential shielding</string>
+            </property>
+           </widget>
+          </item>
+          <item row="0" column="1" alignment="Qt::AlignLeft|Qt::AlignVCenter">
+           <widget class="QLabel" name="label_50">
+            <property name="text">
+             <string>Fragility</string>
             </property>
             <property name="alignment">
              <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+            </property>
+           </widget>
+          </item>
+          <item row="1" column="1">
+           <widget class="QLineEdit" name="fragilityStates">
+            <property name="mouseTracking">
+             <bool>false</bool>
             </property>
            </widget>
           </item>
@@ -834,6 +896,29 @@
              <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
             </property>
            </widget>
+          </item>
+          <item row="7" column="0">
+           <widget class="QLabel" name="label_38">
+            <property name="text">
+             <string>Upper limit</string>
+            </property>
+            <property name="alignment">
+             <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+            </property>
+           </widget>
+          </item>
+          <item row="2" column="0">
+           <widget class="QLabel" name="label_49">
+            <property name="text">
+             <string>Thresholds</string>
+            </property>
+            <property name="alignment">
+             <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+            </property>
+           </widget>
+          </item>
+          <item row="2" column="1">
+           <widget class="QLineEdit" name="fragilityThresholds"/>
           </item>
           <item row="7" column="1">
            <layout class="QHBoxLayout" name="horizontalLayout_40">
@@ -874,6 +959,13 @@
             </item>
            </layout>
           </item>
+          <item row="9" column="1">
+           <widget class="QPushButton" name="applyDisplayChangesButton">
+            <property name="text">
+             <string>Update heatmap</string>
+            </property>
+           </widget>
+          </item>
           <item row="8" column="1">
            <layout class="QHBoxLayout" name="horizontalLayout_41">
             <item>
@@ -913,69 +1005,6 @@
             </item>
            </layout>
           </item>
-          <item row="2" column="1">
-           <widget class="QLineEdit" name="fragilityThresholds"/>
-          </item>
-          <item row="9" column="1">
-           <widget class="QPushButton" name="applyDisplayChangesButton">
-            <property name="text">
-             <string>Update heatmap</string>
-            </property>
-           </widget>
-          </item>
-          <item row="17" column="0">
-           <widget class="QLabel" name="label_51">
-            <property name="text">
-             <string/>
-            </property>
-            <property name="alignment">
-             <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-            </property>
-           </widget>
-          </item>
-          <item row="2" column="0">
-           <widget class="QLabel" name="label_49">
-            <property name="text">
-             <string>Thresholds</string>
-            </property>
-            <property name="alignment">
-             <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-            </property>
-           </widget>
-          </item>
-          <item row="1" column="0">
-           <widget class="QLabel" name="label_48">
-            <property name="text">
-             <string>Damage states</string>
-            </property>
-            <property name="alignment">
-             <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-            </property>
-           </widget>
-          </item>
-          <item row="1" column="1">
-           <widget class="QLineEdit" name="fragilityStates">
-            <property name="mouseTracking">
-             <bool>false</bool>
-            </property>
-           </widget>
-          </item>
-          <item row="3" column="1">
-           <widget class="QCheckBox" name="diffShielding">
-            <property name="sizePolicy">
-             <sizepolicy hsizetype="Minimum" vsizetype="Minimum">
-              <horstretch>0</horstretch>
-              <verstretch>0</verstretch>
-             </sizepolicy>
-            </property>
-            <property name="mouseTracking">
-             <bool>true</bool>
-            </property>
-            <property name="text">
-             <string>Differential shielding</string>
-            </property>
-           </widget>
-          </item>
           <item row="3" column="0">
            <widget class="QLabel" name="label_47">
             <property name="text">
@@ -986,10 +1015,10 @@
             </property>
            </widget>
           </item>
-          <item row="0" column="1" alignment="Qt::AlignLeft|Qt::AlignVCenter">
-           <widget class="QLabel" name="label_50">
+          <item row="8" column="0">
+           <widget class="QLabel" name="label_43">
             <property name="text">
-             <string>Fragility</string>
+             <string>No. of steps</string>
             </property>
             <property name="alignment">
              <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>

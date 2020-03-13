@@ -91,7 +91,7 @@ FLAGS_OPTIONS = ['water_ingress',
                  'debris',
                  'debris_vulnerability',
                  'save_heatmaps',
-                 'roof_wall_connections']
+                 'wall_collapse']
 
 
 class Config(object):
@@ -254,7 +254,7 @@ class Config(object):
         self.groups = None
         self.types = None
         self.connections = None
-        self.roof_wall_connections = {}
+        self.wall_collapse = {}
         self.damage_grid_by_sub_group = None
         self.influences = None
         self.influence_patches = None
@@ -353,7 +353,7 @@ class Config(object):
         self.read_fragility_thresholds(conf, key='fragility_thresholds')
         self.read_debris(conf, key='debris')
         self.read_water_ingress(conf, key='water_ingress')
-        self.read_roof_wall_connections(conf, key='roof_wall_connections')
+        self.read_wall_collapse(conf, key='wall_collapse')
 
     def process_config(self):
 
@@ -449,7 +449,7 @@ class Config(object):
         else:
             self.logger.info('default water ingress thresholds is used')
 
-    def read_roof_wall_connections(self, conf, key):
+    def read_wall_collapse(self, conf, key):
         """
         read roof to wall connections related parameters
         Args:
@@ -460,14 +460,14 @@ class Config(object):
 
         """
         if conf.has_section(key):
-            self.roof_wall_connections['type_name'] = [x.strip() for x in
+            self.wall_collapse['type_name'] = [x.strip() for x in
                 conf.get(key, 'type_name').split(',')]
-            self.roof_wall_connections['roof_damage'] = [float(x) for x in
+            self.wall_collapse['roof_damage'] = [float(x) for x in
                 conf.get(key, 'roof_damage').split(',')]
-            self.roof_wall_connections['wall_damage'] = [float(x) for x in
+            self.wall_collapse['wall_damage'] = [float(x) for x in
                 conf.get(key, 'wall_damage').split(',')]
         else:
-            if self.flags['roof_wall_connections']:
+            if self.flags['wall_collapse']:
                 self.logger.critical('Missing roof_wall_connection section')
 
     def set_water_ingress(self):
@@ -833,11 +833,11 @@ class Config(object):
                 self.groups[key].update({'no_connections': value,
                                          'costing_area': costing_area[key]})
 
-            if self.flags['roof_wall_connections']:
-                tmp = self.connections.loc[self.connections['type_name'].isin(self.roof_wall_connections['type_name'])].index.tolist()
+            if self.flags['wall_collapse']:
+                tmp = self.connections.loc[self.connections['type_name'].isin(self.wall_collapse['type_name'])].index.tolist()
                 if tmp:
-                    self.roof_wall_connections['connections'] = tmp
-                    self.roof_wall_connections['no'] = len(tmp)
+                    self.wall_collapse['connections'] = tmp
+                    self.wall_collapse['no'] = len(tmp)
                 else:
                     self.logger.critical('No roof to wall connections')
 
@@ -907,7 +907,7 @@ class Config(object):
         if self.coverages is not None:
             self.costing_to_group['Wall debris damage'] = ['debris']
 
-        if self.roof_wall_connections:
+        if self.wall_collapse:
             self.costing_to_group['Wall collapse'] = ['wall']
 
         # tidy up
