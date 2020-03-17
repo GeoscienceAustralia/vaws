@@ -1,42 +1,12 @@
 # This file may be used to create an environment using:
 # $ conda create --name <env> --file <this file>
 # platform: win-64
-name: vaws
+name: vaws3
 dependencies:
-- blas=1.0
-- ca-certificates=2019.5.15
-- certifi=2019.6.16
-- cycler=0.10.0
-- freetype=2.9.1
-- geos=3.7.1
-- h5py=2.8.0
-- hdf5=1.10.2
-- icc_rt=2019.0.0
-- icu=58.2
-- intel-openmp=2019.4
-- jpeg=9b
-- kiwisolver=1.1.0
-- libpng=1.6.37
 - matplotlib=3.0.3
-- mkl=2019.4
+- h5py=2.8.0
 - numpy=1.16.4
-- openssl=1.1.1c
 - pandas=0.23.4
-- pip=19.1.1
-- pyparsing=2.4.0
-- pyqt=5.9.2
 - python=3.6.7
-- python-dateutil=2.8.0
-- pytz=2019.1
-- qt=5.9.7
 - scipy=1.2.1
-- setuptools=41.0.1
 - shapely=1.6.4
-- sip=4.19.8
-- six=1.12.0
-- sqlite=3.29.0
-- tornado=6.0.3
-- vc=14.1
-- wheel=0.33.4
-- wincertstore=0.2
-- zlib=1.2.11

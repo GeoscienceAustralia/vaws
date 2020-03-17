@@ -645,6 +645,8 @@ class House(object):
                 self.di_except_water, wind_speed,
                 self.cfg.water_ingress)
 
+            self.logger.debug(f'water_ingress_perc: {water_ingress_perc}')
+
             damage_name = self.determine_scenario_for_water_ingress_costing(
                 prop_area_by_scenario)
 
@@ -670,7 +672,7 @@ class House(object):
         idx = np.abs(df.index - water_ingress_perc).argsort()[0]
 
         self.water_ingress_cost = \
-            df['costing'].values[idx].compute_cost(self.di_except_water)
+            df['costing'].values[idx].compute_cost(water_ingress_perc/100)
 
     def determine_scenario_for_water_ingress_costing(self,
                                                      prop_area_by_scenario):
