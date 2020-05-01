@@ -6,6 +6,7 @@ import time
 import os.path
 import logging
 import warnings
+import h5py
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -26,7 +27,7 @@ from vaws.model.curve import vulnerability_lognorm, vulnerability_weibull, vulne
 from vaws.gui.main_ui import Ui_main
 from vaws.model.main import process_commandline, set_logger, \
     simulate_wind_damage_to_houses
-from vaws.model.config import Config, INPUT_DIR, OUTPUT_DIR
+from vaws.model.config import Config, INPUT_DIR, OUTPUT_DIR, FILE_RESULTS
 from vaws.model.version import VERSION_DESC
 from vaws.model.damage_costing import compute_water_ingress_given_damage
 
@@ -115,6 +116,7 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
         self.ui.actionSave_Scenario.triggered.connect(self.save_scenario)
         self.ui.actionSave_Scenario_As.triggered.connect(self.save_as_scenario)
         self.ui.actionHouse_Info.triggered.connect(self.showHouseInfoDlg)
+        self.ui.actionLoad_Results.triggered.connect(self.load_results)
         # TODO: actionNew missing
 
         # test panel
@@ -640,7 +642,11 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
         grouped = self.cfg.connections.loc[
             self.cfg.connections.group_name == group_name]
 
-        capacity = np.array([self.results_dict['connection']['capacity'][i]
+        try:
+            capacity = np.array([self.results_dict['connection']['capacity'][i]
+                             for i in grouped.index])[:, 0, :]
+        except KeyError:
+            capacity = np.array([self.results_dict['connection']['capacity'][str(i)]
                              for i in grouped.index])[:, 0, :]
 
         capacity[capacity == -1] = np.nan
@@ -863,6 +869,20 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
 
             self.ui.mplvuln.axes.figure.canvas.draw()
 
+    def convert_h5_results(self, fid):
+
+        self.results_dict = {}
+
+        def h_dic(d, results_dict):
+            for k, v in d.items():
+                if isinstance(v, h5py._hl.group.Group):
+                    results_dict[k] = {}
+                    h_dic(v, results_dict[k])
+                else:
+                    # clean up value
+                    results_dict[k] = v.value
+        h_dic(fid, self.results_dict)
+        return self.results_dict
 
     def updateFragCurve(self):
 
@@ -1019,8 +1039,10 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
 
         xlabels = []
         for _id, (type_name, grouped) in enumerate(self.cfg.connections.groupby('type_name')):
-            _array = np.array([self.results_dict['connection']['strength'][i] for i in grouped.index]).flatten()
-
+            try:
+                _array = np.array([self.results_dict['connection']['strength'][i] for i in grouped.index]).flatten()
+            except KeyError:
+                _array = np.array([self.results_dict['connection']['strength'][str(i)] for i in grouped.index]).flatten()
             ax.scatter(
                 _id * np.ones_like(_array), _array, s=8, marker='+')
             # ax.hold(True)
@@ -1044,8 +1066,13 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
 
         xlabels = []
         for _id, (type_name, grouped) in enumerate(self.cfg.connections.groupby('type_name')):
-            _array = np.array(
+            try:
+                _array = np.array(
                 [self.results_dict['connection']['capacity'][i] for i in grouped.index]).flatten()
+            except KeyError:
+                _array = np.array(
+                [self.results_dict['connection']['capacity'][str(i)] for i in grouped.index]).flatten()
+
             _array[_array == -1] = np.nan
             ax.scatter(_id * np.ones_like(_array), _array, s=8, marker='+')
             ax.scatter(_id, np.nanmean(_array), s=20, c='r', marker='o')
@@ -1074,7 +1101,11 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
         #                 for i in grouped.index])[:, ispeed, house_number-1]
 
         # maintain vmin, vmax for all speed and house
-        tmp = np.array([self.results_dict['connection']['load'][i]
+        try:
+            tmp = np.array([self.results_dict['connection']['load'][i]
+                         for i in grouped.index])
+        except KeyError:
+            tmp = np.array([self.results_dict['connection']['load'][str(i)]
                          for i in grouped.index])
 
         _min, _max = tmp.min(), tmp.max()
@@ -1106,8 +1137,15 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
         connections_damaged = self.results_dict['connection']['damaged']
         for irow, item in enumerate(self.cfg.connections.iterrows()):
             conn_id = item[0]
-            failure_count = np.count_nonzero(connections_damaged[conn_id])
-            failure_mean = np.mean(connections_damaged[conn_id])
+            try:
+                failure_count = np.count_nonzero(connections_damaged[conn_id])
+            except KeyError:
+                failure_count = np.count_nonzero(connections_damaged[str(conn_id)])
+
+            try:
+                failure_mean = np.mean(connections_damaged[conn_id])
+            except KeyError:
+                failure_mean = np.mean(connections_damaged[str(conn_id)])
             self.ui.connections.setItem(irow, 4, QTableWidgetItem(f'{failure_mean:.3}'))
             self.ui.connections.setItem(irow, 5, QTableWidgetItem(f'{failure_count}'))
 
@@ -1156,12 +1194,27 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
 
             for _id, value in self.cfg.connections.iterrows():
 
-                capacity = self.results_dict['connection']['capacity'][_id][0, i]
-                # load = self.results_dict['connection']['load'][_id][house_num]
-                dead_load = self.results_dict['connection']['dead_load'][_id][0, i]
-                strength = self.results_dict['connection']['strength'][_id][0, i]
+                try:
+                    capacity = self.results_dict['connection']['capacity'][_id][0, i]
+                except KeyError:
+                    capacity = self.results_dict['connection']['capacity'][str(_id)][0, i]
 
-                load_last = self.results_dict['connection']['load'][_id][-1, i]
+                # load = self.results_dict['connection']['load'][_id][house_num]
+                try:
+                    dead_load = self.results_dict['connection']['dead_load'][_id][0, i]
+                except KeyError:
+                    dead_load = self.results_dict['connection']['dead_load'][str(_id)][0, i]
+
+                try:
+                    strength = self.results_dict['connection']['strength'][_id][0, i]
+                except KeyError:
+                    strength = self.results_dict['connection']['strength'][str(_id)][0, i]
+
+                try:
+                    load_last = self.results_dict['connection']['load'][_id][-1, i]
+                except KeyError:
+                    load_last = self.results_dict['connection']['load'][str(_id)][-1, i]
+
                 if load_last:
                     load_desc = f'{load_last:.3}'
                 else:
@@ -1209,6 +1262,55 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
             settings.setValue("ScenarioFolder", QVariant(os.path.dirname(config_file)))
         else:
             msg = f'Unable to load scenario: {config_file}\nFile not found.'
+            QMessageBox.warning(self, "VAWS Program Warning", msg)
+
+    def load_results(self, config_file=None):
+        settings = QSettings()
+        # Set the path to the default
+        scenario_path = SCENARIOS_DIR
+        if config_file:
+            scenario_path = config_file
+        elif settings.contains("ScenarioFolder"):
+            # we have a saved scenario path so use that
+            scenario_path = settings.value("ScenarioFolder")
+
+        filename, _ = QFileDialog.getOpenFileName(self,
+                                                  "Scenarios",
+                                                  scenario_path,
+                                                  "Scenarios (*.cfg)")
+        if not filename:
+            return
+
+        config_file = '{}'.format(filename)
+        h5_file = os.path.join(os.path.dirname(config_file), OUTPUT_DIR, FILE_RESULTS)
+        if os.path.exists(h5_file):
+            self.file_load(config_file)
+            #settings.setValue("ScenarioFolder", QVariant(os.path.dirname(config_file)))
+
+
+            self.ui.spinBox_heatmap.setRange(0, self.cfg.no_models)
+
+            self.ui.doubleSpinBox_load.setRange(self.cfg.wind_speeds[0], self.cfg.wind_speeds[-1])
+            self.ui.spinBox_load.setRange(1, self.cfg.no_models)
+
+            msg = f'Load previous results'
+            self.has_run = True
+            self.statusBar().showMessage(msg)
+            with h5py.File(h5_file, 'r') as fid:
+
+                self.results_dict = self.convert_h5_results(fid)
+                self.updateVulnCurve()
+                self.updateFragCurve()
+                self.updateHouseResultsTable()
+                self.updateConnectionTable_with_results()
+                self.updateConnectionTypePlots()
+                self.updateHeatmap()
+                self.updateWaterIngressPlot()
+                self.updateBreachPlot()
+                self.updateCpiPlot()
+
+        else:
+            msg = f'Unable to load resutls: {config_file}\nFile not found.'
             QMessageBox.warning(self, "VAWS Program Warning", msg)
 
     def save_scenario(self):
@@ -1351,17 +1453,6 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
                 self.ui.debrisVul_param2.setText(
                     f"{self.cfg.debris_vuln_input['param2']}")
 
-            # construction levels
-            # self.ui.constructionEnabled.setChecked(self.cfg.flags['construction_levels'])
-            # self.ui.constLevels.setText(
-            #     ', '.join(self.cfg.construction_levels_levels))
-            # self.ui.constProbs.setText(
-            #     ', '.join([str(x) for x in self.cfg.construction_levels_probs]))
-            # self.ui.constMeans.setText(
-            #     ', '.join([str(x) for x in self.cfg.construction_levels_mean_factors]))
-            # self.ui.constCovs.setText(
-            #     ', '.join([str(x) for x in self.cfg.construction_levels_cv_factors]))
-
             # water ingress
             self.ui.waterThresholds.setText(
                 ', '.join([str(x) for x in self.cfg.water_ingress_i_thresholds]))
@@ -1460,17 +1551,6 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
         new_cfg.heatmap_vmax = float(self.ui.blueV.value())
         new_cfg.heatmap_vstep = float(self.ui.vStep.value())
 
-        # construction section
-        # new_cfg.flags['construction_levels'] = self.ui.constructionEnabled.isChecked()
-        # new_cfg.construction_levels_levels = [
-        #     x.strip() for x in str(self.ui.constLevels.text()).split(',')]
-        # new_cfg.construction_levels_probs = [
-        #     float(x) for x in self.ui.constProbs.text().split(',')]
-        # new_cfg.construction_levels_mean_factors = [
-        #     float(x) for x in self.ui.constMeans.text().split(',')]
-        # new_cfg.construction_levels_cov_factors = [
-        #     float(x) for x in self.ui.constCovs.text().split(',')]
-
         # fragility section
         new_cfg.fragility_i_thresholds = [
             float(x) for x in self.ui.fragilityThresholds.text().split(',')]
@@ -1533,6 +1613,7 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
             elif reply == QMessageBox.Yes:
                 self.save_scenario()
         return True
+
     def testDebrisRun(self, wind_speed, vuln_input):
 
         rnd_state = np.random.RandomState(1)
@@ -1604,38 +1685,6 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
                     self, "Debris Test", "Wind speed (m/s):", 50, 10, 200)
                 if ok:
                     self.testDebrisRun(wind_speed, vuln_input)
-
-        # def testConstructionLevels(self):
-        #     self.update_config_from_ui()
-        #     self.cfg.process_config()
-        #
-        #     selected_type, ok = QInputDialog.getItem(self, "Construction Test", "Connection Type:",
-        #         self.cfg.types.keys(), 0, False)
-        #
-        #     if ok:
-        #
-        #         house = House(self.cfg, seed=1)
-        #         lognormal_strength = self.cfg.types['{}'.format(selected_type)]['lognormal_strength']
-        #         mu, std = compute_arithmetic_mean_stddev(*lognormal_strength)
-        #         mu *= house.mean_factor
-        #         std *= house.cv_factor * house.mean_factor
-        #
-        #         x = []
-        #         n = 50000
-        #         for i in xrange(n):
-        #             rv = sample_lognorm_given_mean_stddev(mu, std, house.rnd_state)
-        #             x.append(rv)
-        #
-        #         fig = plt.figure()
-        #         ax = fig.add_subplot(111)
-        #         ax.hist(x, 50, normed=1, facecolor='green', alpha=0.75)
-        #         _mean = self.cfg.types['{}'.format(selected_type)]['strength_mean']
-        #         _std = self.cfg.types['{}'.format(selected_type)]['strength_std']
-        #         title_str = 'Sampled strength of {0} \n ' \
-        #                     'construction level: {1}, mean: {2:.2f}, std: {3:.2f}'.format(
-        #             selected_type, house.construction_level, _mean, _std)
-        #         ax.set_title(title_str)
-        #         fig.show()
 
     def testWaterIngress(self):
         new_cfg = self.cfg

@@ -2000,6 +2000,7 @@
    <addaction name="actionOpen_Scenario"/>
    <addaction name="actionSave_Scenario"/>
    <addaction name="actionSave_Scenario_As"/>
+   <addaction name="actionLoad_Results"/>
    <addaction name="separator"/>
    <addaction name="actionRun"/>
    <addaction name="actionStop"/>
@@ -2049,6 +2050,15 @@
    </property>
    <property name="text">
     <string>Open Scenario...</string>
+   </property>
+  </action>
+  <action name="actionLoad_Results">
+   <property name="icon">
+    <iconset resource="../vaws.qrc">
+     <normaloff>:/icons/images/fan.png</normaloff>:/icons/images/fan.png</iconset>
+   </property>
+   <property name="text">
+    <string>Load Results...</string>
    </property>
   </action>
   <action name="actionRun">
