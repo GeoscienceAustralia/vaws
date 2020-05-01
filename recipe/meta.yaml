@@ -1,6 +1,6 @@
 package:
   name: "vaws"
-  version: "3.4.2"
+  version: "3.4.3"
 #  version: {{ environ['VERSION'] }}
 
 source:
