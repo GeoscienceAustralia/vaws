@@ -9,7 +9,7 @@ import numpy as np
 from optparse import OptionParser
 
 from vaws.model.house import House
-from vaws.model.config import Config
+from vaws.model.config import Config, WIND_DIR
 from vaws.model.curve import fit_fragility_curves, fit_vulnerability_curve
 from vaws.model.output import plot_heatmap
 from vaws.model.version import VERSION_DESC
@@ -234,6 +234,43 @@ def save_results_to_files(cfg, bucket):
                 group.create_dataset(f'{key}/{sub_key}', data=sub_value)
                 bucket['vulnerability'].setdefault(key, {})[
                     sub_key] = sub_value
+
+    # save input
+        group = hf.create_group('input')
+        for item in ['no_models', 'model_name', 'random_seed', 'wind_speed_min', 'wind_speed_max',
+                     'wind_speed_increment', 'file_wind_profiles', 'regional_shielding_factor']:
+            group.create_dataset(item, data=getattr(cfg, item))
+        group.create_dataset('wind_direction', data=WIND_DIR[cfg.wind_dir_index])
+
+        for item in ['water_ingress', 'debris', 'debris_vulnerability' , 'save_heatmaps',
+                     'differential_shielding', 'wall_collapse']:
+            group.create_dataset(name=f'flags/{item}', data=getattr(cfg, 'flags')[item])
+
+        for item in ['vmin', 'vmax', 'vstep']:
+            group.create_dataset(f'heatmap_{item}', data=getattr(cfg, f'heatmap_{item}'))
+
+        for item in ['states', 'thresholds']:
+            _item = f'fragility_i_{item}'
+            _value = getattr(cfg, f'fragility_i_{item}')
+            value =  ','.join([str(x) for x in _value])
+            group.create_dataset(_item, data=value)
+
+        if cfg.flags['debris']:
+            for item in ['region_name', 'staggered_sources', 'source_items', 'boundary_radius',
+                         'building_spacing', 'debris_radius', 'debris_angle']:
+                group.create_dataset(item, data=getattr(cfg, item))
+
+        if cfg.flags['water_ingress']:
+            for item in ['thresholds', 'speed_at_zero_wi', 'speed_at_full_wi']:
+                _item = f'water_ingress_i_{item}'
+                _value = getattr(cfg, f'water_ingress_i_{item}')
+                value =  ','.join([str(x) for x in _value])
+                group.create_dataset(_item, data=value)
+
+        if cfg.flags['debris_vulnerability']:
+            for item in ['function' , 'param1' , 'param2']:
+                value = getattr(cfg, 'debris_vuln_input')[item]
+                group.create_dataset(f'debris_vuln_input/{item}', data=value)
 
     if cfg.flags['save_heatmaps']:
 

@@ -7,6 +7,7 @@ import os.path
 import logging
 import warnings
 import h5py
+import pandas as pd
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -882,6 +883,63 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
                     # clean up value
                     results_dict[k] = v.value
         h_dic(fid, self.results_dict)
+
+        try:
+            column_names = fid['fragility']['counted'].attrs['column_names'].split(',')
+        except KeyError:
+            self.logger.warning('Fragility curves are not available')
+        else:
+            self.results_dict['fragility']['counted'] = pd.DataFrame(self.results_dict['fragility']['counted'], columns=column_names)
+
+        if 'input' in self.results_dict:
+            for item in ['no_models', 'model_name', 'random_seed', 'wind_speed_min',
+                         'wind_speed_max', 'wind_speed_increment', 'file_wind_profiles',
+                         'regional_shielding_factor', 'wind_direction']:
+                setattr(self.cfg, item, self.results_dict['input'][item])
+
+            self.cfg.flags.update(self.results_dict['input']['flags'])
+
+            for item in ['vmin', 'vmax', 'vstep']:
+                setattr(self.cfg, f'heatmap_{item}',
+                        self.results_dict['input'][f'heatmap_{item}'])
+
+            for item in ['states', 'thresholds']:
+                _item = f'fragility_i_{item}'
+                _value = self.results_dict['input'][_item].split(',')
+                try:
+                    _value = [float(x) for x in _value]
+                except ValueError:
+                    setattr(self.cfg, _item, _value)
+                else:
+                    setattr(self.cfg, _item, _value)
+
+            if self.cfg.flags['debris']:
+                for item in ['region_name', 'staggered_sources', 'source_items', 'boundary_radius',
+                         'building_spacing', 'debris_radius', 'debris_angle']:
+                    setattr(self.cfg, item,
+                            self.results_dict['input'][item])
+
+            if self.cfg.flags['water_ingress']:
+                for item in ['thresholds', 'speed_at_zero_wi', 'speed_at_full_wi']:
+                    _item = f'water_ingress_i_{item}'
+                    _value = self.results_dict['input'][f'water_ingress_i_{item}'].split(',')
+                    try:
+                        _value = [float(x) for x in _value]
+                    except ValueError:
+                        setattr(self.cfg, _item, _value)
+                    else:
+                        setattr(self.cfg, _item, _value)
+
+            if self.cfg.flags['debris_vulnerability']:
+                for item in ['function' , 'param1' , 'param2']:
+                    value = self.results_dict['input']['debris_vuln_input'][item]
+                    try:
+                        value = float(value)
+                    except ValueError:
+                        self.cfg.debris_vuln_input[item] = value
+                    else:
+                        self.cfg.debris_vuln_input[item] = value
+
         return self.results_dict
 
     def updateFragCurve(self):
@@ -1299,15 +1357,22 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
             with h5py.File(h5_file, 'r') as fid:
 
                 self.results_dict = self.convert_h5_results(fid)
-                self.updateVulnCurve()
-                self.updateFragCurve()
-                self.updateHouseResultsTable()
-                self.updateConnectionTable_with_results()
-                self.updateConnectionTypePlots()
-                self.updateHeatmap()
-                self.updateWaterIngressPlot()
-                self.updateBreachPlot()
-                self.updateCpiPlot()
+
+                try:
+                    assert self.cfg.no_models == self.results_dict['house']['di'].shape[1]
+                    assert np.array_equal(self.cfg.wind_speeds, self.results_dict['wind_speeds'])
+                except AssertionError:
+                    self.logger.critical('Saved results are not compatible with the input file')
+                else:
+                    self.updateVulnCurve()
+                    self.updateFragCurve()
+                    self.updateHouseResultsTable()
+                    self.updateConnectionTable_with_results()
+                    self.updateConnectionTypePlots()
+                    self.updateHeatmap()
+                    self.updateWaterIngressPlot()
+                    self.updateBreachPlot()
+                    self.updateCpiPlot()
 
         else:
             msg = f'Unable to load resutls: {config_file}\nFile not found.'
