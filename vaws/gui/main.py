@@ -51,7 +51,7 @@ DEFAULT_SCENARIO = os.path.join(SCENARIOS_DIR, 'default', 'default.cfg')
 
 PRESSURE_KEYS = ['cpe_mean', 'cpe_str_mean', 'cpe_eave_mean', 'cpi_alpha',
                  'edge']
-
+WIND_4_TEST_WATER_INGRESS = (0, 200)
 warnings.filterwarnings("ignore")
 
 
@@ -1762,8 +1762,8 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
         new_cfg.water_ingress_i_full_wi = [
             float(x) for x in self.ui.waterSpeed1.text().split(',')]
 
-        new_cfg.wind_speed_min = self.ui.windMin.value()
-        new_cfg.wind_speed_max = self.ui.windMax.value()
+        new_cfg.wind_speed_min = min(WIND_4_TEST_WATER_INGRESS[0], self.ui.windMin.value())
+        new_cfg.wind_speed_max = max(WIND_4_TEST_WATER_INGRESS[1], self.ui.windMax.value())
         new_cfg.wind_speed_increment = float(self.ui.windIncrement.text())
 
         new_cfg.set_water_ingress()
