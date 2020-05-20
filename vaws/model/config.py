@@ -143,6 +143,7 @@ class Config(object):
                     ('di', 1),
                     ('di_except_water', 1),
                     ('repair_cost', 1),
+                    ('repair_cost_by_scenario', 1),
                     ('water_ingress_cost', 1),
                     ('window_breached', 1),
                     ('no_debris_items', 1),

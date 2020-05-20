@@ -187,6 +187,7 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
         # self.connect(self.ui.cpi_house, SIGNAL("valueChanged(int)"),
         #              lambda x: self.onSliderChanged(self.ui.cpi_houseLabel, x))
         self.ui.spinBox_cpi.valueChanged.connect(self.cpi_plot_change)
+        self.ui.spinBox_cost.valueChanged.connect(self.cost_plot_change)
 
         self.ui.ln_checkBox.stateChanged.connect(self.updateVulnCurve)
         self.ui.wb_checkBox.stateChanged.connect(self.updateVulnCurve)
@@ -555,11 +556,15 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
             self.ui.breaches_plot.axes.figure.canvas.draw()
 
             self.ui.spinBox_cpi.setRange(0, self.cfg.no_models)
+            self.ui.spinBox_cost.setRange(0, self.cfg.no_models)
             # self.ui.cpi_house.setValue(0)
             # self.ui.cpi_houseLabel.setText('{:d}'.format(0))
 
             self.ui.cpi_plot.axes.cla()
             self.ui.cpi_plot.axes.figure.canvas.draw()
+
+            self.ui.cost_plot.axes.cla()
+            self.ui.cost_plot.axes.figure.canvas.draw()
 
             self.ui.wateringress_plot.axes.cla()
             self.ui.wateringress_plot.axes.figure.canvas.draw()
@@ -596,6 +601,7 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
                     self.updateWaterIngressPlot()
                     self.updateBreachPlot()
                     self.updateCpiPlot()
+                    self.updateCostPlot()
                     self.has_run = True
 
             except IOError:
@@ -717,7 +723,12 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
             house_number = self.ui.spinBox_cpi.value()
             self.updateCpiPlot(house_number)
 
-        # wall_major_rows = 2
+    def cost_plot_change(self):
+        if self.has_run:
+            house_number = self.ui.spinBox_cost.value()
+            self.updateCostPlot(house_number)
+
+       # wall_major_rows = 2
         # wall_major_cols = self.cfg.house['roof_cols']
         # wall_minor_rows = 2
         # wall_minor_cols = 8
@@ -1034,6 +1045,62 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
         ax.set_ylim(0)
 
         self.ui.cpi_plot.axes.figure.canvas.draw()
+
+    def updateCostPlot(self, house_number=0):
+
+        self.statusBar().showMessage('Plotting repair cost')
+        self.ui.cost_plot.axes.figure.clf()
+
+        #ax = self.ui.cost_plot.axes.figure.add_subplot(111)
+        #ax.clear()
+
+        host = SubplotHost(self.ui.cost_plot.axes.figure, 111)
+
+        par1 = ParasiteAxes(host, sharex=host)
+
+        host.parasites.append(par1)
+
+        # host
+        host.set_ylabel('Repair cost')
+        host.set_xlabel('Wind Speed (m/s)')
+        host.set_xlim(self.cfg.wind_speeds[0], self.cfg.wind_speeds[-1])
+
+        # par1
+        host.axis["right"].set_visible(False)
+        par1.axis["right"].set_visible(True)
+        par1.set_ylabel('Repair cost/replacement cost')
+        par1.axis["right"].major_ticklabels.set_visible(True)
+        par1.axis["right"].label.set_visible(True)
+
+
+        self.ui.cost_plot.axes.figure.add_axes(host)
+
+        # mean
+        for key, value in self.results_dict['house']['repair_cost_by_scenario'].items():
+            _value = value.mean(axis=1)
+            host.plot(self.cfg.wind_speeds, _value, label=f'{key}:mean')
+            par1.plot(self.cfg.wind_speeds, _value/self.cfg.house['replace_cost'], linestyle='')
+
+        if self.cfg.flags['water_ingress']:
+            _value = self.results_dict['house']['water_ingress_cost'].mean(axis=1)
+            host.plot(self.cfg.wind_speeds, _value, label='Water ingress:mean')
+            par1.plot(self.cfg.wind_speeds, _value/self.cfg.house['replace_cost'], linestyle='')
+
+        # house instance
+        if house_number:
+            for key, value in self.results_dict['house']['repair_cost_by_scenario'].items():
+                _value = value[:, house_number-1]
+                host.plot(self.cfg.wind_speeds, _value, label=f'{key}:{house_number:d}', linestyle='dashed')
+                par1.plot(self.cfg.wind_speeds, _value/self.cfg.house['replace_cost'], linestyle='')
+            if self.cfg.flags['water_ingress']:
+                _value = self.results_dict['house']['water_ingress_cost'][:, house_number-1]
+                host.plot(self.cfg.wind_speeds, _value, label=f'Water ingress:{house_number:d}', linestyle='dashed')
+                par1.plot(self.cfg.wind_speeds, _value/self.cfg.house['replace_cost'], linestyle='')
+
+
+        host.legend(loc=2, scatterpoints=1)
+
+        self.ui.cost_plot.axes.figure.canvas.draw()
 
     def updateBreachPlot(self):
 
@@ -1373,6 +1440,7 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
                     self.updateWaterIngressPlot()
                     self.updateBreachPlot()
                     self.updateCpiPlot()
+                    self.updateCostPlot()
 
         else:
             msg = f'Unable to load resutls: {config_file}\nFile not found.'

@@ -84,8 +84,14 @@ def init_bucket(cfg):
     bucket = {'house': {}}
     for att, flag_time in cfg.house_bucket:
         if flag_time:
-            bucket['house'][att] = np.zeros(
-                shape=(cfg.wind_speed_steps, cfg.no_models), dtype=float)
+            if att == 'repair_cost_by_scenario':
+                bucket['house'][att] = {}
+                for item in cfg.costings.keys():
+                    bucket['house'][att][item] = np.zeros(
+                                shape=(cfg.wind_speed_steps, cfg.no_models), dtype=float)
+            else:
+                bucket['house'][att] = np.zeros(
+                    shape=(cfg.wind_speed_steps, cfg.no_models), dtype=float)
         else:
             bucket['house'][att] = np.zeros(shape=(1, cfg.no_models),
                                             dtype=float)
@@ -117,7 +123,15 @@ def update_bucket(cfg, bucket, results_by_speed, ispeed):
 
     for att, flag_time in cfg.house_bucket:
         if flag_time:
-            bucket['house'][att][ispeed] = [x['house'][att] for x in results_by_speed]
+            if att == 'repair_cost_by_scenario':
+                for item, value in bucket['house'][att].items():
+                    try:
+                        value[ispeed] = [x['house'][att][item] for x in
+                                         results_by_speed]
+                    except KeyError:
+                        pass
+            else:
+                bucket['house'][att][ispeed] = [x['house'][att] for x in results_by_speed]
 
     for comp in cfg.list_components:
         if comp == 'debris':
@@ -189,7 +203,12 @@ def save_results_to_files(cfg, bucket):
 
         group = hf.create_group('house')
         for att, value in bucket['house'].items():
-            group.create_dataset(att, data=value)
+            if att == 'repair_cost_by_scenario':
+                subgroup = group.create_group(att)
+                for item, value in bucket['house'][att].items():
+                    subgroup.create_dataset(item, data=value)
+            else:
+                group.create_dataset(att, data=value)
 
         for comp in cfg.list_components:
             group = hf.create_group(comp)

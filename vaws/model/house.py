@@ -625,15 +625,15 @@ class House(object):
         # sum of area by scenario
         prop_area_by_scenario = self.compute_area_by_scenario(revised_area_by_group)
 
-        _list = []
+        self.repair_cost_by_scenario = {}
         for key, value in prop_area_by_scenario.items():
             try:
-                tmp = self.cfg.costings[key].compute_cost(value)
+                cost = self.cfg.costings[key].compute_cost(value)
             except AssertionError:
                 self.logger.error(f'{value} of {key} is invalid')
             else:
-                _list.append(tmp)
-        self.repair_cost = np.array(_list).sum()
+                self.repair_cost_by_scenario[key] = cost
+        self.repair_cost = sum(self.repair_cost_by_scenario.values())
 
         # calculate initial envelope repair cost before water ingress is added
         self.di_except_water = min(self.repair_cost / self.replace_cost,

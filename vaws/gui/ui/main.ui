@@ -1826,7 +1826,7 @@
             <enum>QTabWidget::East</enum>
            </property>
            <property name="currentIndex">
-            <number>0</number>
+            <number>5</number>
            </property>
            <widget class="QWidget" name="tab_2">
             <attribute name="title">
@@ -1971,6 +1971,59 @@
                </item>
                <item>
                 <widget class="MatplotlibWidget" name="cpi_plot" native="true"/>
+               </item>
+              </layout>
+             </item>
+            </layout>
+           </widget>
+           <widget class="QWidget" name="tab_56">
+            <attribute name="title">
+             <string>Repair Cost</string>
+            </attribute>
+            <layout class="QHBoxLayout" name="horizontalLayout_132">
+             <item>
+              <layout class="QVBoxLayout" name="verticalLayout_103">
+               <item>
+                <layout class="QHBoxLayout" name="horizontalLayout_109">
+                 <property name="sizeConstraint">
+                  <enum>QLayout::SetDefaultConstraint</enum>
+                 </property>
+                 <property name="topMargin">
+                  <number>5</number>
+                 </property>
+                 <property name="rightMargin">
+                  <number>1</number>
+                 </property>
+                 <item>
+                  <widget class="QLabel" name="label_8">
+                   <property name="text">
+                    <string>Model id (0 for mean): </string>
+                   </property>
+                   <property name="alignment">
+                    <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+                   </property>
+                  </widget>
+                 </item>
+                 <item>
+                  <widget class="QSpinBox" name="spinBox_cost"/>
+                 </item>
+                 <item>
+                  <spacer name="horizontalSpacer_7">
+                   <property name="orientation">
+                    <enum>Qt::Horizontal</enum>
+                   </property>
+                   <property name="sizeHint" stdset="0">
+                    <size>
+                     <width>40</width>
+                     <height>20</height>
+                    </size>
+                   </property>
+                  </spacer>
+                 </item>
+                </layout>
+               </item>
+               <item>
+                <widget class="MatplotlibWidget" name="cost_plot" native="true"/>
                </item>
               </layout>
              </item>
