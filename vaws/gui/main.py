@@ -1076,10 +1076,16 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
         self.ui.cost_plot.axes.figure.add_axes(host)
 
         # mean
-        for key, value in self.results_dict['house']['repair_cost_by_scenario'].items():
-            _value = value.mean(axis=1)
-            host.plot(self.cfg.wind_speeds, _value, label=f'{key}:mean')
-            par1.plot(self.cfg.wind_speeds, _value/self.cfg.house['replace_cost'], linestyle='')
+        try:
+            _dic = self.results_dict['house']['repair_cost_by_scenario']
+        except KeyError:
+            msg = f'Unable to load repair cost'
+            self.statusBar().showMessage(msg)
+        else:
+            for key, value in _dic.items():
+                _value = value.mean(axis=1)
+                host.plot(self.cfg.wind_speeds, _value, label=f'{key}:mean')
+                par1.plot(self.cfg.wind_speeds, _value/self.cfg.house['replace_cost'], linestyle='')
 
         if self.cfg.flags['water_ingress']:
             _value = self.results_dict['house']['water_ingress_cost'].mean(axis=1)
@@ -1088,10 +1094,17 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
 
         # house instance
         if house_number:
-            for key, value in self.results_dict['house']['repair_cost_by_scenario'].items():
-                _value = value[:, house_number-1]
-                host.plot(self.cfg.wind_speeds, _value, label=f'{key}:{house_number:d}', linestyle='dashed')
-                par1.plot(self.cfg.wind_speeds, _value/self.cfg.house['replace_cost'], linestyle='')
+            try:
+                _dic = self.results_dict['house']['repair_cost_by_scenario']
+            except KeyError:
+                msg = f'Unable to load repair cost'
+                self.statusBar().showMessage(msg)
+            else:
+                for key, value in _dic.items():
+                    _value = value[:, house_number-1]
+                    host.plot(self.cfg.wind_speeds, _value, label=f'{key}:{house_number:d}', linestyle='dashed')
+                    par1.plot(self.cfg.wind_speeds, _value/self.cfg.house['replace_cost'], linestyle='')
+
             if self.cfg.flags['water_ingress']:
                 _value = self.results_dict['house']['water_ingress_cost'][:, house_number-1]
                 host.plot(self.cfg.wind_speeds, _value, label=f'Water ingress:{house_number:d}', linestyle='dashed')
@@ -1596,13 +1609,14 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
             self.ui.waterEnabled.setChecked(self.cfg.flags['water_ingress'])
 
             # wall collapse
-            self.ui.typeName.setText(
-                ', '.join([str(x) for x in self.cfg.wall_collapse['type_name']]))
-            self.ui.roofDamage.setText(
-                ', '.join([str(x) for x in self.cfg.wall_collapse['roof_damage']]))
-            self.ui.wallDamage.setText(
-                ', '.join([str(x) for x in self.cfg.wall_collapse['wall_damage']]))
-            self.ui.wallCollapseEnabled.setChecked(self.cfg.flags['wall_collapse'])
+            if self.cfg.wall_collapse:
+                self.ui.typeName.setText(
+                    ', '.join([str(x) for x in self.cfg.wall_collapse['type_name']]))
+                self.ui.roofDamage.setText(
+                    ', '.join([str(x) for x in self.cfg.wall_collapse['roof_damage']]))
+                self.ui.wallDamage.setText(
+                    ', '.join([str(x) for x in self.cfg.wall_collapse['wall_damage']]))
+                self.ui.wallCollapseEnabled.setChecked(self.cfg.flags['wall_collapse'])
 
             # options
             self.ui.fragilityStates.setText(
