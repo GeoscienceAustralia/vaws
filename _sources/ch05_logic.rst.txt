@@ -23,7 +23,6 @@ The program is built around the following high level sequence:
   - For each model
 
     * :ref:`sample wind direction <sample_wind_direction_section>`
-    * :ref:`sample construction quality level <sample_construction_level_section>`
     * :ref:`sample wind profile <sample_wind_profile_section>`
     * :ref:`set terrain height multiplier <set_terrain_height_section>`
     * :ref:`set shielding multiplier <set_shielding_section>`
@@ -85,21 +84,6 @@ sample wind direction (:py:attr:`.House.wind_dir_index`)
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 The wind direction is set up at the time of model creation, and kept constant during the simulation over a range of wind speeds. If `wind_direction` (:numref:`section_main_table`) is 'RANDOM', then wind direction is randomly sampled among the eight directions.
-
-.. _sample_construction_level_section:
-
-sample construction quality level (:py:attr:`.House.construction_level`)
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-A set of mean and coefficient of variation (CV) factors for connection strength is defined for each construction quality level with likelihood as listed in :numref:`section_construction_levels_table`. Construction level for each model is determined from a random sampling, and the corresponding mean and CV factors are later multiplied to arithmetic mean and standard deviation of connection strength as :eq:`mean_cv_factors_eq`:
-
-.. math::
-    :label: mean_cv_factors_eq
-
-    \mu_{adj} &= \mu \times f_{\mu} \\
-    \sigma_{adj} &= \sigma \times f_{\mu} \times f_{\text{cv}}
-
-where :math:`\mu_{adj}` and :math:`\sigma_{adj}`: adjusted mean and standard deviation of connection strength reflecting construction quality level, respectively, :math:`\mu` and :math:`\sigma`: mean and standard deviation of connection strength, :math:`f_{\mu}` and :math:`f_{\text{cv}}`: mean and CV factors for connection strength.
 
 .. _sample_wind_profile_section:
 
@@ -474,7 +458,7 @@ The number of generated debris items is assumed to follow the Poisson distributi
 debris trajectory
 ^^^^^^^^^^^^^^^^^
 
-For each generated debris item, mass (:py:attr:`.Debris.mass`), frontal area ((:py:attr:`.Debris.frontal_area`), and flight time (:py:attr:`.Debris.flight_time`) are sampled from the lognormal distribution with parameter values provided in :ref:`3.1.3 <debris_section>` and :ref:`3.2 <debris.csv_section>`. The flight distance (:py:attr:`.Debris.flight_distance`) is calculated based on the methodology presented in the Appendix of Lin and Vanmarcke, 2008 :cite:`Lin2008`. Note that the original fifth polynomial functions are replaced with quadratic one with the coefficients as listed in :numref:`flight_distance_table`. The computed flight distance by debris type using the fifth and quadratic polynomials is shown in :numref:`flight_distance_fig`.
+For each generated debris item, mass (:py:attr:`.Debris.mass`), frontal area (:py:attr:`.Debris.frontal_area`), and flight time (:py:attr:`.Debris.flight_time`) are sampled from the lognormal distribution with parameter values provided in :ref:`3.1.3 <debris_section>` and :ref:`3.2 <debris.csv_section>`. The flight distance (:py:attr:`.Debris.flight_distance`) is calculated based on the methodology presented in the Appendix of Lin and Vanmarcke, 2008 :cite:`Lin2008`. Note that the original fifth polynomial functions are replaced with quadratic one with the coefficients as listed in :numref:`flight_distance_table`. The computed flight distance by debris type using the fifth and quadratic polynomials is shown in :numref:`flight_distance_fig`.
 
 .. _flight_distance_fig:
 .. figure:: _static/image/flight_distance.png

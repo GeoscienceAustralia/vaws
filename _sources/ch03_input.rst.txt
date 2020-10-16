@@ -73,7 +73,8 @@ The configuration file consists of a number of sections, among which *main* and 
     debris = True
     differential_shielding = False
     water_ingress = True
-        save_heatmaps = True
+    debris_vulnerability = True
+    wall_collapse = True
 
     [debris]
     region_name = Capital_city
@@ -84,16 +85,20 @@ The configuration file consists of a number of sections, among which *main* and 
     debris_radius = 200
     debris_angle = 45
 
-    [construction_levels]
-    levels = low, medium, high
-    probs = 0.33, 0.34, 0.33
-    mean_factors = 0.9, 1.0, 1.1
-    cv_factors = 0.58, 0.58, 0.58
+    [debris_vulnerability]
+    function = Weibull
+    param1 = 0.4
+    param2 = 4.0
 
     [water_ingress]
     thresholds = 0.1, 0.2, 0.5
     speed_at_zero_wi = 40.0, 35.0, 0.0, -20.0
     speed_at_full_wi = 60.0, 55.0, 40.0, 20.0
+
+    [wall_collapse]
+    type_name = rafterwall, collarrafterwall, gablerafterwall
+    roof_damage = 0, 25, 50, 75, 100
+    wall_damage = 0, 0, 4, 10, 20
 
     [fragility_thresholds]
     states = slight, medium, severe, complete
@@ -108,7 +113,7 @@ The configuration file consists of a number of sections, among which *main* and 
 Main section
 ------------
 
-Parameters of the main section are listed in :numref:`section_main_table`. In the GUI window, they are displayed in the Scenario tab as box shown in :numref:`section_main_fig`.
+Parameters of the main section are listed in :numref:`section_main_table`. In the GUI window, they are displayed in the Scenario tab as shown in :numref:`section_main_fig`.
 
 .. tabularcolumns:: |p{4.0cm}|p{3.0cm}|p{7.0cm}|
 .. _section_main_table:
@@ -138,7 +143,7 @@ Parameters of the main section are listed in :numref:`section_main_table`. In th
 Options section
 ---------------
 
-Parameters of the Options section are listed in :numref:`section_options_table`. Note that all the parameter values of the option section should be chosen between `True (or 1)` or `False (or 0)`. In the GUI window, they are displayed in the Debris, Water, Construction, and Options tab as listed in the :numref:`section_options_table`.
+Parameters of the Options section are listed in :numref:`section_options_table`. Note that all the parameter values of the option section should be chosen between `True (or 1)` or `False (or 0)`. In the GUI window, they are displayed in the Debris, Water, and Options tab as listed in the :numref:`section_options_table`.
 
 .. tabularcolumns:: |p{3.5cm}|p{5.5cm}|p{5.5cm}|
 .. _section_options_table:
@@ -147,8 +152,9 @@ Parameters of the Options section are listed in :numref:`section_options_table`.
 
     debris, 'Enabled' tick box in the Debris tab, if True then debris damage will be simulated.
     differential_shielding, 'Differential shielding' tick box in the Options tab, if True then differential shielding effect is applied.
+    debris_vulnerability, 'Enabled' tick box in the Debris tab, if True then input vulnerability will be used in debris generation.
     water_ingress, 'Enabled' tick box in the Water tab, if True then damage due to water ingress will be simulated.
-    construction_levels, 'Enabled' tick box in the Construction tab, if True then construction level will be sampled.
+    wall_collapse, 'Enabled' tick box in the Wall collapse tab, if True then wall collapse will be simulated.
     save_heatmaps, 'Save heatmaps' tick box in the Options tab, if True then heatmap plot of each model will be saved.
 
 .. _debris_section:
@@ -156,7 +162,7 @@ Parameters of the Options section are listed in :numref:`section_options_table`.
 Debris section
 --------------
 
-Parameters of the debris section are listed in :numref:`section_debris_table`. Note that debris section is only required if `debris` is set to be `True` in the options. In the GUI window, they are displayed in the Debris tab as box shown in :numref:`section_debris_fig`.
+Parameters of the debris section are listed in :numref:`section_debris_table`. Note that debris section is only required if `debris` is set to be `True` in the options. In the GUI window, they are displayed in the Debris tab as shown in :numref:`section_debris_fig`.
 
 .. tabularcolumns:: |p{3.5cm}|p{3.5cm}|p{7.5cm}|
 .. _section_debris_table:
@@ -171,7 +177,6 @@ Parameters of the debris section are listed in :numref:`section_debris_table`. N
     boundary_radius, Boundary, radius (in metre) of boundary for debris impact assessment
     staggered_sources, Staggered sources, "if True then staggered sources are used. Otherwise, a grid pattern of debris sources are used."
 
-
 .. _section_debris_fig:
 .. figure:: _static/image/section_debris.png
     :align: center
@@ -179,41 +184,34 @@ Parameters of the debris section are listed in :numref:`section_debris_table`. N
 
     Parameters of debris section in Debris tab
 
+.. _debris_vulnerability_section:
 
-Construction_levels section
----------------------------
+Debris vulnerability section
+----------------------------
 
-Parameters of the construction_levels section are listed in :numref:`section_construction_levels_table`. In the GUI window, they are dispalyed in the Construction tab as box shown in :numref:`section_construction_levels_fig`. The parameters are used as shown in :eq:`mean_cv_factors_eq`.
+Parameters of the debris vulnerability section are listed in :numref:`section_debris_vulnerability_table`. Note that debris vulnerability section is only required if `debris_vulnerability` is set to be `True` in the options. In the GUI window, they are displayed in the Debris tab as box shown in :numref:`section_debris_fig`.
 
-
-.. tabularcolumns:: |p{2.5cm}|p{2.5cm}|p{9.5cm}|
-.. _section_construction_levels_table:
-.. csv-table::  Parameters of construction_level section
+.. tabularcolumns:: |p{3.5cm}|p{3.5cm}|p{7.5cm}|
+.. _section_debris_vulnerability_table:
+.. csv-table:: Parameters of debris vulnerability section
     :header: Name, Name in GUI, "Description"
 
-    levels, Levels, "comma separated list of construction levels (default: low, medium, high)"
-    probabilities, probabilities, "comma separated list of probabilities of a modelled house being of a construction level (default: 0.33, 0.34, 0.33)"
-    mean_factors, Mean factors, "comma separated list of mean factors of construction levels (default: 0.9, 1.0, 1.1)"
-    cv_factors, CV factors, "comma separated list of CV factors of construction levels (default: 0.58, 0.58, 0.58)"
+    function, Vulnerability input, Weibull :eq:`cdf_weibull_oz` or Lognorm :eq:`cdf_lognormal` distribution.
+    param1, Param1, |alpha| for Weibull  or :math:`m` for Lognormal distribution  
+    param2, Param2, |beta| for Weibull or :math:`\sigma` for Lognormal distribution   
 
-.. _section_construction_levels_fig:
-.. figure:: _static/image/section_construction_levels.png
-    :align: center
-    :width: 80 %
-
-    Parameters of construction_levels section in Construction tab
 
 Water_ingress section
 ---------------------
 
-Parameters of the water_ingress section are listed in :numref:`section_water_ingress_table`. In the GUI window, they are displayed in the Water tab as box shown in :numref:`section_water_ingress_fig`. The thresholds define a lower limit of envelope damage index above which the relevant water ingress vs wind speed curve is applied. The speeds at 0% water ingress and speeds at 100% water ingress define cumulative normal distribution used to relate percentage water ingress to wind speed as shown in :numref:`water_ingress_fig`.
+Parameters of the water_ingress section are listed in :numref:`section_water_ingress_table`. In the GUI window, they are displayed in the Water tab as shown in :numref:`section_water_ingress_fig`. The thresholds define a lower limit of envelope damage index above which the relevant water ingress vs wind speed curve is applied. The speeds at 0% water ingress and speeds at 100% water ingress define cumulative normal distribution used to relate percentage water ingress to wind speed as shown in :numref:`water_ingress_fig`.
 
 .. tabularcolumns:: |p{3.0cm}|p{3.0cm}|p{8.5cm}|
 .. _section_water_ingress_table:
 .. csv-table::  Parameters of water_ingress section
     :header: Name, Name in GUI, "Description"
 
-    thresholds, DI thresholds, "comma separated list of thresholds of damage indices (default: 0.0, 0.1, 0.2, 0.5)"
+    thresholds, DI thresholds, "comma separated list of thresholds of damage indices (default: 0.1, 0.2, 0.5)"
     speed_at_zero_wi, Speeds at 0% WI, "comma separated list of maximum wind speed at no water ingress (default: 40.0, 35.0, 0.0, -20.0)"
     speed_at_full_wi, Speeds at 100% WI, "comma separated list of minimum wind speed at full water ingress (default: 60.0, 55.0, 40.0, 20.0)"
 
@@ -232,11 +230,39 @@ Parameters of the water_ingress section are listed in :numref:`section_water_ing
     Parameters of water_ingress section in Water tab
 
 
+Wall collapse section
+--------------------
+
+Parameters of the wall_collapse section are listed in :numref:`section_wall_collapse_table`. In the GUI window, they are displayed in the Wall collapse tab as shown in :numref:`section_wall_collapse_fig`. 
+
+.. tabularcolumns:: |p{3.0cm}|p{3.0cm}|p{8.5cm}|
+.. _section_wall_collapse_table:
+.. csv-table::  Parameters of wall_collapse section
+    :header: Name, Name in GUI, "Description"
+
+    type_name, Type name, "comma separated list of name of connection types"
+    roof_damage, Roof damage (%), "comma separated list of percentage of roof damage"
+    wall_damage, Wall damage(%), "comma separated list of percentage of wall damage"
+ 
+.. _section_wall_collapse_fig:
+.. figure:: _static/image/section_wall_collapse.png
+    :align: center
+    :width: 80 %
+
+    Parameters of wall collapse section in wall collapse tab
+
+.. _wall_collapse_fig:
+.. figure:: _static/image/wall_collapse.png
+    :align: center
+    :width: 80 %
+
+    Prediction of wall damage given roof damage 
+
 
 Fragility_thresholds
 --------------------
 
-Parameters of the fragility_thresholds section are listed in :numref:`section_fragility_thresholds_table`. In the GUI window, they are displayed in the Options tab as box shown in :numref:`section_fragility_thresholds_fig`. The fragility thresholds are used as shown in :eq:`fragility_eq`.
+Parameters of the fragility_thresholds section are listed in :numref:`section_fragility_thresholds_table`. In the GUI window, they are displayed in the Options tab as shown in :numref:`section_fragility_thresholds_fig`. The fragility thresholds are used as shown in :eq:`fragility_eq`.
 
 .. tabularcolumns:: |p{2.0cm}|p{3.0cm}|p{9.5cm}|
 .. _section_fragility_thresholds_table:
@@ -257,7 +283,7 @@ Parameters of the fragility_thresholds section are listed in :numref:`section_fr
 Heatmap
 -------
 
-Parameters of the heatmap section are listed in :numref:`section_heatmap_table`. In the GUI window, they are displayed in the Options tab as box shown in :numref:`section_heatmap_fig`
+Parameters of the heatmap section are listed in :numref:`section_heatmap_table`. In the GUI window, they are displayed in the Options tab as shown in :numref:`section_heatmap_fig`
 
 .. tabularcolumns:: |p{2.0cm}|p{3.0cm}|p{9.5cm}|
 .. _section_heatmap_table:
@@ -340,8 +366,8 @@ The parameter values should be provided for each of the debris types as set out 
     frontal_area_mean, "mean of frontal area (:math:`\text{m}^2`)"
     frontal_area_stddev, "standard deviation of frontal area (:math:`\text{m}^2`)"
     cdav, "average drag coefficient"
-    flight_time_mean, "mean of flight time"
-    frontal_area_stddev, "standard deviation of flight time"
+    flight_time_mean, "mean of flight time (sec)"
+    frontal_area_stddev, "standard deviation of flight time (sec)"
 
 
 .. _envelope_profiles_section:
@@ -389,7 +415,7 @@ The first row is header, and heights (in metre) are listed in the first column. 
 Input files under `house` directory
 ===================================
 
-In the house directory, a large number of files are located which are required to set parameter values of the model. The simulation model is assumed to consist of connections and zones. The connections are grouped into a number of connection types, and the connection types are further grouped into connection groups.
+In the house directory, a large number of files are located which are required to set parameter values of the model. The simulation model is assumed to consist of connections, zones, and coverages. The connections are grouped into a number of connection types, and the connection types are further grouped into connection groups.
 
 house_data.csv
 --------------
@@ -428,7 +454,7 @@ This file defines parameter values for the model such as replacement cost and di
 conn_groups.csv
 ---------------
 
-The model is assumed to consist of a number of connection groups. This file defines connection groups and parameter values of the each connection group. An example is shown in :numref:`conn_groups.csv`, and description of each of the parameter values are provided in :numref:`conn_groups_table`. Note that pre-defined group names need to be used for display of heatmap in the GUI, which are *sheeting*, *tiles*, *batten*, *rafter*, *truss*, *wallcladding*, *wallracking_cladding*, *wallracking_bracing*, *wall_collapse*, and *piersgroup*.
+The model is assumed to consist of a number of connection groups. This file defines connection groups and parameter values of the each connection group. An example is shown in :numref:`conn_groups.csv`, and description of each of the parameter values are provided in :numref:`conn_groups_table`. 
 
 .. _conn_groups.csv:
 .. code-block:: none
@@ -693,12 +719,12 @@ This file defines coverages making up the wall part of the envelope of the model
 .. code-block:: none
    :caption: Example coverages.csv
 
-    name,description,wall_name,area,coverage_type
-    1,window,1,3.6,Glass_annealed_6mm
-    2,door,1,1.8,Timber_door
-    3,window,1,1.89,Glass_annealed_6mm
-    4,window,1,1.89,Glass_annealed_6mm
-
+    name,description,wall_name,area,coverage_type,repair_type
+    1,window,1,3.6,Glass_annealed_6mm,full
+    2,door,1,1.8,Timber_door,full
+    3,window,1,1.89,Glass_annealed_6mm,full
+    4,window,1,1.89,Glass_annealed_6mm,full
+    5,weatherboard,1,22.02,Weatherboard,partial
 
 .. _coverages_table:
 .. csv-table:: Parameters in the coverages.csv
@@ -710,7 +736,7 @@ This file defines coverages making up the wall part of the envelope of the model
     wall_name, integer, "wall name"
     area, float, "area (:math:`\text{m}^2`)"
     coverage_type, string, "name of coverage type"
-
+    repiar_type, string, full or partial depending on the extent of repiar
 .. _coverage_types.csv_section:
 
 coverage_types.csv
@@ -977,11 +1003,8 @@ After simulation output file named *results.h5* is created, which is in HDF5 for
 
     profile_index, wind profile index, per model (time invariant)
     wind_dir_index, wind direction index, per model (time invariant)
-    construction_level, construction quality level, per model (time invariant)
     terrain_height_multiplier, terrain height multiplier, per model (time invariant)
     shielding_multiplier, shielding multiplier, per model (time invariant)
-    mean_factor, mean factor of construction quality, per model (time invariant)
-    cv_factor, cv factor of construction quality, per model (time invariant)
     qz, free stream wind pressure, per model
     cpi, internal pressure coefficient, per model
     collapse, 1 if model collapse otherwise 0, per model
@@ -1035,6 +1058,8 @@ After simulation output file named *results.h5* is created, which is in HDF5 for
 
     Values of capacity of the selected connection in the HDFView
 
+.. |alpha| replace:: :math:`\alpha`
+.. |beta| replace:: :math:`\beta`
 .. |Cpe| replace:: :math:`C_{pe}`
 .. |Cpe,str| replace:: :math:`C_{pe,str}`
 .. |Cpi| replace:: :math:`C_{pi}`

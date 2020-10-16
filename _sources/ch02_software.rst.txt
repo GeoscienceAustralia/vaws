@@ -18,13 +18,13 @@ Instructions for general users
 Installation
 ------------
 
-The VAWS code currently runs with Python 3.6 with many dependencies. It is recommended to create a Python environment dedicated to the code without disrupting the existing environment. With conda, you can manage environments easily. Instructions below are based on conda, but virutalenv can be used alternatively.
+The VAWS code currently runs with Python 3.6 or higher version with many dependencies. It is recommended to create a Python environment dedicated to the code without disrupting the existing environment. With conda, you can manage environments easily. Instructions below are based on conda, but virutalenv can be used alternatively.
 
 .. _install_conda:
 
 1. Install Miniconda
 
-Download and install Miniconda(https://conda.io/miniconda.html) with Python 3.7. This step can be skipped if either Miniconda or Anaconda with Python 3.7 is already installed.
+Download and install Miniconda(https://conda.io/miniconda.html) with Python 3.6 or higher version. This step can be skipped if either Miniconda or Anaconda with Python 3.6 or higher version is already installed.
 
   * Windows
 
@@ -97,13 +97,13 @@ In case new version of the code is available, you may update the code. The conda
 
 		package          |            build
 		-----------------|-----------------
-		vaws-3.3         |           py36_1         2.3 MB  dynaryu
+		vaws-3.4         |           py36_1         2.3 MB  dynaryu
 		--------------------------------------------------
 		                             Total:         2.3 MB
 
 	The following packages will be UPDATED:
 
-	  vaws                                 3.2-py36_1 --> 3.3-py36_1
+	  vaws                                 3.2-py36_1 --> 3.4-py36_1
 
 
 	Proceed ([y]/n)? 
@@ -155,7 +155,7 @@ This step will create directory called <vaws dir>.
 
 2. Create a conda environment.
 
-Make sure either miniconda or anaconda is installed. Otherwise install either Miniconda or Anaconda with Python 3.6 as :ref:`2.1.1 step 1 <install_conda>`. Then create the environment called *vaws_env*. by entering the following command in the terminal.
+Make sure either miniconda or anaconda is installed. Otherwise install either Miniconda or Anaconda with Python 3.6 or higher version as :ref:`2.1.1 step 1 <install_conda>`. Then create the environment called *vaws_env*. by entering the following command in the terminal.
 
   * Windows
 
@@ -213,7 +213,8 @@ The code can be run in either GUI or CLI mode.
 Building the conda package
 --------------------------
 
-Steps for the conda package is described below. Please refer to (https://conda.io/docs/user-guide/tutorials/build-pkgs.html) for details.
+The conda package building is automated through appveryor CI for windows and travis CI for linux, respectively. See appveryor.yml and .travis.yml for details. The built conda package is located on https://anaconda.org/dynaryu/vaws/. 
+Steps for the conda package is described below for manual building. Please refer to (https://conda.io/docs/user-guide/tutorials/build-pkgs.html) for details.
 
 1. Install conda-build and anaconda-client
 
