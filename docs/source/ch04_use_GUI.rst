@@ -14,24 +14,23 @@ Use of the GUI
 
 This chapter provides an overview of the GUI and instructions on how to run simulations using the GUI.
 
-
 Structure
 =========
 
-The main window is logically separated into distinct areas of functionality as shown as :numref:`main_window_by_function_fig`.
+The main window is logically divided into five panes by functionality as shown as :numref:`main_window_by_function_fig`.
 
 .. _main_window_by_function_fig:
 .. figure:: _static/image/main_window_by_function.png
     :align: center
     :width: 80 %
 
-    Program main window consisting of five areas by functionality as shown as dotted box
+    Program main window consisting of five panes by functionality as shown as dotted box
 
 
-Top
----
+Pane #1
+-------
 
-At the top of the main window, tool bar with buttons is located. The file menu and action corresponding to each of the buttons is set out in the :numref:`toolbar_table`.
+This pane is located at the top of the main, and consists of tool bar with buttons. The file menu and action corresponding to each of the buttons is set out in the :numref:`toolbar_table`.
 
 .. tabularcolumns:: |p{1.0cm}|p{4.0cm}|p{9.5cm}|
 .. _toolbar_table:
@@ -42,16 +41,17 @@ At the top of the main window, tool bar with buttons is located. The file menu a
     .. figure:: _static/image/fileopen.png, File -> Open Scenario, Open an existing configuration file
     .. figure:: _static/image/filesave.png, File -> Save, Save current scenario
     .. figure:: _static/image/filesaveas.png, File -> Save As, Save current scenario to a new configuration file
+    .. figure:: _static/image/fan_small.png, File -> Load simulation results, Load a simulaiton's results 
     .. figure:: _static/image/forward.png, Simulator -> Run, Run the scenario
     .. figure:: _static/image/filequit.png, Simulator -> Stop, Stop the simulation when in progress
     .. figure:: _static/image/home2.png, Model -> House Info, Show the current house information including wall coverages
 
-Top left
---------
+Pane #2
+-------
 
-The top left panel contains simulation settings across five tabs: Scenario, Debris, Construction, Water, and Options, where parameter values for a simulation can be set. The details of each of the tab can be found in :ref:`3.1 <configuration_file>`.
+This pane contains simulation configuration across five tabs: Scenario, Debris, Water, Wall collapse, and Options, where parameter values for a simulation can be set. The details of each of the tab can be found in :ref:`3.1 <configuration_file>`.
 
-There are three test button across the tabs.
+There are two test button across the tabs.
 
 The Test button in the Debris tab demonstrates debris generation function at a selected wind speed. Once the wind speed is determined, then a window showing debris traces from sources are displayed as shown as :numref:`test_debris_fig`. The vulnerability curve used in the test function is selected from the curves shown in :numref:`test_debris_vul_fig`, whereas other parameter values can be changed through the GUI.
 
@@ -77,15 +77,6 @@ The Test button in the Debris tab demonstrates debris generation function at a s
     Capital_city, 0.1585, 3.8909
     Tropical_town, 0.1030, 4.1825
 
-The Test button in the Construction tab shows distribution of connection strength of the selected connection type. Example of sampled strength of batten type is shown in :numref:`test_construction_fig`.
-
-.. _test_construction_fig:
-.. figure:: _static/image/test_construction.png
-    :align: center
-    :width: 80 %
-
-    Distribution of sampled strength of the selected connection type
-
 The Test button in the Water tab shows relationship between percentage of water ingress and wind speed for a range of damage index as shown in :numref:`test_water_ingress_fig`.
 
 .. _test_water_ingress_fig:
@@ -96,10 +87,10 @@ The Test button in the Water tab shows relationship between percentage of water 
     Relationship between percentage of water ingress and wind speed
 
 
-Bottom left
------------
+Pane #3
+-------
 
-The bottom left panel contains data browser of house and global data. This panel contains two tabs at the top: House and Global. The House tab has five tabs at the bottom: Connections, Types, Groups, Zones, and Damage, as shown in :numref:`house_tab_fig`. :numref:`house_table` sets out corresponding input file and section for each of the tabs.
+This pane contains data browser of house and global data with two tabs at the top: House and Global. The House tab has five tabs at the bottom: Connections, Types, Groups, Zones, and Damage, as shown in :numref:`house_tab_fig`. :numref:`house_table` sets out corresponding input file and section for each of the tabs.
 
 .. tabularcolumns:: |p{2.0cm}|p{4.0cm}|p{7.5cm}|
 .. _house_table:
@@ -128,10 +119,23 @@ The Global tab has two tabs at the bottom: Boundary Profile and Debris, as shown
 
     Global data tab showing boundary profiles information
 
-Bottom right
-------------
+Pane #4
+-------
 
-The bottom right panel shows input data of influence coefficients and simulation results. This panel consists of five tabs: Influences, Patches, Results, Damages, and Curves, among which Results, Damages, and Curves are empty until a simulation is completed.
+This pane shows input data of influence coefficients and simulation results. This pane consists of six tabs: Pressure, Influences, Patches, Results, Damages, and Curves, among which Results, Damages, and Curves are empty until a simulation is completed.
+
+Pressure tab
+^^^^^^^^^^^^^^
+
+Value of either Cpe_mean (mean |Cpe|), Cpe_Str_mean (mean |Cpe,str|), Cpe_eave_mean (mean |Cpe,eave|), Cpi_alpha (|Cpi,alpha|), or Edge of each zone by direction can be shown as :numref:`pressure_fig`.
+
+.. _pressure_fig:
+.. figure:: _static/image/pressure.png
+    :align: center
+    :width: 80 %
+
+    Display of value of Cpe_mean for each zone in South-East direction.
+
 
 Influences tab
 ^^^^^^^^^^^^^^
@@ -158,9 +162,9 @@ The Patches tab shows the influence coefficient of connection when associated co
 Results tab
 ^^^^^^^^^^^
 
-The Results tab shows the results of simulation in four sub-windows: Zones, Connections, Type Strengths, and Type Damage.
+The Results tab shows the results of simulation in four sub-windows: Zones, Connections, Type Strengths, Type Damage, and Load.
 
-The Zones window shows sampled Cpe values for each of the zones for each realisation of the simulation models as shown as :numref:`results_zones_fig`. The first string at the *House* column refers to model index, and the string before and after slash refer to wind direction and construction quality level, respectively.
+The Zones window shows sampled Cpe values for each of the zones for each realisation of the simulation models as shown as :numref:`results_zones_fig`. The name at the *House* column consists of model index, and wind direction.
 
 .. _results_zones_fig:
 .. figure:: _static/image/results_zones.png
@@ -195,6 +199,16 @@ The Type Damage window shows distribution of speeds at which connection fails by
     :width: 80 %
 
     Display of distribution of failure wind speed by connection type
+
+The Load window shows distribution of speeds at which connection fails by connection type as shown as :numref:`results_load_fig`.
+
+.. _results_load_fig:
+.. figure:: _static/image/results_load.png
+    :align: center
+    :width: 80 %
+
+    Display of distribution of ailure wind speed by connection type
+
 
 Damages tab
 ^^^^^^^^^^^
@@ -265,8 +279,27 @@ The	Debris window shows 1) number of generated debris items, 2) number of impact
 
     Plot in the Debris window
 
-Bottom
-------
+The	Cpi window shows 1) number of generated debris items, 2) number of impacted debris items, and 3) proportion of models breached by debris along the range of wind speed, as shown in :numref:`curves_cpi_fig`.
+
+.. _curves_cpi_fig:
+.. figure:: _static/image/curves_cpi.png
+    :align: center
+    :width: 80 %
+
+    Plot in the Cpi window
+
+The	Repair cost window shows 1) number of generated debris items, 2) number of impacted debris items, and 3) proportion of models breached by debris along the range of wind speed, as shown in :numref:`curves_repair_cost_fig`.
+
+.. _curves_repair_cost_fig:
+.. figure:: _static/image/curves_repair_cost.png
+    :align: center
+    :width: 80 %
+
+    Plot in the Repair Cost window
+
+
+Pane #5
+-------
 
 At the bottom of the main window, configuration file name and status of current simulation are displayed as shown in :numref:`bottom_status_fig`.
 
@@ -305,4 +338,9 @@ User can load a saved scenario file (e.g., default.cfg). A collection of input f
 
 .. |alpha| replace:: :math:`\alpha`
 .. |beta| replace:: :math:`\beta`
+.. |Cpe| replace:: :math:`C_{pe}`
+.. |Cpe,str| replace:: :math:`C_{pe, str}`
+.. |Cpe,eave| replace:: :math:`C_{pe, eave}`
+.. |Cpi| replace:: :math:`C_{pi}`
+.. |Cpi,alpha| replace:: :math:`C_{pi,\alpha}`
 

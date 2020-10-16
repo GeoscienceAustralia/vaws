@@ -9,7 +9,7 @@
 ********
 Glossary
 ********
-
+.. glossary::
 
     connection
         models a physical structural connection that will bear a simulated load and when broken cause load to be distributed and generate damage outcomes.
@@ -25,6 +25,12 @@ Glossary
 
     |Cpe|
         external pressure coefficient
+
+    |Cpe,str|
+        external pressure coefficient for zone component related to rafter
+
+    |Cpe,eave|
+        external pressure coefficient for zone component related to eave
 
     |Cpi|
         internal pressure coefficient
@@ -72,6 +78,7 @@ Glossary
 
 .. |Cpe| replace:: :math:`C_{pe}`
 .. |Cpe,str| replace:: :math:`C_{pe,str}`
+.. |Cpe,eave| replace:: :math:`C_{pe,eave}`
 .. |Cpi| replace:: :math:`C_{pi}`
 .. |qz| replace:: :math:`q_{z}`
 .. |Kc| replace:: :math:`K_{c}`

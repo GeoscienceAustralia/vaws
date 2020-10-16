@@ -60,10 +60,6 @@ The Monte Carlo process capture a range of variability in both wind loading and 
 
   Pressure coefficients for different zones of the house surfaces envelope are randomly chosen from a Type III (Weibull) extreme value distribution with specified means for different zones of the house envelope, and specified coefficients of variation for different load effects.
 
-- Construction level (or quality)
-
-  Multiple construction levels can be defined with mean and coefficient of variation (CV) factors which will be used to adjust the mean and CV of distribution of connection strength.
-
 - Strength and dead load
 
   Connection strengths and dead loads for generated houses are sampled from lognormal probability distributions.
