@@ -1,0 +1,16 @@
+type_name,strength_mean,strength_std,dead_load_mean,dead_load_std,group_name,costing_area
+sheetinggable,1.54,0.26,0.02025,0.0246,sheeting,0.405
+sheetingeave,4.62,0.26,0.02025,0.0246,sheeting,0.405
+sheetingcorner,2.31,0.26,0.01013,0.0246,sheeting,0.225
+sheeting,2.695,0.26,0.0405,0.0246,sheeting,0.81
+batten,1.5,0.18,0.089,0.0708,batten,0.81
+battenend,1.5,0.18,0.089,0.0708,batten,0.405
+batteneave,1.5,0.18,0.089,0.0708,batten,0.405
+battencorner,1.5,0.18,0.089,0.0708,batten,0.225
+endraftertopplate,5,1.5,0.84,0.063,rafter,1.238
+endrafterridge,5,1.5,1.8,0.135,rafter,1.665
+collarraftertopplate,5,1.5,1.68,0.126,rafter,1.845
+collarrafterridge,5,1.5,1.13,0.08475,rafter,1.26
+collarraftercollar,5,1.5,3.95,0.29625,rafter,1.665
+plainraftertopplate,5,1.5,1.68,0.126,rafter,2.475
+plainrafterridge,5,1.5,3.6,0.27,rafter,3.33
