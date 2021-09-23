@@ -188,15 +188,20 @@ class Connection(object):
         # looking at influences
         for _id, influence in source_connection.influences.items():
 
-            # update influence coeff
-            updated_coeff = influence_coeff * influence.coeff
+            if _id == self.name:
 
-            if _id in self.influences:
-                self.influences[_id].coeff += updated_coeff
+                self.logger.debug(f'{_id} should not be included in the influence of connection {self.name}')
+
             else:
-                self.influences.update(
-                    {_id: Influence(coeff=updated_coeff, name=_id)})
-                self.influences[_id].source = influence.source
+                # update influence coeff
+                updated_coeff = influence_coeff * influence.coeff
+
+                if _id in self.influences:
+                    self.influences[_id].coeff += updated_coeff
+                else:
+                    self.influences.update(
+                        {_id: Influence(coeff=updated_coeff, name=_id)})
+                    self.influences[_id].source = influence.source
 
         # self.logger.debug('influences of {}:{:.2f}'.format(self.name,
         #                                                _inf.coeff))
