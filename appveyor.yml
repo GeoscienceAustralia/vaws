@@ -51,7 +51,7 @@ install:
     - cmd: conda config --set always_yes true
     - cmd: conda config --append channels conda-forge
     #- cmd: conda config --show channels
-    - cmd: conda update --quiet conda
+    - cmd: conda update conda
     - cmd: conda install conda-build anaconda-client conda-verify
     - cmd: conda clean --packages
     # Add for ruamel.yaml
