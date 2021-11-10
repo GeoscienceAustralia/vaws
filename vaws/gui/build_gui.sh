@@ -6,6 +6,7 @@ rm -f $DIR/*_ui.py
 rm -f $DIR/vaws_rc.py
 
 echo Building UI
+# check the path of python in the pyuic5
 pyuic5 --import-from="vaws.gui" --output $DIR/main_ui.py $DIR/ui/main.ui
 if [ "$OSTYPE"="darwin"* ]; then
     sed -i.bu 's/matplotlibwidget/vaws.gui.matplotlibwidget/' $DIR/main_ui.py
@@ -16,6 +17,7 @@ fi
 pyuic5 $DIR/ui/house.ui > $DIR/house_ui.py
 
 echo Building resources
+# check the path of python in the pyrcc5
 pyrcc5 -o $DIR/vaws_rc.py $DIR/vaws.qrc
 
 echo Done

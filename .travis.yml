@@ -1,7 +1,7 @@
 language: python
 os: linux
 python:
-    - "3.6"
+    - "3.7"
 dist: bionic
 services:
   - xvfb
@@ -15,7 +15,7 @@ install:
   - conda update -q conda
   # Useful for debugging any issues with conda
   - conda info -a
-  - conda env create --name vaws_env --file vaws_linux64_py3.6.7.yml
+  - conda env create --name vaws_env --file vaws_linux64_py3.7.yml
   - source activate vaws_env
   - bash ./vaws/gui/build_gui.sh 
 after_success:
