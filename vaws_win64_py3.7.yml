@@ -1,0 +1,13 @@
+# This file may be used to create an environment using:
+# $ conda create --name <env> --file <this file>
+# platform: win-64
+name: vaws3
+dependencies:
+- matplotlib=3.0.3
+- h5py=2.8.0
+- numpy=1.20.2
+- pandas=1.2.4
+- python=3.7.1
+- scipy=1.4.1
+- shapely=1.6.4
+- pyqt=5.9.2
