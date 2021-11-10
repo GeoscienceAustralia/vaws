@@ -301,7 +301,7 @@ rafter,3,patch,Loss of roof structure,0,0,3
         speed_zero = [40.0, 35.0, 0.0, -20.0]
         speed_full = [60.0, 55.0, 40.0, 20.0]
 
-        assert_array_equal(self.cfg.water_ingress_i_thresholds, thresholds)
+        assert_array_equal(self.cfg.water_ingress_thresholds, thresholds)
         assert_array_equal(self.cfg.water_ingress.index, index)
         assert_array_equal(self.cfg.water_ingress['speed_at_zero_wi'].values,
                            speed_zero)

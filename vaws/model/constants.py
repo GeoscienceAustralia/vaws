@@ -59,3 +59,8 @@ DEBRIS_VULNERABILITY = ['Weibull', 'Lognorm']
 VUL_DIC = {'Capital_city': {'alpha': 0.1586, 'beta': 3.8909},
            'Tropical_town': {'alpha': 0.1030, 'beta': 4.1825}}
 
+DEBRIS_ITEMS = ['region_name', 'staggered_sources', 'source_items', 'boundary_radius',
+                'building_spacing', 'debris_radius', 'debris_angle']
+
+WATER_INGRESS_ITEMS = ['thresholds', 'speed_at_zero_wi', 'speed_at_full_wi', 'ref_prop',
+                       'ref_prop_v', 'prob_v', 'prob']

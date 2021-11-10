@@ -94,7 +94,7 @@ def fit_fragility_curves(cfg, dmg_idx):
     """
     logger = logging.getLogger(__name__)
 
-    bounds = cfg.fragility_i_thresholds[:]
+    bounds = cfg.fragility_thresholds[:]
     bounds.append(1.0)
     bounds.insert(0, 0.0)
 

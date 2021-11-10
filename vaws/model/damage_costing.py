@@ -59,6 +59,10 @@ class Costing(object):
         return self._internal_repair
 
     def compute_cost(self, x):
+
+        assert x >= 0
+        x = min(x, 1.0)
+
         if x:
             envelop_costing = self.envelope_repair(x=x,
                                                    c1=self.envelope_coeff1,
@@ -139,6 +143,10 @@ class WaterIngressCosting(object):
         return self._cost
 
     def compute_cost(self, x):
+
+        assert x >= 0
+        x = min(x, 1.0)
+
         if x:
             return self.base_cost * self.cost(x=x,
                                               c1=self.coeff1,
@@ -151,16 +159,20 @@ class WaterIngressCosting(object):
 def compute_water_ingress_given_damage(damage_index, wind_speed,
                                        water_ingress):
     """
+    compute percentage of water ingress given damage index and wind speed
 
     Args:
-        damage_index:
-        wind_speed:
+        damage_index: float
+        wind_speed: float
         water_ingress: pd.DataFrame
+                       index: damage index
+                       columns: wi
     Returns:
+        prop. of water ingress ranging between 0 and 1
 
     """
     assert 0.0 <= damage_index <= 1.0
 
-    # Note that thresholds are upper values
+    # Note that water_ingress index are upper threshold values of DI
     idx = water_ingress.index[(water_ingress.index < damage_index).sum()]
     return water_ingress.at[idx, 'wi'](wind_speed)

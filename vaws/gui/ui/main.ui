@@ -60,7 +60,7 @@
          </size>
         </property>
         <property name="currentIndex">
-         <number>0</number>
+         <number>2</number>
         </property>
         <widget class="QWidget" name="scenario_tab">
          <attribute name="title">
@@ -576,7 +576,23 @@
           <string>Water</string>
          </attribute>
          <layout class="QGridLayout" name="gridLayout_7">
-          <item row="5" column="1">
+          <item row="4" column="0">
+           <widget class="QLabel" name="label_35">
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
+            </property>
+            <property name="text">
+             <string>Speeds at 100 WI</string>
+            </property>
+            <property name="alignment">
+             <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+            </property>
+           </widget>
+          </item>
+          <item row="9" column="1">
            <layout class="QHBoxLayout" name="horizontalLayout_26">
             <property name="sizeConstraint">
              <enum>QLayout::SetMinimumSize</enum>
@@ -628,21 +644,17 @@
             </property>
            </widget>
           </item>
-          <item row="4" column="0">
-           <widget class="QLabel" name="label_35">
-            <property name="sizePolicy">
-             <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
-              <horstretch>0</horstretch>
-              <verstretch>0</verstretch>
-             </sizepolicy>
-            </property>
-            <property name="text">
-             <string>Speeds at 100 WI</string>
-            </property>
-            <property name="alignment">
-             <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-            </property>
-           </widget>
+          <item row="4" column="1">
+           <widget class="QLineEdit" name="waterSpeed1"/>
+          </item>
+          <item row="2" column="1">
+           <widget class="QLineEdit" name="waterThresholds"/>
+          </item>
+          <item row="5" column="1">
+           <widget class="QLineEdit" name="ref_prop_v"/>
+          </item>
+          <item row="3" column="1">
+           <widget class="QLineEdit" name="waterSpeed0"/>
           </item>
           <item row="2" column="0">
            <widget class="QLabel" name="label_33">
@@ -660,7 +672,7 @@
             </property>
            </widget>
           </item>
-          <item row="5" column="0">
+          <item row="9" column="0">
            <widget class="QLabel" name="label_36">
             <property name="sizePolicy">
              <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
@@ -676,14 +688,78 @@
             </property>
            </widget>
           </item>
-          <item row="4" column="1">
-           <widget class="QLineEdit" name="waterSpeed1"/>
+          <item row="6" column="1">
+           <widget class="QLineEdit" name="ref_prop"/>
           </item>
-          <item row="2" column="1">
-           <widget class="QLineEdit" name="waterThresholds"/>
+          <item row="7" column="1">
+           <widget class="QLineEdit" name="prob_v"/>
           </item>
-          <item row="3" column="1">
-           <widget class="QLineEdit" name="waterSpeed0"/>
+          <item row="8" column="1">
+           <widget class="QLineEdit" name="prob"/>
+          </item>
+          <item row="5" column="0">
+           <widget class="QLabel" name="label_40">
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
+            </property>
+            <property name="text">
+             <string>Prop. of WI (speed)</string>
+            </property>
+            <property name="alignment">
+             <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+            </property>
+           </widget>
+          </item>
+          <item row="6" column="0">
+           <widget class="QLabel" name="label_41">
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
+            </property>
+            <property name="text">
+             <string>Prop. of WI</string>
+            </property>
+            <property name="alignment">
+             <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+            </property>
+           </widget>
+          </item>
+          <item row="7" column="0">
+           <widget class="QLabel" name="label_45">
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
+            </property>
+            <property name="text">
+             <string>Prob. of WI (speed)</string>
+            </property>
+            <property name="alignment">
+             <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+            </property>
+           </widget>
+          </item>
+          <item row="8" column="0">
+           <widget class="QLabel" name="label_46">
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
+            </property>
+            <property name="text">
+             <string>Prob. of WI</string>
+            </property>
+            <property name="alignment">
+             <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+            </property>
+           </widget>
           </item>
          </layout>
         </widget>
@@ -1905,11 +1981,21 @@
            </widget>
            <widget class="QWidget" name="tab_6">
             <attribute name="title">
-             <string>Water Ingress</string>
+             <string>WI Cost</string>
             </attribute>
             <layout class="QHBoxLayout" name="horizontalLayout_4">
              <item>
               <widget class="MatplotlibWidget" name="wateringress_plot" native="true"/>
+             </item>
+            </layout>
+           </widget>
+           <widget class="QWidget" name="tab_60">
+            <attribute name="title">
+             <string>WI Prop.</string>
+            </attribute>
+            <layout class="QHBoxLayout" name="horizontalLayout_4">
+             <item>
+              <widget class="MatplotlibWidget" name="wateringress_prop_plot" native="true"/>
              </item>
             </layout>
            </widget>

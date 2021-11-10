@@ -46,7 +46,6 @@ class House(object):
         self.big_b = None
         self.big_a_str = None
         self.big_b_str = None
-
         # self._cv_factor = None
         # self._mean_factor = None
         self._total_area_by_group = None
@@ -81,6 +80,7 @@ class House(object):
         self.collapse = False
         self.repair_cost = 0.0
         self.water_ingress_cost = 0.0
+        self.water_ingress_perc = 0.0
         self.di = None
         self.di_except_water = None
 
@@ -418,7 +418,7 @@ class House(object):
 
             return cpi
 
-    def run_simulation(self, wind_speed):
+    def run_simulation(self, wind_speed, ispeed=0):
 
         self.logger.debug(f'wind speed {wind_speed:.3f}')
 
@@ -457,7 +457,7 @@ class House(object):
             # cpi is computed here for the next step
             self.run_debris_and_update_cpi(wind_speed)
 
-            self.compute_damage_index(wind_speed)
+            self.compute_damage_index(wind_speed, ispeed)
 
         else:
             # still run debris
@@ -589,7 +589,7 @@ class House(object):
                             connection.damaged = 1
                             connection.capacity = wind_speed
 
-    def compute_damage_index(self, wind_speed):
+    def compute_damage_index(self, wind_speed, ispeed=0):
         """
 
         Args:
@@ -641,21 +641,27 @@ class House(object):
 
         if self.di_except_water < 1.0 and self.cfg.flags['water_ingress']:
 
-            water_ingress_perc = 100.0 * compute_water_ingress_given_damage(
-                self.di_except_water, wind_speed,
-                self.cfg.water_ingress)
-
-            self.logger.debug(f'water_ingress_perc: {water_ingress_perc}')
+            # applying prob_water_ingress
+            if self.water_ingress_perc > 0:
+                self.water_ingress_perc = 100.0 * compute_water_ingress_given_damage(
+                    self.di_except_water, wind_speed, self.cfg.water_ingress)
+            else:
+                if self.rnd_state.uniform() < self.cfg.water_ingress_ctrl_prob[ispeed]:
+                    self.water_ingress_perc = 100.0 * compute_water_ingress_given_damage(
+                         self.di_except_water, wind_speed, self.cfg.water_ingress)
+                else:
+                    self.water_ingress_perc = 0.0
 
             damage_name = self.determine_scenario_for_water_ingress_costing(
                 prop_area_by_scenario)
 
-            self.compute_water_ingress_cost(damage_name, water_ingress_perc)
+            self.compute_water_ingress_cost(damage_name)
 
             _di = (self.repair_cost + self.water_ingress_cost) / self.replace_cost
             self.di = min(_di, 1.0)
 
         else:
+            self.water_ingress_perc = 100.0
             self.di = self.di_except_water
 
         self.logger.debug(msg.format(speed=wind_speed,
@@ -664,15 +670,20 @@ class House(object):
                                      di_except_water=self.di_except_water,
                                      di=self.di))
 
-    def compute_water_ingress_cost(self, damage_name, water_ingress_perc):
+    def compute_water_ingress_cost(self, damage_name):
         # compute water ingress
 
-        # finding index close to water ingress threshold
-        df = self.cfg.water_ingress_costings[damage_name]
-        idx = np.abs(df.index - water_ingress_perc).argsort()[0]
+        df = self.cfg.water_ingress_costings[damage_name].copy()
+        # before: finding index close to water ingress threshold
+        # idx = np.abs(df.index - water_ingress_perc).argsort()[0]
+        #self.water_ingress_cost = \
+        #    df['costing'].values[idx].compute_cost(water_ingress_perc/100)
 
-        self.water_ingress_cost = \
-            df['costing'].values[idx].compute_cost(water_ingress_perc/100)
+        # after: interpolation
+        # compute cost
+        df['cost'] = df.apply(lambda x: x['costing'].compute_cost(self.water_ingress_perc/100), axis=1)
+        # interpolation
+        self.water_ingress_cost = np.interp(self.water_ingress_perc, df.index, df['cost'])
 
     def determine_scenario_for_water_ingress_costing(self,
                                                      prop_area_by_scenario):

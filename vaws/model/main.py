@@ -6,10 +6,12 @@ import logging.config
 
 import h5py
 import numpy as np
-from optparse import OptionParser
+import matplotlib.pyplot as plt
+from argparse import ArgumentParser
 
 from vaws.model.house import House
 from vaws.model.config import Config, WIND_DIR
+from vaws.model.constants import DEBRIS_ITEMS, WATER_INGRESS_ITEMS
 from vaws.model.curve import fit_fragility_curves, fit_vulnerability_curve
 from vaws.model.output import plot_heatmap
 from vaws.model.version import VERSION_DESC
@@ -52,7 +54,7 @@ def simulate_wind_damage_to_houses(cfg, call_back=None):
 
             house.damage_increment = damage_increment
 
-            result = house.run_simulation(wind_speed)
+            result = house.run_simulation(wind_speed, ispeed)
 
             results_by_speed.append(result)
 
@@ -269,20 +271,19 @@ def save_results_to_files(cfg, bucket):
             group.create_dataset(f'heatmap_{item}', data=getattr(cfg, f'heatmap_{item}'))
 
         for item in ['states', 'thresholds']:
-            _item = f'fragility_i_{item}'
-            _value = getattr(cfg, f'fragility_i_{item}')
+            _item = f'fragility_{item}'
+            _value = getattr(cfg, f'fragility_{item}')
             value =  ','.join([str(x) for x in _value])
             group.create_dataset(_item, data=value)
 
         if cfg.flags['debris']:
-            for item in ['region_name', 'staggered_sources', 'source_items', 'boundary_radius',
-                         'building_spacing', 'debris_radius', 'debris_angle']:
+            for item in DEBRIS_ITEMS:
                 group.create_dataset(item, data=getattr(cfg, item))
 
         if cfg.flags['water_ingress']:
-            for item in ['thresholds', 'speed_at_zero_wi', 'speed_at_full_wi']:
-                _item = f'water_ingress_i_{item}'
-                _value = getattr(cfg, f'water_ingress_i_{item}')
+            for item in WATER_INGRESS_ITEMS:
+                _item = f'water_ingress_{item}'
+                _value = getattr(cfg, f'water_ingress_{item}')
                 value =  ','.join([str(x) for x in _value])
                 group.create_dataset(_item, data=value)
 
@@ -290,7 +291,22 @@ def save_results_to_files(cfg, bucket):
             for item in ['function' , 'param1' , 'param2']:
                 value = getattr(cfg, 'debris_vuln_input')[item]
                 group.create_dataset(f'debris_vuln_input/{item}', data=value)
+    '''
+    # save water ingress proprtion
+        water_ingress_perc = bucket['house']['water_ingress_perc']
+        tmp = water_ingress_perc.cumsum(axis=0)
+        tmp[tmp > 0] = 1
 
+        plt.figure()
+        pngfile = os.path.join(cfg.path_output, 'comp_prop_water_ingress.png')
+        plt.plot(cfg.water_ingress_ref_prop_v, cfg.water_ingress_ref_prop, '--')
+        plt.plot(cfg.wind_speeds, tmp.sum(axis=1)/cfg.no_models, '-')
+        plt.legend(['Target', 'Simulation'])
+        plt.xlabel('Wind speed (m/s)')
+        plt.ylabel('Prop. of houses damaged due to water ingress')
+        plt.savefig(pngfile)
+        plt.close('all')
+    '''
     if cfg.flags['save_heatmaps']:
 
         for group_name, grouped in cfg.connections.groupby('group_name'):
@@ -368,30 +384,31 @@ def set_logger(path_cfg, logging_level=None):
 
 
 def process_commandline():
-    usage = '%prog -c <config_file> [-v <logging_level>]'
-    parser = OptionParser(usage=usage, version=VERSION_DESC)
-    parser.add_option("-c", "--config",
-                      dest="config_file",
-                      help="read configuration from FILE",
-                      metavar="FILE")
-    parser.add_option("-v", "--verbose",
-                      dest="verbose",
-                      default=None,
-                      metavar="logging_level",
-                      help="set logging level")
+    parser = ArgumentParser()
+    parser.add_argument("-c", "--config",
+                        dest="config_file",
+                        help="file to read the config from")
+    parser.add_argument("-v", "--verbose",
+                        dest="verbose",
+                        default=None,
+                        metavar="logging_level",
+                        help="set logging level")
+    parser.add_argument('--version',
+                        action='version',
+                        version=VERSION_DESC)
     return parser
 
 
 def main():
     parser = process_commandline()
 
-    (options, args) = parser.parse_args()
+    args = parser.parse_args()
 
-    if options.config_file:
-        path_cfg = os.path.dirname(os.path.realpath(options.config_file))
-        set_logger(path_cfg, options.verbose)
+    if args.config_file:
+        path_cfg = os.path.dirname(os.path.realpath(args.config_file))
+        set_logger(path_cfg, args.verbose)
 
-        conf = Config(file_cfg=options.config_file)
+        conf = Config(file_cfg=args.config_file)
         _ = simulate_wind_damage_to_houses(conf)
     else:
         parser.print_help()

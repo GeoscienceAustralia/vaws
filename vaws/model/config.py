@@ -145,6 +145,7 @@ class Config(object):
                     ('repair_cost', 1),
                     ('repair_cost_by_scenario', 1),
                     ('water_ingress_cost', 1),
+                    ('water_ingress_perc', 1),
                     ('window_breached', 1),
                     ('no_debris_items', 1),
                     ('no_debris_impacts', 1),
@@ -222,13 +223,18 @@ class Config(object):
         # self.construction_levels_cv_factors = [0.58]
 
         self.fragility = None
-        self.fragility_i_states = ['slight', 'medium', 'severe', 'complete']
-        self.fragility_i_thresholds = [0.15, 0.45, 0.6, 0.9]
+        self.fragility_states = ['slight', 'medium', 'severe', 'complete']
+        self.fragility_thresholds = [0.15, 0.45, 0.6, 0.9]
 
         self.water_ingress = None
-        self.water_ingress_i_thresholds = [0.1, 0.2, 0.5]
-        self.water_ingress_i_speed_at_zero_wi = [40.0, 35.0, 0.0, -20.0]
-        self.water_ingress_i_speed_at_full_wi = [60.0, 55.0, 40.0, 20.0]
+        self.water_ingress_thresholds = [0.1, 0.2, 0.5]
+        self.water_ingress_speed_at_zero_wi = [40.0, 35.0, 0.0, -20.0]
+        self.water_ingress_speed_at_full_wi = [60.0, 55.0, 40.0, 20.0]
+        self.water_ingress_ref_prop_v = [0, 29, 30, 60, 90]
+        self.water_ingress_ref_prop = [0, 0, 0.05,  0.6,  1.0]
+        self.water_ingress_prob_v = [0, 29, 30, 60, 90]
+        self.water_ingress_prob = [0, 0, 0.05,  0.6,  1.0]
+        self.water_ingress_ctrl_prob = None
 
         # debris related
         self.region_name = None
@@ -432,7 +438,7 @@ class Config(object):
                                        num=self.wind_speed_steps,
                                        endpoint=True)
 
-    def read_water_ingress(self, conf, key):
+    def read_water_ingress(self, conf, key='water_ingress'):
         """
         read water ingress related parameters
         Args:
@@ -444,11 +450,21 @@ class Config(object):
         TODO:
         """
         if conf.has_section(key):
-            for item in ['thresholds', 'speed_at_zero_wi', 'speed_at_full_wi']:
-                setattr(self, f'water_ingress_i_{item}',
-                        self.read_column_separated_entry(conf.get(key, item)))
+            for item in ['thresholds', 'speed_at_zero_wi', 'speed_at_full_wi', 'ref_prop_v',
+                         'ref_prop', 'prob_v', 'prob']:
+                try: setattr(self, f'water_ingress_{item}',
+                             self.read_column_separated_entry(conf.get(key, item)))
+                except configparser.NoOptionError:
+                    self.logger.info(f'default value is used for water_ingress_{item}')
         else:
             self.logger.info('default water ingress thresholds is used')
+
+        assert len(self.water_ingress_prob_v) == len(self.water_ingress_prob)
+        assert len(self.water_ingress_ref_prop_v) == len(self.water_ingress_ref_prop)
+        assert min(self.water_ingress_prob) >= 0
+        assert max(self.water_ingress_prob) <= 1
+        assert min(self.water_ingress_ref_prop) >= 0
+        assert max(self.water_ingress_ref_prop) <= 1
 
     def read_wall_collapse(self, conf, key):
         """
@@ -472,15 +488,22 @@ class Config(object):
                 self.logger.critical('Missing roof_wall_connection section')
 
     def set_water_ingress(self):
-        thresholds = [x for x in self.water_ingress_i_thresholds]
+        thresholds = [x for x in self.water_ingress_thresholds]
         thresholds.append(1.1)
         self.water_ingress = pd.DataFrame(
-            np.array([self.water_ingress_i_speed_at_zero_wi,
-                      self.water_ingress_i_speed_at_full_wi]).T,
+            np.array([self.water_ingress_speed_at_zero_wi,
+                      self.water_ingress_speed_at_full_wi]).T,
             columns=['speed_at_zero_wi', 'speed_at_full_wi'],
             index=thresholds)
         self.water_ingress['wi'] = self.water_ingress.apply(
             self.return_norm_cdf, axis=1)
+        self.water_ingress_ref = np.interp(self.wind_speeds,
+                                           self.water_ingress_ref_prop_v,
+                                           self.water_ingress_ref_prop)
+        prob = np.interp(self.wind_speeds,
+                         self.water_ingress_prob_v,
+                         self.water_ingress_prob)
+        self.water_ingress_ctrl_prob = np.insert(np.diff(prob), 0, prob[0])
 
     def set_coverages(self):
 
@@ -666,14 +689,14 @@ class Config(object):
     def read_fragility_thresholds(self, conf, key):
         if conf.has_section(key):
             for item in ['states', 'thresholds']:
-                setattr(self, f'fragility_i_{item}',
+                setattr(self, f'fragility_{item}',
                         self.read_column_separated_entry(conf.get(key, item)))
         else:
             self.logger.warning('default fragility thresholds is used')
 
     def set_fragility_thresholds(self):
-        self.fragility = pd.DataFrame(self.fragility_i_thresholds,
-                                      index=self.fragility_i_states,
+        self.fragility = pd.DataFrame(self.fragility_thresholds,
+                                      index=self.fragility_states,
                                       columns=['threshold'])
         self.fragility['color'] = ['b', 'g', 'y', 'r']
 
@@ -1365,9 +1388,9 @@ class Config(object):
 
         key = 'fragility_thresholds'
         config.add_section(key)
-        config.set(key, 'states', ', '.join(self.fragility_i_states))
+        config.set(key, 'states', ', '.join(self.fragility_states))
         config.set(key, 'thresholds',
-                   ', '.join(str(x) for x in self.fragility_i_thresholds))
+                   ', '.join(str(x) for x in self.fragility_thresholds))
 
         key = 'debris'
         config.add_section(key)
@@ -1395,11 +1418,11 @@ class Config(object):
         key = 'water_ingress'
         config.add_section(key)
         config.set(key, 'thresholds',
-                   ', '.join(str(x) for x in self.water_ingress_i_thresholds))
+                   ', '.join(str(x) for x in self.water_ingress_thresholds))
         config.set(key, 'speed_at_zero_wi',
-                   ', '.join(str(x) for x in self.water_ingress_i_speed_at_zero_wi))
+                   ', '.join(str(x) for x in self.water_ingress_speed_at_zero_wi))
         config.set(key, 'speed_at_full_wi',
-                   ', '.join(str(x) for x in self.water_ingress_i_speed_at_full_wi))
+                   ', '.join(str(x) for x in self.water_ingress_speed_at_full_wi))
 
         key = 'debris_vulnerability'
         if self.flags[key]:

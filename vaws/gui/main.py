@@ -20,7 +20,7 @@ from PyQt5.QtWidgets import QProgressBar, QLabel, QMainWindow, QApplication, QTa
                         QTableWidgetItem, QFileDialog, \
                         QMessageBox, QTreeWidgetItem, QInputDialog, QSplashScreen
 
-from vaws.model.constants import WIND_DIR, DEBRIS_TYPES_KEYS, VUL_DIC, BLDG_SPACING, DEBRIS_VULNERABILITY, DEBRIS_TYPES_CLRS
+from vaws.model.constants import WIND_DIR, DEBRIS_TYPES_KEYS, VUL_DIC, BLDG_SPACING, DEBRIS_VULNERABILITY, DEBRIS_TYPES_CLRS, DEBRIS_ITEMS, WATER_INGRESS_ITEMS
 from vaws.model.debris import generate_debris_items
 from vaws.gui.house import HouseViewer
 from vaws.model.curve import vulnerability_lognorm, vulnerability_weibull, vulnerability_weibull_pdf
@@ -569,6 +569,9 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
             self.ui.wateringress_plot.axes.cla()
             self.ui.wateringress_plot.axes.figure.canvas.draw()
 
+            self.ui.wateringress_prop_plot.axes.cla()
+            self.ui.wateringress_prop_plot.axes.figure.canvas.draw()
+
             self.ui.mplvuln.axes.cla()
             self.ui.mplvuln.axes.figure.canvas.draw()
 
@@ -599,6 +602,7 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
                     self.updateConnectionTypePlots()
                     self.updateHeatmap()
                     self.updateWaterIngressPlot()
+                    self.updateWaterIngressPropPlot()
                     self.updateBreachPlot()
                     self.updateCpiPlot()
                     self.updateCostPlot()
@@ -915,7 +919,7 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
                         self.results_dict['input'][f'heatmap_{item}'])
 
             for item in ['states', 'thresholds']:
-                _item = f'fragility_i_{item}'
+                _item = f'fragility_{item}'
                 _value = self.results_dict['input'][_item].split(',')
                 try:
                     _value = [float(x) for x in _value]
@@ -925,15 +929,14 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
                     setattr(self.cfg, _item, _value)
 
             if self.cfg.flags['debris']:
-                for item in ['region_name', 'staggered_sources', 'source_items', 'boundary_radius',
-                         'building_spacing', 'debris_radius', 'debris_angle']:
+                for item in DEBRIS_ITEMS:
                     setattr(self.cfg, item,
                             self.results_dict['input'][item])
 
             if self.cfg.flags['water_ingress']:
-                for item in ['thresholds', 'speed_at_zero_wi', 'speed_at_full_wi']:
-                    _item = f'water_ingress_i_{item}'
-                    _value = self.results_dict['input'][f'water_ingress_i_{item}'].split(',')
+                for item in WATER_INGRESS_ITEMS:
+                    _item = f'water_ingress_{item}'
+                    _value = self.results_dict['input'][f'water_ingress_{item}'].split(',')
                     try:
                         _value = [float(x) for x in _value]
                     except ValueError:
@@ -1021,6 +1024,45 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
         ax.set_ylim(0)
 
         self.ui.wateringress_plot.axes.figure.canvas.draw()
+
+    def updateWaterIngressPropPlot(self):
+
+        self.statusBar().showMessage('Plotting Water Ingress Prop.')
+
+        self.ui.wateringress_prop_plot.axes.figure.clf()
+        host = SubplotHost(self.ui.wateringress_prop_plot.axes.figure, 111)
+
+        par1 = ParasiteAxes(host, sharex=host)
+
+        # host
+        host.parasites.append(par1)
+        host.set_xlabel('Impact Wind speed (m/s)')
+        host.set_ylabel('Proportion of houses damaged due to water ingress')
+        host.set_xlim(self.cfg.wind_speeds[0], self.cfg.wind_speeds[-1])
+
+        # par1
+        host.axis["right"].set_visible(False)
+        par1.axis["right"].set_visible(True)
+        par1.set_ylabel('Water Ingress (%)')
+        par1.axis["right"].major_ticklabels.set_visible(True)
+        par1.axis["right"].label.set_visible(True)
+
+        self.ui.wateringress_prop_plot.axes.figure.add_axes(host)
+
+        _array = self.results_dict['house']['water_ingress_perc']
+        tmp = _array.cumsum(axis=0)
+        tmp[tmp > 0] = 1
+
+        par1.scatter(
+            self.cfg.wind_speeds[:, np.newaxis] * np.ones(shape=(1, self.cfg.no_models)),
+            _array, c='k', s=8, marker='+', label='_nolegend_')
+        host.plot(self.cfg.water_ingress_ref_prop_v, self.cfg.water_ingress_ref_prop, c='r', linestyle='-', label='Target')
+        host.plot(self.cfg.wind_speeds, tmp.sum(axis=1)/self.cfg.no_models, c='b', linestyle='-.', label='Simulation')
+
+        host.set_ylim(0)
+        host.legend(loc=0, scatterpoints=1)
+
+        self.ui.wateringress_prop_plot.axes.figure.canvas.draw()
 
     def updateCpiPlot(self, house_number=0):
 
@@ -1451,6 +1493,7 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
                     self.updateConnectionTypePlots()
                     self.updateHeatmap()
                     self.updateWaterIngressPlot()
+                    self.updateWaterIngressPropPlot()
                     self.updateBreachPlot()
                     self.updateCpiPlot()
                     self.updateCostPlot()
@@ -1601,11 +1644,19 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
 
             # water ingress
             self.ui.waterThresholds.setText(
-                ', '.join([str(x) for x in self.cfg.water_ingress_i_thresholds]))
+                ', '.join([str(x) for x in self.cfg.water_ingress_thresholds]))
             self.ui.waterSpeed0.setText(
-                ', '.join([str(x) for x in self.cfg.water_ingress_i_speed_at_zero_wi]))
+                ', '.join([str(x) for x in self.cfg.water_ingress_speed_at_zero_wi]))
             self.ui.waterSpeed1.setText(
-                ', '.join([str(x) for x in self.cfg.water_ingress_i_speed_at_full_wi]))
+                ', '.join([str(x) for x in self.cfg.water_ingress_speed_at_full_wi]))
+            self.ui.ref_prop_v.setText(
+                ', '.join([str(x) for x in self.cfg.water_ingress_ref_prop_v]))
+            self.ui.ref_prop.setText(
+                ', '.join([str(x) for x in self.cfg.water_ingress_ref_prop]))
+            self.ui.prob_v.setText(
+                ', '.join([str(x) for x in self.cfg.water_ingress_prob_v]))
+            self.ui.prob.setText(
+                ', '.join([str(x) for x in self.cfg.water_ingress_prob]))
             self.ui.waterEnabled.setChecked(self.cfg.flags['water_ingress'])
 
             # wall collapse
@@ -1620,9 +1671,9 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
 
             # options
             self.ui.fragilityStates.setText(
-                ', '.join(self.cfg.fragility_i_states))
+                ', '.join(self.cfg.fragility_states))
             self.ui.fragilityThresholds.setText(
-                ', '.join([str(x) for x in self.cfg.fragility_i_thresholds]))
+                ', '.join([str(x) for x in self.cfg.fragility_thresholds]))
             self.ui.diffShielding.setChecked(self.cfg.flags['differential_shielding'])
 
             self.ui.redV.setValue(min(self.cfg.wind_speeds[0], self.cfg.heatmap_vmin))
@@ -1699,19 +1750,27 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
         new_cfg.heatmap_vstep = float(self.ui.vStep.value())
 
         # fragility section
-        new_cfg.fragility_i_thresholds = [
+        new_cfg.fragility_thresholds = [
             float(x) for x in self.ui.fragilityThresholds.text().split(',')]
-        new_cfg.fragility_i_states = [
+        new_cfg.fragility_states = [
             x.strip() for x in self.ui.fragilityStates.text().split(',')]
 
         # water ingress
         new_cfg.flags['water_ingress'] = self.ui.waterEnabled.isChecked()
-        new_cfg.water_ingress_i_thresholds = [
+        new_cfg.water_ingress_thresholds = [
             float(x) for x in self.ui.waterThresholds.text().split(',')]
-        new_cfg.water_ingress_i_zero_wi = [
+        new_cfg.water_ingress_zero_wi = [
             float(x) for x in self.ui.waterSpeed0.text().split(',')]
-        new_cfg.water_ingress_i_full_wi = [
+        new_cfg.water_ingress_full_wi = [
             float(x) for x in self.ui.waterSpeed1.text().split(',')]
+        new_cfg.water_ingress_ref_prop_v = [
+            float(x) for x in self.ui.ref_prop_v.text().split(',')]
+        new_cfg.water_ingress_ref_prop = [
+            float(x) for x in self.ui.ref_prop.text().split(',')]
+        new_cfg.water_ingress_prob_v = [
+            float(x) for x in self.ui.prob_v.text().split(',')]
+        new_cfg.water_ingress_prob = [
+            float(x) for x in self.ui.prob.text().split(',')]
 
         # wall collapse
         new_cfg.flags['wall_collapse'] = self.ui.wallCollapseEnabled.isChecked()
@@ -1837,12 +1896,20 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
         new_cfg = self.cfg
 
         new_cfg.flags['water_ingress'] = self.ui.waterEnabled.isChecked()
-        new_cfg.water_ingress_i_thresholds = [
+        new_cfg.water_ingress_thresholds = [
             float(x) for x in self.ui.waterThresholds.text().split(',')]
-        new_cfg.water_ingress_i_zero_wi = [
+        new_cfg.water_ingress_zero_wi = [
             float(x) for x in self.ui.waterSpeed0.text().split(',')]
-        new_cfg.water_ingress_i_full_wi = [
+        new_cfg.water_ingress_full_wi = [
             float(x) for x in self.ui.waterSpeed1.text().split(',')]
+        new_cfg.water_ingress_ref_prop_v = [
+            float(x) for x in self.ui.ref_prop_v.text().split(',')]
+        new_cfg.water_ingress_ref_prop = [
+            float(x) for x in self.ui.ref_prop.text().split(',')]
+        new_cfg.water_ingress_prob_v = [
+            float(x) for x in self.ui.prob_v.text().split(',')]
+        new_cfg.water_ingress_prob = [
+            float(x) for x in self.ui.prob.text().split(',')]
 
         new_cfg.wind_speed_min = min(WIND_4_TEST_WATER_INGRESS[0], self.ui.windMin.value())
         new_cfg.wind_speed_max = max(WIND_4_TEST_WATER_INGRESS[1], self.ui.windMax.value())
@@ -1883,16 +1950,16 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
 def run_gui():
     parser = process_commandline()
 
-    (options, args) = parser.parse_args()
+    args = parser.parse_args()
 
-    if not options.config_file:
+    if not args.config_file:
         initial_scenario = DEFAULT_SCENARIO
     else:
-        initial_scenario = options.config_file
+        initial_scenario = args.config_file
 
     path_cfg = os.path.dirname(os.path.realpath(initial_scenario))
-    if options.verbose:
-        set_logger(path_cfg, logging_level=options.verbose)
+    if args.verbose:
+        set_logger(path_cfg, logging_level=args.verbose)
     else:
         set_logger(path_cfg)
 
