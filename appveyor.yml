@@ -49,7 +49,7 @@ install:
     - cmd: SET PATH=%CONDA_INSTALL_LOCN%;%CONDA_INSTALL_LOCN%\Scripts;%QT_BASE_PATH%;%PATH%
     #- cmd: conda -V
     - cmd: conda config --set always_yes true
-    - cmd: conda config --append channels conda-forge
+    #- cmd: conda config --append channels conda-forge
     #- cmd: conda config --show channels
     - cmd: conda update conda
     - cmd: conda install conda-build anaconda-client conda-verify
