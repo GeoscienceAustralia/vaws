@@ -8,7 +8,8 @@ branches:
 
 environment:
   # Appveyor machines come with miniconda already installed.
-  CONDA_INSTALL_LOCN: "C:\\Miniconda36-x64"
+  CONDA_INSTALL_LOCN: "C:\\Miniconda37-x64"
+  MINICONDA: "C:\\Miniconda37-x64"
   PYQT5_VERSION: 5.9.7
   QT_BASE_PATH: "C:\\QT\\5.9.7"
   # Need this to set up compilation on Windows.
@@ -49,9 +50,9 @@ install:
     - cmd: SET PATH=%CONDA_INSTALL_LOCN%;%CONDA_INSTALL_LOCN%\Scripts;%QT_BASE_PATH%;%PATH%
     #- cmd: conda -V
     - cmd: conda config --set always_yes true
-    #- cmd: conda config --append channels conda-forge
+    - cmd: conda config --append channels conda-forge
     #- cmd: conda config --show channels
-    - cmd: conda update conda
+    - cmd: conda update -q conda
     - cmd: conda install conda-build anaconda-client conda-verify
     - cmd: conda clean --packages
     # Add for ruamel.yaml
