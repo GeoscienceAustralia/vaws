@@ -19,7 +19,6 @@ requirements:
   run:
     - matplotlib==3.0.3
     - h5py==2.8.0
-    - numpy==1.20.2
     - pandas==1.2.4
     - python==3.7.1
     - scipy==1.4.1

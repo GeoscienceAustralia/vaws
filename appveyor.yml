@@ -54,7 +54,7 @@ install:
     - cmd: SET PATH=%CONDA_INSTALL_LOCN%;%CONDA_INSTALL_LOCN%\Scripts;%QT_BASE_PATH%;%PATH%
     #- cmd: conda -V
     - cmd: conda config --set always_yes true
-    - cmd: conda config --append channels conda-forge
+    #- cmd: conda config --append channels conda-forge
     #- cmd: conda config --show channels
     - cmd: conda update -q conda
     - cmd: conda install conda-build anaconda-client conda-verify
@@ -92,5 +92,5 @@ on_success:
     - cmd: SET /P BUILT_PACKAGE=<to_upload.txt
     - cmd: DEL to_upload.txt
     - cmd: conda build purge
-    - cmd: conda build . --numpy=1.20 --python=3.7
+    - cmd: conda build . --numpy=1.19 --python=3.7
     - cmd: if exist %BUILT_PACKAGE% anaconda --token %BINSTAR_TOKEN% upload -u dynaryu %BUILT_PACKAGE% --force
