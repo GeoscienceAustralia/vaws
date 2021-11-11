@@ -32,6 +32,7 @@ environment:
    - TARGET_ARCH: "x64"
      PYTHON_BUILD_RESTRICTIONS: "3.7*"
      CONDA_PY: "37"
+     PYTHON_ARCH: "64"
     # For 32 bit builds there are no compiler issues, let Obvious-CI
     # handle the matrix.
     # - TARGET_ARCH: "x86"
@@ -41,6 +42,9 @@ environment:
 # with the TARGET_ARCH variable.
 platform:
     - x64
+
+init:
+    - cmd: wmic OS get OSArchitecture
 
 install:
     # Clone simply to get the script for setting up Windows build environment.
@@ -54,7 +58,7 @@ install:
     #- cmd: conda config --show channels
     - cmd: conda update -q conda
     - cmd: conda install conda-build anaconda-client conda-verify
-    - cmd: conda clean --packages
+    #- cmd: conda clean --packages
     # Add for ruamel.yaml
     - cmd: conda env create --name vaws_env --file vaws_win64_py3.7.yml
     - cmd: activate vaws_env
