@@ -20,7 +20,7 @@ from PyQt5.QtWidgets import QProgressBar, QLabel, QMainWindow, QApplication, QTa
                         QTableWidgetItem, QFileDialog, \
                         QMessageBox, QTreeWidgetItem, QInputDialog, QSplashScreen
 
-from vaws.model.constants import WIND_DIR, DEBRIS_TYPES_KEYS, VUL_DIC, BLDG_SPACING, DEBRIS_VULNERABILITY, DEBRIS_TYPES_CLRS, DEBRIS_ITEMS, WATER_INGRESS_ITEMS
+from vaws.model.constants import WIND_DIR, DEBRIS_TYPES_KEYS, VUL_DIC, BLDG_SPACING, DEBRIS_VULNERABILITY, DEBRIS_TYPES_CLRS
 from vaws.model.debris import generate_debris_items
 from vaws.gui.house import HouseViewer
 from vaws.model.curve import vulnerability_lognorm, vulnerability_weibull, vulnerability_weibull_pdf
@@ -28,7 +28,7 @@ from vaws.model.curve import vulnerability_lognorm, vulnerability_weibull, vulne
 from vaws.gui.main_ui import Ui_main
 from vaws.model.main import process_commandline, set_logger, \
     simulate_wind_damage_to_houses
-from vaws.model.config import Config, INPUT_DIR, OUTPUT_DIR, FILE_RESULTS
+from vaws.model.config import Config, INPUT_DIR, OUTPUT_DIR, FILE_RESULTS, DEBRIS_ITEMS, WATER_INGRESS_ITEMS
 from vaws.model.version import VERSION_DESC
 from vaws.model.damage_costing import compute_water_ingress_given_damage
 
@@ -1653,10 +1653,6 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
                 ', '.join([str(x) for x in self.cfg.water_ingress_ref_prop_v]))
             self.ui.ref_prop.setText(
                 ', '.join([str(x) for x in self.cfg.water_ingress_ref_prop]))
-            self.ui.prob_v.setText(
-                ', '.join([str(x) for x in self.cfg.water_ingress_prob_v]))
-            self.ui.prob.setText(
-                ', '.join([str(x) for x in self.cfg.water_ingress_prob]))
             self.ui.waterEnabled.setChecked(self.cfg.flags['water_ingress'])
 
             # wall collapse
@@ -1767,10 +1763,6 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
             float(x) for x in self.ui.ref_prop_v.text().split(',')]
         new_cfg.water_ingress_ref_prop = [
             float(x) for x in self.ui.ref_prop.text().split(',')]
-        new_cfg.water_ingress_prob_v = [
-            float(x) for x in self.ui.prob_v.text().split(',')]
-        new_cfg.water_ingress_prob = [
-            float(x) for x in self.ui.prob.text().split(',')]
 
         # wall collapse
         new_cfg.flags['wall_collapse'] = self.ui.wallCollapseEnabled.isChecked()
@@ -1906,10 +1898,6 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
             float(x) for x in self.ui.ref_prop_v.text().split(',')]
         new_cfg.water_ingress_ref_prop = [
             float(x) for x in self.ui.ref_prop.text().split(',')]
-        new_cfg.water_ingress_prob_v = [
-            float(x) for x in self.ui.prob_v.text().split(',')]
-        new_cfg.water_ingress_prob = [
-            float(x) for x in self.ui.prob.text().split(',')]
 
         new_cfg.wind_speed_min = min(WIND_4_TEST_WATER_INGRESS[0], self.ui.windMin.value())
         new_cfg.wind_speed_max = max(WIND_4_TEST_WATER_INGRESS[1], self.ui.windMax.value())

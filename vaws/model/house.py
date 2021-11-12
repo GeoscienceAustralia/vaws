@@ -83,6 +83,7 @@ class House(object):
         self.water_ingress_perc = 0.0
         self.di = None
         self.di_except_water = None
+        self._prop_water_ingress = None  # compute mean_no_debris_items
 
         self.bucket = {}
 
@@ -418,6 +419,15 @@ class House(object):
 
             return cpi
 
+    @property
+    def prop_water_ingress(self):
+        return self._prop_water_ingress
+
+    @prop_water_ingress.setter
+    def prop_water_ingress(self, value):
+        # assert isinstance(value, numbers.Number)
+        self._prop_water_ingress = value
+
     def run_simulation(self, wind_speed, ispeed=0):
 
         self.logger.debug(f'wind speed {wind_speed:.3f}')
@@ -646,7 +656,10 @@ class House(object):
                 self.water_ingress_perc = 100.0 * compute_water_ingress_given_damage(
                     self.di_except_water, wind_speed, self.cfg.water_ingress)
             else:
-                if self.rnd_state.uniform() < self.cfg.water_ingress_ctrl_prob[ispeed]:
+                # compute prob
+                target_prob = self.cfg.water_ingress_ref[ispeed] - self.prop_water_ingress
+
+                if self.rnd_state.uniform() < target_prob:
                     self.water_ingress_perc = 100.0 * compute_water_ingress_given_damage(
                          self.di_except_water, wind_speed, self.cfg.water_ingress)
                 else:

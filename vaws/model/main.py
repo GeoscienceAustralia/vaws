@@ -10,8 +10,7 @@ import matplotlib.pyplot as plt
 from argparse import ArgumentParser
 
 from vaws.model.house import House
-from vaws.model.config import Config, WIND_DIR
-from vaws.model.constants import DEBRIS_ITEMS, WATER_INGRESS_ITEMS
+from vaws.model.config import Config, WIND_DIR, DEBRIS_ITEMS, WATER_INGRESS_ITEMS
 from vaws.model.curve import fit_fragility_curves, fit_vulnerability_curve
 from vaws.model.output import plot_heatmap
 from vaws.model.version import VERSION_DESC
@@ -38,6 +37,7 @@ def simulate_wind_damage_to_houses(cfg, call_back=None):
     tic = time.time()
 
     damage_increment = 0.0
+    prop_water_ingress = 0.0
     bucket = init_bucket(cfg)
 
     # generate instances of house
@@ -54,14 +54,19 @@ def simulate_wind_damage_to_houses(cfg, call_back=None):
 
             house.damage_increment = damage_increment
 
+            house.prop_water_ingress = prop_water_ingress
+
             result = house.run_simulation(wind_speed, ispeed)
 
             results_by_speed.append(result)
 
         bucket = update_bucket(cfg, bucket, results_by_speed, ispeed)
         damage_increment = compute_damage_increment(cfg, bucket, ispeed)
+        prop_water_ingress = compute_prop_water_ingress(cfg, bucket, ispeed)
 
         logger.debug(f'damage index increment {damage_increment}')
+        logger.debug(f'prop. water ingress {prop_water_ingress}')
+
         percent_done = 100.0 * (ispeed + 1) / len(cfg.wind_speeds)
         int_percent = int(percent_done)
         if not call_back:
@@ -187,6 +192,16 @@ def compute_damage_increment(cfg, bucket, ispeed):
     return damage_increment
 
 
+def compute_prop_water_ingress(cfg, bucket, ispeed):
+
+    prop_water_ingress = 0.0  # default value
+
+    if cfg.flags['water_ingress']:
+        prop_water_ingress = (bucket['house']['water_ingress_perc'][ispeed, :] > 0).sum() / cfg.no_models
+
+    return prop_water_ingress
+
+
 def save_results_to_files(cfg, bucket):
     """
 
@@ -291,22 +306,21 @@ def save_results_to_files(cfg, bucket):
             for item in ['function' , 'param1' , 'param2']:
                 value = getattr(cfg, 'debris_vuln_input')[item]
                 group.create_dataset(f'debris_vuln_input/{item}', data=value)
-    '''
+
     # save water ingress proprtion
         water_ingress_perc = bucket['house']['water_ingress_perc']
-        tmp = water_ingress_perc.cumsum(axis=0)
-        tmp[tmp > 0] = 1
+        water_ingress_perc[water_ingress_perc > 0] = 1
 
         plt.figure()
         pngfile = os.path.join(cfg.path_output, 'comp_prop_water_ingress.png')
         plt.plot(cfg.water_ingress_ref_prop_v, cfg.water_ingress_ref_prop, '--')
-        plt.plot(cfg.wind_speeds, tmp.sum(axis=1)/cfg.no_models, '-')
+        plt.plot(cfg.wind_speeds, water_ingress_perc.sum(axis=1)/cfg.no_models, '-')
         plt.legend(['Target', 'Simulation'])
         plt.xlabel('Wind speed (m/s)')
         plt.ylabel('Prop. of houses damaged due to water ingress')
         plt.savefig(pngfile)
         plt.close('all')
-    '''
+
     if cfg.flags['save_heatmaps']:
 
         for group_name, grouped in cfg.connections.groupby('group_name'):

@@ -93,6 +93,13 @@ FLAGS_OPTIONS = ['water_ingress',
                  'save_heatmaps',
                  'wall_collapse']
 
+DEBRIS_ITEMS = ['region_name', 'staggered_sources', 'source_items', 'boundary_radius',
+                'building_spacing', 'debris_radius', 'debris_angle']
+
+WATER_INGRESS_ITEMS = ['thresholds', 'speed_at_zero_wi', 'speed_at_full_wi', 'ref_prop',
+                       'ref_prop_v']
+
+
 
 class Config(object):
     """ Config class to set configuration for simulation
@@ -232,9 +239,7 @@ class Config(object):
         self.water_ingress_speed_at_full_wi = [60.0, 55.0, 40.0, 20.0]
         self.water_ingress_ref_prop_v = [0, 29, 30, 60, 90]
         self.water_ingress_ref_prop = [0, 0, 0.05,  0.6,  1.0]
-        self.water_ingress_prob_v = [0, 29, 30, 60, 90]
-        self.water_ingress_prob = [0, 0, 0.05,  0.6,  1.0]
-        self.water_ingress_ctrl_prob = None
+        self.water_ingress_ref = None
 
         # debris related
         self.region_name = None
@@ -450,8 +455,7 @@ class Config(object):
         TODO:
         """
         if conf.has_section(key):
-            for item in ['thresholds', 'speed_at_zero_wi', 'speed_at_full_wi', 'ref_prop_v',
-                         'ref_prop', 'prob_v', 'prob']:
+            for item in WATER_INGRESS_ITEMS:
                 try: setattr(self, f'water_ingress_{item}',
                              self.read_column_separated_entry(conf.get(key, item)))
                 except configparser.NoOptionError:
@@ -459,12 +463,10 @@ class Config(object):
         else:
             self.logger.info('default water ingress thresholds is used')
 
-        assert len(self.water_ingress_prob_v) == len(self.water_ingress_prob)
         assert len(self.water_ingress_ref_prop_v) == len(self.water_ingress_ref_prop)
-        assert min(self.water_ingress_prob) >= 0
-        assert max(self.water_ingress_prob) <= 1
         assert min(self.water_ingress_ref_prop) >= 0
         assert max(self.water_ingress_ref_prop) <= 1
+        assert min(self.water_ingress_ref_prop_v) >= 0
 
     def read_wall_collapse(self, conf, key):
         """
@@ -500,10 +502,6 @@ class Config(object):
         self.water_ingress_ref = np.interp(self.wind_speeds,
                                            self.water_ingress_ref_prop_v,
                                            self.water_ingress_ref_prop)
-        prob = np.interp(self.wind_speeds,
-                         self.water_ingress_prob_v,
-                         self.water_ingress_prob)
-        self.water_ingress_ctrl_prob = np.insert(np.diff(prob), 0, prob[0])
 
     def set_coverages(self):
 

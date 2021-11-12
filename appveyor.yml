@@ -54,6 +54,7 @@ install:
     - cmd: SET PATH=%CONDA_INSTALL_LOCN%;%CONDA_INSTALL_LOCN%\Scripts;%QT_BASE_PATH%;%PATH%
     #- cmd: conda -V
     - cmd: conda config --set always_yes true
+    # removal of conda-forge works for windows at least
     #- cmd: conda config --append channels conda-forge
     #- cmd: conda config --show channels
     - cmd: conda update -q conda
