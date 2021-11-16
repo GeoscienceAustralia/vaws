@@ -97,9 +97,7 @@ DEBRIS_ITEMS = ['region_name', 'staggered_sources', 'source_items', 'boundary_ra
                 'building_spacing', 'debris_radius', 'debris_angle']
 
 WATER_INGRESS_ITEMS = ['thresholds', 'speed_at_zero_wi', 'speed_at_full_wi', 'ref_prop',
-                       'ref_prop_v']
-
-
+                       'ref_prop_v', 'di_threshold_wi']
 
 class Config(object):
     """ Config class to set configuration for simulation
@@ -240,6 +238,7 @@ class Config(object):
         self.water_ingress_ref_prop_v = [0, 29, 30, 60, 90]
         self.water_ingress_ref_prop = [0, 0, 0.05,  0.6,  1.0]
         self.water_ingress_ref = None
+        self.di_threshold_wi = 0.1
 
         # debris related
         self.region_name = None
@@ -455,11 +454,13 @@ class Config(object):
         TODO:
         """
         if conf.has_section(key):
-            for item in WATER_INGRESS_ITEMS:
-                try: setattr(self, f'water_ingress_{item}',
-                             self.read_column_separated_entry(conf.get(key, item)))
+            for item in WATER_INGRESS_ITEMS[:-1]:
+                try:
+                    setattr(self, f'water_ingress_{item}',
+                            self.read_column_separated_entry(conf.get(key, item)))
                 except configparser.NoOptionError:
                     self.logger.info(f'default value is used for water_ingress_{item}')
+            self.water_ingress_di_threshold_wi = conf.getfloat(key, 'di_threshold_wi')
         else:
             self.logger.info('default water ingress thresholds is used')
 
@@ -467,6 +468,7 @@ class Config(object):
         assert min(self.water_ingress_ref_prop) >= 0
         assert max(self.water_ingress_ref_prop) <= 1
         assert min(self.water_ingress_ref_prop_v) >= 0
+        assert 0 <= self.water_ingress_di_threshold_wi <= 1
 
     def read_wall_collapse(self, conf, key):
         """
@@ -1392,26 +1394,8 @@ class Config(object):
 
         key = 'debris'
         config.add_section(key)
-        config.set(key, 'region_name', self.region_name)
-        config.set(key, 'staggered_sources', self.staggered_sources)
-        config.set(key, 'source_items', self.source_items)
-        config.set(key, 'building_spacing', self.building_spacing)
-        config.set(key, 'debris_radius', self.debris_radius)
-        config.set(key, 'boundary_radius', self.boundary_radius)
-        config.set(key, 'debris_angle', self.debris_angle)
-        # config.set(key, 'flight_time_mean', self.flight_time_mean)
-        # config.set(key, 'flight_time_stddev', self.flight_time_stddev)
-
-        # key = 'construction_levels'
-        # config.add_section(key)
-        # config.set(key, 'levels',
-        #            ', '.join(self.construction_levels_levels))
-        # config.set(key, 'probs',
-        #            ', '.join(str(x) for x in self.construction_levels_probs))
-        # config.set(key, 'mean_factors',
-        #            ', '.join(str(x) for x in self.construction_levels_mean_factors))
-        # config.set(key, 'cv_factors',
-        #            ', '.join(str(x) for x in self.construction_levels_cv_factors))
+        for item in DEBRIS_ITEMS:
+            config.set(key, item, getattr(self, item))
 
         key = 'water_ingress'
         config.add_section(key)
@@ -1421,6 +1405,11 @@ class Config(object):
                    ', '.join(str(x) for x in self.water_ingress_speed_at_zero_wi))
         config.set(key, 'speed_at_full_wi',
                    ', '.join(str(x) for x in self.water_ingress_speed_at_full_wi))
+        config.set(key, 'ref_prop_v',
+                   ', '.join(str(x) for x in self.water_ingress_ref_prop_v))
+        config.set(key, 'ref_prop',
+                   ', '.join(str(x) for x in self.water_ingress_ref_prop))
+        config.set(key, 'di_threshold_wi', self.water_ingress_di_threshold_wi)
 
         key = 'debris_vulnerability'
         if self.flags[key]:

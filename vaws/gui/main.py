@@ -1046,16 +1046,16 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
         par1.set_ylabel('Water Ingress (%)')
         par1.axis["right"].major_ticklabels.set_visible(True)
         par1.axis["right"].label.set_visible(True)
-
+        par1.set_ylim(0)
         self.ui.wateringress_prop_plot.axes.figure.add_axes(host)
 
         _array = self.results_dict['house']['water_ingress_perc']
-        tmp = _array.cumsum(axis=0)
-        tmp[tmp > 0] = 1
-
         par1.scatter(
             self.cfg.wind_speeds[:, np.newaxis] * np.ones(shape=(1, self.cfg.no_models)),
             _array, c='k', s=8, marker='+', label='_nolegend_')
+
+        tmp = _array.cumsum(axis=0)
+        tmp[tmp > 0] = 1
         host.plot(self.cfg.water_ingress_ref_prop_v, self.cfg.water_ingress_ref_prop, c='r', linestyle='-', label='Target')
         host.plot(self.cfg.wind_speeds, tmp.sum(axis=1)/self.cfg.no_models, c='b', linestyle='-.', label='Simulation')
 
@@ -1653,6 +1653,7 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
                 ', '.join([str(x) for x in self.cfg.water_ingress_ref_prop_v]))
             self.ui.ref_prop.setText(
                 ', '.join([str(x) for x in self.cfg.water_ingress_ref_prop]))
+            self.ui.di_threshold_wi.setText(f'{self.cfg.water_ingress_di_threshold_wi:f}')
             self.ui.waterEnabled.setChecked(self.cfg.flags['water_ingress'])
 
             # wall collapse
@@ -1690,6 +1691,7 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
     def update_config_from_ui(self):
         new_cfg = self.cfg
         ok = True
+
         # Scenario section
         new_cfg.no_models = int(self.ui.numHouses.text())
         new_cfg.model_name = self.ui.houseName.text()
@@ -1755,14 +1757,15 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
         new_cfg.flags['water_ingress'] = self.ui.waterEnabled.isChecked()
         new_cfg.water_ingress_thresholds = [
             float(x) for x in self.ui.waterThresholds.text().split(',')]
-        new_cfg.water_ingress_zero_wi = [
+        new_cfg.water_ingress_speed_at_zero_wi = [
             float(x) for x in self.ui.waterSpeed0.text().split(',')]
-        new_cfg.water_ingress_full_wi = [
+        new_cfg.water_ingress_speed_at_full_wi = [
             float(x) for x in self.ui.waterSpeed1.text().split(',')]
         new_cfg.water_ingress_ref_prop_v = [
             float(x) for x in self.ui.ref_prop_v.text().split(',')]
         new_cfg.water_ingress_ref_prop = [
             float(x) for x in self.ui.ref_prop.text().split(',')]
+        new_cfg.water_ingress_di_threshold_wi = float(self.ui.di_threshold_wi.text())
 
         # wall collapse
         new_cfg.flags['wall_collapse'] = self.ui.wallCollapseEnabled.isChecked()
@@ -1886,23 +1889,22 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
 
     def testWaterIngress(self):
         new_cfg = self.cfg
-
         new_cfg.flags['water_ingress'] = self.ui.waterEnabled.isChecked()
         new_cfg.water_ingress_thresholds = [
             float(x) for x in self.ui.waterThresholds.text().split(',')]
-        new_cfg.water_ingress_zero_wi = [
+        new_cfg.water_ingress_speed_at_zero_wi = [
             float(x) for x in self.ui.waterSpeed0.text().split(',')]
-        new_cfg.water_ingress_full_wi = [
+        new_cfg.water_ingress_speed_at_full_wi = [
             float(x) for x in self.ui.waterSpeed1.text().split(',')]
         new_cfg.water_ingress_ref_prop_v = [
             float(x) for x in self.ui.ref_prop_v.text().split(',')]
         new_cfg.water_ingress_ref_prop = [
             float(x) for x in self.ui.ref_prop.text().split(',')]
+        #new_cfg.water_ingress_di_threshold_wi = float(self.ui.di_threshold_wi.text())
 
         new_cfg.wind_speed_min = min(WIND_4_TEST_WATER_INGRESS[0], self.ui.windMin.value())
         new_cfg.wind_speed_max = max(WIND_4_TEST_WATER_INGRESS[1], self.ui.windMax.value())
         new_cfg.wind_speed_increment = float(self.ui.windIncrement.text())
-
         new_cfg.set_water_ingress()
         new_cfg.set_wind_speeds()
 
@@ -1917,7 +1919,6 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
             di_array.append(0.5*(dic_thresholds[i][0] + dic_thresholds[i][1]))
 
         a = np.zeros((len(di_array), len(new_cfg.wind_speeds)))
-
         for i, di in enumerate(di_array):
             for j, speed in enumerate(new_cfg.wind_speeds):
                 a[i, j] = 100.0 * compute_water_ingress_given_damage(

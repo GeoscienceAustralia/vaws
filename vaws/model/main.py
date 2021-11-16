@@ -296,11 +296,12 @@ def save_results_to_files(cfg, bucket):
                 group.create_dataset(item, data=getattr(cfg, item))
 
         if cfg.flags['water_ingress']:
-            for item in WATER_INGRESS_ITEMS:
+            for item in WATER_INGRESS_ITEMS[:-1]:
                 _item = f'water_ingress_{item}'
                 _value = getattr(cfg, f'water_ingress_{item}')
                 value =  ','.join([str(x) for x in _value])
                 group.create_dataset(_item, data=value)
+            group.create_dataset('water_ingress_di_threshold_wi', data=cfg.water_ingress_di_threshold_wi)
 
         if cfg.flags['debris_vulnerability']:
             for item in ['function' , 'param1' , 'param2']:
@@ -308,7 +309,8 @@ def save_results_to_files(cfg, bucket):
                 group.create_dataset(f'debris_vuln_input/{item}', data=value)
 
     # save water ingress proprtion
-        water_ingress_perc = bucket['house']['water_ingress_perc']
+        '''
+        water_ingress_perc = bucket['house']['water_ingress_perc'].copy()
         water_ingress_perc[water_ingress_perc > 0] = 1
 
         plt.figure()
@@ -320,7 +322,7 @@ def save_results_to_files(cfg, bucket):
         plt.ylabel('Prop. of houses damaged due to water ingress')
         plt.savefig(pngfile)
         plt.close('all')
-
+        '''
     if cfg.flags['save_heatmaps']:
 
         for group_name, grouped in cfg.connections.groupby('group_name'):
