@@ -238,7 +238,7 @@ class Config(object):
         self.water_ingress_ref_prop_v = [0, 29, 30, 60, 90]
         self.water_ingress_ref_prop = [0, 0, 0.05,  0.6,  1.0]
         self.water_ingress_ref = None
-        self.di_threshold_wi = 0.1
+        self.water_ingress_di_threshold_wi = 0.1
 
         # debris related
         self.region_name = None
@@ -460,7 +460,10 @@ class Config(object):
                             self.read_column_separated_entry(conf.get(key, item)))
                 except configparser.NoOptionError:
                     self.logger.info(f'default value is used for water_ingress_{item}')
-            self.water_ingress_di_threshold_wi = conf.getfloat(key, 'di_threshold_wi')
+            try:
+                self.water_ingress_di_threshold_wi = conf.getfloat(key, 'di_threshold_wi')
+            except configparser.NoOptionError:
+                self.logger.info(f'default value is used for water_ingress_di_threshold_wi')
         else:
             self.logger.info('default water ingress thresholds is used')
 
