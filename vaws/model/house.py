@@ -653,7 +653,8 @@ class House(object):
 
             # applying prob_water_ingress
             target_prob = self.cfg.water_ingress_ref[ispeed] - self.prop_water_ingress
-            if (self.water_ingress_perc > 0) or (self.rnd_state.uniform() < target_prob) or (self.di_except_water >= self.cfg.di_threshold_wi):
+            if (self.water_ingress_perc > 0) or (self.rnd_state.uniform() < target_prob) or (
+                self.di_except_water >= self.cfg.water_ingress_di_threshold_wi):
                 self.water_ingress_perc = 100.0 * compute_water_ingress_given_damage(
                      self.di_except_water, wind_speed, self.cfg.water_ingress)
             else:

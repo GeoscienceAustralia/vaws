@@ -1046,7 +1046,7 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
         par1.set_ylabel('Water Ingress (%)')
         par1.axis["right"].major_ticklabels.set_visible(True)
         par1.axis["right"].label.set_visible(True)
-        par1.set_ylim(0)
+        par1.set_ylim(0, 100)
         self.ui.wateringress_prop_plot.axes.figure.add_axes(host)
 
         _array = self.results_dict['house']['water_ingress_perc']
@@ -1059,7 +1059,7 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
         host.plot(self.cfg.water_ingress_ref_prop_v, self.cfg.water_ingress_ref_prop, c='r', linestyle='-', label='Target')
         host.plot(self.cfg.wind_speeds, tmp.sum(axis=1)/self.cfg.no_models, c='b', linestyle='-.', label='Simulation')
 
-        host.set_ylim(0)
+        host.set_ylim(0, 1)
         host.legend(loc=0, scatterpoints=1)
 
         self.ui.wateringress_prop_plot.axes.figure.canvas.draw()
