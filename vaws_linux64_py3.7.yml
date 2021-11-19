@@ -1,7 +1,7 @@
 # This file may be used to create an environment using:
 # $ conda create --name <env> --file <this file>
 # platform: linux-64
-name: vaws3
+name: vaws
 dependencies:
  - matplotlib=3.0.3
  - h5py=2.8.0
