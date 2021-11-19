@@ -1,4 +1,5 @@
 [![Build status](https://ci.appveyor.com/api/projects/status/0p3i8vu6s3mttafs?svg=true)](https://ci.appveyor.com/project/dynaryu/vaws)
+[![codecov](https://codecov.io/gh/GeoscienceAustralia/vaws/branch/master/graph/badge.svg?token=xNvu7t3BFG)](https://codecov.io/gh/GeoscienceAustralia/vaws)
 
 # VAWS
 
