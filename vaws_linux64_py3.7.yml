@@ -3,6 +3,7 @@
 # platform: linux-64
 name: vaws
 dependencies:
+ - coverage=5.5
  - matplotlib=3.0.3
  - h5py=2.8.0
  - pandas=1.2.4

@@ -35,7 +35,8 @@ jobs:
     - name: Test
       shell: bash -l {0}
       run: |
-        python -m unittest -v
+        coverage run -m unittest -v
+        coverage xml
         echo "🍏 This job's status is ${{ job.status }}."
 
     - name: Upload coverage.xml as artifact
