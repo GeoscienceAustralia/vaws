@@ -1,38 +1,39 @@
 name: Python package using Conda
+
 on: 
    push:
      branches: [master]
 
 jobs:
   Vaws:
-    build-linux:
-      runs-on: ubuntu-latest
-      strategy:
-        matrix:
-          python-version: [3.6, 3.7, 3.8]
+    name: Test VAWS
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: [3.6, 3.7, 3.8]
 
-      steps:
-      - uses: actions/checkout@v2
-      - name: Cache conda
-        uses: actions/cache@v2
-        env:
-          CACHE_NUMBER: 0
-        with:
-          path: ~/conda_pkgs_dir
-          key:
-            ${{ runner.os }}-conda-${{ env.CACHE_NUMBER }}-${{hashFiles('vaws_linux64_py3.6.7.yml')}}
+    steps:
+    - uses: actions/checkout@v2
+    - name: Cache conda
+      uses: actions/cache@v2
+      env:
+        CACHE_NUMBER: 0
+      with:
+        path: ~/conda_pkgs_dir
+        key:
+          ${{ runner.os }}-conda-${{ env.CACHE_NUMBER }}-${{hashFiles('vaws_linux64_py3.6.7.yml')}}
 
-      - name: Set up env.
-        uses: conda-incubator/setup-miniconda@v2.0.0
-        with:
-          activate-environment: vaws
-          environment-file: vaws_linux64_py3.6.7.yml
-          python_version: ${{ matrix.python-version }}
-          auto-activate-base: false
-          use-only-tar-bz2: true
+    - name: Set up env.
+      uses: conda-incubator/setup-miniconda@v2.0.0
+      with:
+        activate-environment: vaws
+        environment-file: vaws_linux64_py3.6.7.yml
+        python_version: ${{ matrix.python-version }}
+        auto-activate-base: false
+        use-only-tar-bz2: true
 
-      - name: Test
-        shell: bash -l {0}
-        run: |
-          python -m unittest -v
-          echo "🍏 This job's status is ${{ job.status }}."
+    - name: Test
+      shell: bash -l {0}
+      run: |
+        python -m unittest -v
+        echo "🍏 This job's status is ${{ job.status }}."
