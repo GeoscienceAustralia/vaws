@@ -26,7 +26,7 @@ jobs:
     - name: Set up env.
       uses: conda-incubator/setup-miniconda@v2.0.0
       with:
-        activate-environment: vaws
+        activate-environment: vaws3
         environment-file: vaws_linux64_py3.7.yml
         python-version: ${{ matrix.python-version }}
         auto-activate-base: false
