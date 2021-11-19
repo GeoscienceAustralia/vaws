@@ -1,7 +1,8 @@
 name: Python package using Conda
 on: 
    push:
-     branches: [master]
+     branches: [master
+
 jobs:
   Vaws:
     build-linux:
