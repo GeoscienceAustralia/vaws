@@ -1396,29 +1396,41 @@ class Config(object):
                    ', '.join(str(x) for x in self.fragility_thresholds))
 
         key = 'debris'
-        config.add_section(key)
-        for item in DEBRIS_ITEMS:
-            config.set(key, item, getattr(self, item))
+        if self.flags[key]:
+            config.add_section(key)
+            for item in DEBRIS_ITEMS:
+                config.set(key, item, getattr(self, item))
 
         key = 'water_ingress'
-        config.add_section(key)
-        config.set(key, 'thresholds',
-                   ', '.join(str(x) for x in self.water_ingress_thresholds))
-        config.set(key, 'speed_at_zero_wi',
-                   ', '.join(str(x) for x in self.water_ingress_speed_at_zero_wi))
-        config.set(key, 'speed_at_full_wi',
-                   ', '.join(str(x) for x in self.water_ingress_speed_at_full_wi))
-        config.set(key, 'ref_prop_v',
-                   ', '.join(str(x) for x in self.water_ingress_ref_prop_v))
-        config.set(key, 'ref_prop',
-                   ', '.join(str(x) for x in self.water_ingress_ref_prop))
-        config.set(key, 'di_threshold_wi', self.water_ingress_di_threshold_wi)
+        if self.flags[key]:
+            config.add_section(key)
+            config.set(key, 'thresholds',
+                       ', '.join(str(x) for x in self.water_ingress_thresholds))
+            config.set(key, 'speed_at_zero_wi',
+                       ', '.join(str(x) for x in self.water_ingress_speed_at_zero_wi))
+            config.set(key, 'speed_at_full_wi',
+                       ', '.join(str(x) for x in self.water_ingress_speed_at_full_wi))
+            config.set(key, 'ref_prop_v',
+                       ', '.join(str(x) for x in self.water_ingress_ref_prop_v))
+            config.set(key, 'ref_prop',
+                       ', '.join(str(x) for x in self.water_ingress_ref_prop))
+            config.set(key, 'di_threshold_wi', self.water_ingress_di_threshold_wi)
 
         key = 'debris_vulnerability'
         if self.flags[key]:
             config.add_section(key)
             for k, v in self.debris_vuln_input.items():
                 config.set(key, k, v)
+
+        key = 'wall_collapse'
+        if self.flags[key]:
+            config.add_section(key)
+            config.set(key, 'type_name',
+                    ', '.join(str(x) for x in self.wall_collapse['type_name']))
+            config.set(key, 'roof_damage',
+                    ', '.join(str(x) for x in self.wall_collapse['roof_damage']))
+            config.set(key, 'wall_collapse',
+                    ', '.join(str(x) for x in self.wall_collapse['wall_damage']))
 
         if filename:
             with open(filename, 'w') as configfile:
