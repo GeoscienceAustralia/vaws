@@ -887,8 +887,6 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
 
     def convert_h5_results(self, fid):
 
-        self.results_dict = {}
-
         def h_dic(d, results_dict):
             for k, v in d.items():
                 if isinstance(v, h5py._hl.group.Group):
@@ -897,6 +895,8 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
                 else:
                     # clean up value
                     results_dict[k] = v.value
+
+        self.results_dict = {}
         h_dic(fid, self.results_dict)
 
         try:
@@ -936,13 +936,18 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
             if self.cfg.flags['water_ingress']:
                 for item in WATER_INGRESS_ITEMS:
                     _item = f'water_ingress_{item}'
-                    _value = self.results_dict['input'][f'water_ingress_{item}'].split(',')
-                    try:
-                        _value = [float(x) for x in _value]
-                    except ValueError:
+
+                    if item == 'di_threshold_wi':
+                        _value = self.results_dict['input'][f'water_ingress_{item}']
                         setattr(self.cfg, _item, _value)
                     else:
-                        setattr(self.cfg, _item, _value)
+                        _value = self.results_dict['input'][f'water_ingress_{item}'].split(',')
+                        try:
+                            _value = [float(x) for x in _value]
+                        except ValueError:
+                            setattr(self.cfg, _item, _value)
+                        else:
+                            setattr(self.cfg, _item, _value)
 
             if self.cfg.flags['debris_vulnerability']:
                 for item in ['function' , 'param1' , 'param2']:
@@ -1467,7 +1472,6 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
             self.file_load(config_file)
             #settings.setValue("ScenarioFolder", QVariant(os.path.dirname(config_file)))
 
-
             self.ui.spinBox_heatmap.setRange(0, self.cfg.no_models)
 
             self.ui.doubleSpinBox_load.setRange(self.cfg.wind_speeds[0], self.cfg.wind_speeds[-1])
@@ -1499,7 +1503,7 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
                     self.updateCostPlot()
 
         else:
-            msg = f'Unable to load resutls: {config_file}\nFile not found.'
+            msg = f'Unable to load resutls: {h5}\nFile not found.'
             QMessageBox.warning(self, "VAWS Program Warning", msg)
 
     def save_scenario(self):
