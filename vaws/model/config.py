@@ -1429,7 +1429,7 @@ class Config(object):
                     ', '.join(str(x) for x in self.wall_collapse['type_name']))
             config.set(key, 'roof_damage',
                     ', '.join(str(x) for x in self.wall_collapse['roof_damage']))
-            config.set(key, 'wall_collapse',
+            config.set(key, 'wall_damage',
                     ', '.join(str(x) for x in self.wall_collapse['wall_damage']))
 
         if filename:
