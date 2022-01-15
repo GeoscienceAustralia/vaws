@@ -137,11 +137,8 @@ class Config(object):
     # time variant: 1
     house_bucket = [('profile_index', 0),
                     ('wind_dir_index', 0),
-                    # ('construction_level', 0),
                     ('terrain_height_multiplier', 0),
                     ('shielding_multiplier', 0),
-                    # ('mean_factor', 0),
-                    # ('cv_factor', 0),
                     ('qz', 1),
                     ('cpi', 1),
                     ('collapse', 0),
@@ -156,8 +153,6 @@ class Config(object):
                     ('no_debris_impacts', 1),
                     ('breached_area', 1),
                     ('mean_no_debris_items', 1)]
-
-    # att_non_float = ['construction_level']
 
     # model and wind dependent attributes
     list_components = ['group', 'connection', 'zone', 'coverage', 'debris']
@@ -220,12 +215,6 @@ class Config(object):
         self.wind_profiles = None
         self.profile_heights = None
         self.wind_dir_index = None
-
-        # self.construction_levels = {}
-        # self.construction_levels_levels = ['medium']
-        # self.construction_levels_probs = [1.0]
-        # self.construction_levels_mean_factors = [1.0]
-        # self.construction_levels_cv_factors = [0.58]
 
         self.fragility = None
         self.fragility_states = ['slight', 'medium', 'severe', 'complete']
@@ -360,7 +349,6 @@ class Config(object):
         self.read_main(conf, key='main')
         self.read_options(conf, key='options')
         self.read_heatmap(conf, key='heatmap')
-        # self.read_construction_levels(conf, key='construction_levels')
         self.read_fragility_thresholds(conf, key='fragility_thresholds')
         self.read_debris(conf, key='debris')
         self.read_water_ingress(conf, key='water_ingress')
@@ -399,7 +387,6 @@ class Config(object):
 
         self.set_water_ingress()
         self.set_fragility_thresholds()
-        # self.set_construction_levels()
 
     def read_options(self, conf, key):
         for sub_key in FLAGS_OPTIONS:
@@ -702,22 +689,6 @@ class Config(object):
                                       index=self.fragility_states,
                                       columns=['threshold'])
         self.fragility['color'] = ['b', 'g', 'y', 'r']
-
-    # def read_construction_levels(self, conf, key):
-    #     try:
-    #         for k in ['levels', 'probs', 'mean_factors', 'cv_factors']:
-    #             setattr(self, 'construction_levels_{}'.format(k),
-    #                     self.read_column_separated_entry(conf.get(key, k)))
-    #     except configparser.NoSectionError:
-    #         self.logger.warning('construction level medium is used')
-
-    # def set_construction_levels(self):
-    #     for level, mean, cov in zip(
-    #             self.construction_levels_levels,
-    #             self.construction_levels_mean_factors,
-    #             self.construction_levels_cv_factors):
-    #         self.construction_levels[level] = {'mean_factor': mean,
-    #                                            'cv_factor': cov}
 
     @staticmethod
     def read_column_separated_entry(value):

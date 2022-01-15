@@ -8,8 +8,9 @@ import h5py
 import numpy as np
 import matplotlib.pyplot as plt
 from argparse import ArgumentParser
+from dask.distributed import LocalCluster, Client
 
-from vaws.model.house import House
+from vaws.model.house import House, run_simulation
 from vaws.model.config import Config, WIND_DIR, DEBRIS_ITEMS, WATER_INGRESS_ITEMS
 from vaws.model.curve import fit_fragility_curves, fit_vulnerability_curve
 from vaws.model.output import plot_heatmap
@@ -18,7 +19,7 @@ from vaws.model.version import VERSION_DESC
 DT = h5py.special_dtype(vlen=str)
 
 
-def simulate_wind_damage_to_houses(cfg, call_back=None):
+def simulate_wind_dmg_to_houses(cfg, call_back=None):
     """
 
     Args:
@@ -32,39 +33,39 @@ def simulate_wind_damage_to_houses(cfg, call_back=None):
     """
 
     logger = logging.getLogger(__name__)
+    #cluster = LocalCluster()
+    client = Client()
 
     # simulator main_loop
     tic = time.time()
 
-    damage_increment = 0.0
+    dmg_increment = 0.0
     prop_water_ingress = 0.0
     bucket = init_bucket(cfg)
 
     # generate instances of house
-    list_house_damage = [House(cfg, i + cfg.random_seed)
+    list_house_dmg = [House(cfg, i + cfg.random_seed)
                          for i in range(cfg.no_models)]
 
     for ispeed, wind_speed in enumerate(cfg.wind_speeds):
 
         results_by_speed = []
 
-        for ihouse, house in enumerate(list_house_damage):
+        for ihouse, house in enumerate(list_house_dmg):
 
             logger.debug(f'model {ihouse}')
 
-            house.damage_increment = damage_increment
-
-            house.prop_water_ingress = prop_water_ingress
-
-            result = house.run_simulation(wind_speed, ispeed)
+            result = client.submit(run_simulation, house, wind_speed, ispeed, dmg_increment, prop_water_ingress, cfg)
 
             results_by_speed.append(result)
 
+        results_by_speed = client.gather(results_by_speed)
+
         bucket = update_bucket(cfg, bucket, results_by_speed, ispeed)
-        damage_increment = compute_damage_increment(cfg, bucket, ispeed)
+        dmg_increment = compute_dmg_increment(cfg, bucket, ispeed)
         prop_water_ingress = compute_prop_water_ingress(cfg, bucket, ispeed)
 
-        logger.debug(f'damage index increment {damage_increment}')
+        logger.debug(f'dmg index increment {dmg_increment}')
         logger.debug(f'prop. water ingress {prop_water_ingress}')
 
         percent_done = 100.0 * (ispeed + 1) / len(cfg.wind_speeds)
@@ -167,29 +168,29 @@ def update_bucket(cfg, bucket, results_by_speed, ispeed):
     return bucket
 
 
-def compute_damage_increment(cfg, bucket, ispeed):
+def compute_dmg_increment(cfg, bucket, ispeed):
 
     logger = logging.getLogger(__name__)
 
-    # compute damage index increment
-    damage_increment = 0.0  # default value
+    # compute dmg index increment
+    dmg_increment = 0.0  # default value
 
     if cfg.flags['debris_vulnerability']:
 
         if ispeed:
-            damage_increment = cfg.debris_vulnerability.cdf(cfg.wind_speeds[ispeed]) - \
+            dmg_increment = cfg.debris_vulnerability.cdf(cfg.wind_speeds[ispeed]) - \
                                cfg.debris_vulnerability.cdf(cfg.wind_speeds[ispeed-1])
     else:
 
         if ispeed:
-            damage_increment = (bucket['house']['di'][ispeed].mean(axis=0) -
+            dmg_increment = (bucket['house']['di'][ispeed].mean(axis=0) -
                                 bucket['house']['di'][ispeed - 1].mean(axis=0))
 
-            if damage_increment < 0:
-                logger.warning('damage increment is less than zero')
-                damage_increment = 0.0
+            if dmg_increment < 0:
+                logger.warning('dmg increment is less than zero')
+                dmg_increment = 0.0
 
-    return damage_increment
+    return dmg_increment
 
 
 def compute_prop_water_ingress(cfg, bucket, ispeed):
@@ -319,7 +320,7 @@ def save_results_to_files(cfg, bucket):
         plt.plot(cfg.wind_speeds, water_ingress_perc.sum(axis=1)/cfg.no_models, '-')
         plt.legend(['Target', 'Simulation'])
         plt.xlabel('Wind speed (m/s)')
-        plt.ylabel('Prop. of houses damaged due to water ingress')
+        plt.ylabel('Prop. of houses dmgd due to water ingress')
         plt.savefig(pngfile)
         plt.close('all')
         '''
@@ -425,7 +426,7 @@ def main():
         set_logger(path_cfg, args.verbose)
 
         conf = Config(file_cfg=args.config_file)
-        _ = simulate_wind_damage_to_houses(conf)
+        _ = simulate_wind_dmg_to_houses(conf)
     else:
         parser.print_help()
 
