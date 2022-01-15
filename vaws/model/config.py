@@ -149,13 +149,15 @@ class Config(object):
                     ('water_ingress_cost', 1),
                     ('water_ingress_perc', 1),
                     ('window_breached', 1),
-                    ('no_debris_items', 1),
-                    ('no_debris_impacts', 1),
+                    #('no_debris_items', 1),
+                    #('no_debris_impacts', 1),
                     ('breached_area', 1),
-                    ('mean_no_debris_items', 1)]
+                    #('mean_no_debris_items', 1)
+                    ]
 
     # model and wind dependent attributes
-    list_components = ['group', 'connection', 'zone', 'coverage', 'debris']
+    #list_components = ['group', 'connection', 'zone', 'coverage', 'debris']
+    list_components = ['group', 'connection', 'zone', 'coverage']
 
     group_bucket = [('damaged_area', 1), ('prop_damaged', 1)]
 

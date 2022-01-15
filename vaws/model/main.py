@@ -8,7 +8,7 @@ import h5py
 import numpy as np
 import matplotlib.pyplot as plt
 from argparse import ArgumentParser
-from dask.distributed import LocalCluster, Client
+from dask.distributed import Client, LocalCluster
 
 from vaws.model.house import House, run_simulation
 from vaws.model.config import Config, WIND_DIR, DEBRIS_ITEMS, WATER_INGRESS_ITEMS
@@ -33,8 +33,8 @@ def simulate_wind_dmg_to_houses(cfg, call_back=None):
     """
 
     logger = logging.getLogger(__name__)
-    #cluster = LocalCluster()
-    client = Client()
+    cluster = LocalCluster(threads_per_worker=1)
+    client = Client(cluster)
 
     # simulator main_loop
     tic = time.time()
@@ -44,25 +44,28 @@ def simulate_wind_dmg_to_houses(cfg, call_back=None):
     bucket = init_bucket(cfg)
 
     # generate instances of house
-    list_house_dmg = [House(cfg, i + cfg.random_seed)
-                         for i in range(cfg.no_models)]
+    houses = [House(cfg, i + cfg.random_seed) for i in range(cfg.no_models)]
 
     for ispeed, wind_speed in enumerate(cfg.wind_speeds):
 
         results_by_speed = []
 
-        for ihouse, house in enumerate(list_house_dmg):
+        for ihouse, house in enumerate(houses):
 
-            logger.debug(f'model {ihouse}')
+
+            #logger.debug(f'model {ihouse}')
 
             result = client.submit(run_simulation, house, wind_speed, ispeed, dmg_increment, prop_water_ingress, cfg)
+            #result = run_simulation(house, wind_speed, ispeed, dmg_increment, prop_water_ingress, cfg)
 
             results_by_speed.append(result)
 
         results_by_speed = client.gather(results_by_speed)
 
         bucket = update_bucket(cfg, bucket, results_by_speed, ispeed)
+
         dmg_increment = compute_dmg_increment(cfg, bucket, ispeed)
+
         prop_water_ingress = compute_prop_water_ingress(cfg, bucket, ispeed)
 
         logger.debug(f'dmg index increment {dmg_increment}')
@@ -79,7 +82,9 @@ def simulate_wind_dmg_to_houses(cfg, call_back=None):
             if not call_back(int_percent):  # stop triggered
                 return
 
-    save_results_to_files(cfg, bucket)
+    client.close()
+
+    #save_results_to_files(cfg, bucket)
 
     elapsed = time.time()-tic
     logging.info(f'Simulation completed: {elapsed:.4f}')

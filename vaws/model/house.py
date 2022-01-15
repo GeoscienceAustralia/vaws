@@ -20,17 +20,62 @@ from vaws.model.debris import generate_debris_items
 from vaws.model.coverage import Coverage
 from vaws.model.damage_costing import compute_water_ingress_given_damage
 
+def compute_mean_no_debris_items(cfg, damage_increment):
+    """
+    dN = f * dD
+    where
+        dN: incr. number of debris items,
+        dD: incr in vulnerability (or damage index)
+        f : a constant factor
+
+    if we use dD/dV (pdf of vulnerability), then dN = f * (dD/dV) * dV
+
+    :return:
+    """
+    try:
+        return np.rint(cfg.source_items * damage_increment)
+    except TypeError:
+        return 0
+
+
+def run_debris_and_update_cpi(house, wind_speed, cfg):
+    """
+
+    Args:
+        wind_speed:
+
+    Returns:
+        self.cpi
+        self.cpi_wind_speed
+
+    """
+    # update cpi
+    if cfg.flags['debris'] and wind_speed:
+
+        mean_no_debris_items = compute_mean_no_debris_items(cfg, house.damage_increment)
+        debris_items = generate_debris_items(cfg=cfg,
+                                             mean_no_debris_items=mean_no_debris_items,
+                                             wind_speed=wind_speed,
+                                             rnd_state=house.rnd_state)
+
+        #logger.debug(f'no debris items: {len(self.debris_items)}')
+        for item in debris_items:
+            item.check_impact(footprint=house.footprint,
+                              boundary=cfg.impact_boundary)
+            item.check_coverages(coverages=house.debris_coverages,
+                                 prob_coverages=house.debris_coverages_area_ratio)
+
+
 
 def run_simulation(house, wind_speed, ispeed, damage_increment, prop_water_ingress, cfg):
 
-    logger.debug(f'wind speed {wind_speed:.3f}')
+    #logger.debug(f'wind speed {wind_speed:.3f}')
 
     house.damage_increment = damage_increment
 
     house.prop_water_ingress = prop_water_ingress
 
     if not house.collapse:
-
 
         # compute load by zone
         house.compute_qz(wind_speed)
@@ -63,7 +108,7 @@ def run_simulation(house, wind_speed, ispeed, damage_increment, prop_water_ingre
         house.check_house_collapse(wind_speed=wind_speed)
 
         # cpi is computed here for the next step
-        house.run_debris_and_update_cpi(wind_speed, cfg)
+        run_debris_and_update_cpi(house, wind_speed, cfg)
 
         house.compute_damage_index(wind_speed, ispeed, cfg)
 
@@ -93,22 +138,22 @@ class House(object):
         self.rnd_state = np.random.RandomState(seed)
 
         # attributes assigned by self.read_house_data
-        self.name = None
-        self.width = None
-        self.height = None
-        self.length = None
-        self.replace_cost = None
-        self.cpe_cv = None
-        self.cpe_str_cv = None
-        self.cpe_k = None
-        self.cpe_str_k = None
-        self.big_a = None
-        self.big_b = None
-        self.big_a_str = None
-        self.big_b_str = None
+        self.name = cfg.house['name']
+        self.width = cfg.house['width']
+        self.height = cfg.house['height']
+        self.length = cfg.house['length']
+        self.replace_cost = cfg.house['replace_cost']
+        self.cpe_cv = cfg.house['cpe_cv']
+        self.cpe_str_cv = cfg.house['cpe_str_cv']
+        self.cpe_k = cfg.house['cpe_k']
+        self.cpe_str_k = cfg.house['cpe_str_k']
+        self.big_a = cfg.house['big_a']
+        self.big_b = cfg.house['big_b']
+        self.big_a_str = cfg.house['big_a_str']
+        self.big_b_str = cfg.house['big_b_str']
         # self._cv_factor = None
         # self._mean_factor = None
-        self._total_area_by_group = None
+        #self._total_area_by_group = None
 
         # debris related
         #self._footprint = None
@@ -116,7 +161,7 @@ class House(object):
         self._debris_coverages = None
         self._debris_coverages_area = None
         self._debris_coverages_area_ratio = None
-        self._front_facing_walls = None
+        #self._front_facing_walls = None
 
         # random variables
 
@@ -124,7 +169,7 @@ class House(object):
         self.connections = {}  # dict of connections with name
         self.zones = {}  # dict of zones with id
         self.coverages = None  # pd.dataframe of coverages
-        self.debris_items = None
+        #self.debris_items = None
 
         # vary over wind speeds
         self.qz = None
@@ -140,11 +185,12 @@ class House(object):
 
         # init house
         self.init_bucket(cfg)
+        #self.set_house_data(cfg)
         self.set_wind_dir_index(cfg)
+        self.set_front_facing_walls(cfg)
         self.set_walls(cfg)
         self.set_terrain_height_multiplier(cfg)
         self.set_shielding_multiplier(cfg)
-        self.set_house_data(cfg)
         self.set_coverages(cfg)
         self.set_zones(cfg)
         self.set_connections(cfg)
@@ -176,26 +222,6 @@ class House(object):
         else:
             self.side1_walls = None
             self.side2_walls = None
-
-    def set_mean_no_debris_items(self, cfg):
-        """
-        dN = f * dD
-        where
-            dN: incr. number of debris items,
-            dD: incr in vulnerability (or damage index)
-            f : a constant factor
-
-        if we use dD/dV (pdf of vulnerability), then dN = f * (dD/dV) * dV
-
-        :return:
-        """
-        try:
-            mean_no_debris_items = np.rint(cfg.source_items *
-                                           self.damage_increment)
-        except TypeError:
-            pass
-        else:
-            self.mean_no_debris_items = mean_no_debris_items
 
     def set_footprint(self, cfg):
         """
@@ -247,7 +273,7 @@ class House(object):
             self.shielding_multiplier = SHIELDING_MULTIPLIERS[key]
         else:  #
             self.shielding_multiplier = 1.0
-
+    '''
     @property
     def no_debris_items(self):
         """total number of generated debris items"""
@@ -271,6 +297,7 @@ class House(object):
             return np.array([x.momentum for x in self.debris_items])
         except TypeError:
             return None
+    '''
 
     @property
     def debris_coverages(self):
@@ -392,14 +419,6 @@ class House(object):
 
             return cpi
 
-    @property
-    def prop_water_ingress(self):
-        return self._prop_water_ingress
-
-    @prop_water_ingress.setter
-    def prop_water_ingress(self, value):
-        # assert isinstance(value, numbers.Number)
-        self._prop_water_ingress = value
 
     def init_bucket(self, cfg):
 
@@ -440,11 +459,11 @@ class House(object):
                     pass
             elif comp == 'group':
                 pass
-            elif comp == 'debris':
-                if cfg.flags['debris']:
-                    for att, _ in cfg.debris_bucket:
-                        self.bucket[comp][att] = [getattr(x, att)
-                                                  for x in self.debris_items]
+            #elif comp == 'debris':
+               # if cfg.flags['debris']:
+                    #for att, _ in cfg.debris_bucket:
+                    #    self.bucket[comp][att] = [getattr(x, att)
+                    #                              for x in self.debris_items]
             else:  # dictionary
                 dic = getattr(self, f'{comp}s')
                 for att, _ in getattr(cfg, f'{comp}_bucket'):
@@ -467,38 +486,6 @@ class House(object):
             wind_speed *
             self.terrain_height_multiplier *
             self.shielding_multiplier) ** 2 * 1.0E-3
-
-    def run_debris_and_update_cpi(self, wind_speed, cfg):
-        """
-
-        Args:
-            wind_speed:
-
-        Returns:
-            self.cpi
-            self.cpi_wind_speed
-
-        """
-        # update cpi
-        try:
-            del self._cpi
-        except AttributeError:
-            pass
-
-        if cfg.flags['debris'] and wind_speed:
-
-            self.set_mean_no_debris_items(cfg)
-            self.debris_items = generate_debris_items(cfg=cfg,
-                                                      mean_no_debris_items=self.mean_no_debris_items,
-                                                      wind_speed=wind_speed,
-                                                      rnd_state=self.rnd_state)
-
-            logger.debug(f'no debris items: {len(self.debris_items)}')
-            for item in self.debris_items:
-                item.check_impact(footprint=self.footprint,
-                                  boundary=cfg.impact_boundary)
-                item.check_coverages(coverages=self.debris_coverages,
-                                     prob_coverages=self.debris_coverages_area_ratio)
 
     def check_house_collapse(self, wind_speed):
         """
@@ -688,10 +675,10 @@ class House(object):
 
         return area_by_group, prop_by_group
 
-    def set_house_data(self, cfg):
+    #def set_house_data(self, cfg):
 
-        for key, value in cfg.house.items():
-            setattr(self, key, value)
+    #    for key, value in cfg.house.items():
+    #        setattr(self, key, value)
 
     def set_zones(self, cfg):
 
