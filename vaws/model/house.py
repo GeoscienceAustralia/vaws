@@ -117,11 +117,11 @@ def run_simulation(house, wind_speed, ispeed, damage_increment, prop_water_ingre
         house.run_debris_and_update_cpi(wind_speed)
 
     # save results
-    house.fill_bucket(cfg)
+    #house.fill_bucket(cfg)
 
-    return copy.deepcopy(house.bucket)
-
-
+    #return copy.deepcopy(house.bucket)
+    return {'di': house.di,
+            'water_ingress_perc': house.water_ingress_perc}
 
 
 
@@ -181,10 +181,10 @@ class House(object):
         self.di_except_water = None
         self._prop_water_ingress = None  # compute mean_no_debris_items
 
-        self.bucket = {}
+        #self.bucket = {}
 
         # init house
-        self.init_bucket(cfg)
+        #self.init_bucket(cfg)
         #self.set_house_data(cfg)
         self.set_wind_dir_index(cfg)
         self.set_front_facing_walls(cfg)
@@ -510,6 +510,7 @@ class House(object):
                             connection.damaged = 1
                             connection.capacity = wind_speed
 
+
     def compute_damage_index(self, wind_speed, ispeed, cfg):
         """
 
@@ -538,10 +539,10 @@ class House(object):
         revised_area_by_group = self.apply_damage_factoring(area_by_group, cfg)
 
         # assign damaged area by group
-        for key, value in revised_area_by_group.items():
-            self.bucket['group']['damaged_area'][key] = value
-            if key not in ['debris', 'wall']:
-                self.bucket['group']['prop_damaged'][key] = prop_by_group[key] / cfg.groups[key]['no_connections']
+        #for key, value in revised_area_by_group.items():
+        #    self.bucket['group']['damaged_area'][key] = value
+        #    if key not in ['debris', 'wall']:
+        #        self.bucket['group']['prop_damaged'][key] = prop_by_group[key] / cfg.groups[key]['no_connections']
 
         # sum of area by scenario
         prop_area_by_scenario = self.compute_area_by_scenario(revised_area_by_group, cfg)
@@ -588,6 +589,7 @@ class House(object):
                                      water=self.water_ingress_cost,
                                      di_except_water=self.di_except_water,
                                      di=self.di))
+
 
     def compute_water_ingress_cost(self, damage_name, cfg):
         # compute water ingress
