@@ -117,11 +117,11 @@ def run_simulation(house, wind_speed, ispeed, damage_increment, prop_water_ingre
         house.run_debris_and_update_cpi(wind_speed)
 
     # save results
-    #house.fill_bucket(cfg)
+    house.fill_bucket(cfg)
 
-    #return copy.deepcopy(house.bucket)
-    return {'di': house.di,
-            'water_ingress_perc': house.water_ingress_perc}
+    return copy.deepcopy(house.bucket)
+    #return {'di': house.di,
+    #        'water_ingress_perc': house.water_ingress_perc}
 
 
 
@@ -181,10 +181,10 @@ class House(object):
         self.di_except_water = None
         self._prop_water_ingress = None  # compute mean_no_debris_items
 
-        #self.bucket = {}
 
         # init house
-        #self.init_bucket(cfg)
+        self.bucket = {}
+        self.init_bucket(cfg)
         #self.set_house_data(cfg)
         self.set_wind_dir_index(cfg)
         self.set_front_facing_walls(cfg)

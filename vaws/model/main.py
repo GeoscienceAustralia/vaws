@@ -3,6 +3,7 @@ import os
 import time
 import logging.config
 # import json
+import psutil
 
 import h5py
 import numpy as np
@@ -17,6 +18,7 @@ from vaws.model.output import plot_heatmap
 from vaws.model.version import VERSION_DESC
 
 DT = h5py.special_dtype(vlen=str)
+NCPUS = psutil.cpu_count()
 
 
 def simulate_wind_dmg_to_houses(cfg, call_back=None):
@@ -33,28 +35,22 @@ def simulate_wind_dmg_to_houses(cfg, call_back=None):
     """
 
     logger = logging.getLogger(__name__)
-    cluster = LocalCluster(threads_per_worker=1)
+
+    no_workers = min(NCPUS, cfg.no_models)
+    cluster = LocalCluster(threads_per_worker=1, processes=True, n_workers=no_workers)
     client = Client(cluster)
 
     # simulator main_loop
     tic = time.time()
 
-    di_prior = 0.0
+    dump = []
+
     dmg_increment = 0.0
-    prop_water_ingress = 0.0
-    #bucket = init_bucket(cfg)
+    prop_water_ingress = 0
+    bucket = init_bucket(cfg)
 
     # generate instances of house
     houses = [House(cfg, i + cfg.random_seed) for i in range(cfg.no_models)]
-
-    #water_ingress_perc = np.zeros(shape=(cfg.no_models, cfg.wind_speed_steps))
-
-
-    dump = []
-
-    dmg_increment = 0
-    di = 0
-    prop_water_ingress = 0
 
     for ispeed, wind_speed in enumerate(cfg.wind_speeds):
 
@@ -62,38 +58,30 @@ def simulate_wind_dmg_to_houses(cfg, call_back=None):
 
         for ihouse, house in enumerate(houses):
 
-
-            #logger.debug(f'model {ihouse}')
-
             result = client.submit(run_simulation, house, wind_speed, ispeed, dmg_increment, prop_water_ingress, cfg)
-            #result = run_simulation(house, wind_speed, ispeed, dmg_increment, prop_water_ingress, cfg)
 
             results.append(result)
 
-        #bucket = update_bucket(cfg, bucket, results, ispeed)
-
         #results = client.gather(results)
+        bucket = client.submit(update_bucket, cfg, bucket, results, ispeed)
+        #big_bucket = client.scatter(bucket)
+        dmg_increment = client.submit(compute_dmg_increment, cfg, bucket, ispeed)
 
-        #dmg_increment, prop_water_ingress = compute_dmg_increment_prop_water_ingress(results, cfg)
-        #out = compute_dmg_increment_prop_water_ingress(results, ispeed, out[1], cfg)
+        prop_water_ingress = client.submit(compute_prop_water_ingress, cfg, bucket, ispeed)
 
-        prop_water_ingress = client.submit(compute_prop_water_ingress, results, cfg)
+        #logger.info(f'dmg index increment {dmg_increment}')
+        #logger.info(f'prop. water ingress {prop_water_ingress}')
 
-        dump.append(prop_water_ingress)
-
-        #logger.debug(f'dmg index increment {dmg_increment}')
-        #logger.debug(f'prop. water ingress {prop_water_ingress}')
-
-        #percent_done = 100.0 * (ispeed + 1) / len(cfg.wind_speeds)
-        #int_percent = int(percent_done)
-        #if not call_back:
-        #    sys.stdout.write(
-        #        ('=' * int_percent) + ('' * (100 - int_percent)) +
-        #        ("\r [ %d" % percent_done + "% ] "))
-        #    sys.stdout.flush()
-        #else:
-        #    if not call_back(int_percent):  # stop triggered
-        #        return
+        percent_done = 100.0 * (ispeed + 1) / len(cfg.wind_speeds)
+        int_percent = int(percent_done)
+        if not call_back:
+            sys.stdout.write(
+                ('=' * int_percent) + ('' * (100 - int_percent)) +
+                ("\r [ %d" % percent_done + "% ] "))
+            sys.stdout.flush()
+        else:
+            if not call_back(int_percent):  # stop triggered
+                return
 
     _ = client.gather(dump)
 
@@ -123,7 +111,7 @@ def init_bucket(cfg):
         else:
             bucket['house'][att] = np.zeros(shape=(1, cfg.no_models),
                                             dtype=float)
-
+    '''
     # components: group, connection, zone, coverage
     for comp in cfg.list_components:
         bucket[comp] = {}
@@ -144,6 +132,7 @@ def init_bucket(cfg):
                                 shape=(1, cfg.no_models), dtype=float)
                 except TypeError:
                     pass
+    '''
     return bucket
 
 
@@ -160,7 +149,7 @@ def update_bucket(cfg, bucket, results_by_speed, ispeed):
                         pass
             else:
                 bucket['house'][att][ispeed] = [x['house'][att] for x in results_by_speed]
-
+    '''
     for comp in cfg.list_components:
         if comp == 'debris':
             for att, flag_time in cfg.debris_bucket:
@@ -171,7 +160,7 @@ def update_bucket(cfg, bucket, results_by_speed, ispeed):
                     for item, value in bucket[comp][att].items():
                         value[ispeed] = [x[comp][att][item] for x in
                                          results_by_speed]
-
+    '''
     # save time invariant attribute
     if ispeed == cfg.wind_speed_steps-1:
 
@@ -179,18 +168,27 @@ def update_bucket(cfg, bucket, results_by_speed, ispeed):
             if not flag_time:
                 bucket['house'][att] = [x['house'][att] for x in results_by_speed]
 
-        for comp in cfg.list_components:
-            for att, flag_time in getattr(cfg, f'{comp}_bucket'):
-                if not flag_time:
-                    for item, value in bucket[comp][att].items():
-                        value[0] = [x[comp][att][item] for x in results_by_speed]
-
+        #for comp in cfg.list_components:
+        #    for att, flag_time in getattr(cfg, f'{comp}_bucket'):
+        #        if not flag_time:
+        #            for item, value in bucket[comp][att].items():
+        #                value[0] = [x[comp][att][item] for x in results_by_speed]
     return bucket
+
+
+def compute_prop_water_ingress(cfg, bucket, ispeed):
+
+    if cfg.flags['water_ingress']:
+        prop_water_ingress = (bucket['house']['water_ingress_perc'][ispeed, :] > 0).sum() / cfg.no_models
+    else:
+        prop_water_ingress = 0.0  # default value
+
+    return prop_water_ingress
 
 
 def compute_dmg_increment(cfg, bucket, ispeed):
 
-    logger = logging.getLogger(__name__)
+    #logger = logging.getLogger(__name__)
 
     # compute dmg index increment
     dmg_increment = 0.0  # default value
@@ -199,59 +197,18 @@ def compute_dmg_increment(cfg, bucket, ispeed):
 
         if ispeed:
             dmg_increment = cfg.debris_vulnerability.cdf(cfg.wind_speeds[ispeed]) - \
-                               cfg.debris_vulnerability.cdf(cfg.wind_speeds[ispeed-1])
+                            cfg.debris_vulnerability.cdf(cfg.wind_speeds[ispeed-1])
     else:
 
         if ispeed:
             dmg_increment = (bucket['house']['di'][ispeed].mean(axis=0) -
-                                bucket['house']['di'][ispeed - 1].mean(axis=0))
+                             bucket['house']['di'][ispeed - 1].mean(axis=0))
 
             if dmg_increment < 0:
                 logger.warning('dmg increment is less than zero')
                 dmg_increment = 0.0
 
     return dmg_increment
-
-
-def compute_prop_water_ingress(results, cfg):
-
-    if cfg.flags['water_ingress']:
-        prop_water_ingress = sum([x['water_ingress_perc'] > 0 for x in results])/cfg.no_models
-    else:
-        prop_water_ingress = 0.0  # default value
-
-
-    return prop_water_ingress
-
-
-
-def compute_dmg_increment_prop_water_ingress(results, ispeed, di_prior, cfg):
-
-    # compute dmg index increment
-    if cfg.flags['debris_vulnerability']:
-        di = cfg.debris_vulnerability.cdf(cfg.wind_speeds[ispeed])
-        di_prior = cfg.debris_vulnerability.cdf(cfg.wind_speeds[ispeed-1])
-    else:
-        di = sum([x['di'] for x in results])/cfg.no_models
-
-    if ispeed:
-
-        dmg_increment = di - di_prior
-
-        if dmg_increment < 0:
-            #logger.warning('dmg increment is less than zero')
-            dmg_increment = 0.0
-    else:
-        dmg_increment = 0.0  # default value
-
-    if cfg.flags['water_ingress']:
-        prop_water_ingress = sum([x['water_ingress_perc'] > 0 for x in results])/cfg.no_models
-    else:
-        prop_water_ingress = 0.0  # default value
-
-    return dmg_increment, di, prop_water_ingress
-
-
 
 
 def save_results_to_files(cfg, bucket):
