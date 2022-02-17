@@ -701,7 +701,7 @@ class House(object):
             try:
                 prop_area_by_scenario[name]
             except KeyError:
-                self.logger.warning(
+                self.logger.debug(
                     f'{name} is not defined in the costing')
             else:
                 if prop_area_by_scenario[name]:
