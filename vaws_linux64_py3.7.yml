@@ -6,8 +6,9 @@ dependencies:
  - coverage=5.5
  - matplotlib=3.0.3
  - h5py=2.8.0
- - pandas=1.2.4
+ # - pandas=1.2.4
  - python=3.7.1
  - scipy=1.4.1
  - shapely=1.6.4
  - pyqt=5.9.2
+ - dask=2021.10.0
