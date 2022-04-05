@@ -53,7 +53,7 @@ PRESSURE_KEYS = ['cpe_mean', 'cpe_str_mean', 'cpe_eave_mean', 'cpi_alpha',
                  'edge']
 WIND_4_TEST_WATER_INGRESS = (0, 200)
 warnings.filterwarnings("ignore")
-
+FIG_SIZE = (8, 6)
 
 def progress_callback(percent_done):
     my_app.statusProgressBar.setValue(percent_done)
@@ -885,6 +885,12 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
 
             self.ui.mplvuln.axes.figure.canvas.draw()
 
+            fig = ax.get_figure()
+            fname = os.path.join(self.cfg.path_output, f'{self.cfg.model_name}_vuln.png')
+            fig.set_size_inches(*FIG_SIZE)
+            fig.savefig(fname, dpi=200)
+
+
     def convert_h5_results(self, fid):
 
         def h_dic(d, results_dict):
@@ -1007,6 +1013,12 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
 
         self.ui.mplfrag.axes.figure.canvas.draw()
 
+        fig = ax.get_figure()
+        fname = os.path.join(self.cfg.path_output, f'{self.cfg.model_name}_frag.png')
+        fig.set_size_inches(*FIG_SIZE)
+        fig.savefig(fname, dpi=200)
+
+
     def updateWaterIngressPlot(self):
 
         self.statusBar().showMessage('Plotting Water Ingress')
@@ -1029,6 +1041,12 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
         ax.set_ylim(0)
 
         self.ui.wateringress_plot.axes.figure.canvas.draw()
+
+        fig = ax.get_figure()
+        fname = os.path.join(self.cfg.path_output, f'{self.cfg.model_name}_WI.png')
+        fig.set_size_inches(*FIG_SIZE)
+        fig.savefig(fname, dpi=200)
+
 
     def updateWaterIngressPropPlot(self):
 
@@ -1069,6 +1087,12 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
 
         self.ui.wateringress_prop_plot.axes.figure.canvas.draw()
 
+        fig = host.get_figure()
+        fname = os.path.join(self.cfg.path_output, f'{self.cfg.model_name}_WI_prop.png')
+        fig.set_size_inches(*FIG_SIZE)
+        fig.savefig(fname, dpi=200)
+
+
     def updateCpiPlot(self, house_number=0):
 
         self.statusBar().showMessage('Plotting Cpi')
@@ -1092,6 +1116,11 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
         ax.set_ylim(0)
 
         self.ui.cpi_plot.axes.figure.canvas.draw()
+
+        fig = ax.get_figure()
+        fname = os.path.join(self.cfg.path_output, f'{self.cfg.model_name}_Cpi.png')
+        fig.set_size_inches(*FIG_SIZE)
+        fig.savefig(fname, dpi=200)
 
     def updateCostPlot(self, house_number=0):
 
@@ -1162,6 +1191,12 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
 
         self.ui.cost_plot.axes.figure.canvas.draw()
 
+        fig = host.get_figure()
+        fname = os.path.join(self.cfg.path_output, f'{self.cfg.model_name}_repair_cost.png')
+        fig.set_size_inches(*FIG_SIZE)
+        fig.savefig(fname, dpi=200)
+
+
     def updateBreachPlot(self):
 
         self.statusBar().showMessage('Plotting Debris Results')
@@ -1216,6 +1251,12 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
 
         host.legend(loc=2)
         self.ui.breaches_plot.axes.figure.canvas.draw()
+
+        fig = host.get_figure()
+        fig.set_size_inches(*FIG_SIZE)
+        fname = os.path.join(self.cfg.path_output, f'{self.cfg.model_name}_debri.png')
+        fig.savefig(fname, dpi=200)
+
 
     def updateStrengthPlot(self):
 
