@@ -8,6 +8,7 @@ import logging
 import warnings
 import h5py
 import pandas as pd
+import markdown
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -606,6 +607,8 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
                     self.updateBreachPlot()
                     self.updateCpiPlot()
                     self.updateCostPlot()
+                    self.save_heatmap_by_group()
+                    self.write_report()
                     self.has_run = True
 
             except IOError:
@@ -649,6 +652,10 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
 
         group_name = str(self.ui.comboBox_heatmap.currentText())
         house_number = self.ui.spinBox_heatmap.value()
+        self.plot_heatmap_by_group_and_house(group_name, house_number)
+
+
+    def plot_heatmap_by_group_and_house(self, group_name, house_number, flag=0):
 
         grouped = self.cfg.connections.loc[
             self.cfg.connections.group_name == group_name]
@@ -675,12 +682,26 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
         blue_v = self.ui.blueV.value()
         vstep = self.ui.vStep.value()
 
-        plot_damage_show(self.ui.mplsheeting, grouped,
+        ax = plot_damage_show(self.ui.mplsheeting, grouped,
                          mean_connection_capacity,
                          self.cfg.house['length'],
                          self.cfg.house['width'],
                          red_v, blue_v, vstep,
                          house_number)
+
+        if flag:
+            fig = ax.get_figure()
+            fname = os.path.join(self.cfg.path_output, f'{self.cfg.model_name}_heatmap_{group_name}.png')
+            fig.set_size_inches(*FIG_SIZE)
+            fig.savefig(fname, dpi=200)
+
+
+    def save_heatmap_by_group(self):
+
+        for group_name in self.cfg.connections.groupby('group_name').size().index:
+
+            self.plot_heatmap_by_group_and_house(group_name, house_number=0, flag=1)
+
 
     def updatePressurePlot(self):
 
@@ -1254,7 +1275,7 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
 
         fig = host.get_figure()
         fig.set_size_inches(*FIG_SIZE)
-        fname = os.path.join(self.cfg.path_output, f'{self.cfg.model_name}_debri.png')
+        fname = os.path.join(self.cfg.path_output, f'{self.cfg.model_name}_debris.png')
         fig.savefig(fname, dpi=200)
 
 
@@ -1285,6 +1306,11 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
 
         self.ui.connection_type_plot.figure.canvas.draw()
 
+        fig = ax.get_figure()
+        fname = os.path.join(self.cfg.path_output, f'{self.cfg.model_name}_strength.png')
+        fig.set_size_inches(*FIG_SIZE)
+        fig.savefig(fname, dpi=200)
+
     def updateTypeDamagePlot(self):
 
         self.ui.connection_type_damages_plot.axes.figure.clf()
@@ -1311,6 +1337,12 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
         ax.set_position([0.05, 0.20, 0.9, 0.75])
         ax.set_xlim((-0.5, len(xlabels)))
         ax.figure.canvas.draw()
+
+        fig = ax.get_figure()
+        fname = os.path.join(self.cfg.path_output, f'{self.cfg.model_name}_damage.png')
+        fig.set_size_inches(*FIG_SIZE)
+        fig.savefig(fname, dpi=200)
+
 
     def updateLoadPlot(self):
 
@@ -1542,6 +1574,8 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
                     self.updateBreachPlot()
                     self.updateCpiPlot()
                     self.updateCostPlot()
+                    self.save_heatmap_by_group()
+                    self.write_report()
 
         else:
             msg = f'Unable to load resutls: {h5}\nFile not found.'
@@ -1979,6 +2013,75 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
         ax.set_xlabel('Wind speed (m/s)')
         ax.set_ylabel('Water ingress (%)')
         fig.show()
+
+
+    def write_report(self):
+        WIDTH = "600"
+        outfile_name = os.path.join(self.cfg.path_output, f'report_{self.cfg.model_name}.html')
+        with open(outfile_name, 'w', encoding='utf-8', errors='xmlcharrefreplac') as output_file:
+            text = f'#{self.cfg.model_name}\n'
+
+            text += '##Vulnerability curve\n'
+            fname = os.path.join(self.cfg.path_output, f'{self.cfg.model_name}_vuln.png')
+            text += f'<img src="{fname}" alt="drawing" width={WIDTH}/>\n'
+
+            text += '##Fragility curve\n'
+            fname = os.path.join(self.cfg.path_output, f'{self.cfg.model_name}_frag.png')
+            text += f'<img src="{fname}" alt="drawing" width={WIDTH}/>\n'
+
+            text += '##Water ingress\n'
+            fname = os.path.join(self.cfg.path_output, f'{self.cfg.model_name}_WI_prop.png')
+            text += f'<img src="{fname}" alt="drawing" width={WIDTH}/>\n'
+
+            text += '##Wind debris\n'
+            fname = os.path.join(self.cfg.path_output, f'{self.cfg.model_name}_debris.png')
+            text += f'<img src="{fname}" alt="drawing" width={WIDTH}/>\n'
+
+            text += '##Repair cost\n'
+            fname = os.path.join(self.cfg.path_output, f'{self.cfg.model_name}_repair_cost.png')
+            text += f'<img src="{fname}" alt="drawing" width={WIDTH}/>\n'
+
+            text += '##Connection type strengths\n'
+            fname = os.path.join(self.cfg.path_output, f'{self.cfg.model_name}_strength.png')
+            text += f'<img src="{fname}" alt="drawing" width={WIDTH}/>\n'
+
+            text += '##Connection type damage speeds\n'
+            fname = os.path.join(self.cfg.path_output, f'{self.cfg.model_name}_damage.png')
+            text += f'<img src="{fname}" alt="drawing" width={WIDTH}/>\n'
+
+            for group_name in self.cfg.connections.groupby('group_name').size().index:
+                text += f'##Heatmap: {group_name}\n'
+                fname = os.path.join(self.cfg.path_output, f'{self.cfg.model_name}_heatmap_{group_name}.png')
+                text += f'<img src="{fname}" alt="drawing" width={WIDTH}/>\n'
+
+            text += f'##Config:{self.cfg.file_cfg}\n'
+            with open(self.cfg.file_cfg, 'r') as contents:
+                for line in contents.readlines():
+                    line = line.strip()
+                    if len(line):
+                        text += f'<pre> {line} </pre>\n'
+
+            text += f'##Connection types:{self.cfg.file_conn_types}\n'
+            a = pd.read_csv(self.cfg.file_conn_types)
+            text += a.to_html(index=False)
+            text += '\n'
+
+            text += f'##Coverage types:{self.cfg.file_coverage_types}\n'
+            a = pd.read_csv(self.cfg.file_coverage_types)
+            text += a.to_html(index=False)
+            text += '\n'
+
+            text += f'##Damage costing:{self.cfg.file_damage_costing_data}\n'
+            a = pd.read_csv(self.cfg.file_damage_costing_data)
+            text += a.to_html(index=False)
+            text += '\n'
+
+            text += f'##Water ingress costing:{self.cfg.file_water_ingress_costing_data}\n'
+            a = pd.read_csv(self.cfg.file_water_ingress_costing_data)
+            text += a.to_html(index=False)
+
+            html = markdown.markdown(text)
+            output_file.write(html)
 
 
 def run_gui():

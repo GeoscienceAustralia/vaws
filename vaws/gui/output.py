@@ -98,6 +98,8 @@ def plot_damage_show(fig, grouped, values_grid, xlim_max, ylim_max,
 
     fig.canvas.draw()
 
+    return axPlot
+
 
 def plot_load_show(fig, grouped, values_grid, xlim_max, ylim_max, v_min, v_max, v_step=10):
 
