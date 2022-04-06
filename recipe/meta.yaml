@@ -23,6 +23,7 @@ requirements:
     - python==3.7.1
     - scipy==1.4.1
     - shapely=1.6.4
+    - markdown=3.0.1
 test:
   imports:
     - vaws.model.main
