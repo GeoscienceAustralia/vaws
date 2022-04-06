@@ -11,3 +11,4 @@ dependencies:
  - scipy=1.4.1
  - shapely=1.6.4
  - pyqt=5.9.2
+ - markdown=3.0.1
