@@ -119,6 +119,7 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
         self.ui.actionSave_Scenario_As.triggered.connect(self.save_as_scenario)
         self.ui.actionHouse_Info.triggered.connect(self.showHouseInfoDlg)
         self.ui.actionLoad_Results.triggered.connect(self.load_results)
+        self.ui.actionGenerate_Report.triggered.connect(self.generate_report)
         # TODO: actionNew missing
 
         # test panel
@@ -608,7 +609,7 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
                     self.updateCpiPlot()
                     self.updateCostPlot()
                     self.save_heatmap_by_group()
-                    self.write_report()
+                    #self.generate_report()
                     self.has_run = True
 
             except IOError:
@@ -1575,7 +1576,7 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
                     self.updateCpiPlot()
                     self.updateCostPlot()
                     self.save_heatmap_by_group()
-                    self.write_report()
+                    #self.generate_report()
 
         else:
             msg = f'Unable to load resutls: {h5}\nFile not found.'
@@ -2015,7 +2016,7 @@ class MyForm(QMainWindow, Ui_main, PersistSizePosMixin):
         fig.show()
 
 
-    def write_report(self):
+    def generate_report(self):
         WIDTH = "600"
         outfile_name = os.path.join(self.cfg.path_output, f'report_{self.cfg.model_name}.html')
         with open(outfile_name, 'w', encoding='utf-8', errors='xmlcharrefreplac') as output_file:

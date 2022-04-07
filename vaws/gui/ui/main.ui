@@ -2126,6 +2126,7 @@
    <addaction name="actionStop"/>
    <addaction name="separator"/>
    <addaction name="actionHouse_Info"/>
+   <addaction name="actionGenerate_Report"/>
    <addaction name="actionInfo"/>
   </widget>
   <widget class="QMenuBar" name="menubar">
@@ -2134,7 +2135,7 @@
      <x>0</x>
      <y>0</y>
      <width>1339</width>
-     <height>22</height>
+     <height>21</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFile">
@@ -2239,6 +2240,15 @@
    </property>
    <property name="text">
     <string>House Info...</string>
+   </property>
+  </action>
+  <action name="actionGenerate_Report">
+   <property name="icon">
+    <iconset resource="../vaws.qrc">
+     <normaloff>:/icons/images/hand.png</normaloff>:/icons/images/hand.png</iconset>
+   </property>
+   <property name="text">
+    <string>Generate Report...</string>
    </property>
   </action>
   <action name="actionTest_Debris_Settings">
